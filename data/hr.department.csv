@@ -1,0 +1,12 @@
+id,name,parent_id
+hr_dept_management,Management,
+hr_dept_hr,Human Resources,Management
+hr_dept_op_driver,Operasional Pengemudi,Management
+hr_dept_op_vehicle,Operasional Kendaraan,Management
+hr_dept_marketing,Marketing,Management
+hr_dept_faa_it,FAA & IT,Management
+hr_dept_it,IT,FAA & IT
+hr_dept_finance,Finance,FAA & IT
+hr_dept_accounting,Accounting,FAA & IT
+hr_dept_driver_adm,Administrasi Pengemudi,FAA & IT
+hr_dept_legal_adm,Legal & Administrasi,FAA & IT

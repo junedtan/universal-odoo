@@ -1,0 +1,65 @@
+id,name,department_id
+hr_job_hse_spv,Supervisor HSE,Management
+hr_job_qa_spv,Supervisor QA,Management
+hr_job_hr_dir,Direktur HRD,Human Resources
+hr_job_hr_kadiv,Kepala Divisi HRD,Human Resources
+hr_job_hr_spv,Supervisor HRD,Human Resources
+hr_job_hr_adm,Staff Administrasi HRD,Human Resources
+hr_job_hr_staff,Staff HRD,Human Resources
+hr_job_hr_training_adm,Staff Administrasi Pelatihan,Human Resources
+hr_job_hr_training_staff,Staff Pelatihan,Human Resources
+hr_job_hr_ob_og,OB/OG,Human Resources
+hr_job_op_driver_dir,Direktur Operasional Pengemudi,Operasional Pengemudi
+hr_job_op_driver_kadiv,Kepala Divisi Operasional Pengemudi,Operasional Pengemudi
+hr_job_op_driver_spv,Supervisor Operasional Pengemudi,Operasional Pengemudi
+hr_job_op_driver_staff,Staff OPR Pengemudi,Operasional Pengemudi
+hr_job_dispatcher_coord,Koordinator Dispatcher,Operasional Pengemudi
+hr_job_dispatcher,Dispatcher,Operasional Pengemudi
+hr_job_op_vehicle_dir,Direktur Operasional Kendaraan,Operasional Kendaraan
+hr_job_pudchasing_kadiv,Kepala Divisi Purchasing,Operasional Kendaraan
+hr_job_purchasing_spv,Supervisor Purchasing,Operasional Kendaraan
+hr_job_purchasing_staff,Staff Purchasing,Operasional Kendaraan
+hr_job_wh_staff,Staff Gudang,Operasional Kendaraan
+hr_job_op_vehicle_kadiv,Kepala Divisi Operasional Kendaraan,Operasional Kendaraan
+hr_job_op_vehicle_spv,Supervisor Operasional Kendaraan,Operasional Kendaraan
+hr_job_workshop_kadiv,Kepala Divisi Bengkel,Operasional Kendaraan
+hr_job_vehicle_insurance_claim_staff,Staff Klaim Asuransi,Operasional Kendaraan
+hr_job_security_coord,Koordinator Satpam,Operasional Kendaraan
+hr_job_op_stnk_staff,Staff Operasional STNK,Operasional Kendaraan
+hr_job_op_admin_staff,Staff Admin OPR,Operasional Kendaraan
+hr_job_workshop_spv,Supervisor Bengkel,Operasional Kendaraan
+hr_job_technician,Teknisi,Operasional Kendaraan
+hr_job_kernet,Kenek,Operasional Kendaraan
+hr_job_marketing_dir,Direktur Marketing,Marketing
+hr_job_marketing_kadiv,Kepala Divisi Marketing,Marketing
+hr_job_marketing_spv,Supervisor Marketing,Marketing
+hr_job_marketing_adm,Staff Administrasi Marketing,Marketing
+hr_job_faa_dir,Direktur FAA & IT,FAA & IT
+hr_job_auditor,Auditor,FAA & IT
+hr_job_it_kadiv,Kepala Divisi IT,IT
+hr_job_it_staff,Staff IT,IT
+hr_job_finance_kadiv,Kepala Divisi Finance,Finance
+hr_job_finance_staff,Staff Finance,Finance
+hr_job_finance_adm_staff,Staff Administrasi Finance,Finance
+hr_job_accounting_kadiv,Kepala Divisi Accounting,Accounting
+hr_job_accounting_ap,Staff A/P (Hutang),Accounting
+hr_job_accounting_ar,Staff A/R (Piutang),Accounting
+hr_job_accounting_tax,Staff Pajak,Accounting
+hr_job_accounting_gl,Staff GL,Accounting
+hr_job_invoicing_adm_staff,Staff Adm. Invoicing,Accounting
+hr_job_invoicing_spv,Supervisor Invoicing,Accounting
+hr_job_invoicing_staff,Staff Invoicing,Accounting
+hr_job_accounting_cr,Staff CR,Accounting
+hr_job_rep_office_staff,Staff Rep. Officer,Accounting
+hr_job_driver_adm_kadiv,Kepala Divisi Administrasi Pengemudi,Administrasi Pengemudi
+hr_job_legal_adm_kadiv,Kepala Divisi Legal & Administrasi,Legal & Administrasi
+hr_job_insurance_staff,Staff Asuransi,Legal & Administrasi
+hr_job_leasing_staff,Staff Leasing,Legal & Administrasi
+hr_job_leasing_adm_staff,Staff Adm. Leasing,Legal & Administrasi
+hr_job_legal_staff,Staff Legal,Legal & Administrasi
+hr_job_mailing_staff,Staff Mailing,Legal & Administrasi
+hr_job_courier,Kurir,Legal & Administrasi
+hr_job_asset_mgt_staff,Staff Asset,Legal & Administrasi
+hr_job_stnk_adm_staff,Staff Adm. STNK,Legal & Administrasi
+hr_job_bpkb_adm_staff,Staff Arsip BPKB,Legal & Administrasi
+hr_job_driver,Driver,

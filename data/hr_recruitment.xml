@@ -1,0 +1,101 @@
+<openerp>
+	<data>
+		
+		<!-- RECRUITMENT DEGREE-->
+		
+		<record model="hr.recruitment.degree" id="degree_junior_high">
+			<field name="name">Junior High</field>
+			<field name="sequence">1</field>
+		</record>
+		
+		<record model="hr.recruitment.degree" id="hr_recruitment.degree_graduate">
+			<field name="name">High School</field>
+			<field name="sequence">2</field>
+		</record>
+
+		<record model="hr.recruitment.degree" id="hr_recruitment.degree_bachelor">
+			<field name="sequence">3</field>
+		</record>
+
+		<record model="hr.recruitment.degree" id="hr_recruitment.degree_licenced">
+			<field name="sequence">4</field>
+		</record>
+
+		<record model="hr.recruitment.degree" id="hr_recruitment.degree_bac5">
+			<field name="sequence">5</field>
+		</record>
+		
+		<!-- RECRUITMENT SOURCE -->
+		
+		<delete model="hr.recruitment.source" id="hr_recruitment.source_monster" />
+		
+		<record model="hr.recruitment.source" id="source_newspaper">
+			<field name="name">Newspaper</field>
+		</record>
+
+		<record model="hr.recruitment.source" id="source_jobstreet">
+			<field name="name">Jobstreet</field>
+		</record>
+
+		<record model="hr.recruitment.source" id="source_jobsdb">
+			<field name="name">JobsDB</field>
+		</record>
+
+		<!-- RECRUITMENT STAGES -->
+		
+		<!-- HAPUS SEMUA STAGE YANG ADA -->
+		
+		<delete model="hr.recruitment.stage" id="hr_recruitment.stage_job1" />
+		<delete model="hr.recruitment.stage" id="hr_recruitment.stage_job2" />
+		<delete model="hr.recruitment.stage" id="hr_recruitment.stage_job3" />
+		<delete model="hr.recruitment.stage" id="hr_recruitment.stage_job4" />
+		<delete model="hr.recruitment.stage" id="hr_recruitment.stage_job5" />
+		<delete model="hr.recruitment.stage" id="hr_recruitment.stage_job6" />
+
+		<record model="hr.recruitment.stage" id="stage_job1">
+			<field name="name">Initial Qualification</field>
+			<field name="sequence">1</field>
+		</record>
+
+		<record model="hr.recruitment.stage" id="stage_job2">
+			<field name="name">Pending Approval</field>
+			<field name="sequence">2</field>
+		</record>
+
+		<record model="hr.recruitment.stage" id="stage_job3">
+			<field name="name">Documents</field>
+			<field name="sequence">3</field>
+		</record>
+
+		<record model="hr.recruitment.stage" id="stage_job4">
+			<field name="name">Interview</field>
+			<field name="sequence">4</field>
+		</record>
+
+		<record model="hr.recruitment.stage" id="stage_job5">
+			<field name="name">Entry Test</field>
+			<field name="sequence">5</field>
+		</record>
+
+		<record model="hr.recruitment.stage" id="stage_job6">
+			<field name="name">Contract Proposed</field>
+			<field name="sequence">6</field>
+		</record>
+
+		<record model="hr.recruitment.stage" id="stage_job7">
+			<field name="name">Contract Signed</field>
+			<field name="sequence">7</field>
+			<field name="is_end">True</field>
+			<field name="fold">True</field>
+		</record>
+
+		<record model="hr.recruitment.stage" id="stage_job8">
+			<field name="name">Refused</field>
+			<field name="sequence">8</field>
+			<field name="is_end">True</field>
+			<field name="fold">True</field>
+		</record>
+
+	</data>
+	
+</openerp>

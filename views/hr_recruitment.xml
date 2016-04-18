@@ -1,0 +1,105 @@
+<openerp>
+	<data>
+		
+		<!-- RECRUITMENT STAGE -->
+		
+		<record model="ir.ui.view" id="hr_recruitment_stage_form">
+			<field name="name">hr.recruitment.stage.form</field>
+			<field name="model">hr.recruitment.stage</field>
+			<field name="inherit_id" ref="hr_recruitment.hr_recruitment_stage_form"/>
+			<field name="arch" type="xml">
+				<field name="fold" position="before">
+					<field name="is_end" />
+				</field>
+			</field>
+		</record>
+		
+		<record model="ir.ui.view" id="hr_recruitment_stage_list">
+			<field name="name">hr.recruitment.stage.list</field>
+			<field name="model">hr.recruitment.stage</field>
+			<field name="inherit_id" ref="hr_recruitment.hr_recruitment_stage_tree"/>
+			<field name="arch" type="xml">
+				<field name="fold" position="before">
+					<field name="is_end" />
+				</field>
+			</field>
+		</record>
+
+		<!-- APPLICANT -->
+
+		<record model="ir.ui.view" id="hr_applicant_form">
+			<field name="name">hr.applicant.form</field>
+			<field name="model">hr.applicant</field>
+			<field name="inherit_id" ref="hr_recruitment.crm_case_form_view_job"/>
+			<field name="arch" type="xml">
+				<xpath expr="//button[@name='action_get_attachment_tree_view']" position="after">
+					<button name="action_approve_applicant" 
+						class="oe_stat_button"
+						icon="fa-check"
+						type="object"
+						help="Approve applicant to continue to next stage"
+						attrs="{'invisible':[('is_pending','=',False)]}"
+						confirm="Are you sure to approve this pending applicant to continue to next step?">
+						<div>Approve<br/>Applicant</div>
+					</button>
+					<button name="action_refuse_applicant" 
+						class="oe_stat_button"
+						icon="fa-ban"
+						type="object"
+						help="Refuse applicant">
+						<div>Refuse<br/>Applicant</div>
+					</button>
+				</xpath>
+				<xpath expr="//separator[@string='Application Summary']" position="replace" />
+				<xpath expr="//field[@name='description']" position="replace">
+					<field name="is_pending" invisible="1" />
+					<notebook>
+						<page string="Personal Info">
+							<group>
+								<field name="date_of_birth" />
+							</group>
+						</page>
+						<page string="Summary">
+							<field name="description" placeholder="Feedback of interviews..." />
+						</page>
+						<page string="Refusal">
+							<group>
+								<group>
+									<field name="refused_date" />
+									<field name="refused_by" />
+									<field name="refused_reason" readonly="1" />
+								</group>
+								<group>
+									<field name="is_blacklist" readonly="1" />
+									<field name="blacklist_reason" readonly="1" />
+								</group>
+							</group>
+						</page>
+					</notebook>
+				</xpath>
+			</field>
+		</record>
+		
+		<record model="ir.ui.view" id="hr_applicant_refusal_form">
+			<field name="name">hr.applicant.refusal.form</field>
+			<field name="model">hr.applicant</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Applicant Refusal">
+					<group>
+						<field name="name" string="Applicant Name" readonly="1" />
+						<field name="refused_reason" required="1" />
+						<field name="is_blacklist" />
+						<field name="blacklist_reason" attrs="{'invisible': [('is_blacklist','=',False)], 'required': [('is_blacklist','=',True)]}" />
+					</group>
+					<footer>
+						<button string="Refuse Applicant" name="action_refuse_applicant_save" type="object" class="oe_highlight" />
+						or
+						<button string="Cancel" special="cancel" class="oe_link" />
+					</footer>
+					<field name="id" invisible="1" />
+				</form>
+			</field>
+		</record>
+		
+	</data>
+</openerp>

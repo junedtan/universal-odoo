@@ -1,1 +1,2 @@
 import hr_recruitment
+import hr_employee

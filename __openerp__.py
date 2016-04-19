@@ -8,7 +8,7 @@
 	'author': 'Christyan Juniady and Associates',
 	'maintainer': 'Christyan Juniady and Associates',
 	'website': 'http://www.chjs.biz',
-	'depends': ["base","board","web","chjs_custom_view","chjs_region","hr","hr_recruitment","hr_employee_family"],
+	'depends': ["base","board","web","chjs_custom_view","chjs_region","hr","hr_recruitment","hr_recruitment_period","hr_employee_family"],
 	'sequence': 150,
 	'data': [
 		'data/hr.department.csv',

@@ -68,7 +68,7 @@
 		</record>
 
 		<record model="hr.recruitment.stage" id="stage_job4">
-			<field name="name">Interview</field>
+			<field name="name">Interview &amp; Psikotest</field>
 			<field name="sequence">4</field>
 		</record>
 
@@ -95,6 +95,14 @@
 			<field name="is_end">True</field>
 			<field name="fold">True</field>
 		</record>
+		
+		<!-- APPLICANT TAGS -->
+		<!-- HAPUS SEMUA APPLICANT TAGS BAWAAN ODOO -->
+
+		<delete model="hr.applicant_category" id="hr_recruitment.tag_applicant_reserve" />
+		<delete model="hr.applicant_category" id="hr_recruitment.tag_applicant_manager" />
+		<delete model="hr.applicant_category" id="hr_recruitment.tag_applicant_it" />
+		<delete model="hr.applicant_category" id="hr_recruitment.tag_applicant_sales" />
 
 	</data>
 	

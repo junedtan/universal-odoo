@@ -12,8 +12,8 @@ class hr_job(osv.osv):
 	
 # CUSTOM METHODS -----------------------------------------------------------------------------------------------------------
 
-	def is_driver(self, cr, uid, ids, context={}):
 	# apakah job ini adalah driver atau bukan, dilihat dari xml id
+	def is_driver(self, cr, uid, ids, context={}):
 		if isinstance(ids, int): ids = [ids]
 		model_obj = self.pool.get('ir.model.data')
 		model, job_id = model_obj.get_object_reference(cr, uid, 'universal', 'hr_job_driver')
@@ -108,8 +108,8 @@ class hr_applicant(osv.osv):
 		
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
-	def create(self, cr, uid, vals, context={}):
 	# kalau ini driver dan di atas MAX_DRIVER_AGE tahun, maka dia harus diapprove dulu
+	def create(self, cr, uid, vals, context={}):
 		if vals.get('job_id'):
 			job_obj = self.pool.get('hr.job')
 			is_driver = job_obj.is_driver(cr, uid, vals.get('job_id'))
@@ -157,13 +157,26 @@ class hr_applicant(osv.osv):
 	# yu panggil write-nya
 		return super(hr_applicant, self).write(cr, uid, ids, vals, context)
 		
-	def onchange_stage_id(self, cr, uid, ids, stage_id, context=None):
 	# pengisian/pengosongan date_closed tidak berdasarkan apakah stage ybs folded atau tidak, tapi mengacu ke isi field 
 	# is_end dari stage ybs
+	def onchange_stage_id(self, cr, uid, ids, stage_id, context=None):
 		if not stage_id: return {'value': {}}
 		stage = self.pool['hr.recruitment.stage'].browse(cr, uid, stage_id, context=context)
 		if stage.is_end:
 			return {'value': {'date_closed': fields.datetime.now()}}
 		else:
 			return {'value': {'date_closed': False}}
+	
+	def create_employee_from_applicant(self, cr, uid, ids, context=None):
+	# ambil stage contract_signed utnuk dibandingkan di bawah
+		model_obj = self.pool.get('ir.model.data')
+		model, contract_signed_stage_id = model_obj.get_object_reference(cr, uid, 'universal', 'stage_job7')
+	# cek untuk setiap data
+		for data in self.browse(cr, uid, ids, context):
+		# applicant ini sudah harus sampai tahap contract signed baru bisa jadi employee
+			if data.stage_id.id != contract_signed_stage_id:
+				raise osv.except_osv(_('Recruitment Error'),_('Applicant must have reach Contract Signed stage to be entitled for employee creation.'))
+	# normal deh
+		return super(hr_applicant, self).create_employee_from_applicant(cr, uid, ids, context=context)
+			
 

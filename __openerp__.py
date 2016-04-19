@@ -14,6 +14,7 @@
 		'data/hr.department.csv',
 		'data/hr.job.csv',
 		'data/hr_recruitment.xml',
+		'data/hr_employee.xml',
 		'views/hr_recruitment.xml',
 	],
 	'demo': [

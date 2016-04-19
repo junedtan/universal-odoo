@@ -1,0 +1,16 @@
+<openerp>
+	<data>
+		
+		<!-- EMPLOYEE TAGS -->
+		
+		<record model="hr.employee.category" id="employee_category_driver_vip">
+			<field name="name">Driver VIP</field>
+		</record>
+		
+		<record model="hr.employee.category" id="employee_category_driver_beginner">
+			<field name="name">Driver Beginner</field>
+		</record>
+		
+	</data>
+	
+</openerp>

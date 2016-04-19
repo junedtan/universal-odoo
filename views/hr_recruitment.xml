@@ -30,6 +30,7 @@
 		<record model="ir.ui.view" id="hr_applicant_form">
 			<field name="name">hr.applicant.form</field>
 			<field name="model">hr.applicant</field>
+			<field name="priority">10</field>
 			<field name="inherit_id" ref="hr_recruitment.crm_case_form_view_job"/>
 			<field name="arch" type="xml">
 				<xpath expr="//button[@name='action_get_attachment_tree_view']" position="after">
@@ -83,6 +84,7 @@
 		<record model="ir.ui.view" id="hr_applicant_refusal_form">
 			<field name="name">hr.applicant.refusal.form</field>
 			<field name="model">hr.applicant</field>
+			<field name="priority">15</field>
 			<field name="arch" type="xml">
 				<form version="7.0" string="Applicant Refusal">
 					<group>

@@ -19,6 +19,12 @@ class hr_job(osv.osv):
 		model, job_id = model_obj.get_object_reference(cr, uid, 'universal', 'hr_job_driver')
 		return ids[0] == job_id
 	
+# OVERRIDES ----------------------------------------------------------------------------------------------------------------
+
+#	def fields_view_get(self, cr, uid, view_id=None, view_type=False, context=None, toolbar=False, submenu=False):
+#		result = super(res_partner,self).fields_view_get(cr, uid, view_id, view_type, context, toolbar, submenu)
+		
+	
 # ==========================================================================================================================
 
 class hr_recruitment_degree(osv.osv):
@@ -78,7 +84,7 @@ class hr_applicant(osv.osv):
 		stage_obj = self.pool.get('hr.recruitment.stage')
 		for data in self.browse(cr, uid, ids):
 			stage_ids = stage_obj.search(cr, uid, [('sequence','>',data.stage_id.sequence)], order='sequence')
-			self.write(cr, uid, data.id, {'stage_id': stage_ids[0]}, context={'skip_pending_check': True})
+			self.write(cr, uid, [data.id], {'stage_id': stage_ids[0]}, context={'skip_pending_check': True})
 	# jadi ngga pending lagi
 		self.write(cr, uid, ids, {'is_pending': False}, context)
 		return True
@@ -97,19 +103,18 @@ class hr_applicant(osv.osv):
 			'res_model': 'hr.applicant',
 			'context': {
 				'refusal_mode': True,
+				'bypass_requirement_check': True,
 			},
 			'target': 'new',
 		}
-		self.write(cr, uid, ids, {'is_pending': False}, context)
-		return True
 
 	def action_refuse_applicant_save(self, cr, uid, ids, context={}):
 		return True
 		
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
-	# kalau ini driver dan di atas MAX_DRIVER_AGE tahun, maka dia harus diapprove dulu
 	def create(self, cr, uid, vals, context={}):
+	# kalau ini driver dan di atas MAX_DRIVER_AGE tahun, maka dia harus diapprove dulu
 		if vals.get('job_id'):
 			job_obj = self.pool.get('hr.job')
 			is_driver = job_obj.is_driver(cr, uid, vals.get('job_id'))

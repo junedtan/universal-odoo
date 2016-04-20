@@ -4,6 +4,22 @@ from datetime import datetime, date
 
 MAX_DRIVER_AGE = 45 # in years
 
+_DRIVER_TYPE = (
+	('male','Male'),
+	('female','Female'),
+	('other','Other'),
+)
+
+_RELIGION = (
+	('islam','Islam'),
+	('catholic','Catholic'),
+	('protestant','Protestant'),
+	('hindu','Hindu'),
+	('buddha','Buddha'),
+	('konghucu','Konghucu'),
+	('other','Other'),
+)
+
 # ==========================================================================================================================
 
 class hr_job(osv.osv):
@@ -54,9 +70,19 @@ class hr_applicant(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
+		'gender': fields.selection(_GENDER, 'Gender'),
 		'is_pending': fields.boolean('Pending Approval?',
 			help='If checked, this applicant is waiting for SPV/manager\'s approval.'),
+		'place_of_birth': fields.char('Place of Birth', required=True),
 		'date_of_birth': fields.date('Date of Birth', required=True),
+		'official_address': fields.text('Official Address'),
+		'stay_address': fields.text('Stay Address'),
+		'religion': fields.selection(_RELIGION, 'Religion'),
+		'driver_lisence_number': fields.char('Driver Lisence Number'),
+		'driver_lisence_date': fields.date('Driver Lisence Expiry Date'),
+		'identity_number': fields.char('Identity Number', required=True),
+		'partner_mobile2': fields.char('Mobile 2', size=32),
+		'partner_mobile3': fields.char('Mobile 3', size=32),
 		'refused_date': fields.date('Refused At', readonly=True),
 		'refused_by': fields.many2one('res.users', 'Refused By', readonly=True),
 		'refused_reason': fields.text('Refuse Reason'),
@@ -170,13 +196,29 @@ class hr_applicant(osv.osv):
 	def create_employee_from_applicant(self, cr, uid, ids, context=None):
 	# ambil stage contract_signed utnuk dibandingkan di bawah
 		model_obj = self.pool.get('ir.model.data')
+		hr_employee = self.pool.get('hr.employee')
 		model, contract_signed_stage_id = model_obj.get_object_reference(cr, uid, 'universal', 'stage_job7')
 	# cek untuk setiap data
 		for data in self.browse(cr, uid, ids, context):
 		# applicant ini sudah harus sampai tahap contract signed baru bisa jadi employee
 			if data.stage_id.id != contract_signed_stage_id:
 				raise osv.except_osv(_('Recruitment Error'),_('Applicant must have reach Contract Signed stage to be entitled for employee creation.'))
-	# normal deh
-		return super(hr_applicant, self).create_employee_from_applicant(cr, uid, ids, context=context)
+	# bikin data employee nya
+		dict_act_window = super(hr_applicant, self).create_employee_from_applicant(cr, uid, ids, context=context)
+	# ambil data applicant kalau ada
+		applicant_data = self.browse(cr, uid, ids[0], context=context)
+		'name': applicant.partner_name or contact_name,
+     'job_id': applicant.job_id.id,
+     'address_home_id': address_id,
+     'department_id': applicant.department_id.id or False,
+     'address_id': applicant.company_id and applicant.company_id.partner_id and applicant.company_id.partner_id.id or False,
+     'work_email': applicant.department_id and applicant.department_id.company_id and applicant.department_id.company_id.email or False,
+     'work_phone'
+		emp_data = {
+			'place_of_birth'
+			'date_of_birth'
+		}
+		
+		return dict_act_window
 			
 

@@ -23,6 +23,12 @@ class hr_employee(osv.osv):
 		'driver_type': fields.selection(_DRIVER_TYPE, 'Driver Type'),
 		'is_blacklist': fields.boolean('Blacklist?'),
 		'blacklist_reason': fields.text('Blacklist Reason'),
+		'emp_no': fields.char('Employee No', size=256),
+		'bank_ref': fields.char('Bank Reference'),
+		'start_working': fields.date('Start Working'),
+		'driver_company': fields.char('Company'),
+		'homebase': fields.many2one('chjs.region', 'Homebase'),
+		'resign_date': fields.date('Resign date'),
 	}
 	
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------

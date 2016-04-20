@@ -36,10 +36,10 @@
 				<xpath expr="//field[@name='description']" position="replace" />
 				<xpath expr="//label[@for='description']" position="replace" />
 				<xpath expr="//button[@name='%(hr_recruitment.action_hr_job_applications)d']" position="attributes">
-					<attribute name="attrs">{'invisible': context.get('hide_recruitments')}</attribute>
+					<attribute name="invisible">context.get('hide_recruitments') == 1</attribute>
 				</xpath>
 				<xpath expr="//button[@name='action_get_attachment_tree_view']" position="attributes">
-					<attribute name="attrs">{'invisible': context.get('hide_recruitments')}</attribute>
+					<attribute name="invisible">context.get('hide_recruitments') == 1</attribute>
 				</xpath>
 				<xpath expr="//group[@name='employee_data']" position="replace">
 					<group>

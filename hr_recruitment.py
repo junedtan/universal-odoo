@@ -4,7 +4,7 @@ from datetime import datetime, date
 
 MAX_DRIVER_AGE = 45 # in years
 
-_DRIVER_TYPE = (
+_GENDER = (
 	('male','Male'),
 	('female','Female'),
 	('other','Other'),
@@ -89,6 +89,7 @@ class hr_applicant(osv.osv):
 		'identity_number': fields.char('Identity Number', required=True),
 		'partner_mobile2': fields.char('Mobile 2', size=32),
 		'partner_mobile3': fields.char('Mobile 3', size=32),
+		'overtime_ready': fields.boolean('Ready to Overtime?'),
 		'refused_date': fields.date('Refused At', readonly=True),
 		'refused_by': fields.many2one('res.users', 'Refused By', readonly=True),
 		'refused_reason': fields.text('Refuse Reason'),
@@ -212,17 +213,6 @@ class hr_applicant(osv.osv):
 		dict_act_window = super(hr_applicant, self).create_employee_from_applicant(cr, uid, ids, context=context)
 	# ambil data applicant kalau ada
 		applicant_data = self.browse(cr, uid, ids[0], context=context)
-		'name': applicant.partner_name or contact_name,
-     'job_id': applicant.job_id.id,
-     'address_home_id': address_id,
-     'department_id': applicant.department_id.id or False,
-     'address_id': applicant.company_id and applicant.company_id.partner_id and applicant.company_id.partner_id.id or False,
-     'work_email': applicant.department_id and applicant.department_id.company_id and applicant.department_id.company_id.email or False,
-     'work_phone'
-		emp_data = {
-			'place_of_birth'
-			'date_of_birth'
-		}
 		
 		return dict_act_window
 			

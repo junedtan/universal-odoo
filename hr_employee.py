@@ -46,6 +46,6 @@ class hr_employee(osv.osv):
 			job_obj = self.pool.get('hr.job')
 			if job_obj.is_driver(cr, uid, job_id):
 				vals.update({'driver_type': 'active'})
-	# panggil create buasa
+	# panggil create biasa
 		return super(hr_employee, self).create(cr, uid, vals, context)
 		

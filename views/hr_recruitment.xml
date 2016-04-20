@@ -24,14 +24,77 @@
 				</field>
 			</field>
 		</record>
-
+		
+		<!-- JOB POSITION -->
+		
+		<record model="ir.ui.view" id="view_hr_job_form">
+			<field name="name">view.hr.job.form</field>
+			<field name="model">hr.job</field>
+			<field name="inherit_id" ref="hr_recruitment_requirement.view_hr_job_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='requirements']" position="replace" />
+				<xpath expr="//field[@name='description']" position="replace" />
+				<xpath expr="//label[@for='description']" position="replace" />
+				<xpath expr="//button[@name='%(hr_recruitment.action_hr_job_applications)d']" position="attributes">
+					<attribute name="attrs">{'invisible': context.get('hide_recruitments')}</attribute>
+				</xpath>
+				<xpath expr="//button[@name='action_get_attachment_tree_view']" position="attributes">
+					<attribute name="attrs">{'invisible': context.get('hide_recruitments')}</attribute>
+				</xpath>
+				<xpath expr="//group[@name='employee_data']" position="replace">
+					<group>
+						<field name="no_of_employee" string="Employees" />
+						<field name="department_id" class="oe_inline"/>
+					</group>
+					<notebook>
+						<page string="Recruitment">
+							<group>
+								<group>
+									<field name="user_id" />
+									<field name="requirements" class="oe_inline" widget="selection" />
+									<field name="survey_id" class="oe_inline" widget="selection" />
+								</group>
+								<group>
+									<field name="document_ref" />
+									<field name="no_of_recruitment" groups="base.group_user" class="oe_inline" string="New Employees Expected" />
+								</group>
+							</group>
+						</page>
+						<page string="Job Description">
+							<field name="description" />
+						</page>
+					</notebook>
+				</xpath>
+			</field>
+		</record>
+		
+		<record model="ir.ui.view" id="view_hr_job_tree">
+			<field name="name">view.hr.job.tree</field>
+			<field name="model">hr.job</field>
+			<field name="inherit_id" ref="hr.view_hr_job_tree" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='no_of_employee']" position="attributes">
+					<attribute name="invisible">context.get('hide_recruitments') == 1</attribute>
+				</xpath>
+				<xpath expr="//field[@name='no_of_recruitment']" position="attributes">
+					<attribute name="invisible">context.get('hide_recruitments') == 1</attribute>
+				</xpath>
+				<xpath expr="//field[@name='no_of_hired_employee']" position="attributes">
+					<attribute name="invisible">context.get('hide_recruitments') == 1</attribute>
+				</xpath>
+				<xpath expr="//field[@name='expected_employees']" position="attributes">
+					<attribute name="invisible">context.get('hide_recruitments') == 1</attribute>
+				</xpath>
+			</field>
+		</record>
+		
 		<!-- APPLICANT -->
 
 		<record model="ir.ui.view" id="hr_applicant_form">
 			<field name="name">hr.applicant.form</field>
 			<field name="model">hr.applicant</field>
 			<field name="priority">10</field>
-			<field name="inherit_id" ref="hr_recruitment.crm_case_form_view_job"/>
+			<field name="inherit_id" ref="hr_recruitment_requirement.hr_applicant_form"/>
 			<field name="arch" type="xml">
 				<xpath expr="//button[@name='action_get_attachment_tree_view']" position="after">
 					<button name="action_approve_applicant" 
@@ -52,6 +115,8 @@
 					</button>
 				</xpath>
 				<xpath expr="//separator[@string='Application Summary']" position="replace" />
+				<xpath expr="//group[@string='Required Documents']" position="replace" />
+				<xpath expr="//group[@string='Required Tests']" position="replace" />
 				<xpath expr="//field[@name='description']" position="replace">
 					<field name="is_pending" invisible="1" />
 					<notebook>
@@ -62,6 +127,34 @@
 						</page>
 						<page string="Summary">
 							<field name="description" placeholder="Feedback of interviews..." />
+						</page>
+						<page string="Documents">
+							<group>
+								<field name="hr_applicant_document_lines" nolabel="1">
+									<tree name="Documents" editable="bottom" create="false" delete="false">
+										<field name="document_id" />
+										<field name="is_mandatory" />
+										<field name="stage_id" /> 
+										<field name="date_checked" />
+										<field name="checked_by" />
+										<field name="notes" />
+									</tree>
+								</field>
+							</group>
+						</page>
+						<page string="Entry Tests">
+							<group>
+								<field name="hr_applicant_test_lines" nolabel="1">
+									<tree name="Tests" editable="bottom" create="false" delete="false">
+										<field name="test_id" />
+										<field name="is_mandatory" />
+										<field name="stage_id" /> 
+										<field name="date_performed" />
+										<field name="checked_by" />
+										<field name="results" />
+									</tree>
+								</field>
+							</group>
 						</page>
 						<page string="Refusal">
 							<group>

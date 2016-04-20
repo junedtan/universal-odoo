@@ -1,0 +1,21 @@
+<openerp>
+	<data>
+		
+		<!-- GANTI TEKS MENU Job Position -->
+		
+		<record model="ir.actions.act_window" id="hr_recruitment.action_hr_job">
+			<field name="name">Job Openings</field>
+		</record>
+
+		<record id="universal_action_job_position" model="ir.actions.act_window">
+			<field name="name">Job Positions</field>	
+			<field name="res_model">hr.job</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="context">{'hide_recruitments': 1}</field>
+		</record>
+		
+		<menuitem parent="hr.menu_hr_configuration" sequence="3" id="universal_menu_job_position" action="universal_action_job_position"  />
+
+	</data>
+</openerp>

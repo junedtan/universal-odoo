@@ -11,6 +11,16 @@ _DRIVER_TYPE = (
 	('internal','Internal/Office')
 )
 
+_RELIGION = (
+	('islam','Islam'),
+	('catholic','Catholic'),
+	('protestant','Protestant'),
+	('hindu','Hindu'),
+	('buddha','Buddha'),
+	('konghucu','Konghucu'),
+	('other','Other'),
+)
+
 # ==========================================================================================================================
 
 class hr_employee(osv.osv):
@@ -24,10 +34,19 @@ class hr_employee(osv.osv):
 		'is_blacklist': fields.boolean('Blacklist?'),
 		'blacklist_reason': fields.text('Blacklist Reason'),
 		'emp_no': fields.char('Employee No', size=256),
-		'bank_ref': fields.char('Bank Reference'),
+		'bank_name': fields.char('Bank Name'),
+		'bank_acc_owner': fields.char('Bank Acc. Owner Name'),
 		'start_working': fields.date('Start Working'),
 		'driver_company': fields.char('Company'),
 		'homebase': fields.many2one('chjs.region', 'Homebase'),
+		'place_of_birth': fields.char('Place of Birth', required=True),
+		'date_of_birth': fields.date('Date of Birth', required=True),
+		'religion': fields.selection(_RELIGION, 'Religion'),
+		'driver_lisence_number': fields.char('Driver Lisence Number'),
+		'driver_lisence_date': fields.date('Driver Lisence Expiry Date'),
+		'mobile_phone2': fields.char('Mobile 2', size=32),
+		'mobile_phone3': fields.char('Mobile 3', size=32),
+		'overtime_ready': fields.boolean('Ready to Overtime?'),
 		'resign_date': fields.date('Resign date'),
 	}
 	

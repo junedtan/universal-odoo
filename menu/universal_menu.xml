@@ -7,6 +7,10 @@
 			<field name="name">Job Openings</field>
 		</record>
 
+		<record model="ir.ui.menu" id="hr.menu_hr_job_position">
+			<field name="name">Job Openings</field>
+		</record>
+
 		<record id="universal_action_job_position" model="ir.actions.act_window">
 			<field name="name">Job Positions</field>	
 			<field name="res_model">hr.job</field>

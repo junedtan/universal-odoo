@@ -36,10 +36,10 @@
 				<xpath expr="//field[@name='description']" position="replace" />
 				<xpath expr="//label[@for='description']" position="replace" />
 				<xpath expr="//button[@name='%(hr_recruitment.action_hr_job_applications)d']" position="attributes">
-					<attribute name="attrs">{'invisible': context.get('hide_recruitments')}</attribute>
+					<attribute name="invisible">context.get('hide_recruitments') == 1</attribute>
 				</xpath>
 				<xpath expr="//button[@name='action_get_attachment_tree_view']" position="attributes">
-					<attribute name="attrs">{'invisible': context.get('hide_recruitments')}</attribute>
+					<attribute name="invisible">context.get('hide_recruitments') == 1</attribute>
 				</xpath>
 				<xpath expr="//group[@name='employee_data']" position="replace">
 					<group>
@@ -117,12 +117,37 @@
 				<xpath expr="//separator[@string='Application Summary']" position="replace" />
 				<xpath expr="//group[@string='Required Documents']" position="replace" />
 				<xpath expr="//group[@string='Required Tests']" position="replace" />
+				<xpath expr="//field[@name='email_from']" position="replace" />
+				<xpath expr="//field[@name='partner_phone']" position="replace" />
+				<xpath expr="//field[@name='partner_mobile']" position="replace" />
+				<xpath expr="//field[@name='type_id']" position="replace" />
 				<xpath expr="//field[@name='description']" position="replace">
 					<field name="is_pending" invisible="1" />
 					<notebook>
 						<page string="Personal Info">
 							<group>
-								<field name="date_of_birth" />
+								<group string="Personal Info">
+									<field name="identification_id" />
+									<field name="gender" />
+									<field name="place_of_birth" />
+									<field name="date_of_birth" />
+									<field name="religion" />
+									<field name="type_id" />
+								</group>
+								<group string="Contact Info">
+									<field name="email_from" />
+									<field name="partner_phone" />
+									<field name="partner_mobile" />
+									<field name="partner_mobile2" />
+									<field name="partner_mobile3" />
+								</group>
+								<group string="Driver Data">
+									<field name="driver_lisence_number" />
+									<field name="driver_lisence_date" />
+								</group>
+								<group string="Work Status">
+									<field name="overtime_ready" />
+								</group>
 							</group>
 						</page>
 						<page string="Summary">

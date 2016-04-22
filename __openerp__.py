@@ -21,6 +21,7 @@
 		'data/hr_recruitment.xml',
 		'data/hr_employee.xml',
 		'views/hr_recruitment.xml',
+		'views/hr_employee.xml',
 		'menu/universal_menu.xml',
 	],
 	'demo': [

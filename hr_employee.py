@@ -1,25 +1,7 @@
 from openerp.osv import osv, fields
 from openerp.tools.translate import _
 from datetime import datetime, date
-
-_DRIVER_TYPE = (
-	('active','Active'),
-	('standby','Stand By'),
-	('replacement','Replacement (GS)'),
-	('contract','Contracted'),
-	('daily','Daily'),
-	('internal','Internal/Office')
-)
-
-_RELIGION = (
-	('islam','Islam'),
-	('catholic','Catholic'),
-	('protestant','Protestant'),
-	('hindu','Hindu'),
-	('buddha','Buddha'),
-	('konghucu','Konghucu'),
-	('other','Other'),
-)
+from . import RELIGION, DRIVER_TYPE
 
 # ==========================================================================================================================
 
@@ -30,24 +12,34 @@ class hr_employee(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'driver_type': fields.selection(_DRIVER_TYPE, 'Driver Type'),
+		'driver_type': fields.selection(DRIVER_TYPE, 'Driver Type'),
+		'emp_no': fields.char('Employee No', size=32, readonly=True),
+		'place_of_birth': fields.char('Place of Birth', size=100),
+		'date_of_birth': fields.date('Date of Birth', required=True),
+		'religion': fields.selection(RELIGION, 'Religion'),
+		'driver_license_number': fields.char('License Number'),
+		'driver_license_date': fields.date('License Expiry Date'),
+		'driver_area': fields.char('Coverage Area', size=500),
+		'npwp': fields.char('NPWP'),
+		'language': fields.char('Language', size=500),
+		'transportation': fields.char('Transportation', size=500),
+		'residence_location': fields.char('Residence Location', size=500),
+		'identification_id': fields.char('ID No', required=True),
+		'mobile_phone_2': fields.char('Mobile 2', size=32),
+		'mobile_phone_3': fields.char('Mobile 3', size=32),
+		'overtime_ready': fields.boolean('Ready for Overtime?'),
+		'holiday_ready': fields.boolean('Work at Weekend/Holiday?'),
+		'residential_address': fields.text('Residential Address'),
+		'residential_phone': fields.char('Residential Phone', size=32),
+		'address': fields.text('Current Address'),
+		'phone': fields.char('Phone', size=32),
+		'start_working': fields.date('Start Working'),
+		'driver_company_id': fields.many2one('res.partner','Current Client', domain=[('customer','=',True)]),
+		'homebase_id': fields.many2one('chjs.region', 'Homebase', domain=[('type','=','city')]),
+		'resign_date': fields.date('Resign Date'),
+		'resign_by': fields.many2one('res.users', 'Resign Officer'),
 		'is_blacklist': fields.boolean('Blacklist?'),
 		'blacklist_reason': fields.text('Blacklist Reason'),
-		'emp_no': fields.char('Employee No', size=256),
-		'bank_name': fields.char('Bank Name'),
-		'bank_acc_owner': fields.char('Bank Acc. Owner Name'),
-		'start_working': fields.date('Start Working'),
-		'driver_company': fields.char('Company'),
-		'homebase': fields.many2one('chjs.region', 'Homebase'),
-		'place_of_birth': fields.char('Place of Birth', required=True),
-		'date_of_birth': fields.date('Date of Birth', required=True),
-		'religion': fields.selection(_RELIGION, 'Religion'),
-		'driver_lisence_number': fields.char('Driver Lisence Number'),
-		'driver_lisence_date': fields.date('Driver Lisence Expiry Date'),
-		'mobile_phone2': fields.char('Mobile 2', size=32),
-		'mobile_phone3': fields.char('Mobile 3', size=32),
-		'overtime_ready': fields.boolean('Ready to Overtime?'),
-		'resign_date': fields.date('Resign date'),
 	}
 	
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------

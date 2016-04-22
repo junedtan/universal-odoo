@@ -1,18 +1,7 @@
 from openerp.osv import osv, fields
 from openerp.tools.translate import _
 from datetime import datetime, date
-
-MAX_DRIVER_AGE = 45 # in years
-
-_RELIGION = (
-	('islam','Islam'),
-	('catholic','Catholic'),
-	('protestant','Protestant'),
-	('hindu','Hindu'),
-	('buddha','Buddha'),
-	('konghucu','Konghucu'),
-	('other','Other'),
-)
+from . import MAX_DRIVER_AGE, MARITAL_STATUS, RELIGION, FAMILY_RELATIONSHIP
 
 # ==========================================================================================================================
 
@@ -75,13 +64,30 @@ class hr_applicant(osv.osv):
 			help='If checked, this applicant is waiting for SPV/manager\'s approval.'),
 		'place_of_birth': fields.char('Place of Birth', required=True),
 		'date_of_birth': fields.date('Date of Birth', required=True),
-		'religion': fields.selection(_RELIGION, 'Religion'),
-		'driver_lisence_number': fields.char('Driver Lisence Number'),
-		'driver_lisence_date': fields.date('Driver Lisence Expiry Date'),
-		'identification_id': fields.char('Identification No', required=True),
+		'religion': fields.selection(RELIGION, 'Religion'),
+		'driver_license_number': fields.char('License Number'),
+		'driver_license_date': fields.date('License Expiry Date'),
+		'driver_area': fields.char('Coverage Area', size=500),
+		'npwp': fields.char('NPWP'),
+		'family_card_number': fields.char('Family Reg. No.', size=64),
+		'marital_status': fields.selection(MARITAL_STATUS, 'Marital Status'),
+		'no_of_children': fields.integer('Children'),
+		'spouse_name': fields.char('Spouse Name', size=500),
+		'family_contact_name': fields.char('Contactable Name', size=500),
+		'family_contactable_address': fields.text('Address'),
+		'family_contactable_phone': fields.char('Phone'),
+		'family_contactable_relationship': fields.selection(FAMILY_RELATIONSHIP, 'Relationship'),
+		'language': fields.char('Language', size=500),
+		'transportation': fields.char('Transportation', size=500),
+		'residence_location': fields.char('Residence Location', size=500),
+		'identification_id': fields.char('ID No', required=True),
+		'residential_address': fields.text('Residential Address'),
+		'residential_phone': fields.char('Residential Phone', size=32),
+		'partner_address': fields.text('Current Address'),
 		'partner_mobile2': fields.char('Mobile 2', size=32),
 		'partner_mobile3': fields.char('Mobile 3', size=32),
-		'overtime_ready': fields.boolean('Ready to Overtime?'),
+		'overtime_ready': fields.boolean('Ready for Overtime?'),
+		'holiday_ready': fields.boolean('Work at Weekend/Holiday?'),
 		'refused_date': fields.date('Refused At', readonly=True),
 		'refused_by': fields.many2one('res.users', 'Refused By', readonly=True),
 		'refused_reason': fields.text('Refuse Reason'),
@@ -210,8 +216,8 @@ class hr_applicant(osv.osv):
 			'place_of_birth': applicant_data.place_of_birth,
 			'date_of_birth': applicant_data.date_of_birth,
 			'religion': applicant_data.religion,
-			'driver_lisence_number': applicant_data.driver_lisence_number,
-			'driver_lisence_date': applicant_data.driver_lisence_date,
+			'driver_license_number': applicant_data.driver_license_number,
+			'driver_license_date': applicant_data.driver_license_date,
 			'identification_id': applicant_data.identification_id,
 			'mobile_phone': applicant_data.partner_mobile,
 			'mobile_phone2': applicant_data.partner_mobile2,

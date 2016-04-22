@@ -12,7 +12,7 @@
 		"base","board","web",
 		"chjs_custom_view","chjs_region",
 		"hr","hr_recruitment",
-		"hr_recruitment_period","hr_recruitment_requirement","hr_employee_family"
+		"hr_recruitment_period","hr_recruitment_requirement","hr_employee_family","hr_employee_health",
 	],
 	'sequence': 150,
 	'data': [

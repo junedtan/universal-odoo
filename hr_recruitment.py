@@ -3,6 +3,7 @@ from openerp.tools.translate import _
 from datetime import datetime, date
 
 MAX_DRIVER_AGE = 45 # in years
+MIN_CHECK_DUPLI = 3 # in params
 
 _RELIGION = (
 	('islam','Islam'),
@@ -129,6 +130,32 @@ class hr_applicant(osv.osv):
 
 	def action_refuse_applicant_save(self, cr, uid, ids, context={}):
 		return True
+	
+# method untuk mengecek applicant yang duplicate
+	def check_duplicate_applicant(self, cr, uid, vals, param_list=[]):
+		if not vals: return False
+		applicant_obj = self.pool.get('hr.applicant')
+		employee_obj = self.pool.get('hr.employee')
+		duplicate_ids = {}
+		dupli_emp_ids = []
+		dupli_app_ids = []
+		count_param = 0
+	# cek untuk semua param yang ada
+	# cari di data employee
+		for param_name in param_list:
+			if param_name in vals:
+				count_param += 1 
+				if len(dupli_emp_ids) == 0:
+					dupli_emp_ids = employee_obj.search(cr, uid, [(param_name,'=',vals[param_name])])
+				else:
+					dupli_emp_ids = employee_obj.search(cr, uid, [('id','in',dupli_emp_ids),(param_name,'=',vals[param_name])])
+				if count_param >= MIN_CHECK_DUPLI:
+					if len(dupli_emp_ids) > 0:
+						break
+		duplicate_ids['employee'] = dupli_emp_ids
+		if len(dupli_emp_ids) > 0:
+			return duplicate_ids
+		return False
 		
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
@@ -145,6 +172,13 @@ class hr_applicant(osv.osv):
 					'stage_id': pending_stage_id,
 					'is_pending': True,
 				})
+	# check duplicate
+		check_dupli = self.check_duplicate_applicant(cr, uid, vals, ['identification_id','gender','name','date_of_birth'])
+		if not check_dupli: 
+			return False
+		else:
+			raise osv.except_osv(_('Recruitment Error'),_('Duplicate detected.'))
+		return False
 		return super(hr_applicant, self).create(cr, uid, vals, context)
 		
 	def write(self, cr, uid, ids, vals, context={}):

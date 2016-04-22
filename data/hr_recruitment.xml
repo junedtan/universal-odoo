@@ -41,6 +41,10 @@
 			<field name="name">JobsDB</field>
 		</record>
 
+		<record model="hr.recruitment.source" id="source_other">
+			<field name="name">Other/Not available</field>
+		</record>
+
 		<!-- RECRUITMENT STAGES -->
 		
 		<!-- HAPUS SEMUA STAGE YANG ADA -->

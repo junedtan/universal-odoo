@@ -117,41 +117,114 @@
 				<xpath expr="//separator[@string='Application Summary']" position="replace" />
 				<xpath expr="//group[@string='Required Documents']" position="replace" />
 				<xpath expr="//group[@string='Required Tests']" position="replace" />
+				<xpath expr="//field[@name='categ_ids']" position="replace" />
 				<xpath expr="//field[@name='email_from']" position="replace" />
 				<xpath expr="//field[@name='partner_phone']" position="replace" />
 				<xpath expr="//field[@name='partner_mobile']" position="replace" />
 				<xpath expr="//field[@name='type_id']" position="replace" />
+				<xpath expr="//sheet/group" position="replace" />
 				<xpath expr="//field[@name='description']" position="replace">
 					<field name="is_pending" invisible="1" />
 					<notebook>
-						<page string="Personal Info">
-							<group>
-								<group string="Personal Info">
-									<field name="identification_id" />
-									<field name="gender" />
-									<field name="place_of_birth" />
-									<field name="date_of_birth" />
-									<field name="religion" />
-									<field name="type_id" />
+						<page string="Application">
+							<group string="Job Application">
+								<group>
+									<field name="survey" invisible="1"/>
+									<field name="response_id" invisible="1"/>
+									<field name="job_id" />
+									<field name="department_id" />
+									<field name="company_id" widget="selection" invisible="1" />
+									<field name="user_id" context="{'default_groups_ref': ['base.group_user', 'base.group_partner_manager', 'base.group_hr_manager']}"/>
+									<field name="categ_ids" widget="many2many_tags" />
 								</group>
-								<group string="Contact Info">
-									<field name="email_from" />
-									<field name="partner_phone" />
-									<field name="partner_mobile" />
-									<field name="partner_mobile2" />
-									<field name="partner_mobile3" />
+								<group>
+									<field name="priority" widget="priority"/>
+									<field name="source_id" widget="selection" />
+									<field name="reference" />
+									<field name="emp_id" readonly="1" />
 								</group>
-								<group string="Driver Data">
-									<field name="driver_lisence_number" />
-									<field name="driver_lisence_date" />
+							</group>
+							<group string="Salary">
+								<group>
+									<label for="salary_expected"/>
+									<div>
+										<field name="salary_expected" class="oe_inline"/>
+										<br />
+										<span class="oe_inline" attrs="{'invisible':[('salary_expected_extra','=',False)]}"> + </span>
+										<field name="salary_expected_extra" class="oe_inline" placeholder="Extra advantages..."/>
+									</div>
 								</group>
-								<group string="Work Status">
-									<field name="overtime_ready" />
+								<group>
+									<label for="salary_proposed"/>
+									<div>
+										<field name="salary_proposed" class="oe_inline" />
+										<br />
+										<span class="oe_inline" attrs="{'invisible':[('salary_proposed_extra','=',False)]}"> + </span>
+										<field name="salary_proposed_extra" class="oe_inline" placeholder="Extra advantages..."/>
+									</div>
 								</group>
 							</group>
 						</page>
-						<page string="Summary">
-							<field name="description" placeholder="Feedback of interviews..." />
+						<page string="Biodata">
+							<group>
+								<group string="Personal Info">
+									<field name="identification_id" />
+									<field name="gender" class="oe_inline" />
+									<field name="place_of_birth" />
+									<field name="date_of_birth" />
+									<field name="religion" class="oe_inline" />
+									<field name="type_id" />
+									<field name="npwp" />
+								</group>
+								<group string="Family">
+									<field name="family_card_number" />
+									<field name="marital_status" class="oe_inline" />
+									<field name="no_of_children" />
+									<field name="spouse_name" />
+								</group>
+								<group string="Contactable">
+									<field name="family_contact_name" />
+									<field name="family_contactable_address" />
+									<field name="family_contactable_phone" />
+									<field name="family_contactable_relationship" class="oe_inline" />
+								</group>
+							</group>
+						</page>
+						<page string="Driver">
+							<group>
+								<group>
+									<field name="driver_license_number" />
+									<field name="driver_license_date" />
+									<field name="overtime_ready" />
+									<field name="holiday_ready" />
+								</group>
+								<group>
+									<field name="driver_area" />
+									<field name="language" />
+									<field name="transportation" />
+									<field name="residence_location" />
+								</group>
+							</group>
+						</page>
+						<page string="Contact">
+							<group>
+								<group string="Mobile">
+									<field name="partner_mobile" string="Mobile 1" />
+									<field name="partner_mobile2" />
+									<field name="partner_mobile3" />
+								</group>
+								<group string="Email">
+									<field name="email_from" />
+								</group>
+								<group string="Residential Address">
+									<field name="residential_address" string="Address" />
+									<field name="residential_phone" string="Phone" />
+								</group>
+								<group string="Current Address">
+									<field name="partner_address" string="Address" />
+									<field name="partner_phone" string="Phone" />
+								</group>
+							</group>
 						</page>
 						<page string="Documents">
 							<group>
@@ -193,6 +266,9 @@
 									<field name="blacklist_reason" readonly="1" />
 								</group>
 							</group>
+						</page>
+						<page string="Notes">
+							<field name="description" />
 						</page>
 					</notebook>
 				</xpath>

@@ -1,50 +1,115 @@
 <openerp>
 	<data>
+
 		<record model="ir.ui.view" id="view_employee_form">
 			<field name="name">hr.employee.form</field>	
 			<field name="model">hr.employee</field>
-			<field name="inherit_id" ref="hr.view_employee_form" />
+			<field name="inherit_id" ref="hr_employee_health.hr_employee_form" />
 			<field name="arch" type="xml">
-				<xpath expr="//field[@name='work_email']" position="replace" />
+				<xpath expr="//label[@for='work_phone']" position="replace" />
 				<xpath expr="//field[@name='work_phone']" position="replace" />
-				<xpath expr="//field[@name='identification_id']" position="replace" />
-				<xpath expr="//field[@name='mobile_phone']" position="replace" />
-				<xpath expr="//page[@string='Public Information']" position="before" >
-					<page string="Personal Info">
+				<xpath expr="//div[@class='oe_title']" position="inside">
+					<label for="mobile_phone" class="oe_edit_only">Mobile 1</label>
+					<field name="mobile_phone" />
+				</xpath>
+				<xpath expr="//page[@string='Personal Information']" position="replace">
+					<page string="Biodata">
 						<group>
 							<group string="Personal Info">
-								<field name="identification_id" />
-								<field name="place_of_birth" />
-								<field name="religion" />
-							</group>
-							<group string="Contact Info">
-								<field name="work_email" />
-								<field name="work_phone" />
-								<field name="mobile_phone" />
-								<field name="mobile_phone2" />
-								<field name="mobile_phone3" />
-							</group>
-							<group string="Driver Data">
-								<field name="driver_lisence_number" />
-								<field name="driver_lisence_date" />
-							</group>
-							<group string="Work Status">
-								<field name="overtime_ready" />
+								<group>
+									<field name="place_of_birth" />
+									<field name="date_of_birth" />
+									<field name="gender" class="oe_inline" />
+									<field name="religion" class="oe_inline" />
+								</group>
+								<group>
+									<field name="identification_id" />
+									<field name="npwp" />
+								</group>
 							</group>
 						</group>
 					</page>
 				</xpath>
-				<xpath expr="//field[@name='bank_account_id']" position="after" >
-					<field name="bank_name" />
-					<field name="bank_acc_owner" />
+				<xpath expr="//page[@string='Biodata']" position="after">
+					<page string="Contact">
+						<group>
+							<group string="Residential Address">
+								<field name="residential_address" string="Address" />
+								<field name="residential_phone" string="Phone" />
+								<field name="address_home_id" invisible="1" />
+							</group>
+							<group string="Current Address">
+								<field name="address" string="Address" />
+								<field name="phone" string="Phone" />
+								<field name="mobile_phone_2" />
+								<field name="mobile_phone_3" />
+							</group>
+						</group>
+					</page>
 				</xpath>
-				<xpath expr="//field[@name='job_id']" position="after" >
-					<field name="start_working" />
-					<field name="driver_company" />
-					<field name="homebase" />
-					<field name="emp_no" />
+				<xpath expr="//page[@string='Public Information']" position="replace">
+					<page string="Work-related">
+						<group>
+							<group string="Position">
+								<field name="department_id" on_change="onchange_department_id(department_id)" />
+								<field name="job_id" />
+								<field name="company_id" invisible="1" />
+								<field name="parent_id" />
+								<field name="coach_id" />
+								<field name="user_id" on_change="onchange_user(user_id)" string="Employee Login" context="{'default_groups_ref': ['base.group_user']}" />
+							</group>
+							<group string="Information">
+								<field name="emp_no" />
+								<field name="start_working" />
+							</group>
+						</group>
+					</page>
+				</xpath>
+				<xpath expr="//page[@string='Work-related']" position="after">
+					<page string="Driver">
+						<group>
+							<group string="Current Status">
+								<field name="driver_type" />
+								<field name="driver_company_id" />
+								<field name="homebase_id" />
+								<field name="overtime_ready" />
+								<field name="holiday_ready" />
+							</group>
+							<group string="Driver Info">
+								<field name="driver_license_number" />
+								<field name="driver_license_date" />
+								<field name="driver_area" />
+								<field name="language" />
+								<field name="transportation" />
+								<field name="residence_location" />
+							</group>
+						</group>
+					</page>
+				</xpath>
+				<xpath expr="//page[@string='HR Settings']" position="after">
+					<page string="Termination">
+						<group>
+							<group string="Resign">
+								<field name="resign_date" />
+								<field name="resign_by" />
+							</group>
+							<group string="Blacklist">
+								<field name="is_blacklist" />
+								<field name="blacklist_reason" />
+							</group>
+						</group>
+					</page>
+					<page string="Notes">
+						<field name="notes" />
+					</page>
+				</xpath>
+				<xpath expr="//group[@name='active_group']" position="after">
+					<group string="Payroll">
+						<field name="bank_account_id" />
+					</group>
 				</xpath>
 			</field>
 		</record>
+
 	</data>
 </openerp>

@@ -1,4 +1,5 @@
 MAX_DRIVER_AGE = 45 # in years
+MIN_CHECK_DUPLI = 3 # in params
 
 FAMILY_RELATIONSHIP = (
 	('spouse','Spouse'),

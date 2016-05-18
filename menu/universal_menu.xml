@@ -19,7 +19,14 @@
 			<field name="context">{'hide_recruitments': 1}</field>
 		</record>
 		
+		<record id="universal_action_check_duplicate" model="ir.actions.act_window">
+			<field name="name">Check for Duplicate Applicant</field>	
+			<field name="res_model">universal.check.duplicate.memory</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">form</field>
+		</record>
+		
 		<menuitem parent="hr.menu_hr_configuration" sequence="3" id="universal_menu_job_position" action="universal_action_job_position"  />
-
+		<menuitem parent="base.menu_crm_case_job_req_main" sequence="5" name="Check Duplicate" id="universal_menu_check_duplicate" action="universal_action_check_duplicate"  />
 	</data>
 </openerp>

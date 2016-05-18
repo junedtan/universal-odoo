@@ -180,7 +180,7 @@
 									<field name="family_card_number" />
 									<field name="marital_status" class="oe_inline" />
 									<field name="no_of_children" />
-									<field name="spouse_name" />
+									<field name="spouse_name" attrs="{'required':[('marital_status','=','married')]}" />
 								</group>
 								<group string="Contactable">
 									<field name="family_contact_name" />
@@ -293,6 +293,62 @@
 						<button string="Cancel" special="cancel" class="oe_link" />
 					</footer>
 					<field name="id" invisible="1" />
+				</form>
+			</field>
+		</record>
+		
+		<record id="universal_check_duplicate" model="ir.ui.view">
+			<field name="name">universal.check_duplicate</field>
+			<field name="model">universal.check.duplicate.memory</field>
+			<field name="arch" type="xml">
+				<form string="Check Duplicate" no_save="1">
+					<group>
+						<field name="check_duplicate_lines" nolabel="1">
+							<tree string="Param Check Duplicate" editable="bottom">
+								<field name="param_seq" />
+								<field name="param_name" />
+								<field name="param_value" />
+							</tree>
+						</field>
+					</group>
+					<button name="action_check_duplicate" string="Check" type="object" class="oe_edit_only" />
+				</form>
+			</field>
+		</record>
+
+		<record id="universal_check_duplicate_result_form" model="ir.ui.view">
+			<field name="name">universal.check.duplicate.result.form</field>
+			<field name="model">universal.check.duplicate.result</field>
+			<field name="arch" type="xml">
+				<form string="Check Duplicate Result">
+					<field name="has_duplicates" invisible="1" />
+					<group attrs="{'invisible': [('has_duplicates','=',True)]}">
+						<div colspan="4">
+							No duplicate detected. This applicant seems to be new.
+							<br/>
+							<br/>
+						</div>
+					</group>
+					<group attrs="{'invisible': [('has_duplicates','=',False)]}">
+						<div colspan="4">
+							Duplicates detected. Here are those who the system deems duplicate:
+							<br/>
+							<br/>
+						</div>
+						<field name="duplicate_employee_line">
+							<tree version="7.0">
+								<field name="employee_id" />
+							</tree>
+						</field>
+						<field name="duplicate_applicant_line">
+							<tree version="7.0">
+								<field name="applicant_id" />
+							</tree>
+						</field>
+					</group>
+					<footer>
+						<button special="cancel" string="Close" />
+					</footer>
 				</form>
 			</field>
 		</record>

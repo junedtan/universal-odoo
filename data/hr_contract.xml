@@ -1,0 +1,25 @@
+<openerp>
+	<data>
+		
+		<!-- CONTRACT TYPE -->
+		
+		<!-- HAPUS SEMUA TYPE YANG ADA -->
+		
+		<delete model="hr.contract.type" id="hr_contract_type_wrkr" />
+		<delete model="hr.contract.type" id="hr_contract_type_sub" />
+
+		<record model="hr.contract.type" id="hr_contract_type_rent_driver">
+			<field name="name">Rent Driver</field>
+		</record>
+		
+		<record model="hr.contract.type" id="hr_contract_type_attc">
+			<field name="name">Contract Attachment</field>
+		</record>
+		
+		<record model="hr.contract.type" id="hr_contract_type_non_rent_driver">
+			<field name="name">Non-Rent Driver</field>
+		</record>
+
+	</data>
+	
+</openerp>

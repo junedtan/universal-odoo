@@ -2,7 +2,7 @@ from openerp.osv import osv, fields
 from openerp.tools.translate import _
 from datetime import datetime, date
 
-from . import MAX_DRIVER_AGE, MARITAL_STATUS, RELIGION, FAMILY_RELATIONSHIP, MIN_CHECK_DUPLI
+from . import MAX_DRIVER_AGE, MARITAL_STATUS, RELIGION, FAMILY_RELATIONSHIP, MIN_CHECK_DUPLI, PARAM_CHECK_DUPLI, EMP_APP_DICT, DOMAIN_DUPLI_DICT
 
 
 # ==========================================================================================================================
@@ -143,7 +143,7 @@ class hr_applicant(osv.osv):
 		if not vals: return False
 		applicant_obj = self.pool.get('hr.applicant')
 		employee_obj = self.pool.get('hr.employee')
-		duplicate_ids = {}
+		duplicate_ids = {'employee':[], 'applicant':[]}
 		dupli_emp_ids = []
 		dupli_app_ids = []
 		count_param = 0
@@ -152,15 +152,56 @@ class hr_applicant(osv.osv):
 		for param_name in param_list:
 			if param_name in vals:
 				count_param += 1 
-				if len(dupli_emp_ids) == 0:
-					dupli_emp_ids = employee_obj.search(cr, uid, [(param_name,'=',vals[param_name])])
+			# cek domain yg dipakai
+				domain_check = '='
+				if param_name in DOMAIN_DUPLI_DICT:
+					domain_check = DOMAIN_DUPLI_DICT[param_name]
+				if count_param == 1:
+					dupli_emp_ids = employee_obj.search(cr, uid, [(param_name,domain_check,vals[param_name])], context={'active_test': False})
 				else:
-					dupli_emp_ids = employee_obj.search(cr, uid, [('id','in',dupli_emp_ids),(param_name,'=',vals[param_name])])
+				# kalau hasil dari pencarian pertama ada, lanjutkan pencarian
+					if len(dupli_emp_ids) > 0:
+						dupli_emp_ids = employee_obj.search(cr, uid, [('id','in',dupli_emp_ids),(param_name,domain_check,vals[param_name])], context={'active_test': False})
+				# kalau ngga ada ya break aja	
+					else:
+						break
+			# kalau uda lewat dari minimal pencarian & ada hasilnya, break
 				if count_param >= MIN_CHECK_DUPLI:
 					if len(dupli_emp_ids) > 0:
 						break
 		duplicate_ids['employee'] = dupli_emp_ids
+	# kalau di employee uda ada yg duplicate, ya langsung return aja
 		if len(dupli_emp_ids) > 0:
+			return duplicate_ids
+	# cari di data applicant
+		count_param = 0
+		for param_name in param_list:
+		# cek dulu namanya beda ga sama yang di employee
+			if param_name in EMP_APP_DICT:
+				param_name = EMP_APP_DICT[param_name]
+		# baru lanjut lagi
+			if param_name in vals:
+				count_param += 1 
+			# cek domain yg dipakai
+				domain_check = '='
+				if param_name in DOMAIN_DUPLI_DICT:
+					domain_check = DOMAIN_DUPLI_DICT[param_name]
+				if count_param == 1:
+					dupli_app_ids = applicant_obj.search(cr, uid, [(param_name,domain_check,vals[param_name])], context={'active_test': False})
+				else:
+				# kalau hasil dari pencarian pertama ada, lanjutkan pencarian
+					if len(dupli_app_ids) > 0:
+						dupli_app_ids = applicant_obj.search(cr, uid, [('id','in',dupli_app_ids),(param_name,domain_check,vals[param_name])], context={'active_test': False})
+				# kalau ngga ada ya break aja
+					else:
+						break
+			# kalau uda lewat dari minimal pencarian & ada hasilnya, break
+				if count_param >= MIN_CHECK_DUPLI:
+					if len(dupli_app_ids) > 0:
+						break
+		duplicate_ids['applicant'] = dupli_app_ids
+	# kalau ada duplicate ya return datanya
+		if len(dupli_app_ids) > 0:
 			return duplicate_ids
 		return False
 		
@@ -180,12 +221,15 @@ class hr_applicant(osv.osv):
 					'is_pending': True,
 				})
 	# check duplicate
-		check_dupli = self.check_duplicate_applicant(cr, uid, vals, ['identification_id','gender','name','date_of_birth'])
-		if not check_dupli: 
-			return False
-		else:
-			raise osv.except_osv(_('Recruitment Error'),_('Duplicate detected.'))
-		return False
+		check_dupli = self.check_duplicate_applicant(cr, uid, vals, ['identification_id','gender','name'])
+	# kalau ada duplicate, statenya jadi pending
+		if isinstance(check_dupli, dict):
+			model_obj = self.pool.get('ir.model.data')
+			model, pending_stage_id = model_obj.get_object_reference(cr, uid, 'universal', 'stage_job2')
+			vals.update({
+				'stage_id': pending_stage_id,
+				'is_pending': True,
+			})
 		return super(hr_applicant, self).create(cr, uid, vals, context)
 		
 	def write(self, cr, uid, ids, vals, context={}):
@@ -236,6 +280,7 @@ class hr_applicant(osv.osv):
 	# ambil stage contract_signed utnuk dibandingkan di bawah
 		model_obj = self.pool.get('ir.model.data')
 		hr_employee_obj = self.pool.get('hr.employee')
+		hr_employee_family_obj = self.pool.get('hr.employee.family')
 		model, contract_signed_stage_id = model_obj.get_object_reference(cr, uid, 'universal', 'stage_job7')
 	# cek untuk setiap data
 		for data in self.browse(cr, uid, ids, context):
@@ -257,9 +302,191 @@ class hr_applicant(osv.osv):
 			'mobile_phone': applicant_data.partner_mobile,
 			'mobile_phone2': applicant_data.partner_mobile2,
 			'mobile_phone3': applicant_data.partner_mobile3,
-			'overtime_ready': applicant_data.overtime_ready
+			'npwp': applicant_data.npwp,
+			'overtime_ready': applicant_data.overtime_ready,
+			'holiday_ready': applicant_data.holiday_ready,
+			'driver_area': applicant_data.driver_area,
+			'language': applicant_data.language,
+			'transportation': applicant_data.transportation,
+			'residence_location': applicant_data.residence_location,
+			'residential_address': applicant_data.residential_address,
+			'residential_phone': applicant_data.residential_phone,
+			'family_card_number': applicant_data.family_card_number,
 		}
 		hr_employee_obj.write(cr, uid, applicant_data.emp_id.id, emp_data)
+	# bikin data family kalau ada
+		if applicant_data.family_contact_name:
+			hr_employee_family_obj.create(cr, uid, {
+				'employee_id': applicant_data.emp_id.id,
+				'name': applicant_data.family_contact_name,
+				'family_relationship': applicant_data.family_contactable_relationship or None,
+				'address': applicant_data.family_contactable_address or "",
+				'contact_number': applicant_data.family_contactable_phone or "",
+				}
+			)
+	# kalau contactablenya bukan spouse, bikin row baru
+		if applicant_data.family_contactable_relationship != "spouse" and applicant_data.marital_status == "married":
+			hr_employee_family_obj.create(cr, uid, {
+				'employee_id': applicant_data.emp_id.id,
+				'name': applicant_data.spouse_name,
+				'family_relationship': "spouse",
+				}
+			)
 		return dict_act_window
+	
+# ==========================================================================================================================
 			
+class universal_check_duplicate_memory(osv.osv_memory):
+	
+	_name = 'universal.check.duplicate.memory'
+	_description = 'Universal - Check Duplicate'
+	
+	_columns = {
+		'check_duplicate_lines': fields.one2many('universal.check.duplicate.lines','check_duplicate_id','Parameter Fields'),
+	}
+	
+	def name_get(self, cr, uid, ids, context={}):
+		result = []
+		for id in ids:
+			result.append((id,_('Check for Duplicate Applicant')))
+		return result
+	
+# CUSTOM METHOD -----------------------------------------------------------------------------------------------------------
+
+	# cek apakah param sudah terurut
+	def check_sorted_list(self, cr, uid, param_list):
+		if not param_list or len(param_list) == 0: return True
+	# isi list planned_seq yang sudah ada di agent listnya
+	# kalau belum ada, tambahkan. kalau sudah ada, berarti ada yang double, return False
+	# dan juga harus ada yang seq nya 0
+		seq_list = []
+		max_seq = len(param_list)
+		check_dupli_line_obj = self.pool.get('universal.check.duplicate.lines')
+		for param in param_list:
+			param_seq = 0
+			if 'param_seq' in param:
+				param_seq = param['param_seq']
+		# kalau record baru, langsung ambil planned seq nya
+			elif param[0] == 0:
+				if 'param_seq' in param[2]:
+					param_seq = param[2]['param_seq']
+		# kalau datanya ada yang diubah, ambil lagi
+			elif param[0] == 1 or param[0] == 4:
+				param_seq = check_dupli_line_obj.read(cr, uid, param[1], ['param_seq'])['param_seq']
+		# baru cek sorted nya
+			if param_seq and param_seq not in seq_list and param_seq <= max_seq:
+				seq_list.append(param_seq)
+			else:
+				return False
+		return True
+	
+# ACTION BUTTON HANDLER ----------------------------------------------------------------------------------------------------
+	
+	def action_check_duplicate(self, cr, uid, ids, context=None):
+		app_obj = self.pool.get('hr.applicant')
+		check_dupli_line = []
+		check_vals = {}
+		check_param = []
+		dupli_emp_ids = []
+		dupli_app_ids = []
+		has_duplicates = False
+		for data in self.browse(cr, uid, ids, context=context):
+			if len(data.check_duplicate_lines) > 0:
+				for dupli_line in data.check_duplicate_lines:
+					check_dupli_line.append({
+						'param_seq': dupli_line.param_seq,
+						'param_name': dupli_line.param_name,
+						'param_value': dupli_line.param_value
+					})
+					check_vals[dupli_line.param_name] = dupli_line.param_value
+		order_param_data = sorted(check_dupli_line, key=lambda k: k['param_seq'])
+		for order_data in order_param_data:
+			check_param.append(order_data['param_name'])
+	# cek hasil duplicatenya
+		result_dupli = app_obj.check_duplicate_applicant(cr, uid, check_vals, check_param)
+		if isinstance(result_dupli, dict):
+			has_duplicates = True
+			dupli_emp_ids = result_dupli['employee'] # ini ceritanya hasil pencarian duplicate di employee
+			dupli_app_ids = result_dupli['applicant']
+	# di check.duplicate.result ada o2m ke check.duplicate.result.employee dan check.duplicate.result.applicant
+	# di bawah ini siapkan variabel untuk dijadikan nilai default kedua field itu
+		employee_default = []
+		for employee_id in dupli_emp_ids:
+			employee_default.append({
+				'employee_id': employee_id
+			})
+		applicant_default = []
+		for applicant_id in dupli_app_ids:
+			applicant_default.append({
+				'applicant_id': applicant_id
+			})
+		return {
+			'type': 'ir.actions.act_window',
+			'name': 'Duplicate Search Result',
+			'view_mode': 'form',
+			'view_type': 'form',
+			'res_model': 'universal.check.duplicate.result',
+			'context': {
+				'default_has_duplicates': has_duplicates,
+				'default_duplicate_employee_line': employee_default,
+				'default_duplicate_applicant_line': applicant_default,
+			},
+			'target': 'new',
+		}
+	
+# ==========================================================================================================================
+
+class universal_check_duplicate_lines(osv.osv_memory):
+	
+	_name = 'universal.check.duplicate.lines'
+	_description = 'Universal - Check Duplicate Lines'
+	
+	_columns = {
+		'check_duplicate_id': fields.many2one('universal.check.duplicate.memory','Check Duplicate Reference', required=True, ondelete='cascade', select=True),
+		'param_name': fields.selection(PARAM_CHECK_DUPLI, 'Parameter'),
+		'param_value': fields.char('Value'),
+		'param_seq': fields.integer('Sequence'),
+	}
+
+# ==========================================================================================================================
+
+class universal_check_duplicate_result(osv.osv_memory):
+	
+	_name = 'universal.check.duplicate.result'
+	_description = 'Universal - Check Duplicate Result'
+	
+	_columns = {
+		'has_duplicates': fields.boolean('Has Duplicates?', readonly=True),
+		'duplicate_employee_line': fields.one2many('universal.check.duplicate.result.employee', 'header_id', 'Employees', readonly=True),
+		'duplicate_applicant_line': fields.one2many('universal.check.duplicate.result.applicant', 'header_id', 'Applicants', readonly=True),
+	}
+
+# ==========================================================================================================================
+
+class universal_check_duplicate_result_employee(osv.osv_memory):
+	
+	_name = 'universal.check.duplicate.result.employee'
+	_description = 'Universal - Check Duplicate Result Employee'
+	
+	_columns = {
+		'header_id': fields.many2one('universal.check.duplicate.result', 'Header'),
+		'employee_id': fields.many2one('hr.employee', 'Employee'),
+		'date_of_birth': fields.related('employee_id','date_of_birth',type="date",string="Date of Birth"),
+		'gender': fields.related('employee_id','gender',type="selection",selection=[('male', 'Male'), ('female', 'Female')],string="Gender"),
+		'identification_id': fields.related('employee_id','identification_id',type="char",string="ID No")
+	}
+
+# ==========================================================================================================================
+
+class universal_check_duplicate_result_applicant(osv.osv_memory):
+	
+	_name = 'universal.check.duplicate.result.applicant'
+	_description = 'Universal - Check Duplicate Result Applicant'
+	
+	_columns = {
+		'header_id': fields.many2one('universal.check.duplicate.result', 'Header'),
+		'applicant_id': fields.many2one('hr.applicant', 'Applicant'),
+	}
+
+# ==========================================================================================================================
 

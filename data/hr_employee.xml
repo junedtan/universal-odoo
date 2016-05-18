@@ -13,4 +13,19 @@
 		
 	</data>
 	
+	<data noupdate="1">
+		<record forcecreate="1" model="ir.sequence.type" id="hr_employee_seq_type">
+			<field name="name">Code sequence for employee</field>
+			<field name="code">hr.employee.seq</field>
+		</record>
+		<record forcecreate="1" model="ir.sequence" id="hr_employee_seq">
+            <field name="name">Sequence for employee</field>
+            <field name="code">hr.employee.seq</field>
+            <field name="active">TRUE</field>
+            <field name="padding">4</field>
+            <field name="number_increment">1</field>
+            <field name="number_next">1</field>
+            <field name="implementation">standard</field>
+        </record>
+	</data>
 </openerp>

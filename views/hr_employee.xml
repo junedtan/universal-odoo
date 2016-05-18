@@ -9,6 +9,9 @@
 			<field name="arch" type="xml">
 				<xpath expr="//label[@for='work_phone']" position="replace" />
 				<xpath expr="//field[@name='work_phone']" position="replace" />
+				<xpath expr="//group[@string='Contract']" position="replace" />
+				<xpath expr="//field[@name='manager']" position="replace" />
+				<xpath expr="//field[@name='children']" position="replace" />
 				<xpath expr="//div[@class='oe_title']" position="inside">
 					<label for="mobile_phone" class="oe_edit_only">Mobile 1</label>
 					<field name="mobile_phone" />
@@ -42,8 +45,8 @@
 							<group string="Current Address">
 								<field name="address" string="Address" />
 								<field name="phone" string="Phone" />
-								<field name="mobile_phone_2" />
-								<field name="mobile_phone_3" />
+								<field name="mobile_phone2" />
+								<field name="mobile_phone3" />
 							</group>
 						</group>
 					</page>
@@ -62,6 +65,7 @@
 							<group string="Information">
 								<field name="emp_no" />
 								<field name="start_working" />
+								<field name="work_year" readonly="1"/>
 							</group>
 						</group>
 					</page>
@@ -90,9 +94,9 @@
 				<xpath expr="//page[@string='HR Settings']" position="after">
 					<page string="Termination">
 						<group>
-							<group string="Resign">
-								<field name="resign_date" />
-								<field name="resign_by" />
+							<group string="Terminate">
+								<field name="terminate_date" />
+								<field name="terminate_by" />
 							</group>
 							<group string="Blacklist">
 								<field name="is_blacklist" />

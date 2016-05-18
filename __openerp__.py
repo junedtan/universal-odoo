@@ -23,6 +23,7 @@
 		'views/hr_recruitment.xml',
 		'views/hr_employee.xml',
 		'menu/universal_menu.xml',
+		'cron/hr_employee.xml'
 	],
 	'demo': [
 	],

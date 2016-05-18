@@ -32,6 +32,12 @@ DRIVER_TYPE = (
 	('internal','Internal/Office')
 )
 
+CONTRACT_STATE = (
+	('terminated','Terminated'),
+	('ongoing','Ongoing'),
+	('finished','Finished')
+)
+
 RELIGION = (
 	('islam','Islam'),
 	('catholic','Catholic'),
@@ -41,6 +47,25 @@ RELIGION = (
 	('konghucu','Konghucu'),
 	('other','Other'),
 )
+
+PARAM_CHECK_DUPLI = (
+	('name','Name'),
+	('gender','Gender'),
+	('date_of_birth','Date of Birth'),
+	('identification_id','Identification Id'),
+)
+
+EMP_APP_DICT = {
+	'mobile_phone': 'partner_mobile',
+	'mobile_phone2': 'partner_mobile2',
+	'mobile_phone3': 'partner_mobile3',
+	'phone': 'partner_phone',
+	'address': 'partner_address'
+}
+
+DOMAIN_DUPLI_DICT = {
+	'name': 'ilike'
+}
 
 import hr_recruitment
 import hr_employee

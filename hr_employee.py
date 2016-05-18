@@ -36,16 +36,6 @@ class hr_employee(osv.osv):
 		'start_working': fields.date('Start Working'),
 		'driver_company_id': fields.many2one('res.partner','Current Client', domain=[('customer','=',True)]),
 		'homebase_id': fields.many2one('chjs.region', 'Homebase', domain=[('type','=','city')]),
-		'resign_date': fields.date('Resign Date'),
-		'resign_by': fields.many2one('res.users', 'Resign Officer'),
-		'is_blacklist': fields.boolean('Blacklist?'),
-		'blacklist_reason': fields.text('Blacklist Reason'),
-	}
-	
-# DEFAULTS -----------------------------------------------------------------------------------------------------------------
-
-	_defaults = {
-		'is_blacklist': False,
 	}
 	
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------

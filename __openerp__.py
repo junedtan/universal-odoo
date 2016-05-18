@@ -13,6 +13,7 @@
 		"chjs_custom_view","chjs_region",
 		"hr","hr_recruitment",
 		"hr_recruitment_period","hr_recruitment_requirement","hr_employee_family","hr_employee_health",
+		"hr_termination",
 	],
 	'sequence': 150,
 	'data': [

@@ -87,18 +87,6 @@
 					</page>
 				</xpath>
 				<xpath expr="//page[@string='HR Settings']" position="after">
-					<page string="Termination">
-						<group>
-							<group string="Resign">
-								<field name="resign_date" />
-								<field name="resign_by" />
-							</group>
-							<group string="Blacklist">
-								<field name="is_blacklist" />
-								<field name="blacklist_reason" />
-							</group>
-						</group>
-					</page>
 					<page string="Notes">
 						<field name="notes" />
 					</page>

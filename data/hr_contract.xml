@@ -5,8 +5,8 @@
 		
 		<!-- HAPUS SEMUA TYPE YANG ADA -->
 		
-		<delete model="hr.contract.type" id="hr_contract_type_wrkr" />
-		<delete model="hr.contract.type" id="hr_contract_type_sub" />
+		<delete model="hr.contract.type" id="hr_contract.hr_contract_type_wrkr" />
+		<delete model="hr.contract.type" id="hr_contract.hr_contract_type_sub" />
 
 		<record model="hr.contract.type" id="hr_contract_type_rent_driver">
 			<field name="name">Rent Driver</field>
@@ -19,7 +19,23 @@
 		<record model="hr.contract.type" id="hr_contract_type_non_rent_driver">
 			<field name="name">Non-Rent Driver</field>
 		</record>
-
+		
+	</data>
+	
+	<data noupdate="1">
+		<record forcecreate="1" model="ir.sequence.type" id="hr_contract_seq_type">
+			<field name="name">Code sequence for contract</field>
+			<field name="code">hr.contract.seq</field>
+		</record>
+		<record forcecreate="1" model="ir.sequence" id="hr_contract_seq">
+            <field name="name">Sequence for contract</field>
+            <field name="code">hr.contract.seq</field>
+            <field name="active">TRUE</field>
+            <field name="padding">4</field>
+            <field name="number_increment">1</field>
+            <field name="number_next">1</field>
+            <field name="implementation">standard</field>
+        </record>
 	</data>
 	
 </openerp>

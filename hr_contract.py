@@ -3,6 +3,12 @@ from openerp.tools.translate import _
 from datetime import datetime, date
 from . import CONTRACT_STATE
 
+_CONTRACT_TYPE = [
+	('employee',_('Employee')),
+	('rent_driver',_('Rent Driver')),
+	('contract_attc',_('Contract Attachment')),
+	('non_rent_driver',_('Non-Rent Driver')),
+]
 
 class hr_customer_contract(osv.osv):
 	
@@ -11,9 +17,9 @@ class hr_customer_contract(osv.osv):
 	 
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
-	_columns = {
-		'name': fields.char('Customer Contract', size=64, required=True),
-	}
+	 _columns = {
+			'name': fields.char('Customer Contract', size=64, required=True),
+		}
 	
 # ==========================================================================================================================
 
@@ -21,15 +27,61 @@ class hr_contract(osv.osv):
 	
 	_inherit = 'hr.contract'
 	
+# CUSTOM METHODS -----------------------------------------------------------------------------------------------------------
+	
+	def get_latest_contract(self, cr, uid, emp_id):
+		print "emp_latest %s" % emp_id
+		contract_obj = self.pool.get('hr.contract')
+		contract_ids = contract_obj.search(cr, uid, [('employee_id','=',emp_id),('contract_type','!=','contract_attc'),('state','not in',['terminated'])], order='date_start')
+		print "contract_id %s" % contract_ids
+		if contract_ids: return contract_ids[-1:][0]
+		return False
+	
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
+		'name': fields.char('Contract Reference', readonly=True),
+		'contract_type': fields.selection(_CONTRACT_TYPE, 'Contract Type', required=True),
 		'cust_contract': fields.many2one('hr.customer.contract','Customer Contract'),
 		'customer': fields.many2one('res.partner','Customer'),
 		'parent_contract': fields.many2one('hr.contract','Parent Contract'),
 		'homebase': fields.many2one('chjs.region','Homebase'),
 		'responsible': fields.many2one('hr.employee','First Party'),
-		'job_id': fields.related('responsible','job_id',type="char",string="Job Title"),
+		'responsible_job_id': fields.related('responsible','job_id',type="many2one",relation="hr.job",string="Job Title",readonly=True),
 		'state': fields.selection(CONTRACT_STATE, 'State')
 	}
 	
+# OVERRIDES ----------------------------------------------------------------------------------------------------------------
+	
+	def create(self, cr, uid, vals, context={}):
+	# siapkan data untuk contract code
+		contract_seq = self.pool.get('ir.sequence').next_by_code(cr, uid, 'hr.contract.seq')
+		contract_no = 'CONTRACT.%s' % (contract_seq)
+		vals.update({'name': contract_no})
+	# panggil create biasa
+		return super(hr_contract, self).create(cr, uid, vals, context)
+	
+	
+# ONCHANGE ----------------------------------------------------------------------------------------------------------------
+
+	def onchange_employee_id(self, cr, uid, ids, emp_id, contract_type, context=None):
+		if not emp_id:
+		  return {'value': {'parent_contract': False, 'job_id': False}}
+		emp_obj = self.pool.get('hr.employee').browse(cr, uid, emp_id, context=context)
+		job_id = False
+		parent_contract = False
+	# ambil job id employee
+		if emp_obj.job_id: job_id = emp_obj.job_id.id
+	# ambil contract employee terbaru kalau tipenya driver sewa
+		print "emp %s" % emp_id
+		print emp_obj.driver_type
+		print contract_type
+		if emp_obj.driver_type == "contract" and contract_type == "contract_attc":
+			print "aaa"
+			parent_contract = self.get_latest_contract(cr, uid, emp_id)
+		print parent_contract
+		return {'value': {'parent_contract': parent_contract, 'job_id': job_id}}
+       
+       
+       
+       

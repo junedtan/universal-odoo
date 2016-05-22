@@ -13,6 +13,7 @@
 		"chjs_custom_view","chjs_region",
 		"hr","hr_recruitment",
 		"hr_recruitment_period","hr_recruitment_requirement","hr_employee_family","hr_employee_health",
+		"hr_termination",
 	],
 	'sequence': 150,
 	'data': [
@@ -20,8 +21,10 @@
 		'data/hr.job.csv',
 		'data/hr_recruitment.xml',
 		'data/hr_employee.xml',
+		'data/hr_contract.xml',
 		'views/hr_recruitment.xml',
 		'views/hr_employee.xml',
+		'views/hr_contract.xml',
 		'menu/universal_menu.xml',
 		'cron/hr_employee.xml'
 	],

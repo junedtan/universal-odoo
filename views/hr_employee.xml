@@ -44,7 +44,7 @@
 							</group>
 							<group string="Current Address">
 								<field name="address" string="Address" />
-								<field name="phone" string="Phone" />
+								<field name="phone" string="Mobile 1" />
 								<field name="mobile_phone2" />
 								<field name="mobile_phone3" />
 							</group>
@@ -65,6 +65,7 @@
 							<group string="Information">
 								<field name="emp_no" />
 								<field name="start_working" />
+								<field name="interview_date" />
 								<field name="work_year" readonly="1"/>
 							</group>
 						</group>
@@ -92,18 +93,6 @@
 					</page>
 				</xpath>
 				<xpath expr="//page[@string='HR Settings']" position="after">
-					<page string="Termination">
-						<group>
-							<group string="Terminate">
-								<field name="terminate_date" />
-								<field name="terminate_by" />
-							</group>
-							<group string="Blacklist">
-								<field name="is_blacklist" />
-								<field name="blacklist_reason" />
-							</group>
-						</group>
-					</page>
 					<page string="Notes">
 						<field name="notes" />
 					</page>

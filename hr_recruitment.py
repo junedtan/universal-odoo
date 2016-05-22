@@ -66,6 +66,7 @@ class hr_applicant(osv.osv):
 			help='If checked, this applicant is waiting for SPV/manager\'s approval.'),
 		'place_of_birth': fields.char('Place of Birth', required=True),
 		'date_of_birth': fields.date('Date of Birth', required=True),
+		'interview_date': fields.date('Interview Date'),
 		'religion': fields.selection(RELIGION, 'Religion'),
 		'driver_license_number': fields.char('License Number'),
 		'driver_license_date': fields.date('License Expiry Date'),
@@ -149,6 +150,7 @@ class hr_applicant(osv.osv):
 		count_param = 0
 	# cek untuk semua param yang ada
 	# cari di data employee
+	# active_test: False buat mengecek yang active nya false juga, ga cuma yang true
 		for param_name in param_list:
 			if param_name in vals:
 				count_param += 1 
@@ -269,12 +271,19 @@ class hr_applicant(osv.osv):
 	# pengisian/pengosongan date_closed tidak berdasarkan apakah stage ybs folded atau tidak, tapi mengacu ke isi field 
 	# is_end dari stage ybs
 	def onchange_stage_id(self, cr, uid, ids, stage_id, context=None):
+		v = {}
 		if not stage_id: return {'value': {}}
 		stage = self.pool['hr.recruitment.stage'].browse(cr, uid, stage_id, context=context)
+	# cek stagenya
+		data_obj = self.pool.get('ir.model.data')
+		interview_stage = data_obj.get_object(cr, uid, 'universal', 'stage_job4').id
+		if stage.id == interview_stage: 
+			v['interview_date'] = fields.datetime.now()
 		if stage.is_end:
-			return {'value': {'date_closed': fields.datetime.now()}}
+			v['date_closed']= fields.datetime.now()
 		else:
-			return {'value': {'date_closed': False}}
+			v['date_closed']= False
+		return {'value': v}
 	
 	def create_employee_from_applicant(self, cr, uid, ids, context=None):
 	# ambil stage contract_signed utnuk dibandingkan di bawah
@@ -295,6 +304,7 @@ class hr_applicant(osv.osv):
 			'gender': applicant_data.gender,
 			'place_of_birth': applicant_data.place_of_birth,
 			'date_of_birth': applicant_data.date_of_birth,
+			'interview_date': applicant_data.interview_date,
 			'religion': applicant_data.religion,
 			'driver_license_number': applicant_data.driver_license_number,
 			'driver_license_date': applicant_data.driver_license_date,

@@ -39,18 +39,12 @@ class hr_employee(osv.osv):
 		'work_year': fields.float('Work Year(s)'),
 		'driver_company_id': fields.many2one('res.partner','Current Client', domain=[('customer','=',True)]),
 		'homebase_id': fields.many2one('chjs.region', 'Homebase', domain=[('type','=','city')]),
-		'terminate_date': fields.date('Terminate Date'),
-		'terminate_by': fields.many2one('res.users', 'Terminate Officer'),
-		'is_blacklist': fields.boolean('Blacklist?'),
-		'blacklist_reason': fields.text('Blacklist Reason'),
 	}
 	
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------
 
 	_defaults = {
-		'is_blacklist': False,
 		'start_working': lambda *a: datetime.today().strftime('%Y-%m-%d'),
-		'emp_state': 'active'
 	}
 	
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------

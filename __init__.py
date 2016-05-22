@@ -69,4 +69,5 @@ DOMAIN_DUPLI_DICT = {
 
 import hr_recruitment
 import hr_employee
+import hr_contract
 

@@ -1,0 +1,40 @@
+<openerp>
+	<data>
+
+		<record model="ir.ui.view" id="hr_contract_view_form">
+			<field name="name">hr.contract.view.form</field>	
+			<field name="model">hr.contract</field>
+			<field name="inherit_id" ref="hr_contract.hr_contract_view_form" />
+			<field name="sequence" eval="100" />
+			<field name="arch" type="xml">
+				<xpath expr="//sheet" position="before">
+					<header>
+						<field name="state" widget="statusbar" readonly="1"/>
+					</header>
+				</xpath>
+				<xpath expr="//field[@name='employee_id']" position="attributes">
+					<attribute name="on_change">onchange_employee_id(employee_id, contract_type)</attribute>
+				</xpath>
+				<xpath expr="//field[@name='type_id']" position="after">
+					<field name="contract_type" on_change="onchange_employee_id(employee_id, contract_type)"/>
+					<field name="parent_contract" />
+				</xpath>
+				<xpath expr="//field[@name='type_id']" position="replace" />
+				<xpath expr="//field[@name='wage']" position="before">
+					<field name="cust_contract" />
+					<field name="customer" />
+					<field name="homebase" />
+					<field name="responsible" />
+					<field name="responsible_job_id" />
+				</xpath>
+				<xpath expr="//field[@name='trial_date_start']" position="attributes">
+					<attribute name="attrs">{'invisible': [('contract_type','=','contract_attc')]}</attribute>
+				</xpath>
+				<xpath expr="//field[@name='trial_date_end']" position="attributes">
+					<attribute name="attrs">{'invisible': [('contract_type','=','contract_attc')]}</attribute>
+				</xpath>
+			</field>
+		</record>
+
+	</data>
+</openerp>

@@ -26,16 +26,13 @@ MARITAL_STATUS = (
 DRIVER_TYPE = (
 	('active','Active'),
 	('standby','Stand By'),
-	('replacement','Replacement (GS)'),
 	('contract','Contracted'),
-	('daily','Daily'),
-	('internal','Internal/Office')
 )
 
 CONTRACT_STATE = (
-	('terminated','Terminated'),
 	('ongoing','Ongoing'),
-	('finished','Finished')
+	('finished','Finished'),
+	('terminated','Terminated'),
 )
 
 RELIGION = (
@@ -70,4 +67,5 @@ DOMAIN_DUPLI_DICT = {
 import hr_recruitment
 import hr_employee
 import hr_contract
+import hr_termination
 

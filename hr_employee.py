@@ -72,7 +72,7 @@ class hr_employee(osv.osv):
 	
 	def cron_employee_work_year(self, cr, uid, context=None):
 	# ambil data employee yang mau dihitung
-		emp_ids = self.search(cr, uid, [('emp_state','!=','resign')])
+		emp_ids = self.search(cr, uid, [])
 		if not emp_ids: return
 	# hitung masa kerja employee dari sejak mulai kerja hingga sekarang
 		today_date = date.today()

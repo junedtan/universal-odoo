@@ -9,9 +9,20 @@
 			<field name="arch" type="xml">
 				<xpath expr="//sheet" position="before">
 					<header>
-						<field name="state" widget="statusbar" readonly="1"/>
+						<field name="state" widget="statusbar" readonly="1" />
 					</header>
 				</xpath>
+				<xpath expr="//div[@class='oe_title']" position="before">
+					<div class="oe_right oe_button_box">
+						<button name="action_finish" class="oe_stat_button" icon="fa-stop" type="object" confirm="Are you sure to finish this contract?" attrs="{'invisible': ['|',('contract_type','!=','contract_attc'),('state','!=','ongoing')]}">
+							<div>Finish<br/>Contract</div>
+						</button>
+						<button name="action_terminate_open" class="oe_stat_button" icon="fa-eject" type="object" confirm="Are you sure to TERMINATE this contract?"  attrs="{'invisible': ['|',('contract_type','!=','contract_attc'),('state','!=','ongoing')]}">
+							<div>Terminate<br/>Contract</div>
+						</button>
+					</div>
+				</xpath>
+				
 				<xpath expr="//field[@name='employee_id']" position="attributes">
 					<attribute name="on_change">onchange_employee_id(employee_id, contract_type)</attribute>
 				</xpath>
@@ -24,8 +35,27 @@
 					<field name="cust_contract" />
 					<field name="customer" />
 					<field name="homebase" />
-					<field name="responsible" />
-					<field name="responsible_job_id" />
+				</xpath>
+				<xpath expr="//group[@name='duration_group']" position="after">
+					<group string="Contract Letter">
+						<field name="responsible" />
+						<field name="responsible_job_id" />
+					</group>
+				</xpath>
+				<xpath expr="//page[@name='information']" position="after">
+					<page name="termination" string="Finish/Termination">
+						<group>
+							<group string="Finish">
+								<field name="finished_by" />
+								<field name="finished_date" />
+							</group>
+							<group string="Termination">
+								<field name="terminate_by" />
+								<field name="terminate_date" />
+								<field name="terminate_reason" />
+							</group>
+						</group>
+					</page>
 				</xpath>
 				<xpath expr="//field[@name='trial_date_start']" position="attributes">
 					<attribute name="attrs">{'invisible': [('contract_type','=','contract_attc')]}</attribute>

@@ -27,16 +27,6 @@ class hr_contract(osv.osv):
 	
 	_inherit = 'hr.contract'
 	
-# CUSTOM METHODS -----------------------------------------------------------------------------------------------------------
-	
-	def get_latest_contract(self, cr, uid, emp_id):
-		print "emp_latest %s" % emp_id
-		contract_obj = self.pool.get('hr.contract')
-		contract_ids = contract_obj.search(cr, uid, [('employee_id','=',emp_id),('contract_type','!=','contract_attc'),('state','not in',['terminated'])], order='date_start')
-		print "contract_id %s" % contract_ids
-		if contract_ids: return contract_ids[-1:][0]
-		return False
-	
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
@@ -47,9 +37,28 @@ class hr_contract(osv.osv):
 		'parent_contract': fields.many2one('hr.contract','Parent Contract'),
 		'homebase': fields.many2one('chjs.region','Homebase'),
 		'responsible': fields.many2one('hr.employee','First Party'),
-		'responsible_job_id': fields.related('responsible','job_id',type="many2one",relation="hr.job",string="Job Title",readonly=True),
-		'state': fields.selection(CONTRACT_STATE, 'State')
+		'responsible_job_id': fields.related('responsible','job_id',type="many2one",relation="hr.job",string="First Party's Job Title",readonly=True),
+		'state': fields.selection(CONTRACT_STATE, 'State'),
+		'finished_by': fields.many2one('res.users', 'Finished By', readonly=True),
+		'finished_date': fields.date('Finish Date'),
+		'terminate_by': fields.many2one('res.users', 'Terminated By', readonly=True),
+		'terminate_reason': fields.text('Termination Reason'),
+		'terminate_date': fields.date('Termination Date'),
 	}
+
+# DEFAULTS -----------------------------------------------------------------------------------------------------------------
+	
+	_defaults = {
+		'state': 'ongoing',
+	}
+	
+# CUSTOM METHODS -----------------------------------------------------------------------------------------------------------
+	
+	def get_latest_contract(self, cr, uid, emp_id):
+		contract_obj = self.pool.get('hr.contract')
+		contract_ids = contract_obj.search(cr, uid, [('employee_id','=',emp_id),('contract_type','!=','contract_attc'),('state','not in',['terminated'])], order='date_start')
+		if contract_ids: return contract_ids[-1:][0]
+		return False
 	
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
@@ -61,7 +70,18 @@ class hr_contract(osv.osv):
 	# panggil create biasa
 		return super(hr_contract, self).create(cr, uid, vals, context)
 	
+# ACTIONS -----------------------------------------------------------------------------------------------------------------
 	
+	def action_finish(self, cr, uid, ids, context=None):
+		return self.write(cr, uid, ids, {
+			'finished_by': uid,
+			'finished_date': date.today(),
+			'state': 'finished',
+		}, context=context)
+		
+	#def action_terminate_open(self, cr, uid, ids, context=None):
+
+
 # ONCHANGE ----------------------------------------------------------------------------------------------------------------
 
 	def onchange_employee_id(self, cr, uid, ids, emp_id, contract_type, context=None):
@@ -81,7 +101,4 @@ class hr_contract(osv.osv):
 			parent_contract = self.get_latest_contract(cr, uid, emp_id)
 		print parent_contract
 		return {'value': {'parent_contract': parent_contract, 'job_id': job_id}}
-       
-       
-       
-       
+

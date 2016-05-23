@@ -22,7 +22,7 @@
 				<xpath expr="//field[@name='type_id']" position="replace" />
 				<xpath expr="//field[@name='wage']" position="before">
 					<field name="cust_contract" />
-					<field name="customer" />
+					<field name="customer" invisible="1"/>
 					<field name="homebase" />
 					<field name="responsible" />
 					<field name="responsible_job_id" />

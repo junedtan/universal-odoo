@@ -18,7 +18,7 @@ class hr_customer_contract(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	 _columns = {
-			'name': fields.char('Customer Contract', size=64, required=True),
+			'name': fields.char('Contract No', size=64, required=True),
 			'customer': fields.many2one('res.partner','Customer', required=True),
 		}
 	
@@ -105,34 +105,29 @@ class hr_contract(osv.osv):
 # ONCHANGE ----------------------------------------------------------------------------------------------------------------
 
 	def onchange_employee_id(self, cr, uid, ids, emp_id, contract_type, context=None):
-		if not emp_id:
+		if not emp_id or not contract_type:
 		  return {'value': {'parent_contract': False, 'job_id': False}}
 		emp_obj = self.pool.get('hr.employee').browse(cr, uid, emp_id, context=context)
 		job_id = False
 		parent_contract = False
 	# ambil job id employee
 		if emp_obj.job_id: job_id = emp_obj.job_id.id
+	# kalau contract typenya berhubungan sama driver, isi job id sama driver
+		if contract_type in ['rent_driver','non_rent_driver','contract_attc']:
+			job_driver = self.pool.get('hr.job').search(cr, uid, [('name','ilike','driver')])
+			if len(job_driver) > 0:
+				job_id = job_driver[0]
 	# ambil contract employee terbaru kalau tipenya driver sewa
 		if emp_obj.driver_type == "contract" and contract_type == "contract_attc":
 			parent_contract = self.get_latest_contract(cr, uid, emp_id)
+	
 		return {'value': {'parent_contract': parent_contract, 'job_id': job_id}}
 
 	def onchange_cust_contract(self, cr, uid, ids, cust_contract, context=None):
-		if not contract_cust:
+		if not cust_contract:
 		  return {'value': {'customer': False, 'cust_contract': False}}
 		cust_contract_obj = self.pool.get('hr.customer.contract').browse(cr, uid, cust_contract, context=context)
 		return {'value': {'customer': cust_contract_obj.customer.id}}
 	
-	def onchange_contract_type(self, cr, uid, ids, contract_type, context=None):
-		if not contract_type:
-		  return False
-		job_id = False
-	# kalau contract typenya berhubungan sama driver, isi job id sama driver
-		if contract_type in ['rent_driver','non_rent_driver','contract_attc']:
-			job_driver = self.pool.get('hr.job').search('name','ilike','driver')
-			if len(job_driver) > 0:
-				job_id = job_driver[0]
-		return {'value': {'job_id': job_id}}
-			
 			
 			

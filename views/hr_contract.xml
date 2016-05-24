@@ -38,7 +38,7 @@
 				<xpath expr="//field[@name='wage']" position="before">
 					<field name="cust_contract" on_change="onchange_cust_contract(cust_contract)" 
 					attrs="{'required': [('contract_type','=','contract_attc')],'invisible':[('contract_type','!=','contract_attc')]}"/>
-					<field name="customer" invisible="1"/>
+					<field name="customer" class="oe_read_only"/>
 					<field name="homebase" attrs="{'required': [('contract_type','=','contract_attc')],'invisible':[('contract_type','!=','contract_attc')]}" />
 				</xpath>
 				<xpath expr="//group[@name='duration_group']" position="after">
@@ -120,6 +120,7 @@
 			<field name="model">hr.contract</field>
 			<field name="inherit_id" ref="hr_contract.hr_contract_view_tree" />
 			<field name="arch" type="xml">
+				<xpath expr="//field[@name='type_id']" position="replace" />
 				<xpath expr="//tree" position="inside">
 					<field name="contract_type" invisible="context.get('mode')=='contract_attachment'" />
 					<field name="parent_contract" invisible="context.get('mode')!='contract_attachment'" />

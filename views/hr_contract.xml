@@ -5,27 +5,62 @@
 			<field name="name">hr.contract.view.form</field>	
 			<field name="model">hr.contract</field>
 			<field name="inherit_id" ref="hr_contract.hr_contract_view_form" />
-			<field name="sequence" eval="100" />
+			<field name="priority" eval="100" />
 			<field name="arch" type="xml">
 				<xpath expr="//sheet" position="before">
 					<header>
-						<field name="state" widget="statusbar" readonly="1"/>
+						<field name="state" widget="statusbar" readonly="1" />
 					</header>
 				</xpath>
+				<xpath expr="//div[@class='oe_title']" position="before">
+					<div class="oe_right oe_button_box">
+						<button name="action_finish" class="oe_stat_button" icon="fa-stop" type="object" confirm="Are you sure to finish this contract?" attrs="{'invisible': ['|',('contract_type','!=','contract_attc'),('state','!=','ongoing')]}">
+							<div>Finish<br/>Contract</div>
+						</button>
+						<button name="action_terminate_open" class="oe_stat_button" icon="fa-eject" type="object" confirm="Are you sure to TERMINATE this contract?"  attrs="{'invisible': ['|',('contract_type','!=','contract_attc'),('state','!=','ongoing')]}">
+							<div>Terminate<br/>Contract</div>
+						</button>
+					</div>
+				</xpath>
+				
 				<xpath expr="//field[@name='employee_id']" position="attributes">
 					<attribute name="on_change">onchange_employee_id(employee_id, contract_type)</attribute>
 				</xpath>
+				<xpath expr="//field[@name='working_hours']" position="attributes">
+					<attribute name="attrs">{'required': [('contract_type','=','contract_attc')],'invisible':[('contract_type','!=','contract_attc')]}</attribute>
+				</xpath>
 				<xpath expr="//field[@name='type_id']" position="after">
 					<field name="contract_type" on_change="onchange_employee_id(employee_id, contract_type)"/>
-					<field name="parent_contract" />
+					<field name="parent_contract" class="oe_read_only"/>
 				</xpath>
 				<xpath expr="//field[@name='type_id']" position="replace" />
+				<xpath expr="//field[@name='advantages']" position="replace" />
 				<xpath expr="//field[@name='wage']" position="before">
-					<field name="cust_contract" />
+					<field name="cust_contract" on_change="onchange_cust_contract(cust_contract)" 
+					attrs="{'required': [('contract_type','=','contract_attc')],'invisible':[('contract_type','!=','contract_attc')]}"/>
 					<field name="customer" invisible="1"/>
-					<field name="homebase" />
-					<field name="responsible" />
-					<field name="responsible_job_id" />
+					<field name="homebase" attrs="{'required': [('contract_type','=','contract_attc')],'invisible':[('contract_type','!=','contract_attc')]}" />
+				</xpath>
+				<xpath expr="//group[@name='duration_group']" position="after">
+					<group string="Contract Letter">
+						<field name="responsible" />
+						<field name="responsible_job_id" />
+					</group>
+				</xpath>
+				<xpath expr="//page[@name='information']" position="after">
+					<page name="termination" string="Finish/Termination">
+						<group>
+							<group string="Finish">
+								<field name="finished_by" />
+								<field name="finished_date" />
+							</group>
+							<group string="Termination">
+								<field name="terminate_by" />
+								<field name="terminate_date" />
+								<field name="terminate_reason" />
+							</group>
+						</group>
+					</page>
 				</xpath>
 				<xpath expr="//field[@name='trial_date_start']" position="attributes">
 					<attribute name="attrs">{'invisible': [('contract_type','=','contract_attc')]}</attribute>
@@ -35,6 +70,27 @@
 				</xpath>
 			</field>
 		</record>
-
+		
+		<record model="ir.ui.view" id="hr_contract_view_search">
+			<field name="name">hr.contract.view.search</field>	
+			<field name="model">hr.contract</field>
+			<field name="inherit_id" ref="hr_contract.hr_contract_view_search" />
+			<field name="priority" eval="100" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='employee_id']" position="after">
+					<group string="Contract State">
+						<filter string="Ongoing" name="filter_ongoing" domain="[('state','=','ongoing')]" />
+						<filter string="Finished" name="filter_finished" domain="[('state','=','finished')]" />
+						<filter string="Terminated" name="filter_terminated" domain="[('state','=','terminated')]" />
+					</group>
+					<group string="Contract Type">
+						<filter string="Employee" name="filter_employee" domain="[('contract_type','=','employee')]" />
+						<filter string="Rent Driver" name="filter_rent_driver" domain="[('contract_type','=','rent_driver')]" />
+						<filter string="Non-Rent Driver" name="filter_non_rent_driver" domain="[('contract_type','=','non_rent_driver')]" />
+						<filter string="Contract Attachment" name="filter_contract_attc" domain="[('contract_type','=','contract_attc')]" />
+					</group>
+				</xpath>
+			</field>
+		</record>
 	</data>
 </openerp>

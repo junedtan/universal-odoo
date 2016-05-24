@@ -4,8 +4,8 @@
 		<record model="ir.ui.view" id="view_employee_form">
 			<field name="name">hr.employee.form</field>	
 			<field name="model">hr.employee</field>
-			<field name="inherit_id" ref="hr_employee_health.hr_employee_form" />
-			<field name="sequence" eval="100" />
+			<field name="inherit_id" ref="hr.view_employee_form" />
+			<field name="priority" eval="100" />
 			<field name="arch" type="xml">
 				<xpath expr="//label[@for='work_phone']" position="replace" />
 				<xpath expr="//field[@name='work_phone']" position="replace" />
@@ -94,6 +94,13 @@
 				<xpath expr="//page[@string='HR Settings']" position="after">
 					<page string="Notes">
 						<field name="notes" />
+					</page>
+				</xpath>
+				<xpath expr="//page[@string='HR Settings']" position="replace">
+					<page string="HR Settings">
+						<group name="active_group">
+							<field name="active" />
+						</group>
 					</page>
 				</xpath>
 				<xpath expr="//group[@name='active_group']" position="after">

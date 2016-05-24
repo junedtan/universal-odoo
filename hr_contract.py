@@ -6,8 +6,8 @@ from . import CONTRACT_STATE
 _CONTRACT_TYPE = [
 	('employee',_('Employee')),
 	('rent_driver',_('Rent Driver')),
-	('contract_attc',_('Contract Attachment')),
 	('non_rent_driver',_('Non-Rent Driver')),
+	('contract_attc',_('Contract Attachment for Rent Driver')),
 ]
 
 class hr_customer_contract(osv.osv):
@@ -19,6 +19,7 @@ class hr_customer_contract(osv.osv):
 
 	 _columns = {
 			'name': fields.char('Customer Contract', size=64, required=True),
+			'customer': fields.many2one('res.partner','Customer', required=True),
 		}
 	
 # ==========================================================================================================================
@@ -26,16 +27,6 @@ class hr_customer_contract(osv.osv):
 class hr_contract(osv.osv):
 	
 	_inherit = 'hr.contract'
-	
-# CUSTOM METHODS -----------------------------------------------------------------------------------------------------------
-	
-	def get_latest_contract(self, cr, uid, emp_id):
-		print "emp_latest %s" % emp_id
-		contract_obj = self.pool.get('hr.contract')
-		contract_ids = contract_obj.search(cr, uid, [('employee_id','=',emp_id),('contract_type','!=','contract_attc'),('state','not in',['terminated'])], order='date_start')
-		print "contract_id %s" % contract_ids
-		if contract_ids: return contract_ids[-1:][0]
-		return False
 	
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
@@ -45,11 +36,30 @@ class hr_contract(osv.osv):
 		'cust_contract': fields.many2one('hr.customer.contract','Customer Contract'),
 		'customer': fields.many2one('res.partner','Customer'),
 		'parent_contract': fields.many2one('hr.contract','Parent Contract'),
-		'homebase': fields.many2one('chjs.region','Homebase'),
-		'responsible': fields.many2one('hr.employee','First Party'),
-		'responsible_job_id': fields.related('responsible','job_id',type="many2one",relation="hr.job",string="Job Title",readonly=True),
-		'state': fields.selection(CONTRACT_STATE, 'State')
+		'homebase': fields.many2one('chjs.region','Homebase', domain=[('type', '=', 'city'),('active','=',True)]),
+		'responsible': fields.many2one('hr.employee','First Party', required=True),
+		'responsible_job_id': fields.related('responsible','job_id',type="many2one",relation="hr.job",string="First Party's Job Title",readonly=True),
+		'state': fields.selection(CONTRACT_STATE, 'State'),
+		'finished_by': fields.many2one('res.users', 'Finished By', readonly=True),
+		'finished_date': fields.date('Finish Date'),
+		'terminate_by': fields.many2one('res.users', 'Terminated By', readonly=True),
+		'terminate_reason': fields.text('Termination Reason'),
+		'terminate_date': fields.date('Termination Date'),
 	}
+
+# DEFAULTS -----------------------------------------------------------------------------------------------------------------
+	
+	_defaults = {
+		'state': 'ongoing',
+	}
+	
+# CUSTOM METHODS -----------------------------------------------------------------------------------------------------------
+	
+	def get_latest_contract(self, cr, uid, emp_id):
+		contract_obj = self.pool.get('hr.contract')
+		contract_ids = contract_obj.search(cr, uid, [('employee_id','=',emp_id),('contract_type','!=','contract_attc'),('state','not in',['terminated'])], order='date_start')
+		if contract_ids: return contract_ids[-1:][0]
+		return False
 	
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
@@ -61,7 +71,18 @@ class hr_contract(osv.osv):
 	# panggil create biasa
 		return super(hr_contract, self).create(cr, uid, vals, context)
 	
+# ACTIONS -----------------------------------------------------------------------------------------------------------------
 	
+	def action_finish(self, cr, uid, ids, context=None):
+		return self.write(cr, uid, ids, {
+			'finished_by': uid,
+			'finished_date': date.today(),
+			'state': 'finished',
+		}, context=context)
+		
+	#def action_terminate_open(self, cr, uid, ids, context=None):
+
+
 # ONCHANGE ----------------------------------------------------------------------------------------------------------------
 
 	def onchange_employee_id(self, cr, uid, ids, emp_id, contract_type, context=None):
@@ -73,15 +94,26 @@ class hr_contract(osv.osv):
 	# ambil job id employee
 		if emp_obj.job_id: job_id = emp_obj.job_id.id
 	# ambil contract employee terbaru kalau tipenya driver sewa
-		print "emp %s" % emp_id
-		print emp_obj.driver_type
-		print contract_type
 		if emp_obj.driver_type == "contract" and contract_type == "contract_attc":
-			print "aaa"
 			parent_contract = self.get_latest_contract(cr, uid, emp_id)
-		print parent_contract
 		return {'value': {'parent_contract': parent_contract, 'job_id': job_id}}
-       
-       
-       
-       
+
+	def onchange_cust_contract(self, cr, uid, ids, cust_contract, context=None):
+		if not contract_cust:
+		  return {'value': {'customer': False, 'cust_contract': False}}
+		cust_contract_obj = self.pool.get('hr.customer.contract').browse(cr, uid, cust_contract, context=context)
+		return {'value': {'customer': cust_contract_obj.customer.id}}
+	
+	def onchange_contract_type(self, cr, uid, ids, contract_type, context=None):
+		if not contract_type:
+		  return False
+		job_id = False
+	# kalau contract typenya berhubungan sama driver, isi job id sama driver
+		if contract_type in ['rent_driver','non_rent_driver','contract_attc']:
+			job_driver = self.pool.get('hr.job').search('name','ilike','driver')
+			if len(job_driver) > 0:
+				job_id = job_driver[0]
+		return {'value': {'job_id': job_id}}
+			
+			
+			

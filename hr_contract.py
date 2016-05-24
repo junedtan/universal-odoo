@@ -80,8 +80,27 @@ class hr_contract(osv.osv):
 			'state': 'finished',
 		}, context=context)
 		
-	#def action_terminate_open(self, cr, uid, ids, context=None):
-
+	def action_terminate(self, cr, uid, ids, context=None):
+		contract_data = self.browse(cr, uid, ids[0], context)
+		model_obj = self.pool.get('ir.model.data')
+		model, view_id = model_obj.get_object_reference(cr, uid, 'universal', 'hr_contract_terminate_form')
+		return {
+			'name': _('Terminate contract'),
+			'view_mode': 'form',
+			'view_id': view_id,
+			'view_type': 'form',
+			'res_model': 'hr.contract',
+			'res_id': ids and ids[0] or None,
+			'type': 'ir.actions.act_window',
+			'target': 'new',
+		}
+		
+	def action_terminate_save(self, cr, uid, ids, context=None):
+		return self.write(cr, uid, ids, {
+			'terminate_date': date.today(),
+			'terminate_by': uid,
+			'state': 'terminated',
+		})
 
 # ONCHANGE ----------------------------------------------------------------------------------------------------------------
 

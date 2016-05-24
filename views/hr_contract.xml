@@ -14,10 +14,10 @@
 				</xpath>
 				<xpath expr="//div[@class='oe_title']" position="before">
 					<div class="oe_right oe_button_box">
-						<button name="action_finish" class="oe_stat_button" icon="fa-stop" type="object" confirm="Are you sure to finish this contract?" attrs="{'invisible': ['|',('contract_type','!=','contract_attc'),('state','!=','ongoing')]}">
+						<button name="action_finish" class="oe_stat_button" icon="fa-stop" type="object" confirm="Are you sure to finish this contract?  This action cannot be undone." attrs="{'invisible': ['|',('contract_type','!=','contract_attc'),('state','!=','ongoing')]}">
 							<div>Finish<br/>Contract</div>
 						</button>
-						<button name="action_terminate_open" class="oe_stat_button" icon="fa-eject" type="object" confirm="Are you sure to TERMINATE this contract?"  attrs="{'invisible': ['|',('contract_type','!=','contract_attc'),('state','!=','ongoing')]}">
+						<button name="action_terminate" class="oe_stat_button" icon="fa-eject" type="object" confirm="Are you sure to TERMINATE this contract? This action cannot be undone."  attrs="{'invisible': ['|',('contract_type','!=','contract_attc'),('state','!=','ongoing')]}">
 							<div>Terminate<br/>Contract</div>
 						</button>
 					</div>
@@ -52,12 +52,12 @@
 						<group>
 							<group string="Finish">
 								<field name="finished_by" />
-								<field name="finished_date" />
+								<field name="finished_date" readonly="1" />
 							</group>
 							<group string="Termination">
 								<field name="terminate_by" />
-								<field name="terminate_date" />
-								<field name="terminate_reason" />
+								<field name="terminate_date" readonly="1" />
+								<field name="terminate_reason" readonly="1" />
 							</group>
 						</group>
 					</page>
@@ -68,6 +68,7 @@
 				<xpath expr="//field[@name='trial_date_end']" position="attributes">
 					<attribute name="attrs">{'invisible': [('contract_type','=','contract_attc')]}</attribute>
 				</xpath>
+				<xpath expr="//page[@string='Work Permit']" position="replace" />
 			</field>
 		</record>
 		
@@ -92,5 +93,39 @@
 				</xpath>
 			</field>
 		</record>
+
+		<record model="ir.ui.view" id="hr_contract_terminate_form">
+			<field name="name">hr.contract.terminate.form</field>	
+			<field name="model">hr.contract</field>
+			<field name="priority" eval="102" />
+			<field name="arch" type="xml">
+				<form version="7.0" string="Terminate Contract">
+					<group>
+						<field name="id" invisible="1" />
+						<field name="name" />
+						<field name="employee_id" readonly="1" />
+						<field name="terminate_reason" />
+					</group>
+					<footer>
+						<button string="Terminate Contract" name="action_terminate_save" type="object" class="oe_highlight" />
+						or
+						<button string="Cancel" special="cancel" />
+					</footer>
+				</form>
+			</field>
+		</record>
+		
+		<record model="ir.ui.view" id="hr_contract_view_tree">
+			<field name="name">hr.contract.view.tree</field>	
+			<field name="model">hr.contract</field>
+			<field name="inherit_id" ref="hr_contract.hr_contract_view_tree" />
+			<field name="arch" type="xml">
+				<xpath expr="//tree" position="inside">
+					<field name="contract_type" invisible="context.get('mode')=='contract_attachment'" />
+					<field name="parent_contract" invisible="context.get('mode')!='contract_attachment'" />
+				</xpath>
+			</field>
+		</record>
+		
 	</data>
 </openerp>

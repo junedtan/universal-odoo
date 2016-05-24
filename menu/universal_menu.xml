@@ -19,6 +19,20 @@
 			<field name="context">{'hide_recruitments': 1}</field>
 		</record>
 		
+		<record id="hr_contract.action_hr_contract" model="ir.actions.act_window">
+			<field name="context">{'search_default_current':1,'mode':'contract'}</field>
+			<field name="domain">[('contract_type','not in',['contract_attc'])]</field>
+		</record>
+
+		<record id="universal_action_contract_attc" model="ir.actions.act_window">
+			<field name="name">Contract Attachments</field>	
+			<field name="res_model">hr.contract</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="context">{'mode': 'contract_attachment','default_contract_type':'contract_attc'}</field>
+			<field name="domain">[('contract_type','in',['contract_attc'])]</field>
+		</record>
+		
 		<record id="universal_action_check_duplicate" model="ir.actions.act_window">
 			<field name="name">Check for Duplicate Applicant</field>	
 			<field name="res_model">universal.check.duplicate.memory</field>
@@ -28,5 +42,7 @@
 		
 		<menuitem parent="hr.menu_hr_configuration" sequence="3" id="universal_menu_job_position" action="universal_action_job_position"  />
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="5" name="Check Duplicate" id="universal_menu_check_duplicate" action="universal_action_check_duplicate"  />
+		<menuitem parent="hr.menu_hr_main" sequence="4" id="universal_menu_contract_attc" action="universal_action_contract_attc" />
+		
 	</data>
 </openerp>

@@ -43,7 +43,7 @@ class website_universal(http.Controller):
 		# - start (belum ada klik start dari pihak employee), 
 		# - start_pending (udah start, nunggu customer konfirmasi)
 		# - stop (udah start, udah konfirmasi customer, tunggu finish)
-			
+		# apakah sudah ada attendance untuk hari dan employee ini? 
 			attendance_action = 'start_pending'
 			contract_obj = env['hr.contract']
 			contracts = contract_obj.sudo().search([('contract_type','=','contract_attc'),('state','=','ongoing'),('employee_id','=',employee_id)])

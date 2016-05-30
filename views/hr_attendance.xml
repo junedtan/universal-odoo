@@ -1,0 +1,21 @@
+<openerp>
+	<data>
+
+		<record model="ir.ui.view" id="view_attendance_form">
+			<field name="name">hr.attendance.form</field>	
+			<field name="model">hr.attendance</field>
+			<field name="inherit_id" ref="hr_attendance.view_attendance_form" />
+			<field name="priority" eval="100" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='name']" position="after">
+					<field name="contract_id" />
+					<field name="customer_approval"/>
+				</xpath>
+				<xpath expr="//field[@name='action']" position="before">
+					<field name="source" />
+				</xpath>
+			</field>
+		</record>
+		
+	</data>
+</openerp>

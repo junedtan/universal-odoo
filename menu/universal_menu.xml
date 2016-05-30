@@ -46,6 +46,17 @@
        
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="5" name="Check Duplicate" id="universal_menu_check_duplicate" action="universal_action_check_duplicate"  />
 		<menuitem parent="hr.menu_hr_main" sequence="4" id="universal_menu_contract_attc" action="universal_action_contract_attc" />
+
+	</data>
+	
+	<data>
+		
+		<record id="universal_menu_start_stop" model="website.menu">
+			<field name="name">Driver Attendance</field>
+			<field name="url">/hr/attendance</field>
+			<field name="parent_id" ref="website.main_menu"/>
+			<field name="sequence" type="int">50</field>
+		</record>
 		
 	</data>
 </openerp>

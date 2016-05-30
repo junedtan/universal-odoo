@@ -1,0 +1,85 @@
+<openerp>
+	<data>
+		
+		<template id="assets_frontend" inherit_id="website.assets_frontend" name="Universal">
+			<xpath expr="." position="inside">
+				<link rel='stylesheet' href='/universal/static/src/css/universal.css'/>
+				<script type="text/javascript" src="/universal/static/src/js/website_universal.js"></script>
+			</xpath>
+		</template>
+		
+		<template id="website_hr_attendance" name="Attendance">
+			<t t-call="website.layout">
+				<div id="wrap">
+					<div class="container universal_website_attendance">
+						<div class="row">
+							<div class="col-md-12 mb16 mt16">
+								<div t-if="view_mode in ['employee','customer']" id="attendance_container" data-mode="employee" t-att-data-employee="employee_id" t-att-data-customer="customer_id">
+									Loading...
+								</div>
+								<div t-if="view_mode not in ['employee','customer']" class="oe_callout oe_callout_danger">
+									<h4>Error</h4>
+									<p>
+										You must login either as customer or driver.
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</t>
+		</template>
+		
+		<template id="website_hr_attendance_employee" name="Attendance (Employee View)">
+			<div t-if="contracts and attendance_action == 'start'">
+				<div id="div_start">
+					<p>
+						Select customer then click Start or Stop button.
+					</p>
+					<div class="form-group">
+						<select t-foreach="contracts" t-as="contract" class="form-control" id="contract_id" name="contract_id">
+							<option t-att-value="contract.id"><t t-esc="contract.customer.name" /></option>
+						</select>
+					</div>
+					<input type="hidden" id="view_mode" t-att-value="view_mode" />
+					<div class="form-group button-start">
+						<button type="button" id="btn_start" class="btn btn-success col-md-12 btn-lg">Start</button>
+					</div>
+				</div>
+			</div>
+			<div t-if="attendance and attendance_action in ['start_pending','stop']">
+				<h4 t-if="attendance_action=='stop'">Currently running session</h4>
+				<h4 t-if="attendance_action=='start_pending'">Waiting for confirmation</h4>
+				<table class="table">
+					<tr>
+						<th>Date</th>
+						<th>Start</th>
+						<th>Customer</th>
+					</tr>
+					<t t-foreach="attendance" t-as="att" class="table">
+						<tr>
+							<td t-esc="att['date']" />
+							<td t-esc="att['start']" />
+							<td t-esc="att['customer']" />
+						</tr>
+					</t>
+				</table>
+			</div>
+			<div t-if="attendance and attendance_action == 'stop'" class="form-group button-stop">
+				<button type="button" id="btn_stop" class="btn btn-success col-md-12 btn-lg">Finish</button>
+			</div>
+			<div t-if="not contracts" class="oe_callout oe_callout_info">
+				<h4>Info</h4>
+				<p>
+					It appears that there is currently no contract you are working on. Please contact administration if you believe 
+					this is not the case.
+				</p>
+			</div>
+		</template>
+
+		<template id="website_hr_attendance_customer" name="Attendance (Customer View)">
+			test selesai
+		</template>
+		
+	</data>
+</openerp>

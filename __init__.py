@@ -68,4 +68,5 @@ import hr_recruitment
 import hr_employee
 import hr_contract
 import hr_termination
+import controllers
 

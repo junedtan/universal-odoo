@@ -18,6 +18,7 @@ class hr_employee(osv.osv):
 		'place_of_birth': fields.char('Place of Birth', size=100),
 		'date_of_birth': fields.date('Date of Birth', required=True),
 		'interview_date': fields.date('Interview Date'),
+		'last_survey_date': fields.date('Last Survey Date'),
 		'religion': fields.selection(RELIGION, 'Religion'),
 		'driver_license_number': fields.char('License Number'),
 		'driver_license_date': fields.date('License Expiry Date'),

@@ -27,7 +27,7 @@
 					<attribute name="on_change">onchange_employee_id(employee_id, contract_type)</attribute>
 				</xpath>
 				<xpath expr="//field[@name='working_hours']" position="attributes">
-					<attribute name="attrs">{'required': [('contract_type','=','contract_attc')],'invisible':[('contract_type','!=','contract_attc')]}</attribute>
+					<attribute name="attrs">{'required': [('contract_type','=','contract_attc')]}</attribute>
 				</xpath>
 				<xpath expr="//field[@name='type_id']" position="after">
 					<field name="contract_type" on_change="onchange_employee_id(employee_id, contract_type)"/>
@@ -128,5 +128,23 @@
 			</field>
 		</record>
 		
+		<record id="view_resource_calendar_attendance_tree" model="ir.ui.view">
+            <field name="name">resource.calendar.attendance.tree</field>
+            <field name="model">resource.calendar.attendance</field>
+            <field name="inherit_id" ref="resource.view_resource_calendar_attendance_tree"></field>
+            <field name="priority" eval="50" />
+            <field name="arch" type="xml">
+                <field name="hour_from" position="before">
+                    <field name="working_time_type" />
+                    <field name="max_hour" attrs="{'required': [('working_time_type','=','max_hour')]}" />
+                </field>
+                <xpath expr="//field[@name='hour_from']" position="attributes">
+					<attribute name="attrs">{'required': [('working_time_type','=','duration')]}</attribute>
+				</xpath>
+                 <xpath expr="//field[@name='hour_to']" position="attributes">
+					<attribute name="attrs">{'required': [('working_time_type','=','duration')]}</attribute>
+				</xpath>
+            </field>
+        </record>
 	</data>
 </openerp>

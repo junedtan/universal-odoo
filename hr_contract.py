@@ -10,6 +10,11 @@ _CONTRACT_TYPE = [
 	('contract_attc',_('Contract Attachment for Rent Driver')),
 ]
 
+_WORKING_TIME_TYPE = [
+	('duration',_('Duration')),
+	('max_hour',_('Max Hour')),
+]
+
 class hr_customer_contract(osv.osv):
 	
 	 _name = "hr.customer.contract"
@@ -129,5 +134,24 @@ class hr_contract(osv.osv):
 		cust_contract_obj = self.pool.get('hr.customer.contract').browse(cr, uid, cust_contract, context=context)
 		return {'value': {'customer': cust_contract_obj.customer.id}}
 	
-			
+
+# ==========================================================================================================================
+
+class resource_calendar_attendance(osv.osv):
+	_inherit = "resource.calendar.attendance"
+	
+	_columns = {
+		'working_time_type': fields.selection(_WORKING_TIME_TYPE, 'Type', required=True),
+		'max_hour': fields.float('Max Work Hour'),
+		'hour_from' : fields.float('Work from', help="Start and End time of working.", select=True),
+    'hour_to' : fields.float("Work to"),
+	}
+	
+# DEFAULTS -----------------------------------------------------------------------------------------------------------------
+	
+	_defaults = {
+		'working_time_type': 'duration',
+	}
+	
+	
 			

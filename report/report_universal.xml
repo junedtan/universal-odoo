@@ -1,0 +1,14 @@
+<openerp>
+	<data>
+		
+		<report
+		id="action_report_contract"
+		model="hr.contract"
+		string="Contract"
+		report_type="qweb-pdf"
+		name="universal.report_contract"
+		file="universal.report_contract"
+		/>
+		
+	</data>
+</openerp>

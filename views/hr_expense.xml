@@ -1,0 +1,50 @@
+<openerp>
+	<data>
+
+		<record model="ir.ui.view" id="view_expenses_form">
+			<field name="name">hr.expense.expense.form</field>	
+			<field name="model">hr.expense.expense</field>
+			<field name="inherit_id" ref="hr_expense.view_expenses_form" />
+			<field name="priority" eval="100" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='name']" position="after">
+					<field name="contract_id" />
+					<field name="source" />
+				</xpath>
+			</field>
+		</record>
+		
+		<record model="ir.ui.view" id="view_expenses_tree">
+			<field name="name">hr.expense.expense.tree</field>	
+			<field name="model">hr.expense.expense</field>
+			<field name="inherit_id" ref="hr_expense.view_expenses_tree" />
+			<field name="priority" eval="100" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='state']" position="after">
+					<field name="source" />
+					<field name="contract_id" string="Contract" />
+				</xpath>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="view_hr_expense_filter">
+			<field name="name">hr.expense.expense.filter</field>	
+			<field name="model">hr.expense.expense</field>
+			<field name="inherit_id" ref="hr_expense.view_hr_expense_filter" />
+			<field name="priority" eval="100" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='name']" position="after">
+					<field name="contract_id" />
+				</xpath>
+				<xpath expr="//field[@name='department_id']" position="after">
+					<separator/>
+					<group string="Input Source">
+						<filter domain="[('source','=','manual')]" string="Manual Input" />
+						<filter domain="[('source','=','app')]" string="App" />
+					</group>
+				</xpath>
+			</field>
+		</record>
+		
+	</data>
+</openerp>

@@ -17,10 +17,16 @@
 								<div t-if="view_mode in ['employee','customer']" id="attendance_container" data-mode="employee" t-att-data-employee="employee_id" t-att-data-customer="customer_id">
 									Loading...
 								</div>
-								<div t-if="view_mode not in ['employee','customer']" class="oe_callout oe_callout_danger">
+								<div t-if="view_mode == 'general_error'" class="oe_callout oe_callout_danger">
 									<h4>Error</h4>
 									<p>
 										You must login either as customer or driver.
+									</p>
+								</div>
+								<div t-if="view_mode == 'customer_error'" class="oe_callout oe_callout_danger">
+									<h4>Error</h4>
+									<p>
+										It appears that you do not belong to any company that is partnering with PT Universal. Please contact administration if you believe this is not the case.
 									</p>
 								</div>
 							</div>
@@ -31,44 +37,88 @@
 		</template>
 		
 		<template id="website_hr_attendance_employee" name="Attendance (Employee View)">
+			<div id="message_container"></div>
 			<div t-if="contracts and attendance_action == 'start'">
+				<h4>Start a new session</h4>
 				<div id="div_start">
 					<p>
-						Select customer then click Start or Stop button.
+						Select customer then click Start button.
 					</p>
 					<div class="form-group">
-						<select t-foreach="contracts" t-as="contract" class="form-control" id="contract_id" name="contract_id">
+						<select t-foreach="contracts" t-as="contract" class="form-control" id="employee_contract_id" name="employee_contract_id">
 							<option t-att-value="contract.id"><t t-esc="contract.customer.name" /></option>
 						</select>
 					</div>
 					<input type="hidden" id="view_mode" t-att-value="view_mode" />
-					<div class="form-group button-start">
-						<button type="button" id="btn_start" class="btn btn-success col-md-12 btn-lg">Start</button>
+					<div class="form-group">
+						<button type="button" id="btn_start" class="btn btn-warning btn-block btn-lg">Start</button>
 					</div>
 				</div>
 			</div>
-			<div t-if="attendance and attendance_action in ['start_pending','stop']">
-				<h4 t-if="attendance_action=='stop'">Currently running session</h4>
-				<h4 t-if="attendance_action=='start_pending'">Waiting for confirmation</h4>
-				<table class="table">
+			<div t-if="last_attendance and attendance_action in ['start_pending','stop','stop_pending']">
+				<h4 t-if="attendance_action=='stop'">Current session is running...</h4>
+				<h4 t-if="attendance_action=='start_pending'">Waiting for confirmation...</h4>
+				<h4 t-if="attendance_action=='stop_pending'">It's almost finished today...</h4>
+				<table class="table" id="attendances_table" t-att-data-contract="contract_id" t-if="last_attendance">
 					<tr>
+						<th></th>
 						<th>Date</th>
-						<th>Start</th>
+						<th>Time</th>
 						<th>Customer</th>
 					</tr>
-					<t t-foreach="attendance" t-as="att" class="table">
-						<tr>
+					<tr t-att-class="'universal-tr-%s' % last_attendance['action']">
+						<td style="padding: 0; font-size: 150%"><span t-att-class="'fa fa-%s center' % last_attendance['action']"></span></td>
+						<td t-esc="last_attendance['date']" />
+						<td t-esc="last_attendance['time']" />
+						<td t-esc="last_attendance['customer']" />
+					</tr>
+				</table>
+			</div>
+			<div t-if="last_attendance and attendance_action in ['start_pending','stop_pending']" class="form-group">
+				<button type="button" id="btn_recheck" class="btn btn-warning btn-block btn-lg">Recheck Now</button>
+			</div>
+			<div t-if="last_attendance and attendance_action == 'stop'" class="form-group">
+				<p>
+					<span>Do you go out of town this time?</span>
+					<br />
+					<div class="btn-group" data-toggle="buttons" id="out_of_town_div">
+						<label class="btn btn-lg btn-success active">
+							<input type="radio" name="out_of_town" id="out_of_town_no" checked="checked" value="no"/>No
+						</label>
+						<label class="btn btn-lg btn-success">
+							<input type="radio" name="out_of_town" id="out_of_town_roundtrip" value="roundtrip"/>Roundtrip
+						</label>
+						<label class="btn btn-lg btn-success">
+							<input type="radio" name="out_of_town" id="out_of_town_overnight" value="overnight"/>Overnight
+						</label>
+					</div>
+				</p>
+				<button type="button" id="btn_stop" class="btn btn-warning btn-block btn-lg">Finish</button>
+			</div>
+			<div t-if="attendances and contracts">
+				<hr/>
+				<h4>Past Attendances (last 7 days)</h4>
+				<p>
+					For full attendance data inquiry, please contact administration.
+				</p>
+				<table class="table">
+					<tr>
+						<th></th>
+						<th>Date</th>
+						<th>Time</th>
+						<th>Customer</th>
+					</tr>
+					<t t-foreach="attendances" t-as="att">
+						<tr t-att-class="'universal-tr-%s' % att['action']">
+							<td style="padding: 0; font-size: 150%"><span t-att-class="'fa fa-%s center' % att['action']"></span></td>
 							<td t-esc="att['date']" />
-							<td t-esc="att['start']" />
+							<td t-esc="att['time']" />
 							<td t-esc="att['customer']" />
 						</tr>
 					</t>
 				</table>
 			</div>
-			<div t-if="attendance and attendance_action == 'stop'" class="form-group button-stop">
-				<button type="button" id="btn_stop" class="btn btn-success col-md-12 btn-lg">Finish</button>
-			</div>
-			<div t-if="not contracts" class="oe_callout oe_callout_info">
+			<div t-if="not attendances and not contracts" class="oe_callout oe_callout_info">
 				<h4>Info</h4>
 				<p>
 					It appears that there is currently no contract you are working on. Please contact administration if you believe 
@@ -78,8 +128,89 @@
 		</template>
 
 		<template id="website_hr_attendance_customer" name="Attendance (Customer View)">
-			test selesai
+			<div id="message_container"></div>
+			<div t-if="contracts and attendance_action == 'start'">
+				<h4>Start a new session</h4>
+				<div id="div_start">
+					<p>
+						Waiting for your driver to start today's session...
+					</p>
+					<div class="form-group button-recheck">
+						<button type="button" id="btn_recheck" class="btn btn-warning btn-block btn-lg">Recheck Now</button>
+					</div>
+				</div>
+			</div>
+			<div t-if="contracts and attendance_action == 'stop'">
+				<h4>Current session is running...</h4>
+				<div id="div_start">
+					<p>
+						Please wait for your driver to finish this session, then tap Recheck Now.
+					</p>
+				</div>
+			</div>
+			<div t-if="attendances and attendance_action in ['start_pending','stop_pending']">
+				<h4>Confirm Start/Finish</h4>
+			</div>
+			<div t-if="attendances and attendance_action in ['start_pending','stop_pending','stop']">
+				<table class="table" id="attendances_table" t-att-data-contract="contract_id" t-if="last_attendance" t-att-data-attendance="last_attendance['id']">
+					<tr>
+						<th></th>
+						<th>Date</th>
+						<th>Time</th>
+						<th>Customer</th>
+					</tr>
+					<tr t-att-class="'universal-tr-%s' % last_attendance['action']">
+						<td style="padding: 0; font-size: 150%"><span t-att-class="'fa fa-%s center' % last_attendance['action']"></span></td>
+						<td t-esc="last_attendance['date']" />
+						<td>
+							<t t-if="attendance_action in ['start_pending','stop_pending']">
+								<input type="text" id="confirm_time" t-att-value="last_attendance['time']" t-att-placeholder="last_attendance['time']"/>
+							</t>
+							<t t-if="attendance_action in ['stop']">
+								<t t-esc="last_attendance['time']" />
+							</t>
+						</td>
+						<td t-esc="last_attendance['customer']" />
+					</tr>
+				</table>
+			</div>
+			<div t-if="attendances and attendance_action in ['start_pending','stop_pending']" class="form-group">
+				<button type="button" id="btn_confirm" class="btn btn-warning btn-block btn-lg">Confirm</button>
+			</div>
+			<div t-if="attendances and attendance_action in ['stop']" class="form-group">
+				<button type="button" id="btn_recheck" class="btn btn-warning btn-block btn-lg">Recheck Now</button>
+			</div>
+			<div t-if="attendances and contracts">
+				<hr/>
+				<h4>Past Attendances (last 7 days)</h4>
+				<p>
+					For full attendance data inquiry, please contact administration.
+				</p>
+				<table class="table">
+					<tr>
+						<th></th>
+						<th>Date</th>
+						<th>Time</th>
+						<th>Customer</th>
+					</tr>
+					<t t-foreach="attendances" t-as="att">
+						<tr t-att-class="'universal-tr-%s' % att['action']">
+							<td style="padding: 0; font-size: 150%"><span t-att-class="'fa fa-%s center' % att['action']"></span></td>
+							<td t-esc="att['date']" />
+							<td t-esc="att['time']" />
+							<td t-esc="att['customer']" />
+						</tr>
+					</t>
+				</table>
+			</div>
+			<div t-if="not attendances and not contracts" class="oe_callout oe_callout_info">
+				<h4>Info</h4>
+				<p>
+					It appears that you are not currently under any contract with PT Universal. Please contact administration if you believe 
+					this is not the case.
+				</p>
+			</div>
 		</template>
-		
+
 	</data>
 </openerp>

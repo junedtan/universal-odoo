@@ -27,6 +27,7 @@
 		'views/hr_employee.xml',
 		'views/hr_contract.xml',
 		'views/hr_attendance.xml',
+		'views/hr_expense.xml',
 		'menu/universal_menu.xml',
 		'report/report_universal.xml',
 		'report/report_contract.xml',

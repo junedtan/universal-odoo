@@ -69,5 +69,5 @@ import hr_employee
 import hr_contract
 import hr_termination
 import hr_attendance
+import hr_expense
 import controllers
-

@@ -40,12 +40,13 @@
 			<field name="view_mode">form</field>
 		</record>
 		
+    <menuitem parent="hr.menu_hr_root" sequence="1" name="Driver" id="menu_hr_driver" />
 		<menuitem parent="hr.menu_hr_configuration" sequence="3" id="universal_menu_job_position" action="universal_action_job_position"  />
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="5" id="universal_menu_check_duplicate" action="universal_action_check_duplicate"  />
 		<menuitem parent="hr.menu_hr_configuration" sequence="5" id="universal_menu_resource_calendar" action="resource.action_resource_calendar_form"/>
        
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="5" name="Check Duplicate" id="universal_menu_check_duplicate" action="universal_action_check_duplicate"  />
-		<menuitem parent="hr.menu_hr_main" sequence="4" id="universal_menu_contract_attc" action="universal_action_contract_attc" />
+		<menuitem parent="menu_hr_driver" sequence="4" id="universal_menu_contract_attc" action="universal_action_contract_attc" />
 
 	</data>
 	

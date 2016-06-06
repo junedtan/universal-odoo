@@ -11,7 +11,18 @@ class hr_driver_replacement(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'driver_original': fields.many2one('hr.employee','Driver Original'),
-		'driver_replace': fields.many2one('hr.employee','Driver Replace'),
-		'replace_date': fields.date('Replace Date'),
+		'driver_original': fields.many2one('hr.employee','Driver Original', required=True),
+		'driver_replace': fields.many2one('hr.employee','Driver Replace', required=True),
+		'replace_date': fields.date('Replace Date', required=True),
+		'contract': fields.many2one('hr.contract','Contract', required=True),
+		'customer': fields.many2one('res.partner','Customer'),
 	}
+	
+# ONCHANGE ----------------------------------------------------------------------------------------------------------------
+	
+	def onchange_contract(self, cr, uid, ids, contract_id):
+		result = {}
+		if not contract_id: return False
+		contract_obj = self.pool.get('hr.contract').browse(cr, uid, contract_id)
+		result['value'] = { 'customer' : contract_obj.customer.id }
+		return result

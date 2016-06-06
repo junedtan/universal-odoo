@@ -1,0 +1,38 @@
+<openerp>
+	<data>
+		
+		<!-- DRIVER REPLACEMENT -->
+		
+		<record model="ir.ui.view" id="hr_driver_replacement_form">
+			<field name="name">hr.driver.replacement.form</field>
+			<field name="model">hr.driver.replacement</field>
+			<field name="arch" type="xml">
+				<form string="Driver Replacement">
+					<group>
+						<field name="driver_original" />
+						<field name="driver_replace" />
+						<field name="replace_date" />
+						<field name="contract" on_change="onchange_contract(contract)" />
+						<field name="customer" readonly="1"/>
+					</group>
+				</form>
+			</field>
+		</record>
+		
+		<record model="ir.ui.view" id="hr_driver_replacement_list">
+			<field name="name">hr.driver.replacement.list</field>
+			<field name="model">hr.driver.replacement</field>
+			<field name="arch" type="xml">
+				<tree string="Driver Replacement">
+					<field name="driver_original" />
+					<field name="driver_replace" />
+					<field name="replace_date" />
+					<field name="contract" />
+					<field name="customer" />
+				</tree>
+			</field>
+		</record>
+		
+		
+	</data>
+</openerp>

@@ -13,7 +13,32 @@
 				</xpath>
 				<xpath expr="//field[@name='action']" position="before">
 					<field name="source" />
+					<field name="out_of_town" />
 				</xpath>
+			</field>
+		</record>
+		
+		<record model="ir.ui.view" id="hr_attendance_mass">
+			<field name="name">hr.attendance.mass</field>
+			<field name="model">hr.attendance.mass.memory</field>
+			<field name="arch" type="xml">
+				<form string="Attendance Mass" after_save="hr_attendance.open_view_attendance">
+					<group>
+						<field name="attendance_type" />
+						<field name="employee" />
+						<field name="contract" domain="[('employee_id','=',employee)]" attrs="{'required': [('attendance_type','=','driver')]}" />
+					</group>
+					<group colspan="4">
+						<field name="attendance_mass_lines">
+							<tree string="Attendance Mass" editable="bottom">
+								<field name="attendance_date" />
+								<field name="start_time" widget="float_time" />
+								<field name="finish_time" widget="float_time" />
+								<field name="out_of_town" />
+							</tree>
+						</field>
+					</group>
+				</form>
 			</field>
 		</record>
 		

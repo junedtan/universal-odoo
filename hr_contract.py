@@ -24,7 +24,7 @@ class hr_customer_contract(osv.osv):
 
 	 _columns = {
 			'name': fields.char('Contract No', size=64, required=True),
-			'customer': fields.many2one('res.partner','Customer', required=True),
+			'customer': fields.many2one('res.partner','Customer', required=True, domain=[('customer','=',True),('is_company','=',True)]),
 		}
 	
 # ==========================================================================================================================
@@ -40,7 +40,7 @@ class hr_contract(osv.osv):
 		'contract_type': fields.selection(_CONTRACT_TYPE, 'Contract Type', required=True),
 		'cust_contract': fields.many2one('hr.customer.contract','Customer Contract'),
 		'customer': fields.many2one('res.partner','Customer'),
-		'parent_contract': fields.many2one('hr.contract','Parent Contract'),
+		'parent_contract': fields.many2one('hr.contract','Parent Contract', ondelete="cascade"),
 		'homebase': fields.many2one('chjs.region','Homebase', domain=[('type', '=', 'city'),('active','=',True)]),
 		'responsible': fields.many2one('hr.employee','First Party', required=True),
 		'responsible_job_id': fields.related('responsible','job_id',type="many2one",relation="hr.job",string="First Party's Job Title",readonly=True),
@@ -75,6 +75,17 @@ class hr_contract(osv.osv):
 		vals.update({'name': contract_no})
 	# panggil create biasa
 		return super(hr_contract, self).create(cr, uid, vals, context)
+	
+	def name_get(self, cr, uid, ids, context={}):
+		if isinstance(ids, (list, tuple)) and not len(ids): return []
+		if isinstance(ids, (long, int)): ids = [ids]
+		res = []
+		for record in self.browse(cr, uid, ids):
+			name = record.name
+			if record.customer:
+				name = '%s (%s)' % (record.name, record.customer.name)
+			res.append((record.id, name))
+		return res
 	
 # ACTIONS -----------------------------------------------------------------------------------------------------------------
 	

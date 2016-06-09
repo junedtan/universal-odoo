@@ -10,6 +10,17 @@ class hr_employee(osv.osv):
 	
 	_inherit = 'hr.employee'
 	
+# CUSTOM METHODS -----------------------------------------------------------------------------------------------------------
+	
+# cek apakah employee ini driver atau bukan
+	def emp_is_driver(self, cr, uid, ids, context={}):
+		if not ids: return False
+		if isinstance(ids, int) == False: ids = ids[0]
+		job_obj = self.pool.get('hr.job')
+		employee_data = self.browse(cr, uid, ids)
+		is_driver = job_obj.is_driver(cr, uid, employee_data.job_id.id)
+		return is_driver
+	
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
@@ -18,6 +29,7 @@ class hr_employee(osv.osv):
 		'place_of_birth': fields.char('Place of Birth', size=100),
 		'date_of_birth': fields.date('Date of Birth', required=True),
 		'interview_date': fields.date('Interview Date'),
+		'last_survey_date': fields.date('Last Survey Date'),
 		'religion': fields.selection(RELIGION, 'Religion'),
 		'driver_license_number': fields.char('License Number'),
 		'driver_license_date': fields.date('License Expiry Date'),

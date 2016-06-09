@@ -15,27 +15,27 @@
 			</field>
 		</record>
 		
-		 <record id="hr_holidays_list" model="ir.ui.view">
-            <field name="name">hr.holidays.list</field>
-            <field name="model">hr.holidays</field>
-            <field name="arch" type="xml">
-                <tree string="Leaves">
-                    <field name="employee_id"/>
-                    <field name="holiday_type"/>
-                    <field name="type"/>
-                    <field name="holiday_status_id"/>
-                    <field name="name"/>
-                    <field name="date_from"/>
-                    <field name="date_to"/>
-                    <field name="number_of_days"/>
-                    <field name="state"/>
-                    <field name="category_id"/>
-                    <field name="department_id" />
-                    <field name="manager_id" />
-                    <field name="user_id" />
-                </tree>
-            </field>
-        </record>
+		<record id="hr_holidays_list" model="ir.ui.view">
+			<field name="name">hr.holidays.list</field>
+			<field name="model">hr.holidays</field>
+			<field name="arch" type="xml">
+				<tree string="Leaves">
+					<field name="employee_id"/>
+					<field name="holiday_type"/>
+					<field name="type"/>
+					<field name="holiday_status_id"/>
+					<field name="name"/>
+					<field name="date_from"/>
+					<field name="date_to"/>
+					<field name="number_of_days"/>
+					<field name="state"/>
+					<field name="category_id"/>
+					<field name="department_id" />
+					<field name="manager_id" />
+					<field name="user_id" />
+				</tree>
+			</field>
+		</record>
 		
 		
 	</data>

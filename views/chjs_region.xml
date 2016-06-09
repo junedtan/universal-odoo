@@ -1,0 +1,29 @@
+<openerp>
+	<data>
+		
+		<record id="chjs_region_form" model="ir.ui.view">
+			<field name="name">chjs.region.form</field>
+			<field name="model">chjs.region</field>
+			<field name="inherit_id" ref="chjs_region.chjs_region_form" />
+			<field name="priority" eval="100" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='active']" position="after">
+					<field name="default_wage" />
+				</xpath>
+			</field>
+		</record>
+		
+		<record id="chjs_region_list" model="ir.ui.view">
+			<field name="name">chjs.region.list</field>
+			<field name="model">chjs.region</field>
+			<field name="inherit_id" ref="chjs_region.chjs_region_list" />
+			<field name="priority" eval="100" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='parent_id']" position="after">
+					<field name="default_wage" />
+				</xpath>
+			</field>
+		</record>
+		
+	</data>
+</openerp>

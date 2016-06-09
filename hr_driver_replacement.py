@@ -11,9 +11,9 @@ class hr_driver_replacement(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'driver_original': fields.many2one('hr.employee','Driver Original', required=True),
-		'driver_replace': fields.many2one('hr.employee','Driver Replace', required=True),
-		'replace_date': fields.date('Replace Date', required=True),
+		'driver_original': fields.many2one('hr.employee','Original Driver', required=True),
+		'driver_replace': fields.many2one('hr.employee','Replacement', required=True),
+		'replace_date': fields.date('Date of Replace', required=True),
 		'contract': fields.many2one('hr.contract','Contract', required=True),
 		'customer': fields.many2one('res.partner','Customer'),
 	}

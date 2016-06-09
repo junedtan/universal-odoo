@@ -15,6 +15,8 @@ _WORKING_TIME_TYPE = [
 	('max_hour',_('Max Hour')),
 ]
 
+# ==========================================================================================================================
+
 class hr_customer_contract(osv.osv):
 	
 	 _name = "hr.customer.contract"

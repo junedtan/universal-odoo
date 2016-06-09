@@ -23,6 +23,7 @@
 		'data/hr_employee.xml',
 		'data/hr_contract.xml',
 		'views/universal.xml',
+		'views/chjs_region.xml',
 		'views/hr_recruitment.xml',
 		'views/hr_employee.xml',
 		'views/hr_contract.xml',

@@ -14,6 +14,7 @@
 					<div class="container universal_website_attendance">
 						<div class="row">
 							<div class="col-md-12 mb16 mt16">
+								<div id="message_container"></div>
 								<div t-if="view_mode in ['employee','customer']" id="attendance_container" data-mode="employee" t-att-data-employee="employee_id" t-att-data-customer="customer_id">
 									Loading...
 								</div>
@@ -37,7 +38,6 @@
 		</template>
 		
 		<template id="website_hr_attendance_employee" name="Attendance (Employee View)">
-			<div id="message_container"></div>
 			<div t-if="contracts and attendance_action == 'start'">
 				<h4>Start a new session</h4>
 				<div id="div_start">
@@ -74,9 +74,6 @@
 					</tr>
 				</table>
 			</div>
-			<div t-if="last_attendance and attendance_action in ['start_pending','stop_pending']" class="form-group">
-				<button type="button" id="btn_recheck" class="btn btn-warning btn-block btn-lg">Recheck Now</button>
-			</div>
 			<div t-if="last_attendance and attendance_action == 'stop'" class="form-group">
 				<p>
 					<span>Do you go out of town this time?</span>
@@ -93,7 +90,11 @@
 						</label>
 					</div>
 				</p>
+				<t t-call="universal.website_hr_expenses_form" />
 				<button type="button" id="btn_stop" class="btn btn-warning btn-block btn-lg">Finish</button>
+			</div>
+			<div t-if="last_attendance and attendance_action in ['start_pending','stop_pending']" class="form-group">
+				<button type="button" id="btn_recheck" class="btn btn-warning btn-block btn-lg">Recheck Now</button>
 			</div>
 			<div t-if="attendances and contracts">
 				<hr/>
@@ -126,9 +127,61 @@
 				</p>
 			</div>
 		</template>
+		
+		<template id="website_hr_expenses_form" name="Daily Expenses Form">
+			<div t-if="last_attendance and attendance_action in ['stop','stop_pending']" class="form-group">
+				<div t-if="expenses" style="max-width: 100%; overflow-x: auto">
+					<h4>Expenses</h4>
+					<p t-if="mode == 'employee'">
+						Before finishing, do not forget to record expenses occuring during this session:
+					</p>
+					<p t-if="mode == 'customer'">
+						Below are expenses recorded by your driver during this session:
+					</p>
+					<table class="table" id="expenses_table" t-att-data-expense="expense_id">
+						<t t-foreach="expenses" t-as="expense">
+							<tr>
+								<td colspan="2" style="padding-bottom: 0">
+									<t t-esc="expense['name']" />
+									<label class="expense_subtotal">0</label>
+								</td>
+							</tr>
+							<tr class="expense_line">
+								<td class="expense_cell" style="width: 35%">
+									<input type="hidden" name="product_id[]" t-att-value="expense['product_id']" />
+									<t t-if="mode == 'employee'">
+										<input type="number" name="qty[]" min="0" placeholder="Qty" />
+									</t>
+									<t t-if="mode == 'customer'">
+										<input type="number" name="qty[]" min="0" placeholder="Qty" readonly="readonly" t-att-value="expense['qty']" />
+									</t>
+								</td>
+								<td class="expense_cell" style="width: 65%">
+									<t t-if="mode == 'employee'">
+										<input type="number" name="unit_price[]" min="0" placeholder="Unit price" t-att-value="expense['unit_price']" />
+									</t>
+									<t t-if="mode == 'customer'">
+										<input type="number" name="unit_price[]" min="0" reaodnly="readonly" t-att-value="expense['unit_price']" />
+									</t>
+								</td>
+							</tr>
+						</t>
+						<tr>
+							<td colspan="2" style="text-align: right"><strong>Total: <span class="expenses_total"></span></strong></td>
+						</tr>
+					</table>
+					<p t-if="mode == 'employee'">
+						Check again expense input. Should you forget to record expenses or recording them incorrectly, you must contact administration. 
+						Customer approval is still required.
+					</p>
+					<p t-if="mode == 'customer'">
+						If you find this record incorrect, please Reject and wait for your driver to correctly reinput expenses.
+					</p>
+				</div>
+			</div>
+		</template>
 
 		<template id="website_hr_attendance_customer" name="Attendance (Customer View)">
-			<div id="message_container"></div>
 			<div t-if="contracts and attendance_action == 'start'">
 				<h4>Start a new session</h4>
 				<div id="div_start">
@@ -163,19 +216,21 @@
 						<td style="padding: 0; font-size: 150%"><span t-att-class="'fa fa-%s center' % last_attendance['action']"></span></td>
 						<td t-esc="last_attendance['date']" />
 						<td>
-							<t t-if="attendance_action in ['start_pending','stop_pending']">
-								<input type="text" id="confirm_time" t-att-value="last_attendance['time']" t-att-placeholder="last_attendance['time']"/>
-							</t>
-							<t t-if="attendance_action in ['stop']">
-								<t t-esc="last_attendance['time']" />
-							</t>
+							<input type="text" t-att-value="last_attendance['time']" readonly="readonly" id="confirm_time" style="border: 0" />
 						</td>
 						<td t-esc="last_attendance['customer']" />
 					</tr>
 				</table>
 			</div>
+			<div t-if="attendances and attendance_action in ['stop_pending']" class="form-group">
+				<p>
+					<t t-esc="out_of_town" />
+				</p>
+				<t t-call="universal.website_hr_expenses_form" />
+			</div>
 			<div t-if="attendances and attendance_action in ['start_pending','stop_pending']" class="form-group">
-				<button type="button" id="btn_confirm" class="btn btn-warning btn-block btn-lg">Confirm</button>
+				<button type="button" id="btn_confirm" class="btn btn-success btn-block btn-lg">Confirm</button>
+				<button type="button" id="btn_reject" class="btn btn-danger btn-block btn-lg">Reject</button>
 			</div>
 			<div t-if="attendances and attendance_action in ['stop']" class="form-group">
 				<button type="button" id="btn_recheck" class="btn btn-warning btn-block btn-lg">Recheck Now</button>

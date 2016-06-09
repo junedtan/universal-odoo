@@ -1,3 +1,15 @@
+
+Number.prototype.formatMoney = function(c, d, t){
+var n = this, 
+    c = isNaN(c = Math.abs(c)) ? 2 : c, 
+    d = d == undefined ? "." : d, 
+    t = t == undefined ? "," : t, 
+    s = n < 0 ? "-" : "", 
+    i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "", 
+    j = (j = i.length) > 3 ? j % 3 : 0;
+   return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+ };
+
 $(document).ready(function () {
 	
 	function display_message(container, message, type='info', timeout=5) { //timeout dalam detik
@@ -14,7 +26,8 @@ $(document).ready(function () {
 				'<h4>'+type_to_text[type]+'</h4>'+
 				'<p>'+message+'</p>'+
 			'</div>'
-		);
+		).fadeIn();
+		$("html, body").animate({scrollTop: 0}, 500);
 		if (timeout > 0) {
 			setTimeout(function() {
 				clear_message(container);
@@ -23,7 +36,41 @@ $(document).ready(function () {
 	}
 	
 	function clear_message(container) {
-		container.html('');
+		container.fadeOut().html('');
+	}
+	
+	function daily_expense_change() {
+		var expenses_total = 0;
+		$("tr.expense_line").each(function() {
+			var line = $(this);
+			var qty = parseFloat(line.find("input[name='qty[]']").val());
+			var unit_price = parseFloat(line.find("input[name='unit_price[]']").val());
+			if (isNaN(qty) || !qty) qty = 0;
+			if (isNaN(unit_price) || !unit_price) unit_price = 0;
+			var subtotal = (qty * unit_price).formatMoney(0, ',', '.');
+			line.prev().find('.expense_subtotal').html(subtotal);
+			expenses_total += qty * unit_price;
+		});
+		$(".expenses_total").html(expenses_total.formatMoney(0, ',', '.'));
+	}
+	
+	function daily_expense_serialize() {
+		var product_id_hiddens = $("input[name='product_id[]']");
+		var qty_inputs = $("input[name='qty[]']");
+		var unit_price_inputs = $("input[name='unit_price[]']");
+		var product_ids = [], qtys = [], unit_prices = [];
+		qty_inputs.each(function(idx, dummy) {
+			var qty = $.trim($(this).val());
+			if (qty) {
+				qtys.push(qty);
+				unit_prices.push($(unit_price_inputs[idx]).val());
+				product_ids.push($(product_id_hiddens[idx]).val());
+			}
+		});
+		product_ids = product_ids.join('|');
+		qtys = qtys.join('|');
+		unit_prices = unit_prices.join('|');
+		return product_ids + '@' + qtys + '@' + unit_prices;
 	}
 	
 //start/stop baik untuk driver maupun customer
@@ -47,6 +94,7 @@ $(document).ready(function () {
 					method: 'GET',
 					success: function(response) {
 						$("#attendance_container", website_attendance).html(response);
+						$("input[name='qty[]']").eq(0).change();
 					},
 				});
 			}
@@ -75,10 +123,10 @@ $(document).ready(function () {
 			var employee_id = parseInt($("#attendance_container").data("employee"));
 			var contract_id = parseInt($("#attendances_table").data("contract"));
 			var out_of_town = $("#out_of_town_div input[type='radio'][name='out_of_town']:checked").val();
-			console.log(out_of_town);
+			var expense = daily_expense_serialize();
 			$.ajax({
 				dataType: "json",
-				url: '/hr/attendance/employee/finish/'+employee_id+'/'+contract_id+'/'+out_of_town,
+				url: '/hr/attendance/employee/finish/'+employee_id+'/'+contract_id+'/'+out_of_town+'/'+expense,
 				method: 'POST',
 				success: function(response) {
 					if (response.error) {
@@ -100,9 +148,31 @@ $(document).ready(function () {
 				display_message($("#message_container"), 'Invalid time. Please input time in format of HH:MM (24 hour) e.g. 08:30, 17:40.', "error", 0);
 				return;
 			}
+			var expense_id = parseInt($("#expenses_table").data("expense"));
+			if (isNaN(expense_id)) expense_id = 0;
 			$.ajax({
 				dataType: "json",
-				url: '/hr/attendance/customer/confirm/'+attendance_id+'/'+time,
+				url: '/hr/attendance/customer/confirm/'+attendance_id+'/'+time+'/'+expense_id,
+				method: 'POST',
+				success: function(response) {
+					if (response.error) {
+						display_message(message_container, response.error, "error", 0);
+					}
+					if (response.info) {
+						display_message(message_container, response.info, "info");
+					}
+					attendance_scan();
+				},
+			});
+		}
+	
+		function customer_reject() {
+			var attendance_id = parseInt($("#attendances_table").data("attendance"));
+			var expense_id = parseInt($("#expenses_table").data("expense"));
+			if (isNaN(expense_id)) expense_id = 0;
+			$.ajax({
+				dataType: "json",
+				url: '/hr/attendance/customer/reject/'+attendance_id+'/'+expense_id,
 				method: 'POST',
 				success: function(response) {
 					if (response.error) {
@@ -133,6 +203,14 @@ $(document).ready(function () {
 		
 		$(website_attendance).on("click", "#btn_confirm", function () {
 			customer_confirm();
+		});
+		
+		$(website_attendance).on("click", "#btn_reject", function () {
+			customer_reject();
+		});
+		
+		$(website_attendance).on("change", ".expense_line input", function() {
+			daily_expense_change();
 		});
 		
 	//berdasarkan mode, tentukan mau ngeload konten yang mana

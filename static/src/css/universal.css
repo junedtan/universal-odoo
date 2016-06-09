@@ -45,3 +45,25 @@
 .universal-tr-sign-out {
 	color: #0066CC;
 }
+
+#attendance_container, #message_container {
+	max-width: 480px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.table > tbody > tr > td.expense_cell {
+  border-top: 0 none;
+  padding: 0 8px;
+}
+
+.table > tbody > tr > td.expense_cell input {
+  border: 0 none;
+  padding: 3px 0;
+  width: 100%;
+	margin-bottom: 6px;
+}
+
+.expense_subtotal {
+  float: right;
+}

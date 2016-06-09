@@ -9,6 +9,19 @@ _EXPENSE_INPUT_SOURCE = (
 
 # ==========================================================================================================================
 
+class product_template(osv.osv):
+	
+	_inherit = "product.template"
+	
+# COLUMNS ------------------------------------------------------------------------------------------------------------------
+
+	_columns = {
+		'is_trip_related': fields.boolean('Trip Related?', 
+			help="Specify if the expense is trip-related. Only these will show up in driver's menu."),
+	}
+		
+# ==========================================================================================================================
+
 class hr_hr_expense_expense(osv.osv):
 	
 	_inherit = 'hr.expense.expense'

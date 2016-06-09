@@ -9,7 +9,7 @@ from openerp.addons.website.models.website import slug
 import json
 
 import pytz
-from datetime import datetime
+from datetime import datetime, date
 
 def datetime_as_user_tz(datetime_str, tz=None, datetime_format='%Y-%m-%d %H:%M:%S'):
 	if isinstance(datetime_str, (str, unicode)):
@@ -24,6 +24,23 @@ def datetime_as_utc(datetime_str, tz=None, datetime_format='%Y-%m-%d %H:%M:%S'):
 	user_tz = pytz.timezone(tz or pytz.utc)
 	offset = user_tz.utcoffset(datetime_str).total_seconds()/3600
 	return datetime_str - timedelta(hours=offset)
+	
+def unserialize_expense(expense_str):
+	if not expense_str: return []
+	temp = expense_str.split('@')
+	if not temp[0] or not temp[1] or not temp[2]: return []
+	product_id = temp[0].split('|')
+	qty = temp[1].split('|')
+	unit_price = temp[2].split('|')
+	if len(qty) != len(unit_price) or len(qty) != len(product_id): return[]
+	result = []
+	for idx in range(0,len(qty)):
+		result.append({
+			'product_id': product_id[idx],
+			'unit_amount': unit_price[idx],
+			'unit_quantity': qty[idx],
+		})
+	return result
 
 class website_universal(http.Controller):
 
@@ -137,19 +154,48 @@ class website_universal(http.Controller):
 		# tentukan string out of town, untuk konfirmasi customer
 			out_of_town_str = {
 				'no': _('The driver said that this session is not out-of-town.'),
-				'roundtrip': _('The driver said that this is a roundtrip out-of-town session.'),
-				'overnight': _('The driver said that this is a overnight out-of-town session.'),
+				'roundtrip': _('The driver said that this is a ROUNDTRIP out-of-town session.'),
+				'overnight': _('The driver said that this is a OVERNIGHT out-of-town session.'),
 			}
 			out_of_town = out_of_town_str.get(last_entry['out_of_town'])
+		# untuk biaya perjalanan: ambil semua product expense untuk bahan isian driver, dan 
+		# hasil isian driver untuk divalidasi customer
+			expenses = []
+			expense_id = 0
+			if mode == 'employee':
+				product_obj = env['product.product']
+				expenses_raw = product_obj.sudo().search([('hr_expense_ok','=',True),('is_trip_related','=',True)], order="id")
+				for row in expenses_raw:
+					expenses.append({
+						'name': row.name,
+						'product_id': row.id,
+						'qty': None,
+						'unit_price': row.standard_price,
+					})
+			elif mode == 'customer':
+				expense_obj = env['hr.expense.expense']
+				expenses_raw = expense_obj.sudo().search([('state','=','draft'),('contract_id','=',contract_id)],order="id")
+				if expenses_raw:
+					expense_id = expenses_raw[0].id
+					for line in expenses_raw[0].line_ids:
+						expenses.append({
+							'name': line.product_id.name,
+							'product_id': line.product_id.id,
+							'qty': line.unit_quantity,
+							'unit_price': line.unit_amount,
+						})
 		# udah deh
 			template = mode == 'employee' and 'website_hr_attendance_employee' or mode == 'customer' and 'website_hr_attendance_customer' or ''
 			return request.render("universal.%s" % template, {
+				'mode': mode,
 				'attendance_action': attendance_action,
 				'contracts': contracts,
 				'attendances': attendances,
 				'contract_id': contract_id,
 				'last_attendance': last_entry,
 				'out_of_town': out_of_town,
+				'expense_id': expense_id,
+				'expenses': expenses,
 			})
 
 		@http.route('/hr/attendance/employee/start/<int:employee_id>/<int:contract_id>', type='http', auth="user", website=True)
@@ -170,14 +216,14 @@ class website_universal(http.Controller):
 				response['error'] = _('Error logging in attendance. Please contact your administrator.')
 			return json.dumps(response)
 			
-		@http.route('/hr/attendance/employee/finish/<int:employee_id>/<int:contract_id>/<string:out_of_town>', type='http', auth="user", website=True)
-		def hr_attendance_employee_finish(self, employee_id, contract_id, out_of_town, **kwargs):
+		@http.route('/hr/attendance/employee/finish/<int:employee_id>/<int:contract_id>/<string:out_of_town>/<string:expense>', type='http', auth="user", website=True)
+		def hr_attendance_employee_finish(self, employee_id, contract_id, out_of_town, expense, **kwargs):
 			env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
 			uid = env.uid
 			attendance_obj = env['hr.attendance']
 			response = {}
-			print out_of_town
 			try:
+			# create attendance sntry baru dengan action Sign Out
 				attendance_obj.create({
 					'employee_id': employee_id,
 					'contract_id': contract_id,
@@ -185,27 +231,79 @@ class website_universal(http.Controller):
 					'source': 'app',
 					'out_of_town': out_of_town or 'no',
 				})
+			# urus expense
+				if expense:
+					expense_obj = env['hr.expense.expense']
+					product_obj = env['product.product']
+					expense_line = unserialize_expense(expense)
+					if expense_line:
+						new_expense_line = []
+						for line in expense_line:
+							product = product_obj.sudo().browse(int(line['product_id']))
+							line.update({
+								'product_id': int(line['product_id']),
+								'unit_amount': float(line['unit_amount']),
+								'unit_quantity': float(line['unit_quantity']),
+								'name': product.name,
+								'date_value': date.today(),
+							})
+							new_expense_line.append([0,False,line])
+					expense_obj.create({
+						'employee_id': employee_id,
+						'name': _('Trip expense for %s' % date.today().strftime("%d %b %Y")),
+						'contract_id': contract_id,
+						'source': 'app',
+						'date': date.today(),
+						'line_ids': new_expense_line,
+					})
 				response['info'] = _('Today has been finished. Nice job!')
+			except ValueError:
+				response['error'] = _('It seems that some expenses are incorrectly inputted. Please make sure all inputs are numeric.')
 			except:
 				response['error'] = _('Error logging in attendance. Please contact your administrator.')
 			return json.dumps(response)
 
-		@http.route('/hr/attendance/customer/confirm/<int:attendance_id>/<string:time>', type='http', auth="user", website=True)
-		def hr_attendance_customer_confirm(self, attendance_id, time, **kwargs):
+		@http.route('/hr/attendance/customer/confirm/<int:attendance_id>/<string:time>/<int:expense_id>', type='http', auth="user", website=True)
+		def hr_attendance_customer_confirm(self, attendance_id, time, expense_id, **kwargs):
 			env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
 			uid = env.uid
-			attendance_obj = env['hr.attendance']
 			response = {}
-			attendance_data = attendance_obj.sudo().browse(attendance_id)
-		# ganti waktunya. time asumsinya berformat HH:MM
-			temp = time.split(':')
-			new_attendance_time = datetime.strptime(attendance_data.name,"%Y-%m-%d %H:%M:%S").replace(hour=int(temp[0]), minute=int(temp[1]))
-			new_attendance_time = datetime_as_utc(new_attendance_time, tz=request.env.context.get('tz',None))
 			try:
+				attendance_obj = env['hr.attendance']
+				attendance_data = attendance_obj.sudo().browse(attendance_id)
+			# ganti waktunya. time asumsinya berformat HH:MM
+				#temp = time.split(':')
+				#new_attendance_time = datetime.strptime(attendance_data.name,"%Y-%m-%d %H:%M:%S").replace(hour=int(temp[0]), minute=int(temp[1]))
+				#new_attendance_time = datetime_as_utc(new_attendance_time, tz=request.env.context.get('tz',None))
 				attendance_data.write({
-					'name': new_attendance_time,
+					#'name': new_attendance_time,
 					'customer_approval': datetime.now().replace(microsecond=0),
 				})
+			# konfirmasi expense
+				expense_obj = env['hr.expense.expense']
+				expense = expense_obj.sudo().browse(expense_id)
+				expense.sudo().write({
+					'state': 'accepted', 
+					'date_confirm': date.today(),
+					'user_valid': uid,
+					'date_valid': date.today(),
+				})
+				response['info'] = _('Confirmation accepted.')
+			except:
+				response['error'] = _('Error confirming start/finish. Please try again in a moment. If the trouble persists, please use paper attendance for now.')
+			return json.dumps(response)
+			
+		@http.route('/hr/attendance/customer/reject/<int:attendance_id>/<int:expense_id>', type='http', auth="user", website=True)
+		def hr_attendance_customer_reject(self, attendance_id, expense_id, **kwargs):
+			env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
+			uid = env.uid
+			response = {}
+			try:
+				attendance_obj = env['hr.attendance']
+				attendance_data = attendance_obj.sudo().search([('id','=',attendance_id)]).unlink()
+				if expense_id:
+					expense_obj = env['hr.expense.expense']
+					expense = expense_obj.sudo().search([('id','=',expense_id)]).unlink()
 				response['info'] = _('Confirmation accepted.')
 			except:
 				response['error'] = _('Error confirming start/finish. Please try again in a moment. If the trouble persists, please use paper attendance for now.')

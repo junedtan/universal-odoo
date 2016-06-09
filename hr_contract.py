@@ -42,6 +42,8 @@ class hr_contract(osv.osv):
 		'customer': fields.many2one('res.partner','Customer'),
 		'parent_contract': fields.many2one('hr.contract','Parent Contract', ondelete="cascade"),
 		'homebase': fields.many2one('chjs.region','Homebase', domain=[('type', '=', 'city'),('active','=',True)]),
+		'oot_roundtrip_fee': fields.float('Roundtrip Fee/day'),
+		'oot_overnight_fee': fields.float('Overnight Fee/day'),
 		'responsible': fields.many2one('hr.employee','First Party', required=True),
 		'responsible_job_id': fields.related('responsible','job_id',type="many2one",relation="hr.job",string="First Party's Job Title",readonly=True),
 		'state': fields.selection(CONTRACT_STATE, 'State'),

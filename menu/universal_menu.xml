@@ -40,7 +40,44 @@
 			<field name="view_mode">form</field>
 		</record>
 		
-    <menuitem parent="hr.menu_hr_root" sequence="1" name="Driver" id="menu_hr_driver" />
+		<record id="universal_action_driver_replacement" model="ir.actions.act_window">
+			<field name="name">Driver Replacement</field>	
+			<field name="res_model">hr.driver.replacement</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+		
+		<record id="universal_action_holidays_reset" model="ir.actions.act_window">
+			<field name="name">Holidays Reset</field>	
+			<field name="res_model">hr.holidays.reset.memory</field>	
+			<field name="view_type">form</field>
+			<field name="view_mode">form</field>
+		</record>
+		
+		<record id="universal_action_past_holidays" model="ir.actions.act_window">
+            <field name="name">Past Leaves</field>
+            <field name="res_model">hr.holidays</field>
+            <field name="view_type">tree</field>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="hr_holidays_list"/>
+            <field name="domain">[('active','=',False)]</field>
+        </record>
+        
+        <record id="universal_menu_start_stop" model="website.menu">
+			<field name="name">Driver Attendance</field>
+			<field name="url">/hr/attendance</field>
+			<field name="parent_id" ref="website.main_menu"/>
+			<field name="sequence" type="int">50</field>
+		</record>
+        
+        <record id="universal_action_attendance_mass" model="ir.actions.act_window">
+			<field name="name">Attendance Mass</field>	
+			<field name="res_model">hr.attendance.mass.memory</field>	
+			<field name="view_type">form</field>
+			<field name="view_mode">form</field>
+		</record>
+		
+	<menuitem parent="hr.menu_hr_root" sequence="1" name="Driver" id="menu_hr_driver" />
 		<menuitem parent="hr.menu_hr_configuration" sequence="3" id="universal_menu_job_position" action="universal_action_job_position"  />
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="5" id="universal_menu_check_duplicate" action="universal_action_check_duplicate"  />
 		<menuitem parent="hr.menu_hr_configuration" sequence="5" id="universal_menu_resource_calendar" action="resource.action_resource_calendar_form"/>
@@ -48,16 +85,13 @@
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="5" name="Check Duplicate" id="universal_menu_check_duplicate" action="universal_action_check_duplicate"  />
 		<menuitem parent="menu_hr_driver" sequence="4" id="universal_menu_contract_attc" action="universal_action_contract_attc" />
 
-	</data>
-	
-	<data>
+		<menuitem parent="hr_holidays.menu_open_ask_holidays" sequence="20" id="universal_menu_holiday_reset" action="universal_action_holidays_reset" />
+		<menuitem parent="hr_holidays.menu_open_ask_holidays" sequence="21" id="universal_menu_past_holidays" action="universal_action_past_holidays" />
+
+		<menuitem parent="hr_attendance.menu_hr_attendance" sequence="21" id="hr_menu_driver_replacement" action="universal_action_driver_replacement" />
 		
-		<record id="universal_menu_start_stop" model="website.menu">
-			<field name="name">Driver Attendance</field>
-			<field name="url">/hr/attendance</field>
-			<field name="parent_id" ref="website.main_menu"/>
-			<field name="sequence" type="int">50</field>
-		</record>
+		<menuitem parent="hr_attendance.menu_hr_attendance" sequence="22" id="universal_menu_attendance_mass" action="universal_action_attendance_mass" />
+		
 		
 	</data>
 </openerp>

@@ -10,6 +10,17 @@ class hr_employee(osv.osv):
 	
 	_inherit = 'hr.employee'
 	
+# CUSTOM METHODS -----------------------------------------------------------------------------------------------------------
+	
+# cek apakah employee ini driver atau bukan
+	def emp_is_driver(self, cr, uid, ids, context={}):
+		if not ids: return False
+		if isinstance(ids, int) == False: ids = ids[0]
+		job_obj = self.pool.get('hr.job')
+		employee_data = self.browse(cr, uid, ids)
+		is_driver = job_obj.is_driver(cr, uid, employee_data.job_id.id)
+		return is_driver
+	
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {

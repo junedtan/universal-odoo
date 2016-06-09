@@ -13,7 +13,7 @@
 		"chjs_custom_view","chjs_region",
 		"hr","hr_recruitment","hr_contract",
 		"hr_recruitment_period","hr_recruitment_requirement","hr_employee_family","hr_employee_health",
-		"hr_termination","hr_expense",
+		"hr_termination","hr_overtime","hr_expense"
 	],
 	'sequence': 150,
 	'data': [
@@ -27,6 +27,8 @@
 		'views/hr_employee.xml',
 		'views/hr_contract.xml',
 		'views/hr_attendance.xml',
+		'views/hr_driver_replacement.xml',
+		'views/hr_holidays.xml',
 		'views/hr_expense.xml',
 		'menu/universal_menu.xml',
 		'report/report_universal.xml',

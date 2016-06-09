@@ -207,6 +207,65 @@ class hr_applicant(osv.osv):
 		if len(dupli_app_ids) > 0:
 			return duplicate_ids
 		return False
+	
+	def create_employee_from_applicant(self, cr, uid, ids, context=None):
+	# ambil stage contract_signed utnuk dibandingkan di bawah
+		model_obj = self.pool.get('ir.model.data')
+		hr_employee_obj = self.pool.get('hr.employee')
+		hr_employee_family_obj = self.pool.get('hr.employee.family')
+		model, contract_signed_stage_id = model_obj.get_object_reference(cr, uid, 'universal', 'stage_job7')
+	# cek untuk setiap data
+		for data in self.browse(cr, uid, ids, context):
+		# applicant ini sudah harus sampai tahap contract signed baru bisa jadi employee
+			if data.stage_id.id != contract_signed_stage_id:
+				raise osv.except_osv(_('Recruitment Error'),_('Applicant must have reach Contract Signed stage to be entitled for employee creation.'))
+	# bikin data employee nya
+		dict_act_window = super(hr_applicant, self).create_employee_from_applicant(cr, uid, ids, context=context)
+	# ambil data applicant kalau ada
+		applicant_data = self.browse(cr, uid, ids[0], context=context)
+		emp_data = {
+			'gender': applicant_data.gender,
+			'place_of_birth': applicant_data.place_of_birth,
+			'date_of_birth': applicant_data.date_of_birth,
+			'interview_date': applicant_data.interview_date,
+			'religion': applicant_data.religion,
+			'driver_license_number': applicant_data.driver_license_number,
+			'driver_license_date': applicant_data.driver_license_date,
+			'identification_id': applicant_data.identification_id,
+			'mobile_phone': applicant_data.partner_mobile,
+			'mobile_phone2': applicant_data.partner_mobile2,
+			'mobile_phone3': applicant_data.partner_mobile3,
+			'npwp': applicant_data.npwp,
+			'overtime_ready': applicant_data.overtime_ready,
+			'holiday_ready': applicant_data.holiday_ready,
+			'driver_area': applicant_data.driver_area,
+			'language': applicant_data.language,
+			'transportation': applicant_data.transportation,
+			'residence_location': applicant_data.residence_location,
+			'residential_address': applicant_data.residential_address,
+			'residential_phone': applicant_data.residential_phone,
+			'family_card_number': applicant_data.family_card_number,
+		}
+		hr_employee_obj.write(cr, uid, applicant_data.emp_id.id, emp_data)
+	# bikin data family kalau ada
+		if applicant_data.family_contact_name:
+			hr_employee_family_obj.create(cr, uid, {
+				'employee_id': applicant_data.emp_id.id,
+				'name': applicant_data.family_contact_name,
+				'family_relationship': applicant_data.family_contactable_relationship or None,
+				'address': applicant_data.family_contactable_address or "",
+				'contact_number': applicant_data.family_contactable_phone or "",
+				}
+			)
+	# kalau contactablenya bukan spouse, bikin row baru
+		if applicant_data.family_contactable_relationship != "spouse" and applicant_data.marital_status == "married":
+			hr_employee_family_obj.create(cr, uid, {
+				'employee_id': applicant_data.emp_id.id,
+				'name': applicant_data.spouse_name,
+				'family_relationship': "spouse",
+				}
+			)
+		return dict_act_window
 		
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
@@ -269,6 +328,8 @@ class hr_applicant(osv.osv):
 	# yu panggil write-nya
 		return super(hr_applicant, self).write(cr, uid, ids, vals, context)
 		
+# ONCHANGE ----------------------------------------------------------------------------------------------------------------
+
 	# pengisian/pengosongan date_closed tidak berdasarkan apakah stage ybs folded atau tidak, tapi mengacu ke isi field 
 	# is_end dari stage ybs
 	def onchange_stage_id(self, cr, uid, ids, stage_id, context=None):

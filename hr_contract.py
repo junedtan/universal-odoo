@@ -78,6 +78,17 @@ class hr_contract(osv.osv):
 	# panggil create biasa
 		return super(hr_contract, self).create(cr, uid, vals, context)
 	
+	def name_get(self, cr, uid, ids, context={}):
+		if isinstance(ids, (list, tuple)) and not len(ids): return []
+		if isinstance(ids, (long, int)): ids = [ids]
+		res = []
+		for record in self.browse(cr, uid, ids):
+			name = record.name
+			if record.customer:
+				name = '%s (%s)' % (record.name, record.customer.name)
+			res.append((record.id, name))
+		return res
+	
 # ACTIONS -----------------------------------------------------------------------------------------------------------------
 	
 	def action_finish(self, cr, uid, ids, context=None):

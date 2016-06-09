@@ -69,5 +69,7 @@ import hr_employee
 import hr_contract
 import hr_termination
 import hr_attendance
+import hr_driver_replacement
+import hr_holidays
 import hr_expense
 import controllers

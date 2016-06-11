@@ -141,7 +141,16 @@ class hr_contract(osv.osv):
 		if emp_obj.driver_type == "contract" and contract_type == "contract_attc":
 			parent_contract = self.get_latest_contract(cr, uid, emp_id)
 	
-		return {'value': {'parent_contract': parent_contract, 'job_id': job_id}}
+		return {'value': {'parent_contract': parent_contract, 'job_id': job_id, 'homebase': False}}
+	
+	def onchange_homebase(self, cr, uid, ids, contract_type, homebase, context=None):
+		if not contract_type or not homebase: return {'value': {'homebase': False}}
+		homebase_obj = self.pool.get('chjs.region')
+		wage = 0
+		if contract_type == "contract_attc":
+			homebase_data = homebase_obj.browse(cr, uid, homebase)
+			wage = homebase_data.wage
+		return {'value': {'wage': wage}}
 
 	def onchange_cust_contract(self, cr, uid, ids, cust_contract, context=None):
 		if not cust_contract:

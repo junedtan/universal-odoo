@@ -38,7 +38,7 @@
 					<field name="cust_contract" on_change="onchange_cust_contract(cust_contract)" 
 					attrs="{'required': [('contract_type','=','contract_attc')],'invisible':[('contract_type','!=','contract_attc')]}"/>
 					<field name="customer" class="oe_read_only"/>
-					<field name="homebase" attrs="{'required': [('contract_type','=','contract_attc')],'invisible':[('contract_type','!=','contract_attc')]}" />
+					<field name="homebase" on_change="onchange_homebase(contract_type, homebase)" attrs="{'required': [('contract_type','=','contract_attc')],'invisible':[('contract_type','!=','contract_attc')]}" />
 				</xpath>
 				<xpath expr="//field[@name='wage']" position="after">
 					<field name="oot_roundtrip_fee" attrs="{'invisible': [('contract_type','!=','contract_attc')]}" />

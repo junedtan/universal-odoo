@@ -87,7 +87,7 @@ class hr_contract(osv.osv):
 		for record in self.browse(cr, uid, ids):
 			name = record.name
 			if record.customer:
-				name = '%s (%s)' % (record.name, record.customer.name)
+				name = '%s (%s)' % (record.customer.name, record.name)
 			res.append((record.id, name))
 		return res
 	

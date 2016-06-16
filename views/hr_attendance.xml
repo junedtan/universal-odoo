@@ -14,6 +14,7 @@
 				<xpath expr="//field[@name='action']" position="before">
 					<field name="source" />
 					<field name="out_of_town" />
+					<field name="routes" />
 				</xpath>
 			</field>
 		</record>
@@ -35,6 +36,7 @@
 								<field name="start_time" widget="float_time" />
 								<field name="finish_time" widget="float_time" />
 								<field name="out_of_town" />
+								<field name="routes" />
 							</tree>
 						</field>
 					</group>

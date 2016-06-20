@@ -25,6 +25,7 @@ class hr_attendance(osv.osv):
 		'customer_approval': fields.datetime('Customer Approval'),
 		'source': fields.selection(_ATTENDANCE_SOURCE,'Source'),
 		'out_of_town': fields.selection(_OUT_OF_TOWN, 'Out of Town?'),
+		'routes': fields.text('Routes'),
 	}
 	
 # ==========================================================================================================================
@@ -80,25 +81,22 @@ class hr_attendance_mass_memory(osv.osv_memory):
 					emp_id = driver_rep_ids
 			signin_date = datetime.strptime(row[2]['attendance_date'],'%Y-%m-%d') + timedelta(seconds=(row[2]['start_time'] - 7) *  3600)
 			signout_date = datetime.strptime(row[2]['attendance_date'],'%Y-%m-%d') + timedelta(seconds=(row[2]['finish_time'] - 7) *  3600)
-			print signin_date
-			print signout_date
 		# bikin list attendance, untuk setiap row bikin 2 baris attendance
 		# sign in
-			print "sign in"
 			attendance_obj.create(cr, uid, {
 				'name': signin_date,
 				'action': 'sign_in',
 				'employee_id': emp_id,
 				'source': 'manual'
 			})
-			print "sign out"
 		# sign out
 			attendance_obj.create(cr, uid,{
 				'name': signout_date,
 				'action': 'sign_out',
 				'employee_id': emp_id,
 				'out_of_town': row[2]['out_of_town'],
-				'source': 'manual'
+				'source': 'manual',
+				'routes': row[2]['routes'],
 			})
 		return True
 	
@@ -115,6 +113,7 @@ class hr_attendance_mass_memory_lines(osv.osv_memory):
 		'start_time': fields.float('Start Time', required=True),
 		'finish_time': fields.float('Finish Time', required=True),
 		'out_of_town': fields.selection(_OUT_OF_TOWN, 'Out of Town?'),
+		'routes': fields.text('Routes'),
 	}
 	
 	_defaults = {

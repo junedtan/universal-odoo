@@ -12,6 +12,8 @@ var n = this,
 
 $(document).ready(function () {
 	
+	var message_timer;
+	
 	function display_message(container, message, type='info', timeout=5) { //timeout dalam detik
 		var type_to_class = {
 			'info': 'oe_callout_info',
@@ -29,7 +31,7 @@ $(document).ready(function () {
 		).fadeIn();
 		$("html, body").animate({scrollTop: 0}, 500);
 		if (timeout > 0) {
-			setTimeout(function() {
+			message_timer = setTimeout(function() {
 				clear_message(container);
 			},timeout*1000);
 		}
@@ -124,9 +126,10 @@ $(document).ready(function () {
 			var contract_id = parseInt($("#attendances_table").data("contract"));
 			var out_of_town = $("#out_of_town_div input[type='radio'][name='out_of_town']:checked").val();
 			var expense = daily_expense_serialize();
+			var routes = $("#routes").val();
 			$.ajax({
 				dataType: "json",
-				url: '/hr/attendance/employee/finish/'+employee_id+'/'+contract_id+'/'+out_of_town+'/'+expense,
+				url: '/hr/attendance/employee/finish/'+employee_id+'/'+contract_id+'/'+out_of_town+'/'+expense+'/'+routes,
 				method: 'POST',
 				success: function(response) {
 					if (response.error) {

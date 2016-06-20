@@ -75,6 +75,7 @@
 				</table>
 			</div>
 			<div t-if="last_attendance and attendance_action == 'stop'" class="form-group">
+				<h4>Before you finish...</h4>
 				<p>
 					<span>Do you go out of town this time?</span>
 					<br />
@@ -91,6 +92,13 @@
 					</div>
 				</p>
 				<t t-call="universal.website_hr_expenses_form" />
+				<h4>Routes</h4>
+				<p>
+					Please input street name or area separated by comma and space. 
+				</p>
+				<div class="form-group">
+					<textarea id="routes" rows="5" class="form-control" placeholder="Input routes you went through today.."></textarea>
+				</div>
 				<button type="button" id="btn_stop" class="btn btn-warning btn-block btn-lg">Finish</button>
 			</div>
 			<div t-if="last_attendance and attendance_action in ['start_pending','stop_pending']" class="form-group">

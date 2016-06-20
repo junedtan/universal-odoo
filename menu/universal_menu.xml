@@ -63,23 +63,23 @@
 		</record>
 		
 		<record id="universal_action_past_holidays" model="ir.actions.act_window">
-            <field name="name">Past Leaves</field>
-            <field name="res_model">hr.holidays</field>
-            <field name="view_type">tree</field>
-            <field name="view_mode">tree</field>
-            <field name="view_id" ref="hr_holidays_list"/>
-            <field name="domain">[('active','=',False)]</field>
-        </record>
-        
+			<field name="name">Past Leaves</field>
+			<field name="res_model">hr.holidays</field>
+			<field name="view_type">tree</field>
+			<field name="view_mode">tree</field>
+			<field name="view_id" ref="hr_holidays_list"/>
+			<field name="domain">[('active','=',False)]</field>
+		</record>
+
         <record id="universal_menu_start_stop" model="website.menu">
 			<field name="name">Driver Attendance</field>
 			<field name="url">/hr/attendance</field>
 			<field name="parent_id" ref="website.main_menu"/>
 			<field name="sequence" type="int">50</field>
 		</record>
-        
-        <record id="universal_action_attendance_mass" model="ir.actions.act_window">
-			<field name="name">Attendance Mass</field>	
+
+		<record id="universal_action_attendance_mass" model="ir.actions.act_window">
+			<field name="name">Mass Input Attendance</field>	
 			<field name="res_model">hr.attendance.mass.memory</field>	
 			<field name="view_type">form</field>
 			<field name="view_mode">form</field>

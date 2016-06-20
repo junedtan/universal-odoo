@@ -216,8 +216,8 @@ class website_universal(http.Controller):
 				response['error'] = _('Error logging in attendance. Please contact your administrator.')
 			return json.dumps(response)
 			
-		@http.route('/hr/attendance/employee/finish/<int:employee_id>/<int:contract_id>/<string:out_of_town>/<string:expense>', type='http', auth="user", website=True)
-		def hr_attendance_employee_finish(self, employee_id, contract_id, out_of_town, expense, **kwargs):
+		@http.route('/hr/attendance/employee/finish/<int:employee_id>/<int:contract_id>/<string:out_of_town>/<string:expense>/<string:routes>', type='http', auth="user", website=True)
+		def hr_attendance_employee_finish(self, employee_id, contract_id, out_of_town, expense, routes, **kwargs):
 			env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
 			uid = env.uid
 			attendance_obj = env['hr.attendance']
@@ -230,6 +230,7 @@ class website_universal(http.Controller):
 					'action': 'sign_out',
 					'source': 'app',
 					'out_of_town': out_of_town or 'no',
+					'routes': routes,
 				})
 			# urus expense
 				if expense:
@@ -248,7 +249,7 @@ class website_universal(http.Controller):
 								'date_value': date.today(),
 							})
 							new_expense_line.append([0,False,line])
-					expense_obj.create({
+					expense_obj.sudo().create({
 						'employee_id': employee_id,
 						'name': _('Trip expense for %s' % date.today().strftime("%d %b %Y")),
 						'contract_id': contract_id,
@@ -256,7 +257,7 @@ class website_universal(http.Controller):
 						'date': date.today(),
 						'line_ids': new_expense_line,
 					})
-				response['info'] = _('Today has been finished. Nice job!')
+				response['info'] = _('Thank you for today. Please wait for your client to approve this session finish.')
 			except ValueError:
 				response['error'] = _('It seems that some expenses are incorrectly inputted. Please make sure all inputs are numeric.')
 			except:

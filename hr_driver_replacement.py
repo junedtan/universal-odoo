@@ -18,6 +18,14 @@ class hr_driver_replacement(osv.osv):
 		'customer': fields.many2one('res.partner','Customer'),
 	}
 	
+	def _check_contract(self, cr, uid, ids, context=None):
+		for driver_replace in self.browse(cr, uid, ids, context=context):
+			return driver_replace.contract.allow_driver_replace
+	
+	_constraints = [
+		(_check_contract, "Error: The contract didn't allowed driver replacement.", ['contract']),
+	]
+	
 # ONCHANGE ----------------------------------------------------------------------------------------------------------------
 	
 	def onchange_contract(self, cr, uid, ids, contract_id):

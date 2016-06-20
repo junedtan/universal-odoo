@@ -65,6 +65,9 @@
 						</group>
 					</page>
 				</xpath>
+				<xpath expr="//field[@name='schedule_pay']" position="after">
+					<field name="allow_driver_replace" attrs="{'invisible': [('contract_type','!=','contract_attc')]}"/>
+				</xpath>
 				<xpath expr="//field[@name='trial_date_start']" position="attributes">
 					<attribute name="attrs">{'invisible': [('contract_type','=','contract_attc')]}</attribute>
 				</xpath>

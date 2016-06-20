@@ -49,6 +49,7 @@ class hr_contract(osv.osv):
 		'responsible': fields.many2one('hr.employee','First Party', required=True),
 		'responsible_job_id': fields.related('responsible','job_id',type="many2one",relation="hr.job",string="First Party's Job Title",readonly=True),
 		'state': fields.selection(CONTRACT_STATE, 'State'),
+		'allow_driver_replace': fields.boolean('Allow Driver Replacement?'),
 		'finished_by': fields.many2one('res.users', 'Finished By', readonly=True),
 		'finished_date': fields.date('Finish Date'),
 		'terminate_by': fields.many2one('res.users', 'Terminated By', readonly=True),
@@ -149,7 +150,7 @@ class hr_contract(osv.osv):
 		wage = 0
 		if contract_type == "contract_attc":
 			homebase_data = homebase_obj.browse(cr, uid, homebase)
-			wage = homebase_data.wage
+			wage = homebase_data.default_wage
 		return {'value': {'wage': wage}}
 
 	def onchange_cust_contract(self, cr, uid, ids, cust_contract, context=None):

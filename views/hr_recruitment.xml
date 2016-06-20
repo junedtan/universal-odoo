@@ -131,8 +131,8 @@
 								<group>
 									<field name="survey" invisible="1"/>
 									<field name="response_id" invisible="1"/>
-									<field name="job_id" />
-									<field name="department_id" />
+									<field name="job_id" on_change="onchange_job(job_id)" required="1"/>
+									<field name="department_id" on_change="onchange_department_id(department_id, stage_id)" />
 									<field name="company_id" widget="selection" invisible="1" />
 									<field name="user_id" context="{'default_groups_ref': ['base.group_user', 'base.group_partner_manager', 'base.group_hr_manager']}"/>
 									<field name="categ_ids" widget="many2many_tags" />

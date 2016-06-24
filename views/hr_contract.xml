@@ -41,6 +41,10 @@
 					<field name="homebase" on_change="onchange_homebase(contract_type, homebase)" attrs="{'required': [('contract_type','=','contract_attc')],'invisible':[('contract_type','!=','contract_attc')]}" />
 				</xpath>
 				<xpath expr="//field[@name='wage']" position="after">
+					<field name="meal_voc" attrs="{'invisible': [('contract_type','!=','contract_attc')]}" />
+					<field name="transport_voc" attrs="{'invisible': [('contract_type','!=','contract_attc')]}" />
+					<field name="absence_voc" attrs="{'invisible': [('contract_type','!=','contract_attc')]}" />
+					<field name="allowance" attrs="{'invisible': [('contract_type','!=','contract_attc')]}" />
 					<field name="oot_roundtrip_fee" attrs="{'invisible': [('contract_type','!=','contract_attc')]}" />
 					<field name="oot_overnight_fee" attrs="{'invisible': [('contract_type','!=','contract_attc')]}" />
 				</xpath>

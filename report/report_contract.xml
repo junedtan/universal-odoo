@@ -14,7 +14,26 @@
 						<t t-if="o.contract_type=='non_rent_driver'">
 							<t t-call="universal.report_contract_non_rent_driver" />
 						</t>
-						Contract Ref: <span t-field="o.name" />
+						Contract Ref: <span t-field="o.name" /><br/>
+						Berlaku mulai: <span t-field="o.date_start" /><br/>
+						<h3>Upah Pokok</h3>
+						<div>
+							Gaji pokok: <span t-field="o.wage" /><br/>
+						</div>
+						<h3>Upah tidak tetap</h3>
+						<div>
+							Uang makan: <span t-field="o.meal_voc" /><br/>
+							Uang transport: <span t-field="o.transport_voc" /><br/>
+							Uang kehadiran: <span t-field="o.absence_voc" /><br/>
+							Allowance: <span t-field="o.allowance" /><br/>
+							Upah tersebut di atas adalah berlaku apabila Pihak Kedua ditempatkan Pihak Pertama di lingkungan kerja Pihak Ketiga yaitu <span t-field="o.customer" /><br/>
+						</div>
+						<h3>Upah perjalanan luar kota</h3>
+						<div>
+							Pulang Pergi (PP): <span t-field="o.oot_roundtrip_fee" /><br/>
+							Menginap: <span t-field="o.oot_overnight_fee" />
+						</div>
+						Wilayah: <span t-field="o.homebase" />
 					</div>
 				</div>
 			</t>

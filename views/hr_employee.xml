@@ -20,13 +20,13 @@
 						<group>
 							<group string="Personal Info">
 								<group>
-									<field name="place_of_birth" />
-									<field name="date_of_birth" />
+									<field name="place_of_birth" required="1" />
+									<field name="date_of_birth" required="1" />
 									<field name="gender" class="oe_inline" />
 									<field name="religion" class="oe_inline" />
 								</group>
 								<group>
-									<field name="identification_id" />
+									<field name="identification_id" required="1"/>
 									<field name="npwp" />
 								</group>
 							</group>

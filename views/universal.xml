@@ -186,6 +186,11 @@
 						If you find this record incorrect, please Reject and wait for your driver to correctly reinput expenses.
 					</p>
 				</div>
+				<div t-if="not expenses">
+					<p t-if="mode == 'employee'">
+						Expense categories has not been set. Please contact administration.
+					</p>
+				</div>
 			</div>
 		</template>
 
@@ -209,10 +214,10 @@
 					</p>
 				</div>
 			</div>
-			<div t-if="attendances and attendance_action in ['start_pending','stop_pending']">
+			<div t-if="last_attendance and attendance_action in ['start_pending','stop_pending']">
 				<h4>Confirm Start/Finish</h4>
 			</div>
-			<div t-if="attendances and attendance_action in ['start_pending','stop_pending','stop']">
+			<div t-if="last_attendance and attendance_action in ['start_pending','stop_pending','stop']">
 				<table class="table" id="attendances_table" t-att-data-contract="contract_id" t-if="last_attendance" t-att-data-attendance="last_attendance['id']">
 					<tr>
 						<th></th>
@@ -230,17 +235,17 @@
 					</tr>
 				</table>
 			</div>
-			<div t-if="attendances and attendance_action in ['stop_pending']" class="form-group">
+			<div t-if="last_attendance and attendance_action in ['stop_pending']" class="form-group">
 				<p>
 					<t t-esc="out_of_town" />
 				</p>
 				<t t-call="universal.website_hr_expenses_form" />
 			</div>
-			<div t-if="attendances and attendance_action in ['start_pending','stop_pending']" class="form-group">
+			<div t-if="last_attendance and attendance_action in ['start_pending','stop_pending']" class="form-group">
 				<button type="button" id="btn_confirm" class="btn btn-success btn-block btn-lg">Confirm</button>
 				<button type="button" id="btn_reject" class="btn btn-danger btn-block btn-lg">Reject</button>
 			</div>
-			<div t-if="attendances and attendance_action in ['stop']" class="form-group">
+			<div t-if="last_attendance and attendance_action in ['stop']" class="form-group">
 				<button type="button" id="btn_recheck" class="btn btn-warning btn-block btn-lg">Recheck Now</button>
 			</div>
 			<div t-if="attendances and contracts">

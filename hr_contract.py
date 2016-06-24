@@ -19,15 +19,28 @@ _WORKING_TIME_TYPE = [
 
 class hr_customer_contract(osv.osv):
 	
-	 _name = "hr.customer.contract"
-	 _description = "Customer Contract"
+	_name = "hr.customer.contract"
+	_description = "Customer Contract"
 	 
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
-	 _columns = {
-			'name': fields.char('Contract No', size=64, required=True),
-			'customer': fields.many2one('res.partner','Customer', required=True, domain=[('customer','=',True),('is_company','=',True)]),
-		}
+	_columns = {
+		'name': fields.char('Contract No', size=64, required=True),
+		'customer': fields.many2one('res.partner','Customer', required=True, domain=[('customer','=',True),('is_company','=',True)]),
+	}
+	
+# OVERRIDES ----------------------------------------------------------------------------------------------------------------
+	
+	def name_get(self, cr, uid, ids, context={}):
+		if isinstance(ids, (list, tuple)) and not len(ids): return []
+		if isinstance(ids, (long, int)): ids = [ids]
+		res = []
+		for record in self.browse(cr, uid, ids):
+			name = record.name
+			if record.customer:
+				name = '%s (%s)' % (record.customer.name, record.name)
+			res.append((record.id, name))
+		return res
 	
 # ==========================================================================================================================
 
@@ -50,6 +63,10 @@ class hr_contract(osv.osv):
 		'responsible_job_id': fields.related('responsible','job_id',type="many2one",relation="hr.job",string="First Party's Job Title",readonly=True),
 		'state': fields.selection(CONTRACT_STATE, 'State'),
 		'allow_driver_replace': fields.boolean('Allow Driver Replacement?'),
+		'meal_voc': fields.float('Meal Allowance', digits=(16,2)),
+		'transport_voc': fields.float('Transport Allowance', digits=(16,2)),
+		'absence_voc': fields.float('Absence Allowance', digits=(16,2)),
+		'allowance': fields.float('Allowance', digits=(16,2)),
 		'finished_by': fields.many2one('res.users', 'Finished By', readonly=True),
 		'finished_date': fields.date('Finish Date'),
 		'terminate_by': fields.many2one('res.users', 'Terminated By', readonly=True),

@@ -15,13 +15,13 @@ def datetime_as_user_tz(datetime_str, tz=None, datetime_format='%Y-%m-%d %H:%M:%
 	if isinstance(datetime_str, (str, unicode)):
 		datetime_str = datetime.strptime(datetime_str, datetime_format)
 	utc_date = pytz.utc.localize(datetime_str)
-	user_tz = pytz.timezone(tz or pytz.utc)
+	user_tz = pytz.timezone(tz or 'Asia/Jakarta')
 	return utc_date.astimezone(user_tz)
 
 def datetime_as_utc(datetime_str, tz=None, datetime_format='%Y-%m-%d %H:%M:%S'):
 	if isinstance(datetime_str, (str, unicode)):
 		datetime_str = datetime.strptime(datetime_str, datetime_format)
-	user_tz = pytz.timezone(tz or pytz.utc)
+	user_tz = pytz.timezone(tz or 'Asia/Jakarta')
 	offset = user_tz.utcoffset(datetime_str).total_seconds()/3600
 	return datetime_str - timedelta(hours=offset)
 	
@@ -112,6 +112,7 @@ class website_universal(http.Controller):
 		# - stop_pending (udah stop, tunggu konfirmasi customer untuk finish)
 		# apakah sudah ada attendance untuk hari dan employee ini? 
 			contract_obj = env['hr.contract']
+			driver_replace_obj = env['hr.driver.replacement']
 			if mode == 'employee':
 				contracts = contract_obj.sudo().search([('contract_type','=','contract_attc'),('state','=','ongoing'),('employee_id','=',employee_id)])
 			elif mode == 'customer':
@@ -134,6 +135,7 @@ class website_universal(http.Controller):
 			for attendance in attendances: last_entry = attendance
 		# tentukan next action berdasarkan isi last entry ini
 			attendance_action = None
+			out_of_town = None
 			if last_entry != None:
 				contract_id = last_entry.contract_id.id
 				last_action = last_entry.action
@@ -146,18 +148,19 @@ class website_universal(http.Controller):
 					attendance_action = 'stop'
 				elif last_action == 'sign_in' and not approval:
 					attendance_action = 'start_pending'
-		# attendances kudu dipisahin antara tanggal dan jam
+			# attendances kudu dipisahin antara tanggal dan jam
 				last_entry = self._convert_attendance_data([last_entry])[0]
+			# tentukan string out of town, untuk konfirmasi customer
+				out_of_town_str = {
+					'no': _('The driver said that this session is not out-of-town.'),
+					'roundtrip': _('The driver said that this is a ROUNDTRIP out-of-town session.'),
+					'overnight': _('The driver said that this is a OVERNIGHT out-of-town session.'),
+				}
+				out_of_town = out_of_town_str.get(last_entry['out_of_town'])
 			else:
 				attendance_action = 'start'
 			attendances = self._convert_attendance_data(attendances, confirmed_only=True)
-		# tentukan string out of town, untuk konfirmasi customer
-			out_of_town_str = {
-				'no': _('The driver said that this session is not out-of-town.'),
-				'roundtrip': _('The driver said that this is a ROUNDTRIP out-of-town session.'),
-				'overnight': _('The driver said that this is a OVERNIGHT out-of-town session.'),
-			}
-			out_of_town = out_of_town_str.get(last_entry['out_of_town'])
+		
 		# untuk biaya perjalanan: ambil semua product expense untuk bahan isian driver, dan 
 		# hasil isian driver untuk divalidasi customer
 			expenses = []
@@ -213,7 +216,7 @@ class website_universal(http.Controller):
 				})
 				response['info'] = _('Today has been started. Enjoy the trip!')
 			except:
-				response['error'] = _('Error logging in attendance. Please contact your administrator.')
+				response['error'] = _('error di start Error logging in attendance. Please contact your administrator.')
 			return json.dumps(response)
 			
 		@http.route('/hr/attendance/employee/finish/<int:employee_id>/<int:contract_id>/<string:out_of_town>/<string:expense>/<string:routes>', type='http', auth="user", website=True)
@@ -223,7 +226,7 @@ class website_universal(http.Controller):
 			attendance_obj = env['hr.attendance']
 			response = {}
 			try:
-			# create attendance sntry baru dengan action Sign Out
+			# create attendance entry baru dengan action Sign Out
 				attendance_obj.create({
 					'employee_id': employee_id,
 					'contract_id': contract_id,
@@ -233,7 +236,7 @@ class website_universal(http.Controller):
 					'routes': routes,
 				})
 			# urus expense
-				if expense:
+				if expense != '-':
 					expense_obj = env['hr.expense.expense']
 					product_obj = env['product.product']
 					expense_line = unserialize_expense(expense)
@@ -261,7 +264,7 @@ class website_universal(http.Controller):
 			except ValueError:
 				response['error'] = _('It seems that some expenses are incorrectly inputted. Please make sure all inputs are numeric.')
 			except:
-				response['error'] = _('Error logging in attendance. Please contact your administrator.')
+				response['error'] = _('error di finish Error logging in attendance. Please contact your administrator.')
 			return json.dumps(response)
 
 		@http.route('/hr/attendance/customer/confirm/<int:attendance_id>/<string:time>/<int:expense_id>', type='http', auth="user", website=True)

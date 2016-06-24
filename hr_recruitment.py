@@ -311,12 +311,17 @@ class hr_applicant(osv.osv):
 			# asumsi kalo masuk ke pending approval maka is_pending nya True
 				if data.is_pending == True and not context.get('skip_pending_check') and vals['stage_id'] != refuse_stage_id:
 					raise osv.except_osv(_('Recruitment Error'),_('This applicant needs approval from your superior. Please wait for his/her approval before continuing.'))
+			# kalau applicant stagenya sudah refuse, ga boleh pindah2 stage lagi
+				if data.stage_id.id == refuse_stage_id:
+					raise osv.except_osv(_('Recruitment Error'),_('Cannot change stage after Refused.'))
 		# kalau applicant pindah ke Refused, cegah sehingga user harus pakai button Refuse Applicant
 			if vals.get('stage_id') == refuse_stage_id:
 				raise osv.except_osv(_('Recruitment Error'),_('Cannot directly change stage to Refused. Please use Refuse Applicant button instead.'))
 		# kalau applicant ini pindah KE stage Pending Approval maka aktifkan is_pending
 			if vals.get('stage_id') == pending_stage_id:
 				vals.update({'is_pending': True})
+		
+			
 	# kalau ditulis dalam rangka refusal, isi refused_by dan refused_at
 		if context.get('refusal_mode'):
 			vals.update({

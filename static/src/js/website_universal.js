@@ -69,10 +69,15 @@ $(document).ready(function () {
 				product_ids.push($(product_id_hiddens[idx]).val());
 			}
 		});
-		product_ids = product_ids.join('|');
-		qtys = qtys.join('|');
-		unit_prices = unit_prices.join('|');
-		return product_ids + '@' + qtys + '@' + unit_prices;
+		if ((product_ids.length) > 0 && (qtys.length) > 0) {
+			product_ids = product_ids.join('|');
+			qtys = qtys.join('|');
+			unit_prices = unit_prices.join('|');
+			return product_ids + '@' + qtys + '@' + unit_prices;
+		} else {
+			return '-';
+		}
+		
 	}
 	
 //start/stop baik untuk driver maupun customer
@@ -89,12 +94,14 @@ $(document).ready(function () {
 			if (isNaN(employee_id)) employee_id = 0;
 			var customer_id = parseInt($("#attendance_container").data("customer"));
 			if (isNaN(customer_id)) customer_id = 0;
+			console.log(customer_id);
 			if (employee_id || customer_id) {
 				$.ajax({
 					dataType: "html",
 					url: '/hr/attendance/scan/'+employee_id+'/'+customer_id,
 					method: 'GET',
 					success: function(response) {
+						console.log(response);
 						$("#attendance_container", website_attendance).html(response);
 						$("input[name='qty[]']").eq(0).change();
 					},
@@ -127,6 +134,9 @@ $(document).ready(function () {
 			var out_of_town = $("#out_of_town_div input[type='radio'][name='out_of_town']:checked").val();
 			var expense = daily_expense_serialize();
 			var routes = $("#routes").val();
+			if (!routes) {
+				routes = '-';
+			}
 			$.ajax({
 				dataType: "json",
 				url: '/hr/attendance/employee/finish/'+employee_id+'/'+contract_id+'/'+out_of_town+'/'+expense+'/'+routes,

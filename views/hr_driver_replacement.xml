@@ -12,7 +12,7 @@
 						<field name="driver_original" />
 						<field name="driver_replace" />
 						<field name="replace_date" />
-						<field name="contract" domain="[('employee_id','=',driver_original)]" on_change="onchange_contract(contract)" />
+						<field name="contract" domain="[('employee_id','=',driver_original),('contract_type','=','contract_attc')]" on_change="onchange_contract(contract)" />
 						<field name="customer" readonly="1"/>
 					</group>
 				</form>

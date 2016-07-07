@@ -26,7 +26,7 @@ MARITAL_STATUS = (
 DRIVER_TYPE = (
 	('active','Active'),
 	('standby','Stand By'),
-	('contract','Contracted'),
+	('contract','Contractable'),
 )
 
 CONTRACT_STATE = (
@@ -73,4 +73,6 @@ import hr_attendance
 import hr_driver_replacement
 import hr_holidays
 import hr_expense
+import hr_recruitment_requirement
+import resource
 import controllers

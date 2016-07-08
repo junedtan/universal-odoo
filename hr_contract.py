@@ -46,7 +46,9 @@ class hr_customer_contract(osv.osv):
 
 class hr_contract(osv.osv):
 	
-	_inherit = 'hr.contract'
+	_name = "hr.contract"
+	_inherit = ['hr.contract','mail.thread']
+	
 	
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
@@ -56,17 +58,18 @@ class hr_contract(osv.osv):
 		'cust_contract': fields.many2one('hr.customer.contract','Customer Contract'),
 		'customer': fields.many2one('res.partner','Customer'),
 		'parent_contract': fields.many2one('hr.contract','Parent Contract', ondelete="cascade"),
-		'homebase': fields.many2one('chjs.region','Homebase', domain=[('active','=',True)]),
+		'contract_ids': fields.one2many('hr.contract','parent_contract','Past Contract Attachment'),
+		'car_lisence_no': fields.char('Car Lisence No', track_visibility='onchange'),
 		'oot_roundtrip_fee': fields.float('Roundtrip Fee/day'),
 		'oot_overnight_fee': fields.float('Overnight Fee/day'),
 		'responsible': fields.many2one('hr.employee','First Party', required=True),
 		'responsible_job_id': fields.related('responsible','job_id',type="many2one",relation="hr.job",string="First Party's Job Title",readonly=True),
 		'state': fields.selection(CONTRACT_STATE, 'State'),
 		'allow_driver_replace': fields.boolean('Allow Driver Replacement?'),
-		'meal_voc': fields.float('Meal Allowance', digits=(16,2)),
-		'transport_voc': fields.float('Transport Allowance', digits=(16,2)),
-		'absence_voc': fields.float('Absence Allowance', digits=(16,2)),
-		'allowance': fields.float('Allowance', digits=(16,2)),
+		'meal_voc': fields.float('Meal Allowance/day', digits=(16,2)),
+		'transport_voc': fields.float('Transport Allowance/day', digits=(16,2)),
+		'absence_voc': fields.float('Absence Allowance/month', digits=(16,2)),
+		'allowance': fields.float('Allowance/day', digits=(16,2)),
 		'finished_by': fields.many2one('res.users', 'Finished By', readonly=True),
 		'finished_date': fields.date('Finish Date'),
 		'terminate_by': fields.many2one('res.users', 'Terminated By', readonly=True),
@@ -95,6 +98,11 @@ class hr_contract(osv.osv):
 		contract_seq = self.pool.get('ir.sequence').next_by_code(cr, uid, 'hr.contract.seq')
 		contract_no = 'CONTRACT.%s' % (contract_seq)
 		vals.update({'name': contract_no})
+	# kalau tipe kontraknya lampiran kontrak, ambil latest contract nya
+		if vals['contract_type'] == "contract_attc":
+			emp_obj = self.pool.get('hr.employee').browse(cr, uid, vals['employee_id'], context=context)
+			if emp_obj.driver_type == "contract":
+				vals['parent_contract'] = self.get_latest_contract(cr, uid, vals['employee_id'])
 	# panggil create biasa
 		return super(hr_contract, self).create(cr, uid, vals, context)
 	

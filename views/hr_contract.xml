@@ -41,6 +41,7 @@
 					<field name="homebase" on_change="onchange_homebase(contract_type, homebase)" attrs="{'required': [('contract_type','=','contract_attc')],'invisible':[('contract_type','!=','contract_attc')]}" />
 				</xpath>
 				<xpath expr="//field[@name='wage']" position="after">
+					<field name="car_lisence_no" attrs="{'invisible': [('contract_type','!=','contract_attc')]}" />
 					<field name="meal_voc" attrs="{'invisible': [('contract_type','!=','contract_attc')]}" />
 					<field name="transport_voc" attrs="{'invisible': [('contract_type','!=','contract_attc')]}" />
 					<field name="absence_voc" attrs="{'invisible': [('contract_type','!=','contract_attc')]}" />
@@ -69,6 +70,22 @@
 						</group>
 					</page>
 				</xpath>
+				<xpath expr="//page[@name='termination']" position="after">
+					<page name="contract_attc" string="Contract Attachment">
+						<group>
+							<field name="contract_ids" nolabel="1">
+								<tree string="Past Contract Attachment" create="false" edit="false" delete="false">
+									<field name="name"/>
+									<field name="type_id"/>
+									<field name="customer"/>
+									<field name="date_start"/>
+									<field name="date_end"/>
+									<field name="cust_contract"/>
+								</tree>
+							</field>
+						</group>
+					</page>
+				</xpath>
 				<xpath expr="//field[@name='schedule_pay']" position="after">
 					<field name="allow_driver_replace" attrs="{'invisible': [('contract_type','!=','contract_attc')]}"/>
 				</xpath>
@@ -79,6 +96,12 @@
 					<attribute name="attrs">{'invisible': [('contract_type','=','contract_attc')]}</attribute>
 				</xpath>
 				<xpath expr="//page[@string='Work Permit']" position="replace" />
+				<xpath expr="//notebook" position="after">
+					<div class="oe_chatter">
+						<field name="message_follower_ids" widget="mail_followers" groups="base.group_user" />
+						<field name="message_ids" widget="mail_thread" />
+					</div>
+				</xpath>
 			</field>
 		</record>
 		
@@ -134,6 +157,7 @@
 				<xpath expr="//tree" position="inside">
 					<field name="contract_type" invisible="context.get('mode')=='contract_attachment'" />
 					<field name="parent_contract" invisible="context.get('mode')!='contract_attachment'" />
+					<field name="state" />
 				</xpath>
 			</field>
 		</record>

@@ -35,6 +35,7 @@ class hr_employee(osv.osv):
 		'driver_license_date': fields.date('License Expiry Date'),
 		'driver_area': fields.char('Coverage Area', size=500),
 		'npwp': fields.char('NPWP'),
+		'personal_email': fields.char('Personal Email', size=200),
 		'language': fields.char('Language', size=500),
 		'transportation': fields.char('Transportation', size=500),
 		'residence_location': fields.char('Residence Location', size=500),
@@ -57,6 +58,7 @@ class hr_employee(osv.osv):
 
 	_defaults = {
 		'start_working': lambda *a: datetime.today().strftime('%Y-%m-%d'),
+		'driver_type': 'active'
 	}
 	
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------

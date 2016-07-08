@@ -34,12 +34,12 @@ class hr_attendance(osv.osv):
 
 class hr_absence_reason(osv.osv):
 	
-	_inherit = 'hr.absence.reason'
+	_name = 'hr.absence.reason'
 	
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'name': fields.many2one('Absence Reason'),
+		'name': fields.char('Absence Reason', required=True),
 	}
 	
 # ==========================================================================================================================

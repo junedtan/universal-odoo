@@ -23,7 +23,7 @@ class hr_driver_replacement(osv.osv):
 			return driver_replace.contract.allow_driver_replace
 	
 	_constraints = [
-		(_check_contract, "Error: The contract didn't allowed driver replacement.", ['contract']),
+		(_check_contract, "Error: The contract does not allow for driver replacement.", ['contract']),
 	]
 	
 # ONCHANGE ----------------------------------------------------------------------------------------------------------------

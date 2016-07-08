@@ -14,6 +14,8 @@ _OUT_OF_TOWN = (
 	('overnight','Overnight'),
 )
 
+# ==========================================================================================================================
+
 class hr_attendance(osv.osv):
 	
 	_inherit = 'hr.attendance'
@@ -26,6 +28,18 @@ class hr_attendance(osv.osv):
 		'source': fields.selection(_ATTENDANCE_SOURCE,'Source'),
 		'out_of_town': fields.selection(_OUT_OF_TOWN, 'Out of Town?'),
 		'routes': fields.text('Routes'),
+	}
+	
+# ==========================================================================================================================
+
+class hr_absence_reason(osv.osv):
+	
+	_inherit = 'hr.absence.reason'
+	
+# COLUMNS ------------------------------------------------------------------------------------------------------------------
+
+	_columns = {
+		'name': fields.many2one('Absence Reason'),
 	}
 	
 # ==========================================================================================================================

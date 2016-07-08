@@ -59,9 +59,9 @@
 			<field name="view_mode">tree,form</field>
 		</record>
 		
-		<record id="universal_action_driver_replacement" model="ir.actions.act_window">
-			<field name="name">Driver Absence</field>	
-			<field name="res_model">hr.driver.replacement</field>
+		<record id="universal_action_employee_absence" model="ir.actions.act_window">
+			<field name="name">Employee Absence</field>	
+			<field name="res_model">hr.employee.absence</field>
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
 		</record>
@@ -82,7 +82,7 @@
 			<field name="domain">[('active','=',False)]</field>
 		</record>
 
-        <record id="universal_menu_start_stop" model="website.menu">
+		<record id="universal_menu_start_stop" model="website.menu">
 			<field name="name">Driver Attendance</field>
 			<field name="url">/hr/attendance</field>
 			<field name="parent_id" ref="website.main_menu"/>
@@ -115,9 +115,8 @@
 		<menuitem parent="hr_holidays.menu_open_ask_holidays" sequence="20" id="universal_menu_holiday_reset" action="universal_action_holidays_reset" />
 		<menuitem parent="hr_holidays.menu_open_ask_holidays" sequence="21" id="universal_menu_past_holidays" action="universal_action_past_holidays" />
 
-		<menuitem parent="hr_attendance.menu_hr_attendance" sequence="21" id="hr_menu_driver_replacement" action="universal_action_driver_replacement" />
-		
 		<menuitem parent="hr_attendance.menu_hr_attendance" sequence="22" id="universal_menu_attendance_mass" action="universal_action_attendance_mass" />
+		<menuitem parent="hr_attendance.menu_hr_attendance" sequence="23" id="hr_menu_employee_absence" action="universal_action_employee_absence" />
 
 		<menuitem parent="hr.menu_open_view_attendance_reason_new_config" sequence="2" id="universal_menu_absence_reason" action="universal_action_absence_reason" />
 		

@@ -1,5 +1,7 @@
 <openerp>
 	<data>
+		
+		<!-- ATTENDANCE -->
 
 		<record model="ir.ui.view" id="view_attendance_form">
 			<field name="name">hr.attendance.form</field>	
@@ -18,6 +20,60 @@
 				</xpath>
 			</field>
 		</record>
+		
+		<!-- EMPLOYEE ABSENCE -->
+		
+		<record model="ir.ui.view" id="hr_employee_absence_form">
+			<field name="name">hr.employee.absence.form</field>
+			<field name="model">hr.employee.absence</field>
+			<field name="arch" type="xml">
+				<form string="Driver Replacement">
+					<group>
+						<field name="employee_id" />
+						<field name="absence_date" />
+						<field name="absence_reason_id" />
+						<field name="is_driver" invisible="1" />
+						<field name="driver_replace" />
+						<field name="contract" domain="[('employee_id','=',employee_id),('contract_type','=','contract_attc')]" on_change="onchange_contract(contract)" />
+						<field name="customer" readonly="1" />
+					</group>
+				</form>
+			</field>
+		</record>
+		
+		<record model="ir.ui.view" id="hr_employee_absence_list">
+			<field name="name">hr.employee.absence.list</field>
+			<field name="model">hr.employee.absence</field>
+			<field name="arch" type="xml">
+				<tree string="Driver Replacement">
+					<field name="employee_id" />
+					<field name="absence_date" />
+					<field name="absence_reason_id" />
+					<field name="driver_replace" />
+				</tree>
+			</field>
+		</record>
+		
+		<record model="ir.ui.view" id="hr_employee_absence_search">
+			<field name="name">hr.employee.absence.search</field>	
+			<field name="model">hr.employee.absence</field>
+			<field name="arch" type="xml">
+				<search string="Employee Absence Search">
+					<field name="employee_id" string="Employee" />
+					<field name="absence_reason_id" string="Reason" />
+					<field name="driver_replace" string="Replacement" />
+					<group string="Absence Date">
+						<filter string="Today" name="filter_today" domain="[('absence_date','&gt;=',(context_today()).strftime('%%Y-%%m-%%d 00:00:00')),('absence_date','&lt;=',(context_today()).strftime('%%Y-%%m-%%d 23:59:59'))]" />
+						<filter string="Yesterday" name="filter_yesterday" domain="[('absence_date','&gt;=',(context_today()-datetime.timedelta(days=1)).strftime('%%Y-%%m-%%d 00:00:00')),('absence_date','&lt;=',(context_today()-datetime.timedelta(days=1)).strftime('%%Y-%%m-%%d 23:59:59'))]" />
+						<filter string="Past 7 days" name="filter_past7" domain="[('absence_date','&gt;=',(context_today()-datetime.timedelta(days=7)).strftime('%%Y-%%m-%%d 00:00:00')),('absence_date','&lt;=',(context_today()-datetime.timedelta(days=1)).strftime('%%Y-%%m-%%d 23:59:59'))]" />
+						<filter string="Past 14 days" name="filter_past14" domain="[('absence_date','&gt;=',(context_today()-datetime.timedelta(days=14)).strftime('%%Y-%%m-%%d 00:00:00')),('absence_date','&lt;=',(context_today()-datetime.timedelta(days=1)).strftime('%%Y-%%m-%%d 23:59:59'))]" />
+						<filter string="This Month" name="filter_this_month" domain="[('absence_date','&gt;=',(context_today()).strftime('%%Y-%%m-01'))]" />
+					</group>	
+				</search>
+			</field>
+		</record>
+
+		<!-- MASS-INPUT ATTENDANCE -->
 		
 		<record model="ir.ui.view" id="hr_attendance_mass">
 			<field name="name">hr.attendance.mass</field>

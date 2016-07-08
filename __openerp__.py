@@ -28,7 +28,6 @@
 		'views/hr_employee.xml',
 		'views/hr_contract.xml',
 		'views/hr_attendance.xml',
-		'views/hr_driver_replacement.xml',
 		'views/hr_holidays.xml',
 		'views/hr_expense.xml',
 		'menu/universal_menu.xml',

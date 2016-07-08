@@ -58,6 +58,7 @@ class hr_contract(osv.osv):
 		'cust_contract': fields.many2one('hr.customer.contract','Customer Contract'),
 		'customer': fields.many2one('res.partner','Customer'),
 		'parent_contract': fields.many2one('hr.contract','Parent Contract', ondelete="cascade"),
+		'homebase': fields.many2one('chjs.region','Homebase', domain=[('active','=',True)]),
 		'contract_ids': fields.one2many('hr.contract','parent_contract','Past Contract Attachment'),
 		'car_lisence_no': fields.char('Car Lisence No', track_visibility='onchange'),
 		'oot_roundtrip_fee': fields.float('Roundtrip Fee/day'),

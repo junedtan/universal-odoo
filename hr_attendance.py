@@ -14,6 +14,8 @@ _OUT_OF_TOWN = (
 	('overnight','Overnight'),
 )
 
+# ==========================================================================================================================
+
 class hr_attendance(osv.osv):
 	
 	_inherit = 'hr.attendance'
@@ -30,6 +32,67 @@ class hr_attendance(osv.osv):
 	
 # ==========================================================================================================================
 
+class hr_absence_reason(osv.osv):
+	
+	_name = 'hr.absence.reason'
+	
+# COLUMNS ------------------------------------------------------------------------------------------------------------------
+
+	_columns = {
+		'name': fields.char('Absence Reason', required=True),
+	}
+	
+# ==========================================================================================================================
+
+class hr_employee_absence(osv.osv):
+	
+	_name = 'hr.employee.absence'
+	_description = 'HR-Employee Absence and Driver replacement'
+	
+# COLUMNS ------------------------------------------------------------------------------------------------------------------
+
+	_columns = {
+		'employee_id': fields.many2one('hr.employee','Employee', required=True),
+		'absence_date': fields.date('Date', required=True),
+		'absence_reason_id': fields.many2one('hr.absence.reason', 'Absence Reason'),
+		'is_driver': fields.boolean('Is drvier?', readonly=True),
+		'driver_replace': fields.many2one('hr.employee','Replacement Driver'),
+		'contract': fields.many2one('hr.contract','Contract'),
+		'customer': fields.many2one('res.partner','Customer'),
+	}
+	
+	def _check_contract(self, cr, uid, ids, context=None):
+		for absence in self.browse(cr, uid, ids, context=context):
+			if not (absence.is_driver and absence.contract): continue
+			if absence.contract.allow_driver_replace != True: return False
+		return True
+	
+	_constraints = [
+		(_check_contract, "Error: The contract does not allow for driver replacement.", ['contract']),
+	]
+	
+# ONCHANGE ----------------------------------------------------------------------------------------------------------------
+	
+	def onchange_contract(self, cr, uid, ids, contract_id):
+		result = {}
+		if not contract_id: return False
+		contract_obj = self.pool.get('hr.contract').browse(cr, uid, contract_id)
+		result['value'] = { 'customer' : contract_obj.customer.id }
+		return result
+
+# OVERRIDES ----------------------------------------------------------------------------------------------------------------
+
+	def name_get(self, cr, uid, ids, context={}):
+		if isinstance(ids, (list, tuple)) and not len(ids): return []
+		if isinstance(ids, (long, int)): ids = [ids]
+		res = []
+		for record in self.browse(cr, uid, ids):
+			name = '%s (%s)' % (record.employee_id.name, record.absence_reason_id.name)
+			res.append((record.id, name))
+		return res
+	
+# ==========================================================================================================================
+
 class hr_attendance_mass_memory(osv.osv_memory):
 	
 	_name = 'hr.attendance.mass.memory'
@@ -39,8 +102,8 @@ class hr_attendance_mass_memory(osv.osv_memory):
 	
 	def get_driver_replacement(self, cr, uid, emp_id, contract_id, att_date, context={}):
 		if not emp_id or not contract_id or not att_date: return False
-		driver_rep_obj = self.pool.get('hr.driver.replacement')
-		driver_rep_ids = driver_rep_obj.search(cr, uid, [('driver_original','=',emp_id),('replace_date','=',att_date),('contract','=',contract_id)])
+		absence_obj = self.pool.get('hr.employee.absence')
+		absence_ids = absence_obj.search(cr, uid, [('employee_id','=',emp_id),('absence_date','=',att_date),('contract','=',contract_id)])
 		if len(driver_rep_ids) > 0:
 			driver_rep = driver_rep_obj.browse(cr, uid, driver_rep_ids[0])
 			return driver_rep.driver_replace.id

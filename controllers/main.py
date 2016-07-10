@@ -112,7 +112,7 @@ class website_universal(http.Controller):
 		# - stop_pending (udah stop, tunggu konfirmasi customer untuk finish)
 		# apakah sudah ada attendance untuk hari dan employee ini? 
 			contract_obj = env['hr.contract']
-			driver_replace_obj = env['hr.driver.replacement']
+			absence_obj = env['hr.employee.absence']
 			if mode == 'employee':
 				contracts = contract_obj.sudo().search([('contract_type','=','contract_attc'),('state','=','ongoing'),('employee_id','=',employee_id)])
 			elif mode == 'customer':

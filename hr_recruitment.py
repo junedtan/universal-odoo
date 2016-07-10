@@ -216,9 +216,9 @@ class hr_applicant(osv.osv):
 		model, contract_signed_stage_id = model_obj.get_object_reference(cr, uid, 'universal', 'stage_job7')
 	# cek untuk setiap data
 		for data in self.browse(cr, uid, ids, context):
-		# applicant ini sudah harus sampai tahap contract signed baru bisa jadi employee
+		# applicant ini sudah harus sampai tahap accepted baru bisa jadi employee
 			if data.stage_id.id != contract_signed_stage_id:
-				raise osv.except_osv(_('Recruitment Error'),_('Applicant must have reach Contract Signed stage to be entitled for employee creation.'))
+				raise osv.except_osv(_('Recruitment Error'),_('Applicant must have reach Accepted stage to be entitled for employee creation.'))
 	# bikin data employee nya
 		dict_act_window = super(hr_applicant, self).create_employee_from_applicant(cr, uid, ids, context=context)
 	# ambil data applicant kalau ada
@@ -232,9 +232,11 @@ class hr_applicant(osv.osv):
 			'driver_license_number': applicant_data.driver_license_number,
 			'driver_license_date': applicant_data.driver_license_date,
 			'identification_id': applicant_data.identification_id,
+			'phone': applicant_data.partner_mobile,
 			'mobile_phone': applicant_data.partner_mobile,
 			'mobile_phone2': applicant_data.partner_mobile2,
 			'mobile_phone3': applicant_data.partner_mobile3,
+			'personal_email': applicant_data.email_from,
 			'npwp': applicant_data.npwp,
 			'overtime_ready': applicant_data.overtime_ready,
 			'holiday_ready': applicant_data.holiday_ready,

@@ -9,7 +9,8 @@
 					<group>
 						<field name="reset_before" />
 						<field name="category_id" />
-						<field name="reset_type" />
+						<field name="leave_type" />
+						<field name="duration" />
 					</group>
 				</form>
 			</field>
@@ -19,7 +20,7 @@
 			<field name="name">hr.holidays.list</field>
 			<field name="model">hr.holidays</field>
 			<field name="arch" type="xml">
-				<tree string="Leaves">
+				<tree string="Leaves" create="false" delete="false" edit="false">
 					<field name="employee_id"/>
 					<field name="holiday_type"/>
 					<field name="type"/>

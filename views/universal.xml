@@ -45,8 +45,10 @@
 						Select customer then click Start button.
 					</p>
 					<div class="form-group">
-						<select t-foreach="contracts" t-as="contract" class="form-control" id="employee_contract_id" name="employee_contract_id">
-							<option t-att-value="contract.id"><t t-esc="contract.customer.name" /></option>
+						<select class="form-control" id="employee_contract_id" name="employee_contract_id">
+							<t t-foreach="contracts" t-as="contract">
+								<option t-att-value="contract.id"><t t-esc="contract.customer.name" /></option>
+							</t>
 						</select>
 					</div>
 					<input type="hidden" id="view_mode" t-att-value="view_mode" />

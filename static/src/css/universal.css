@@ -67,3 +67,13 @@
 .expense_subtotal {
   float: right;
 }
+
+.help_menu_label {
+	background:#FEF3D3;
+	color:#CC0000;
+}
+
+.help_field_label {
+	color:#C4A840;
+	font-weight:bold;
+}

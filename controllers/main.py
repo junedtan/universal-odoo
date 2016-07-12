@@ -59,7 +59,7 @@ class website_universal(http.Controller):
 		# cek apakah employee atau driver
 			model_obj = env['ir.model.data']
 			model, job_driver_id = model_obj.get_object_reference('universal', 'hr_job_driver')
-			employees = employee_obj.search([('resource_id.user_id','=',uid),('job_id','=',job_driver_id)])
+			employees = employee_obj.sudo().search([('resource_id.user_id','=',uid),('job_id','=',job_driver_id)])
 			user = user_obj.sudo().browse(uid)
 			partner = user.partner_id
 			partner_company = None

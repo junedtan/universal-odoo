@@ -1,0 +1,17 @@
+<openerp>
+	<data>
+
+		<record model="ir.ui.view" id="recruitment_period_form">
+			<field name="name">recruitment.period.form</field>	
+			<field name="model">hr.recruitment.period</field>
+			<field name="inherit_id" ref="hr_recruitment_period.recruitment_period_form" />
+			<field name="priority" eval="100" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='no_of_actual']" position="replace">
+					<field name="no_of_actual"/>
+				</xpath>
+			</field>
+		</record>
+		
+	</data>
+</openerp>

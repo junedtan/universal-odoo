@@ -57,6 +57,7 @@
 								<group>
 									<field name="document_ref" />
 									<field name="no_of_recruitment" groups="base.group_user" class="oe_inline" string="New Employees Expected" />
+									<field name="deadline" />
 								</group>
 							</group>
 						</page>
@@ -113,6 +114,9 @@
 						help="Refuse applicant">
 						<div>Refuse<br/>Applicant</div>
 					</button>
+				</xpath>
+				<xpath expr="//field[@name='name']" position="attributes">
+					<attribute name="on_change">onchange_applicant_name(name)</attribute>
 				</xpath>
 				<xpath expr="//separator[@string='Application Summary']" position="replace" />
 				<xpath expr="//group[@string='Required Documents']" position="replace" />
@@ -175,7 +179,7 @@
 									<field name="place_of_birth" />
 									<field name="date_of_birth" />
 									<field name="religion" class="oe_inline" />
-									<field name="type_id" />
+									<field name="type_id" widget="selection" />
 									<field name="npwp" />
 								</group>
 								<group string="Family">
@@ -352,6 +356,19 @@
 						<button special="cancel" string="Close" />
 					</footer>
 				</form>
+			</field>
+		</record>
+		
+		<record model="ir.ui.view" id="view_crm_case_jobs_filter">
+			<field name="name">Jobs - Recruitment Search</field>	
+			<field name="model">hr.applicant</field>
+			<field name="inherit_id" ref="hr_recruitment.view_crm_case_jobs_filter" />
+			<field name="priority" eval="100" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='partner_name']" position="after">
+					<filter string="Late Decision" domain="[('is_late', '=', True)]"/>
+				</xpath>
+				
 			</field>
 		</record>
 		

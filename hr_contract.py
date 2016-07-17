@@ -151,7 +151,13 @@ class hr_contract(osv.osv):
 
 # ONCHANGE ----------------------------------------------------------------------------------------------------------------
 
-	def onchange_employee_id(self, cr, uid, ids, emp_id, contract_type, context=None):
+	def onchange_employee_id(self, cr, uid, ids, emp_id, contract_type, wage=None, context=None):
+	# set dulu wage nya dengan default 1 kalau contract type nya rent driver
+		if not contract_type:
+		  return {'value': {'wage': False}}
+		if contract_type == 'rent_driver':
+			wage = 1
+	# ambil parent contract
 		if not emp_id or not contract_type:
 		  return {'value': {'parent_contract': False, 'job_id': False}}
 		emp_obj = self.pool.get('hr.employee').browse(cr, uid, emp_id, context=context)
@@ -167,8 +173,7 @@ class hr_contract(osv.osv):
 	# ambil contract employee terbaru kalau tipenya driver sewa
 		if emp_obj.driver_type == "contract" and contract_type == "contract_attc":
 			parent_contract = self.get_latest_contract(cr, uid, emp_id)
-	
-		return {'value': {'parent_contract': parent_contract, 'job_id': job_id, 'homebase': False}}
+		return {'value': {'parent_contract': parent_contract, 'job_id': job_id, 'homebase': False, 'wage': wage}}
 	
 	def onchange_homebase(self, cr, uid, ids, contract_type, homebase, context=None):
 		if not contract_type or not homebase: return {'value': {'homebase': False}}

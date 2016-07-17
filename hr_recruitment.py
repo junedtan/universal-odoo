@@ -2,14 +2,19 @@ from openerp.osv import osv, fields
 from openerp.tools.translate import _
 from datetime import datetime, date
 
-from . import MAX_DRIVER_AGE, MARITAL_STATUS, RELIGION, FAMILY_RELATIONSHIP, MIN_CHECK_DUPLI, PARAM_CHECK_DUPLI, EMP_APP_DICT, DOMAIN_DUPLI_DICT
-
+from . import MAX_DRIVER_AGE, MARITAL_STATUS, RELIGION, FAMILY_RELATIONSHIP, MIN_CHECK_DUPLI, PARAM_CHECK_DUPLI, EMP_APP_DICT, DOMAIN_DUPLI_DICT, EMPLOYEE_FIELD
 
 # ==========================================================================================================================
 
 class hr_job(osv.osv):
 	
 	_inherit = 'hr.job'
+	
+# COLUMNS ------------------------------------------------------------------------------------------------------------------
+
+	_columns = {
+		'deadline': fields.date('Deadline')
+	}
 	
 # CUSTOM METHODS -----------------------------------------------------------------------------------------------------------
 
@@ -21,10 +26,43 @@ class hr_job(osv.osv):
 		return ids[0] == job_id
 	
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
-
-#	def fields_view_get(self, cr, uid, view_id=None, view_type=False, context=None, toolbar=False, submenu=False):
-#		result = super(res_partner,self).fields_view_get(cr, uid, view_id, view_type, context, toolbar, submenu)
+	
+	def set_recruit(self, cr, uid, ids, context=None):
+		if ids[0]:
+		# cek dulu apakah field yg dibutuhkan uda diisi atau belum
+			job_data = self.browse(cr, uid, ids[0], context=context)
+			if not job_data.deadline or not job_data.no_of_recruitment or not job_data.document_ref:
+				raise osv.except_osv(_('Recruitment Error !'), _('Please fill out Deadline, Document Ref and Expected New Employees.')) 
+		return super(hr_job, self).set_recruit(cr, uid, ids, context=context)
+	
+	def set_open(self, cr, uid, ids, context=None):
+		if ids[0]:
+		# kosongkan data deadline di hr_job 
+			self.write(cr, uid, ids, {'deadline': None})
+		return super(hr_job, self).set_open(cr, uid, ids, context=context)
+	
+# CRON --------------------------------------------------------------------------------------------------------------------------
+	
+	def cron_job_deadline(self, cr, uid, context=None):
+	# ambil data job yang mau dicek
+		job_ids = self.search(cr, uid, [('deadline','<',datetime.today().strftime('%Y-%m-%d'))])
+		print "------"
+		print datetime.today().strftime('%Y-%m-%d')
+		print job_ids
 		
+		if not job_ids: return
+	# cek aplikan2 yang deadlinenya sudah melebihi batas waktu recruitment dan belum ada keputusan
+		
+		app_obj = self.pool.get('hr.applicant')
+		stage_obj = self.pool.get('hr.recruitment.stage')
+	# ambil stage finish
+		stage_ends = stage_obj.search(cr, uid, [('is_end','=',True)])
+		for row in self.browse(cr, uid, job_ids):
+			print "deadline %s" % row.deadline
+			app_ids = app_obj.search(cr, uid, [('job_id','=',row.id),('stage_id','not in',stage_ends)])
+			print "app %s" % app_ids
+		# update is_late nya aplikan
+			app_obj.write(cr, uid, app_ids, {'is_late': True})
 	
 # ==========================================================================================================================
 
@@ -97,6 +135,7 @@ class hr_applicant(osv.osv):
 		'refused_reason': fields.text('Refuse Reason'),
 		'is_blacklist': fields.boolean('Blacklist?'),
 		'blacklist_reason': fields.text('Blacklist Reason'),
+		'is_late': fields.boolean('Delayed Decision?'),
 	}
 	
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------
@@ -208,67 +247,6 @@ class hr_applicant(osv.osv):
 			return duplicate_ids
 		return False
 	
-	def create_employee_from_applicant(self, cr, uid, ids, context=None):
-	# ambil stage contract_signed utnuk dibandingkan di bawah
-		model_obj = self.pool.get('ir.model.data')
-		hr_employee_obj = self.pool.get('hr.employee')
-		hr_employee_family_obj = self.pool.get('hr.employee.family')
-		model, contract_signed_stage_id = model_obj.get_object_reference(cr, uid, 'universal', 'stage_job7')
-	# cek untuk setiap data
-		for data in self.browse(cr, uid, ids, context):
-		# applicant ini sudah harus sampai tahap accepted baru bisa jadi employee
-			if data.stage_id.id != contract_signed_stage_id:
-				raise osv.except_osv(_('Recruitment Error'),_('Applicant must have reach Accepted stage to be entitled for employee creation.'))
-	# bikin data employee nya
-		dict_act_window = super(hr_applicant, self).create_employee_from_applicant(cr, uid, ids, context=context)
-	# ambil data applicant kalau ada
-		applicant_data = self.browse(cr, uid, ids[0], context=context)
-		emp_data = {
-			'gender': applicant_data.gender,
-			'place_of_birth': applicant_data.place_of_birth,
-			'date_of_birth': applicant_data.date_of_birth,
-			'interview_date': applicant_data.interview_date,
-			'religion': applicant_data.religion,
-			'driver_license_number': applicant_data.driver_license_number,
-			'driver_license_date': applicant_data.driver_license_date,
-			'identification_id': applicant_data.identification_id,
-			'phone': applicant_data.partner_mobile,
-			'mobile_phone': applicant_data.partner_mobile,
-			'mobile_phone2': applicant_data.partner_mobile2,
-			'mobile_phone3': applicant_data.partner_mobile3,
-			'personal_email': applicant_data.email_from,
-			'npwp': applicant_data.npwp,
-			'overtime_ready': applicant_data.overtime_ready,
-			'holiday_ready': applicant_data.holiday_ready,
-			'driver_area': applicant_data.driver_area,
-			'language': applicant_data.language,
-			'transportation': applicant_data.transportation,
-			'residence_location': applicant_data.residence_location,
-			'residential_address': applicant_data.residential_address,
-			'residential_phone': applicant_data.residential_phone,
-			'family_card_number': applicant_data.family_card_number,
-		}
-		hr_employee_obj.write(cr, uid, applicant_data.emp_id.id, emp_data)
-	# bikin data family kalau ada
-		if applicant_data.family_contact_name:
-			hr_employee_family_obj.create(cr, uid, {
-				'employee_id': applicant_data.emp_id.id,
-				'name': applicant_data.family_contact_name,
-				'family_relationship': applicant_data.family_contactable_relationship or None,
-				'address': applicant_data.family_contactable_address or "",
-				'contact_number': applicant_data.family_contactable_phone or "",
-				}
-			)
-	# kalau contactablenya bukan spouse, bikin row baru
-		if applicant_data.family_contactable_relationship != "spouse" and applicant_data.marital_status == "married":
-			hr_employee_family_obj.create(cr, uid, {
-				'employee_id': applicant_data.emp_id.id,
-				'name': applicant_data.spouse_name,
-				'family_relationship': "spouse",
-				}
-			)
-		return dict_act_window
-		
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
 	def create(self, cr, uid, vals, context={}):
@@ -336,7 +314,15 @@ class hr_applicant(osv.osv):
 		return super(hr_applicant, self).write(cr, uid, ids, vals, context)
 		
 # ONCHANGE ----------------------------------------------------------------------------------------------------------------
-
+	
+	# kalau isi nama aplikan, isi langsung field bawahnya biar ga usa 2x isi
+	def onchange_applicant_name(self, cr, uid, ids, name, context=None):
+		if not name: return {'value': {}}
+		v = {}
+		v['partner_name'] = name 
+		return {'value': v}
+		
+		
 	# pengisian/pengosongan date_closed tidak berdasarkan apakah stage ybs folded atau tidak, tapi mengacu ke isi field 
 	# is_end dari stage ybs
 	def onchange_stage_id(self, cr, uid, ids, stage_id, context=None):
@@ -360,34 +346,47 @@ class hr_applicant(osv.osv):
 		hr_employee_obj = self.pool.get('hr.employee')
 		hr_employee_family_obj = self.pool.get('hr.employee.family')
 		model, contract_signed_stage_id = model_obj.get_object_reference(cr, uid, 'universal', 'stage_job7')
+		applicant_data = self.browse(cr, uid, ids[0], context=context)
 	# cek untuk setiap data
+		empty_field = ''
 		for data in self.browse(cr, uid, ids, context):
-		# applicant ini sudah harus sampai tahap contract signed baru bisa jadi employee
+		# applicant ini sudah harus sampai tahap accepted baru bisa jadi employee
 			if data.stage_id.id != contract_signed_stage_id:
-				raise osv.except_osv(_('Recruitment Error'),_('Applicant must have reach Contract Signed stage to be entitled for employee creation.'))
+				raise osv.except_osv(_('Recruitment Error'),_('Applicant must have reach Accepted stage to be entitled for employee creation.'))
+		# cek apakah data2 wajib di employee sudah diisi semua
+			for emp_field, label in EMPLOYEE_FIELD.iteritems():
+				if not getattr(applicant_data,emp_field):
+					empty_field = empty_field + '\n' + label
+		# khusus untuk status nikah, cek kalau sudah menikah harus ada data nomer KK
+			if data.marital_status == 'married':
+				if not data.family_card_number:
+					empty_field = empty_field + '\n' + 'Family Reg. No'
+		if empty_field != '':
+			raise osv.except_osv(_('Recruitment Error'),_('Applicant must write down these data before becoming employee: %s.' % empty_field))
 	# bikin data employee nya
 		dict_act_window = super(hr_applicant, self).create_employee_from_applicant(cr, uid, ids, context=context)
 	# ambil data applicant kalau ada
-		applicant_data = self.browse(cr, uid, ids[0], context=context)
 		emp_data = {
 			'gender': applicant_data.gender,
 			'place_of_birth': applicant_data.place_of_birth,
 			'date_of_birth': applicant_data.date_of_birth,
 			'interview_date': applicant_data.interview_date,
-			'last_survey_date': applicant_data.survey_date,
 			'religion': applicant_data.religion,
 			'driver_license_number': applicant_data.driver_license_number,
 			'driver_license_date': applicant_data.driver_license_date,
 			'identification_id': applicant_data.identification_id,
+			'phone': applicant_data.partner_mobile,
 			'mobile_phone': applicant_data.partner_mobile,
 			'mobile_phone2': applicant_data.partner_mobile2,
 			'mobile_phone3': applicant_data.partner_mobile3,
+			'personal_email': applicant_data.email_from,
 			'npwp': applicant_data.npwp,
 			'overtime_ready': applicant_data.overtime_ready,
 			'holiday_ready': applicant_data.holiday_ready,
 			'driver_area': applicant_data.driver_area,
 			'language': applicant_data.language,
 			'transportation': applicant_data.transportation,
+			'address': applicant_data.partner_address,
 			'residence_location': applicant_data.residence_location,
 			'residential_address': applicant_data.residential_address,
 			'residential_phone': applicant_data.residential_phone,
@@ -413,6 +412,7 @@ class hr_applicant(osv.osv):
 				}
 			)
 		return dict_act_window
+		
 	
 # ==========================================================================================================================
 			

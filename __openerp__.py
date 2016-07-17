@@ -30,10 +30,12 @@
 		'views/hr_attendance.xml',
 		'views/hr_holidays.xml',
 		'views/hr_expense.xml',
+		'views/hr_recruitment_period.xml',
 		'menu/universal_menu.xml',
 		'report/report_universal.xml',
 		'report/report_contract.xml',
-		'cron/hr_employee.xml'
+		'cron/hr_employee.xml',
+		'cron/hr_recruitment.xml'
 	],
 	'demo': [
 	],

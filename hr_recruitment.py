@@ -44,17 +44,18 @@ class hr_job(osv.osv):
 # CRON --------------------------------------------------------------------------------------------------------------------------
 	
 	def cron_job_deadline(self, cr, uid, context=None):
+	# buat dulu semuanya jadi is_late False
+		recruit_job_ids = self.search(cr, uid, [('state','=','recruit')])
+		if not recruit_job_ids: return
+		app_obj = self.pool.get('hr.applicant')
+		stage_obj = self.pool.get('hr.recruitment.stage')
+		recruit_app_ids = app_obj.search(cr, uid, [('job_id','in',recruit_job_ids)])
+		app_obj.write(cr, uid, recruit_app_ids, {'is_late': False})
 	# ambil data job yang mau dicek
 		job_ids = self.search(cr, uid, [('deadline','<',datetime.today().strftime('%Y-%m-%d'))])
-		print "------"
-		print datetime.today().strftime('%Y-%m-%d')
-		print job_ids
-		
 		if not job_ids: return
 	# cek aplikan2 yang deadlinenya sudah melebihi batas waktu recruitment dan belum ada keputusan
 		
-		app_obj = self.pool.get('hr.applicant')
-		stage_obj = self.pool.get('hr.recruitment.stage')
 	# ambil stage finish
 		stage_ends = stage_obj.search(cr, uid, [('is_end','=',True)])
 		for row in self.browse(cr, uid, job_ids):

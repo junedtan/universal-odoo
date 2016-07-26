@@ -1,0 +1,25 @@
+<openerp>
+	<data>
+		
+		<!-- Salary Category-->
+        <record id="hr_payroll.hr_salary_rule_category_form" model="ir.ui.view">
+            <field name="name">hr.salary.rule.category.form</field>
+            <field name="model">hr.salary.rule.category</field>
+            <field name="arch" type="xml">
+                <form string="Salary Categories">
+                    <group col="4">
+                    	<group>
+	                        <field name="name"/>
+	                        <field name="code"/>
+	                        <field name="parent_id"/>
+	                    </group>
+	                    <group name="Notes">
+	                        <field name="note"/>
+	                    </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+		
+	</data>
+</openerp>

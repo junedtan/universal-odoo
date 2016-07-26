@@ -55,7 +55,7 @@ class hr_employee_absence(osv.osv):
 		'employee_id': fields.many2one('hr.employee','Employee', required=True),
 		'absence_date': fields.date('Date', required=True),
 		'absence_reason_id': fields.many2one('hr.absence.reason', 'Absence Reason'),
-		'is_driver': fields.boolean('Is drvier?', readonly=True),
+		'is_driver': fields.boolean('Is driver?', readonly=True),
 		'driver_replace': fields.many2one('hr.employee','Replacement Driver'),
 		'contract': fields.many2one('hr.contract','Contract'),
 		'customer': fields.many2one('res.partner','Customer'),

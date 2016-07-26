@@ -118,6 +118,12 @@
 				<xpath expr="//field[@name='name']" position="attributes">
 					<attribute name="on_change">onchange_applicant_name(name)</attribute>
 				</xpath>
+				<xpath expr="//label[@for='partner_name']" position="attributes">
+					<attribute name="attrs">{'invisible': 1}</attribute>
+				</xpath>
+				<xpath expr="//field[@name='partner_name']" position="attributes">
+					<attribute name="attrs">{'invisible': 1}</attribute>
+				</xpath>
 				<xpath expr="//separator[@string='Application Summary']" position="replace" />
 				<xpath expr="//group[@string='Required Documents']" position="replace" />
 				<xpath expr="//group[@string='Required Tests']" position="replace" />

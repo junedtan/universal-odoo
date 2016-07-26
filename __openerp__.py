@@ -31,6 +31,7 @@
 		'views/hr_holidays.xml',
 		'views/hr_expense.xml',
 		'views/hr_recruitment_period.xml',
+		'views/hr_payroll.xml',
 		'menu/universal_menu.xml',
 		'report/report_universal.xml',
 		'report/report_contract.xml',

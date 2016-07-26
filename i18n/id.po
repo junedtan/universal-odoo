@@ -8319,3 +8319,24 @@ msgstr ""
 msgid "{'required': [('working_time_type','=','duration')]}"
 msgstr ""
 
+#. module: hr_termination
+#: view:hr.employee:hr_termination.hr_employee_form
+msgid "Cancel Terminate"
+msgstr "Batalkan PHK"
+
+#. module: hr_termination
+#: view:hr.employee:hr_termination.hr_employee_form
+msgid "Confirm Terminate"
+msgstr "Konfirmasi PHK"
+
+#. module: hr_termination
+#: model:ir.actions.act_window,name:hr_termination.hr_employee_action_pending_terminated
+#: model:ir.ui.menu,name:hr_termination.hr_termination_menu_pending
+msgid "Pending Terminated"
+msgstr "Pending PHK"
+
+#. module: hr_termination
+#: field:hr.employee,pending_terminated:0
+msgid "Pending Terminated?"
+msgstr "Pending PHK?"
+

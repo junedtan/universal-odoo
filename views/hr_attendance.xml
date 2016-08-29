@@ -63,10 +63,10 @@
 					<field name="absence_reason_id" string="Reason" />
 					<field name="driver_replace" string="Replacement" />
 					<group string="Absence Date">
-						<filter string="Today" name="filter_today" domain="[('absence_date','&gt;=',(context_today()).strftime('%%Y-%%m-%%d 00:00:00')),('absence_date','&lt;=',(context_today()).strftime('%%Y-%%m-%%d 23:59:59'))]" />
-						<filter string="Yesterday" name="filter_yesterday" domain="[('absence_date','&gt;=',(context_today()-datetime.timedelta(days=1)).strftime('%%Y-%%m-%%d 00:00:00')),('absence_date','&lt;=',(context_today()-datetime.timedelta(days=1)).strftime('%%Y-%%m-%%d 23:59:59'))]" />
-						<filter string="Past 7 days" name="filter_past7" domain="[('absence_date','&gt;=',(context_today()-datetime.timedelta(days=7)).strftime('%%Y-%%m-%%d 00:00:00')),('absence_date','&lt;=',(context_today()-datetime.timedelta(days=1)).strftime('%%Y-%%m-%%d 23:59:59'))]" />
-						<filter string="Past 14 days" name="filter_past14" domain="[('absence_date','&gt;=',(context_today()-datetime.timedelta(days=14)).strftime('%%Y-%%m-%%d 00:00:00')),('absence_date','&lt;=',(context_today()-datetime.timedelta(days=1)).strftime('%%Y-%%m-%%d 23:59:59'))]" />
+						<filter string="Today" name="filter_today" domain="[('absence_date','&gt;=',(context_today()).strftime('%%Y-%%m-%%d')),('absence_date','&lt;=',(context_today()).strftime('%%Y-%%m-%%d'))]" />
+						<filter string="Yesterday" name="filter_yesterday" domain="[('absence_date','&gt;=',(context_today()-datetime.timedelta(days=1)).strftime('%%Y-%%m-%%d')),('absence_date','&lt;=',(context_today()-datetime.timedelta(days=1)).strftime('%%Y-%%m-%%d'))]" />
+						<filter string="Past 7 days" name="filter_past7" domain="[('absence_date','&gt;=',(context_today()-datetime.timedelta(days=7)).strftime('%%Y-%%m-%%d')),('absence_date','&lt;=',(context_today()-datetime.timedelta(days=1)).strftime('%%Y-%%m-%%d'))]" />
+						<filter string="Past 14 days" name="filter_past14" domain="[('absence_date','&gt;=',(context_today()-datetime.timedelta(days=14)).strftime('%%Y-%%m-%%d')),('absence_date','&lt;=',(context_today()-datetime.timedelta(days=1)).strftime('%%Y-%%m-%%d'))]" />
 						<filter string="This Month" name="filter_this_month" domain="[('absence_date','&gt;=',(context_today()).strftime('%%Y-%%m-01'))]" />
 					</group>	
 				</search>

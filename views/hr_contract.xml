@@ -14,10 +14,11 @@
 				</xpath>
 				<xpath expr="//div[@class='oe_title']" position="before">
 					<div class="oe_right oe_button_box">
-						<button name="action_finish" class="oe_stat_button" icon="fa-stop" type="object" confirm="Are you sure to finish this contract?  This action cannot be undone." attrs="{'invisible': ['|',('contract_type','!=','contract_attc'),('state','!=','ongoing')]}">
+						<button name="action_finish" class="oe_stat_button" icon="fa-stop" type="object" confirm="Are you sure to finish this contract?  This action cannot be undone." attrs="{'invisible': ['|',('contract_type','!=','contract_attc'),('state','!=','ongoing')]}" 
+						groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1">
 							<div>Finish<br/>Contract</div>
 						</button>
-						<button name="action_terminate" class="oe_stat_button" icon="fa-eject" type="object" confirm="Are you sure to TERMINATE this contract? This action cannot be undone."  attrs="{'invisible': ['|',('contract_type','!=','contract_attc'),('state','!=','ongoing')]}">
+						<button name="action_terminate" class="oe_stat_button" icon="fa-eject" type="object" confirm="Are you sure to TERMINATE this contract? This action cannot be undone."  attrs="{'invisible': ['|',('contract_type','!=','contract_attc'),('state','!=','ongoing')]}" groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver">
 							<div>Terminate<br/>Contract</div>
 						</button>
 					</div>

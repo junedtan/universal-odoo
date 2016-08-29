@@ -41,6 +41,12 @@
 				<xpath expr="//button[@name='action_get_attachment_tree_view']" position="attributes">
 					<attribute name="invisible">context.get('hide_recruitments') == 1</attribute>
 				</xpath>
+				<xpath expr="//button[@name='set_open']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+				</xpath>
+				<xpath expr="//button[@name='set_recruit']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+				</xpath>
 				<xpath expr="//group[@name='employee_data']" position="replace">
 					<group>
 						<field name="no_of_employee" string="Employees" />
@@ -104,14 +110,16 @@
 						type="object"
 						help="Approve applicant to continue to next stage"
 						attrs="{'invisible':[('is_pending','=',False)]}"
-						confirm="Are you sure to approve this pending applicant to continue to next step?">
+						confirm="Are you sure to approve this pending applicant to continue to next step?"
+						groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver">
 						<div>Approve<br/>Applicant</div>
 					</button>
 					<button name="action_refuse_applicant" 
 						class="oe_stat_button"
 						icon="fa-ban"
 						type="object"
-						help="Refuse applicant">
+						help="Refuse applicant"
+						groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver">
 						<div>Refuse<br/>Applicant</div>
 					</button>
 				</xpath>

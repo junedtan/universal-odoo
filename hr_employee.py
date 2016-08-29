@@ -81,7 +81,23 @@ class hr_employee(osv.osv):
 		vals.update({'emp_no': emp_no})
 	# panggil create biasa
 		return super(hr_employee, self).create(cr, uid, vals, context)
+
+# ONCHANGE ----------------------------------------------------------------------------------------------------------------
 	
+	# kalau isi nama aplikan, isi langsung field bawahnya biar ga usa 2x isi
+	def onchange_applicant_name(self, cr, uid, ids, name, context=None):
+		if not name: return {'value': {}}
+		v = {}
+		v['partner_name'] = name 
+		return {'value': v}
+		
+	# kalau isi job, isi departmentnya juga
+	def onchange_job_id(self, cr, uid, ids, job_id, context=None):
+		if not job_id: return {'value': {}}
+		v = {}
+		job_data = self.pool.get('hr.job').browse(cr,uid,job_id)
+		v['department_id'] = job_data.department_id 
+		return {'value': v}
 # CRON --------------------------------------------------------------------------------------------------------------------------
 	
 	def cron_employee_work_year(self, cr, uid, context=None):

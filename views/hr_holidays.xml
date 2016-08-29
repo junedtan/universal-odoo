@@ -38,6 +38,38 @@
 			</field>
 		</record>
 		
+		<record model="ir.ui.view" id="allocation_company_new">
+			<field name="name">Leaves Management</field>
+			<field name="model">hr.holidays</field>
+			<field name="inherit_id" ref="hr_holidays.allocation_company_new" />
+			<field name="arch" type="xml">
+				<xpath expr="//button[@name='validate']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1</attribute>
+				</xpath>
+				<xpath expr="//button[@name='refuse']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1</attribute>
+				</xpath>
+				<xpath expr="//button[@name='reset']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1</attribute>
+				</xpath>
+			</field>
+		</record>
 		
+		<record model="ir.ui.view" id="edit_holiday_new">
+			<field name="name">Leave Request</field>
+			<field name="model">hr.holidays</field>
+			<field name="inherit_id" ref="hr_holidays.edit_holiday_new" />
+			<field name="arch" type="xml">
+				<xpath expr="//button[@name='validate']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+				</xpath>
+				<xpath expr="//button[@name='refuse']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+				</xpath>
+				<xpath expr="//button[@name='reset']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+				</xpath>
+			</field>
+		</record>
 	</data>
 </openerp>

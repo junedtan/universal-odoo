@@ -30,6 +30,13 @@ msgstr ""
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
 
+#. module: web
+#. openerp-web
+#: code:addons/web/static/src/js/views.js:595
+#, python-format
+msgid "%(view_type)s view"
+msgstr "Tampilan %(view_type)s"
+
 #. module: hr_expense
 #: field:hr.expense.report,no_of_account:0
 msgid "# of Accounts"
@@ -1144,7 +1151,7 @@ msgstr "Per Recruiter"
 #. module: hr
 #: help:hr.job,state:0
 msgid "By default 'Closed', set it to 'In Recruitment' if recruitment process is going on for this job position."
-msgstr "Secara default 'Closed', set menjadi 'In Recruitment' jika proses rekrutment akan berlangsung untuk posisi ini."
+msgstr "Secara default 'Closed', set menjadi 'In Recruitment' jika proses rekrutment akan berlangsung untuk jabatan ini."
 
 #. module: hr_payroll
 #: view:hr.payslip.line:hr_payroll.view_hr_payslip_line_form
@@ -3852,13 +3859,13 @@ msgstr ""
 #. module: universal
 #: view:hr.applicant:universal.hr_applicant_form
 msgid "Job Application"
-msgstr "Posisi"
+msgstr "Jabatan"
 
 #. modules: hr, universal
 #: field:hr.job,description:0
 #: view:hr.job:universal.view_hr_job_form
 msgid "Job Description"
-msgstr "Deskripsi Posisi"
+msgstr "Deskripsi Tugas"
 
 #. module: hr_recruitment
 #: field:hr.job,address_id:0
@@ -3868,13 +3875,13 @@ msgstr ""
 #. module: hr
 #: field:hr.job,name:0
 msgid "Job Name"
-msgstr "Nama Posisi"
+msgstr "Nama Jabatan"
 
 #. modules: hr, hr_recruitment
 #: model:ir.ui.menu,name:hr.menu_hr_job_position
 #: model:ir.actions.act_window,name:hr_recruitment.action_hr_job
 msgid "Job Openings"
-msgstr ""
+msgstr "Lowongan Terbuka"
 
 #. modules: hr, hr_recruitment_period, hr_recruitment_requirement, universal, hr_recruitment
 #: model:ir.model,name:hr.model_hr_job
@@ -3885,20 +3892,20 @@ msgstr ""
 #: model:ir.model,name:hr_recruitment_requirement.model_hr_job
 #: model:ir.model,name:universal.model_hr_job
 msgid "Job Position"
-msgstr "Posisi"
+msgstr "Jabatan"
 
 #. modules: hr, universal
 #: model:ir.actions.act_window,name:hr.action_hr_job
 #: model:ir.actions.act_window,name:universal.universal_action_job_position
 #: model:ir.ui.menu,name:universal.universal_menu_job_position
 msgid "Job Positions"
-msgstr "Posisi"
+msgstr "Jabatan"
 
 #. modules: hr, hr_contract
 #: field:hr.employee,job_id:0
 #: field:hr.contract,job_id:0
 msgid "Job Title"
-msgstr "Posisi"
+msgstr "Jabatan"
 
 #. modules: hr, hr_recruitment
 #: field:hr.department,jobs_ids:0
@@ -4991,7 +4998,7 @@ msgstr ""
 #. module: hr
 #: help:hr.job,no_of_employee:0
 msgid "Number of employees currently occupying this job position."
-msgstr "Total karyawan saat ini yang menduduki posisi ini."
+msgstr "Total karyawan yang saat ini memiliki jabatan ini."
 
 #. module: hr
 #: sql_constraint:hr.job:0
@@ -5001,7 +5008,7 @@ msgstr "Total karyawan yang diterima harus lebih kecil dari total karyawan yang 
 #. module: hr
 #: help:hr.job,no_of_hired_employee:0
 msgid "Number of hired employees for this job position during recruitment phase."
-msgstr "Total karyawan yang diterima untuk posisi ini selama masa rekrutmen."
+msgstr "Total karyawan yang diterima untuk jabatan ini selama masa rekrutmen."
 
 #. module: hr
 #: help:hr.job,no_of_recruitment:0
@@ -5487,7 +5494,7 @@ msgstr "Silakan tunggu supir anda untuk menyelesaikan sesi ini, lalu klik Cek Ul
 #: view:hr.employee:hr.view_employee_form
 #: view:hr.employee:universal.view_employee_form
 msgid "Position"
-msgstr "Posisi"
+msgstr "Jabatan"
 
 #. module: universal
 #: selection:hr.employee,state:0
@@ -7866,12 +7873,12 @@ msgstr ""
 #: model:ir.actions.act_window,name:hr_termination.hr_termination_action_warnings
 #: model:ir.ui.menu,name:hr_termination.hr_termination_menu_warnings
 msgid "Warning Letters"
-msgstr "Surat Peringatan Karyawan"
+msgstr "SP Karyawan"
 
 #. module: universal
 #: field:hr.employee,warning_severity:0
 msgid "Warning Severity"
-msgstr ""
+msgstr "Tingkat Keparahan SP"
 
 #. module: hr_termination
 #: field:hr.employee.termination.warnings,warning_type:0

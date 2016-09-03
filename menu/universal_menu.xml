@@ -140,6 +140,9 @@
 		
 <!-- INHERIT -->
 
+		<menuitem name="Recruitment" id="base.menu_crm_case_job_req_main" parent="hr.menu_hr_root" groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+		<menuitem id="hr.menu_hr_configuration" name="Configuration" parent="hr.menu_hr_root" groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1,universal.group_universal_spv_admin_drv" sequence="50"/>
+		<menuitem id="hr_attendance.menu_hr_attendance" name="Attendances" parent="hr.menu_hr_root" sequence="10" groups="universal.group_universal_spv_admin_drv"/>
 		<menuitem parent="hr.menu_hr_configuration" sequence="30" id="hr_contract.next_id_56" name="Contract"  
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver" />
 

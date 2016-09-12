@@ -26,3 +26,21 @@ class hr_employee_termination_memory(osv.osv_memory):
 				'terminate_date': date.today(),
 			})
 		return result
+		
+# ==========================================================================================================================
+
+class universal_verbal_warning(osv.osv):
+
+	_name = 'universal.verbal.warning'
+	_description = 'Universal - Verbal Warning'
+	
+	_columns = {
+		'name': fields.text('Reason/Notes', required=True),
+		'employee_id': fields.many2one('hr.employee', 'Employee', required=True),
+		'warning_date': fields.date('Date', required=True),
+		'issued_by': fields.many2one('hr.employee', "Issued By", required=True),
+	}
+	
+	
+	
+	

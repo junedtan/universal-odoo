@@ -2,7 +2,13 @@ from openerp.osv import osv, fields
 from openerp.tools.translate import _
 from datetime import datetime, date
 
-from . import MAX_DRIVER_AGE, MARITAL_STATUS, RELIGION, FAMILY_RELATIONSHIP, MIN_CHECK_DUPLI, PARAM_CHECK_DUPLI, EMP_APP_DICT, DOMAIN_DUPLI_DICT, EMPLOYEE_FIELD
+from . import MAX_DRIVER_AGE, MIN_STAFF_AGE, MARITAL_STATUS, RELIGION, FAMILY_RELATIONSHIP, MIN_CHECK_DUPLI, PARAM_CHECK_DUPLI, EMP_APP_DICT, DOMAIN_DUPLI_DICT, EMPLOYEE_FIELD
+
+_TERMINATE_TYPE = (
+	('fired','Fired'),
+	('resigned','Resigned'),
+	('retire','Retired'),
+)
 
 # ==========================================================================================================================
 
@@ -54,14 +60,11 @@ class hr_job(osv.osv):
 	# ambil data job yang mau dicek
 		job_ids = self.search(cr, uid, [('deadline','<',datetime.today().strftime('%Y-%m-%d'))])
 		if not job_ids: return
-	# cek aplikan2 yang deadlinenya sudah melebihi batas waktu recruitment dan belum ada keputusan
-		
 	# ambil stage finish
 		stage_ends = stage_obj.search(cr, uid, [('is_end','=',True)])
+	# cek aplikan2 yang deadlinenya sudah melebihi batas waktu recruitment dan belum ada keputusan
 		for row in self.browse(cr, uid, job_ids):
-			print "deadline %s" % row.deadline
 			app_ids = app_obj.search(cr, uid, [('job_id','=',row.id),('stage_id','not in',stage_ends)])
-			print "app %s" % app_ids
 		# update is_late nya aplikan
 			app_obj.write(cr, uid, app_ids, {'is_late': True})
 	
@@ -200,6 +203,10 @@ class hr_applicant(osv.osv):
 				if param_name in DOMAIN_DUPLI_DICT:
 					domain_check = DOMAIN_DUPLI_DICT[param_name]
 				if count_param == 1:
+				# kalau parameternya date ubah dulu formatnya dari %d/%m/%Y ke %Y-%m-%d
+					if param_name == 'date_of_birth':
+						print "old %s" % vals['date_of_birth']
+						vals['date_of_birth'] = datetime.strptime(vals['date_of_birth'], '%d/%m/%Y').strftime('%Y-%m-%d')
 					dupli_emp_ids = employee_obj.search(cr, uid, [(param_name,domain_check,vals[param_name])], context={'active_test': False})
 				else:
 				# kalau hasil dari pencarian pertama ada, lanjutkan pencarian
@@ -251,18 +258,25 @@ class hr_applicant(osv.osv):
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
 	def create(self, cr, uid, vals, context={}):
+		model_obj = self.pool.get('ir.model.data')
+		model, pending_stage_id = model_obj.get_object_reference(cr, uid, 'universal', 'stage_job2')
 	# kalau ini driver dan di atas MAX_DRIVER_AGE tahun, maka dia harus diapprove dulu
 		if vals.get('job_id'):
 			job_obj = self.pool.get('hr.job')
 			is_driver = job_obj.is_driver(cr, uid, vals.get('job_id'))
 			birth_year = datetime.strptime(vals.get('date_of_birth'),'%Y-%m-%d').year
 			if is_driver and date.today().year - birth_year > MAX_DRIVER_AGE:
-				model_obj = self.pool.get('ir.model.data')
-				model, pending_stage_id = model_obj.get_object_reference(cr, uid, 'universal', 'stage_job2')
 				vals.update({
 					'stage_id': pending_stage_id,
 					'is_pending': True,
 				})
+		# cek minimal umurnya juga, minimal MIN_STAFF_AGE
+			if date.today().year - birth_year < MIN_STAFF_AGE:
+				vals.update({
+					'stage_id': pending_stage_id,
+					'is_pending': True,
+				})
+	
 	# check duplicate
 		check_dupli = self.check_duplicate_applicant(cr, uid, vals, ['identification_id','gender','name'])
 	# kalau ada duplicate, statenya jadi pending
@@ -412,6 +426,8 @@ class hr_applicant(osv.osv):
 				'family_relationship': "spouse",
 				}
 			)
+	# kalau semua data sudah dicopy, set pelamar menjadi non aktif
+		self.write(cr, uid, ids, {'active': False})
 		return dict_act_window
 		
 	
@@ -465,6 +481,8 @@ class universal_check_duplicate_memory(osv.osv_memory):
 	
 	def action_check_duplicate(self, cr, uid, ids, context=None):
 		app_obj = self.pool.get('hr.applicant')
+		emp_obj = self.pool.get('hr.employee')
+		termi_log_obj = self.pool.get('hr.employee.termination.log')
 		check_dupli_line = []
 		check_vals = {}
 		check_param = []
@@ -493,9 +511,28 @@ class universal_check_duplicate_memory(osv.osv_memory):
 	# di bawah ini siapkan variabel untuk dijadikan nilai default kedua field itu
 		employee_default = []
 		for employee_id in dupli_emp_ids:
-			employee_default.append({
-				'employee_id': employee_id
-			})
+		# ambil data termination log kalau ada
+			emp_data = emp_obj.browse(cr, uid, employee_id)
+			termi_log_ids = termi_log_obj.search(cr, uid, [('employee_id','=',employee_id)], order='id desc', context={'active_test': False})
+			if len(termi_log_ids) > 0:
+				termi_data = termi_log_obj.browse(cr, uid, termi_log_ids[0])
+				employee_default.append({
+					'employee_id': employee_id,
+					'terminate_date': termi_data.terminate_date,
+					'terminate_by': termi_data.terminate_by,
+					'terminate_type': termi_data.terminate_type,
+					'is_blacklist': termi_data.is_blacklist,
+					'blacklist_reason': termi_data.blacklist_reason,
+				})
+			else:
+				employee_default.append({
+					'employee_id': employee_id,
+					'terminate_date': emp_data.terminate_date,
+					'terminate_by': emp_data.terminate_by.id,
+					'terminate_type': emp_data.terminate_type,
+					'is_blacklist': emp_data.is_blacklist,
+					'blacklist_reason': emp_data.blacklist_reason,
+				})
 		applicant_default = []
 		for applicant_id in dupli_app_ids:
 			applicant_default.append({
@@ -554,7 +591,12 @@ class universal_check_duplicate_result_employee(osv.osv_memory):
 		'employee_id': fields.many2one('hr.employee', 'Employee'),
 		'date_of_birth': fields.related('employee_id','date_of_birth',type="date",string="Date of Birth"),
 		'gender': fields.related('employee_id','gender',type="selection",selection=[('male', 'Male'), ('female', 'Female')],string="Gender"),
-		'identification_id': fields.related('employee_id','identification_id',type="char",string="ID No")
+		'identification_id': fields.related('employee_id','identification_id',type="char",string="ID No"),
+		'terminate_date': fields.date('Termination Date'),
+		'terminate_by': fields.many2one('res.users', 'Terminated By'),
+		'terminate_type': fields.selection(_TERMINATE_TYPE, 'Reason'),
+		'is_blacklist': fields.boolean('Blacklist?'),
+		'blacklist_reason': fields.text('Blacklist Reason'),
 	}
 
 # ==========================================================================================================================
@@ -571,3 +613,39 @@ class universal_check_duplicate_result_applicant(osv.osv_memory):
 
 # ==========================================================================================================================
 
+class universal_launch_recruitment_memory(osv.osv_memory):
+	
+	_name = 'universal.launch.recruitment.memory'
+	_description = 'Universal - Launch Recruitment'
+	
+	_columns = {
+		'job_id': fields.many2one('hr.job','Job', required=True),
+		'document_ref': fields.char('Document Ref', size=64, required=True),
+		'deadline': fields.date('Deadline',required=True),
+		'no_of_recruitment': fields.integer('Expected New Employees', help='Number of new employees you expect to recruit.', required=True),
+	}
+	
+	def _check_recruitment(self, cr, uid, ids, context=None):
+		for job in self.browse(cr, uid, ids, context=context):
+			if job.no_of_recruitment <= 0:
+				return False
+		return True
+	
+	_constraints = [
+		(_check_recruitment, "Error: Expected New Employees must be given.", ['no_of_recruitment']),
+	]
+	
+	def action_launch_recruitment(self, cr, uid, ids, context=None):
+		job_obj = self.pool.get('hr.job')
+		form_data = self.browse(cr, uid, ids[0], context=context)
+		job_id = form_data.job_id.id
+	# write dulu data2 yg dibutuhkan ke model job
+		job_obj.write(cr, uid, [job_id], {
+			'document_ref': form_data.document_ref,
+			'deadline': form_data.deadline,
+			'no_of_recruitment': form_data.no_of_recruitment
+		})
+	# baru panggil methodnya
+		return job_obj.set_recruit(cr, uid, [job_id], context=context)
+	
+	

@@ -48,7 +48,7 @@ access_hr_warning_type_spv_hrd_staff,hr.warning.type Spv Hrd Staff,hr_terminatio
 access_hr_applicant_spv_hrd_staff,hr.applicant Spv Hrd Staff,hr_recruitment.model_hr_applicant,universal.group_universal_spv_hrd_staff,1,1,1,0
 access_res_partner_spv_hrd_staff,res.partner Spv Hrd Staff,base.model_res_partner,universal.group_universal_spv_hrd_staff,1,0,0,0
 access_hr_recruitment_requirement_spv_hrd_staff,hr.recruitment.requirement Spv Hrd Staff,hr_recruitment_requirement.model_hr_recruitment_requirement,universal.group_universal_spv_hrd_staff,1,1,1,0
-access_hr_applicant_test_spv_hrd_staff,hr.applicant.test Spv Hrd Staff,hr_recruitment_requirement.model_hr_applicant_test,universal.group_universal_spv_hrd_staff,1,1,0,0
+access_hr_applicant_test_spv_hrd_staff,hr.applicant.test Spv Hrd Staff,hr_recruitment_requirement.model_hr_applicant_test,universal.group_universal_spv_hrd_staff,1,1,1,0
 access_resource_calendar_leaves_spv_hrd_staff,resource.calendar.leaves Spv Hrd Staff,resource.model_resource_calendar_leaves,universal.group_universal_spv_hrd_staff,1,1,1,1
 access_universal_check_duplicate_memory_spv_hrd_staff,universal.check.duplicate.memory Spv Hrd Staff,universal.model_universal_check_duplicate_memory,universal.group_universal_spv_hrd_staff,1,1,1,0
 access_product_supplierinfo_spv_hrd_staff,product.supplierinfo Spv Hrd Staff,product.model_product_supplierinfo,universal.group_universal_spv_hrd_staff,1,1,1,1
@@ -64,14 +64,16 @@ access_hr_employee_category_spv_hrd_staff,hr.employee.category Spv Hrd Staff,hr.
 access_hr_recruitment_degree_spv_hrd_staff,hr.recruitment.degree Spv Hrd Staff,hr_recruitment.model_hr_recruitment_degree,universal.group_universal_spv_hrd_staff,1,1,1,0
 access_product_packaging_spv_hrd_staff,product.packaging Spv Hrd Staff,product.model_product_packaging,universal.group_universal_spv_hrd_staff,1,1,1,1
 access_mail_alias_spv_hrd_staff,mail.alias Spv Hrd Staff,mail.model_mail_alias,universal.group_universal_spv_hrd_staff,1,1,0,0
+access_universal_check_dupli_app_lines_spv_hrd_staff,universal.check.dupli.app.lines Spv Hrd Staff,universal.model_universal_check_dupli_app_lines,universal.group_universal_spv_hrd_staff,1,1,1,1
 access_product_pricelist_spv_hrd_staff,product.pricelist Spv Hrd Staff,product.model_product_pricelist,universal.group_universal_spv_hrd_staff,1,0,0,0
 access_universal_check_duplicate_lines_spv_hrd_staff,universal.check.duplicate.lines Spv Hrd Staff,universal.model_universal_check_duplicate_lines,universal.group_universal_spv_hrd_staff,1,1,1,1
 access_product_price_history_spv_hrd_staff,product.price.history Spv Hrd Staff,product.model_product_price_history,universal.group_universal_spv_hrd_staff,0,0,1,0
-access_resource_resource_spv_hrd_staff,resource.resource Spv Hrd Staff,resource.model_resource_resource,universal.group_universal_spv_hrd_staff,1,1,0,0
+access_resource_resource_spv_hrd_staff,resource.resource Spv Hrd Staff,resource.model_resource_resource,universal.group_universal_spv_hrd_staff,1,1,1,0
 access_hr_attendance_spv_hrd_staff,hr.attendance Spv Hrd Staff,hr_attendance.model_hr_attendance,universal.group_universal_spv_hrd_staff,0,0,0,0
 access_survey_survey_spv_hrd_staff,survey.survey Spv Hrd Staff,survey.model_survey_survey,universal.group_universal_spv_hrd_staff,1,0,0,0
 access_product_template_spv_hrd_staff,product.template Spv Hrd Staff,product.model_product_template,universal.group_universal_spv_hrd_staff,1,0,0,0
 access_resource_calendar_attendance_spv_hrd_staff,resource.calendar.attendance Spv Hrd Staff,resource.model_resource_calendar_attendance,universal.group_universal_spv_hrd_staff,1,1,1,1
+access_universal_check_dupli_emp_lines_spv_hrd_staff,universal.check.dupli.emp.lines Spv Hrd Staff,universal.model_universal_check_dupli_emp_lines,universal.group_universal_spv_hrd_staff,1,1,1,1
 access_product_uom_spv_hrd_staff,product.uom Spv Hrd Staff,product.model_product_uom,universal.group_universal_spv_hrd_staff,1,0,0,0
 access_hr_holidays_reset_memory_spv_hrd_staff,hr.holidays.reset.memory Spv Hrd Staff,universal.model_hr_holidays_reset_memory,universal.group_universal_spv_hrd_staff,1,1,1,0
 access_hr_job_spv_hrd_staff,hr.job Spv Hrd Staff,hr.model_hr_job,universal.group_universal_spv_hrd_staff,1,1,1,0
@@ -93,17 +95,18 @@ access_chjs_region_staff_adm_drv_1,chjs.region Staff Adm Drv 1,chjs_region.model
 access_hr_employee_health_staff_adm_drv_1,hr.employee.health Staff Adm Drv 1,hr_employee_health.model_hr_employee_health,universal.group_universal_staff_adm_drv_1,1,1,1,1
 access_hr_holidays_status_staff_adm_drv_1,hr.holidays.status Staff Adm Drv 1,hr_holidays.model_hr_holidays_status,universal.group_universal_staff_adm_drv_1,1,1,1,0
 access_res_partner_staff_adm_drv_1,res.partner Staff Adm Drv 1,base.model_res_partner,universal.group_universal_staff_adm_drv_1,1,0,0,0
-access_hr_warning_letter_staff_adm_drv_1,hr.warning.letter Staff Adm Drv 1,hr_termination.model_hr_warning_letter,universal.group_universal_staff_adm_drv_1,1,0,0,0
 access_hr_overtime_staff_adm_drv_1,hr.overtime Staff Adm Drv 1,hr_overtime.model_hr_overtime,universal.group_universal_staff_adm_drv_1,1,0,0,0
 access_hr_employee_category_staff_adm_drv_1,hr.employee.category Staff Adm Drv 1,hr.model_hr_employee_category,universal.group_universal_staff_adm_drv_1,1,0,0,0
+access_res_users_staff_adm_drv_1,res.users Staff Adm Drv 1,base.model_res_users,universal.group_universal_staff_adm_drv_1,1,0,0,0
 access_calendar_event_type_staff_adm_drv_1,calendar.event.type Staff Adm Drv 1,calendar.model_calendar_event_type,universal.group_universal_staff_adm_drv_1,1,0,0,0
 access_hr_action_reason_staff_adm_drv_1,hr.action.reason Staff Adm Drv 1,hr_attendance.model_hr_action_reason,universal.group_universal_staff_adm_drv_1,1,1,1,0
 access_resource_calendar_staff_adm_drv_1,resource.calendar Staff Adm Drv 1,resource.model_resource_calendar,universal.group_universal_staff_adm_drv_1,1,0,0,0
 access_resource_resource_staff_adm_drv_1,resource.resource Staff Adm Drv 1,resource.model_resource_resource,universal.group_universal_staff_adm_drv_1,1,1,0,0
 access_hr_attendance_staff_adm_drv_1,hr.attendance Staff Adm Drv 1,hr_attendance.model_hr_attendance,universal.group_universal_staff_adm_drv_1,0,0,0,0
 access_res_country_staff_adm_drv_1,res.country Staff Adm Drv 1,base.model_res_country,universal.group_universal_staff_adm_drv_1,1,0,0,0
-access_res_users_staff_adm_drv_1,res.users Staff Adm Drv 1,base.model_res_users,universal.group_universal_staff_adm_drv_1,1,0,0,0
+access_hr_employee_termination_log_staff_adm_drv_1,hr.employee.termination.log Staff Adm Drv 1,hr_termination.model_hr_employee_termination_log,universal.group_universal_staff_adm_drv_1,1,1,1,1
 access_mail_thread_staff_adm_drv_1,mail.thread Staff Adm Drv 1,mail.model_mail_thread,universal.group_universal_staff_adm_drv_1,0,0,0,0
+access_hr_warning_type_staff_adm_drv_1,hr.warning.type Staff Adm Drv 1,hr_termination.model_hr_warning_type,universal.group_universal_staff_adm_drv_1,1,0,0,0
 access_calendar_event_staff_adm_drv_1,calendar.event Staff Adm Drv 1,calendar.model_calendar_event,universal.group_universal_staff_adm_drv_1,1,0,0,0
 access_hr_holidays_reset_memory_staff_adm_drv_1,hr.holidays.reset.memory Staff Adm Drv 1,universal.model_hr_holidays_reset_memory,universal.group_universal_staff_adm_drv_1,1,1,1,0
 access_hr_job_staff_adm_drv_1,hr.job Staff Adm Drv 1,hr.model_hr_job,universal.group_universal_staff_adm_drv_1,1,0,0,0
@@ -120,10 +123,10 @@ access_res_partner_bank_staff_adm_drv_1,res.partner.bank Staff Adm Drv 1,base.mo
 access_hr_holidays_staff_adm_drv_1,hr.holidays Staff Adm Drv 1,hr_holidays.model_hr_holidays,universal.group_universal_staff_adm_drv_1,1,1,1,0
 access_hr_contract_staff_adm_drv_1,hr.contract Staff Adm Drv 1,hr_contract.model_hr_contract,universal.group_universal_staff_adm_drv_1,1,1,1,1
 access_hr_payroll_structure_staff_adm_drv_1,hr.payroll.structure Staff Adm Drv 1,hr_payroll.model_hr_payroll_structure,universal.group_universal_staff_adm_drv_1,1,0,0,0
-access_hr_employee_termination_log_staff_adm_drv_1,hr.employee.termination.log Staff Adm Drv 1,hr_termination.model_hr_employee_termination_log,universal.group_universal_staff_adm_drv_1,1,1,1,1
+access_hr_warning_letter_staff_adm_drv_1,hr.warning.letter Staff Adm Drv 1,hr_termination.model_hr_warning_letter,universal.group_universal_staff_adm_drv_1,1,1,1,0
 access_chjs_region_staff_adm_drv_2,chjs.region Staff Adm Drv 2,chjs_region.model_chjs_region,universal.group_universal_staff_adm_drv_2,1,0,0,0
 access_hr_employee_health_staff_adm_drv_2,hr.employee.health Staff Adm Drv 2,hr_employee_health.model_hr_employee_health,universal.group_universal_staff_adm_drv_2,1,1,1,1
-access_resource_resource_staff_adm_drv_2,resource.resource Staff Adm Drv 2,resource.model_resource_resource,universal.group_universal_staff_adm_drv_2,1,1,0,0
+access_resource_resource_staff_adm_drv_2,resource.resource Staff Adm Drv 2,resource.model_resource_resource,universal.group_universal_staff_adm_drv_2,1,1,1,0
 access_res_partner_staff_adm_drv_2,res.partner Staff Adm Drv 2,base.model_res_partner,universal.group_universal_staff_adm_drv_2,1,0,0,0
 access_hr_job_staff_adm_drv_2,hr.job Staff Adm Drv 2,hr.model_hr_job,universal.group_universal_staff_adm_drv_2,1,0,0,0
 access_hr_employee_family_staff_adm_drv_2,hr.employee.family Staff Adm Drv 2,hr_employee_family.model_hr_employee_family,universal.group_universal_staff_adm_drv_2,1,1,1,1
@@ -161,7 +164,7 @@ access_hr_warning_type_spv_hrd_driver,hr.warning.type Spv Hrd Driver,hr_terminat
 access_hr_applicant_spv_hrd_driver,hr.applicant Spv Hrd Driver,hr_recruitment.model_hr_applicant,universal.group_universal_spv_hrd_driver,1,1,1,0
 access_res_partner_spv_hrd_driver,res.partner Spv Hrd Driver,base.model_res_partner,universal.group_universal_spv_hrd_driver,1,0,0,0
 access_hr_recruitment_requirement_spv_hrd_driver,hr.recruitment.requirement Spv Hrd Driver,hr_recruitment_requirement.model_hr_recruitment_requirement,universal.group_universal_spv_hrd_driver,1,1,1,0
-access_hr_applicant_test_spv_hrd_driver,hr.applicant.test Spv Hrd Driver,hr_recruitment_requirement.model_hr_applicant_test,universal.group_universal_spv_hrd_driver,1,1,0,0
+access_hr_applicant_test_spv_hrd_driver,hr.applicant.test Spv Hrd Driver,hr_recruitment_requirement.model_hr_applicant_test,universal.group_universal_spv_hrd_driver,1,1,1,0
 access_resource_calendar_leaves_spv_hrd_driver,resource.calendar.leaves Spv Hrd Driver,resource.model_resource_calendar_leaves,universal.group_universal_spv_hrd_driver,1,1,1,1
 access_universal_check_duplicate_memory_spv_hrd_driver,universal.check.duplicate.memory Spv Hrd Driver,universal.model_universal_check_duplicate_memory,universal.group_universal_spv_hrd_driver,1,1,1,0
 access_product_supplierinfo_spv_hrd_driver,product.supplierinfo Spv Hrd Driver,product.model_product_supplierinfo,universal.group_universal_spv_hrd_driver,1,1,1,1
@@ -177,14 +180,16 @@ access_hr_employee_category_spv_hrd_driver,hr.employee.category Spv Hrd Driver,h
 access_hr_recruitment_degree_spv_hrd_driver,hr.recruitment.degree Spv Hrd Driver,hr_recruitment.model_hr_recruitment_degree,universal.group_universal_spv_hrd_driver,1,1,1,0
 access_product_packaging_spv_hrd_driver,product.packaging Spv Hrd Driver,product.model_product_packaging,universal.group_universal_spv_hrd_driver,1,1,1,1
 access_mail_alias_spv_hrd_driver,mail.alias Spv Hrd Driver,mail.model_mail_alias,universal.group_universal_spv_hrd_driver,1,1,0,0
+access_universal_check_dupli_app_lines_spv_hrd_driver,universal.check.dupli.app.lines Spv Hrd Driver,universal.model_universal_check_dupli_app_lines,universal.group_universal_spv_hrd_driver,1,1,1,1
 access_product_pricelist_spv_hrd_driver,product.pricelist Spv Hrd Driver,product.model_product_pricelist,universal.group_universal_spv_hrd_driver,1,0,0,0
 access_universal_check_duplicate_lines_spv_hrd_driver,universal.check.duplicate.lines Spv Hrd Driver,universal.model_universal_check_duplicate_lines,universal.group_universal_spv_hrd_driver,1,1,1,1
 access_product_price_history_spv_hrd_driver,product.price.history Spv Hrd Driver,product.model_product_price_history,universal.group_universal_spv_hrd_driver,0,0,1,0
-access_resource_resource_spv_hrd_driver,resource.resource Spv Hrd Driver,resource.model_resource_resource,universal.group_universal_spv_hrd_driver,1,1,0,0
+access_resource_resource_spv_hrd_driver,resource.resource Spv Hrd Driver,resource.model_resource_resource,universal.group_universal_spv_hrd_driver,1,1,1,0
 access_hr_attendance_spv_hrd_driver,hr.attendance Spv Hrd Driver,hr_attendance.model_hr_attendance,universal.group_universal_spv_hrd_driver,0,0,0,0
 access_survey_survey_spv_hrd_driver,survey.survey Spv Hrd Driver,survey.model_survey_survey,universal.group_universal_spv_hrd_driver,1,0,0,0
 access_product_template_spv_hrd_driver,product.template Spv Hrd Driver,product.model_product_template,universal.group_universal_spv_hrd_driver,1,0,0,0
 access_resource_calendar_attendance_spv_hrd_driver,resource.calendar.attendance Spv Hrd Driver,resource.model_resource_calendar_attendance,universal.group_universal_spv_hrd_driver,1,1,1,1
+access_universal_check_dupli_emp_lines_spv_hrd_driver,universal.check.dupli.emp.lines Spv Hrd Driver,universal.model_universal_check_dupli_emp_lines,universal.group_universal_spv_hrd_driver,1,1,1,1
 access_product_uom_spv_hrd_driver,product.uom Spv Hrd Driver,product.model_product_uom,universal.group_universal_spv_hrd_driver,1,0,0,0
 access_hr_holidays_reset_memory_spv_hrd_driver,hr.holidays.reset.memory Spv Hrd Driver,universal.model_hr_holidays_reset_memory,universal.group_universal_spv_hrd_driver,1,1,1,0
 access_hr_job_spv_hrd_driver,hr.job Spv Hrd Driver,hr.model_hr_job,universal.group_universal_spv_hrd_driver,1,1,1,0
@@ -202,3 +207,4 @@ access_hr_holidays_spv_hrd_driver,hr.holidays Spv Hrd Driver,hr_holidays.model_h
 access_hr_contract_spv_hrd_driver,hr.contract Spv Hrd Driver,hr_contract.model_hr_contract,universal.group_universal_spv_hrd_driver,1,1,1,1
 access_hr_recruitment_stage_spv_hrd_driver,hr.recruitment.stage Spv Hrd Driver,hr_recruitment.model_hr_recruitment_stage,universal.group_universal_spv_hrd_driver,1,1,1,0
 access_hr_warning_letter_spv_hrd_driver,hr.warning.letter Spv Hrd Driver,hr_termination.model_hr_warning_letter,universal.group_universal_spv_hrd_driver,1,1,1,0
+access_universal_verbal_warning,universal.verbal.warning all,universal.model_universal_verbal_warning,,1,0,0,0

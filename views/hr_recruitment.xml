@@ -358,6 +358,11 @@
 						<field name="duplicate_employee_line">
 							<tree version="7.0">
 								<field name="employee_id" />
+								<field name="terminate_date" />
+								<field name="terminate_by" />
+								<field name="terminate_type" />
+								<field name="is_blacklist" />
+								<field name="blacklist_reason" />
 							</tree>
 						</field>
 						<field name="duplicate_applicant_line">
@@ -383,6 +388,25 @@
 					<filter string="Late Decision" domain="[('is_late', '=', True)]"/>
 				</xpath>
 				
+			</field>
+		</record>
+		
+		<!-- LAUNCH RECRUITMENT -->
+		
+		<record id="universal_launch_recruitment" model="ir.ui.view">
+			<field name="name">universal.launch.recruitment</field>
+			<field name="model">universal.launch.recruitment.memory</field>
+			<field name="arch" type="xml">
+				<form string="Launch Recruitment" no_save="1">
+					<group>
+						<field name="job_id" class="oe_inline"/>
+						<field name="document_ref" class="oe_inline"/>
+						<field name="deadline" />
+						<field name="no_of_recruitment" />
+					</group>
+					<button name="action_launch_recruitment" string="Launch" type="object" class="oe_button oe_highlight" confirm="Are you sure to launch this job's recruitment?"/>
+					<button string="Cancel" special="cancel" />
+				</form>
 			</field>
 		</record>
 		

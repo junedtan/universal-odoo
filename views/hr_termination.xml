@@ -12,5 +12,33 @@
 			</field>
 		</record>
 		
+		<record model="ir.ui.view" id="universal_verbal_warning_list">
+			<field name="name">universal.verbal.warning.list</field>
+			<field name="model">universal.verbal.warning</field>
+			<field name="arch" type="xml">
+				<tree string="Verbal Warning">
+					<field name="employee_id"/>
+					<field name="warning_date"/>
+					<field name="issued_by"/>
+					<field name="name"/>
+				</tree>
+			</field>
+		</record>
+		
+		<record model="ir.ui.view" id="universal_verbal_warning_form">
+			<field name="name">universal.verbal.warning.form.form</field>
+			<field name="model">universal.verbal.warning</field>
+			<field name="arch" type="xml">
+				<form string="Verbal Warning">
+					<group>
+						<field name="employee_id"/>
+						<field name="warning_date"/>
+						<field name="issued_by"/>
+						<field name="name"/>
+					</group>
+				</form>
+			</field>
+		</record>
+		
 	</data>
 </openerp>

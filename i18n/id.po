@@ -25504,12 +25504,12 @@ msgstr "Template of Charts of Accounts"
 #. module: universal
 #: view:hr.contract:universal.hr_contract_view_form
 msgid "Terminate"
-msgstr "Akhiri"
+msgstr "Terminasi"
 
 #. module: universal
 #: view:hr.contract:universal.hr_contract_terminate_form
 msgid "Terminate Contract"
-msgstr "Akhiri Kontrak"
+msgstr "Terminasi Kontrak"
 
 #. module: hr_termination
 #: view:hr.employee:hr_termination.hr_employee_form

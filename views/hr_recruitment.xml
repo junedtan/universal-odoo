@@ -46,6 +46,7 @@
 				</xpath>
 				<xpath expr="//button[@name='set_recruit']" position="attributes">
 					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+					<attribute name="invisible">1</attribute>
 				</xpath>
 				<xpath expr="//group[@name='employee_data']" position="replace">
 					<group>

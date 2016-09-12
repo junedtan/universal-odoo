@@ -48,7 +48,7 @@
 		</record>
 		
 		<record id="universal_action_interview_schedule" model="ir.actions.act_window">
-			<field name="name">Interview Schedule</field>	
+			<field name="name">Applicant Interviews</field>	
 			<field name="res_model">universal.applicant.interview</field>
 			<field name="view_type">form</field>
 			<field name="view_mode">calendar,tree,form</field>

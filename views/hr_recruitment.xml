@@ -403,8 +403,10 @@
 						<field name="deadline" />
 						<field name="no_of_recruitment" />
 					</group>
-					<button name="action_launch_recruitment" string="Launch" type="object" class="oe_button oe_highlight" confirm="Are you sure to launch this job's recruitment?"/>
-					<button string="Cancel" special="cancel" />
+					<footer>
+						<button name="action_launch_recruitment" string="Launch" type="object" class="oe_button oe_highlight" confirm="Are you sure to launch this job's recruitment?"/>
+						<button string="Cancel" special="cancel" />
+					</footer>
 				</form>
 			</field>
 		</record>

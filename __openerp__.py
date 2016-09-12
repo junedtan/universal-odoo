@@ -43,6 +43,7 @@
 		'cron/hr_employee.xml',
 		'cron/hr_recruitment.xml',
 		'cron/hr_contract.xml',
+		'cron/hr_holidays.xml',
 	],
 	'demo': [
 	],

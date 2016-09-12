@@ -47,6 +47,13 @@
 			<field name="view_mode">form</field>
 		</record>
 		
+		<record id="universal_action_interview_schedule" model="ir.actions.act_window">
+			<field name="name">Interview Schedule</field>	
+			<field name="res_model">universal.applicant.interview</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">calendar,tree,form</field>
+		</record>
+		
 		<record id="universal_action_launch_recruitment" model="ir.actions.act_window">
 			<field name="name">Launch Recruitment</field>	
 			<field name="res_model">universal.launch.recruitment.memory</field>
@@ -157,6 +164,9 @@
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="2" id="universal_menu_launch_recruitment" action="universal_action_launch_recruitment" 
 		groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 		
+		<menuitem action="universal_action_interview_schedule" id="universal_menu_interview_schedule" parent="base.menu_crm_case_job_req_main" sequence="3" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver" />
+	
 <!-- INHERIT -->
 
 		<menuitem name="Recruitment" id="base.menu_crm_case_job_req_main" parent="hr.menu_hr_root" groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>

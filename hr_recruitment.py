@@ -108,7 +108,7 @@ class hr_applicant(osv.osv):
 			help='If checked, this applicant is waiting for SPV/manager\'s approval.'),
 		'place_of_birth': fields.char('Place of Birth', required=True),
 		'date_of_birth': fields.date('Date of Birth', required=True),
-		'interview_date': fields.date('Interview Date'),
+		'interview_ids': fields.one2many('universal.applicant.interview','applicant_id','Interviews'),
 		'survey_date': fields.date('Survey Date'),
 		'religion': fields.selection(RELIGION, 'Religion'),
 		'driver_license_number': fields.char('License Number'),
@@ -328,6 +328,21 @@ class hr_applicant(osv.osv):
 	# yu panggil write-nya
 		return super(hr_applicant, self).write(cr, uid, ids, vals, context)
 		
+	def action_makeMeeting(self, cr, uid, ids, context=None):
+		applicant_data = self.browse(cr, uid, ids[0], context)
+		data_obj = self.pool.get('ir.model.data')
+		action_id = data_obj.get_object(cr, uid, 'universal', 'universal_action_interview_schedule').id
+		print action_id
+		action_obj = self.pool.get('ir.actions.act_window')
+		action_data = action_obj.read(cr, uid, action_id)
+		action_data.update({
+			'context': {
+				'default_applicant_id': applicant_data.id,
+				'readonly_applicant': 1,
+			},
+		})
+		return action_data
+
 # ONCHANGE ----------------------------------------------------------------------------------------------------------------
 	
 	# kalau isi nama aplikan, isi langsung field bawahnya biar ga usa 2x isi
@@ -429,7 +444,21 @@ class hr_applicant(osv.osv):
 	# kalau semua data sudah dicopy, set pelamar menjadi non aktif
 		self.write(cr, uid, ids, {'active': False})
 		return dict_act_window
-		
+
+# ==========================================================================================================================
+			
+class universal_applicant_interview(osv.osv_memory):
+	
+	_name = 'universal.applicant.interview'
+	_description = 'Universal - Applicant Interview Sessions'
+	
+	_columns = {
+		'applicant_id': fields.many2one('hr.applicant', 'Applicant', required=True),
+		'date_start': fields.datetime('Start Time', required=True),
+		'date_end':fields.datetime('End Time', required=True),
+		'interviewer_id': fields.many2one('hr.employee', 'Main Interviwer'),
+		'notes': fields.text('Notes/Remarks'),
+	}
 	
 # ==========================================================================================================================
 			

@@ -64,7 +64,6 @@ access_hr_employee_category_spv_hrd_staff,hr.employee.category Spv Hrd Staff,hr.
 access_hr_recruitment_degree_spv_hrd_staff,hr.recruitment.degree Spv Hrd Staff,hr_recruitment.model_hr_recruitment_degree,universal.group_universal_spv_hrd_staff,1,1,1,0
 access_product_packaging_spv_hrd_staff,product.packaging Spv Hrd Staff,product.model_product_packaging,universal.group_universal_spv_hrd_staff,1,1,1,1
 access_mail_alias_spv_hrd_staff,mail.alias Spv Hrd Staff,mail.model_mail_alias,universal.group_universal_spv_hrd_staff,1,1,0,0
-access_universal_check_dupli_app_lines_spv_hrd_staff,universal.check.dupli.app.lines Spv Hrd Staff,universal.model_universal_check_dupli_app_lines,universal.group_universal_spv_hrd_staff,1,1,1,1
 access_product_pricelist_spv_hrd_staff,product.pricelist Spv Hrd Staff,product.model_product_pricelist,universal.group_universal_spv_hrd_staff,1,0,0,0
 access_universal_check_duplicate_lines_spv_hrd_staff,universal.check.duplicate.lines Spv Hrd Staff,universal.model_universal_check_duplicate_lines,universal.group_universal_spv_hrd_staff,1,1,1,1
 access_product_price_history_spv_hrd_staff,product.price.history Spv Hrd Staff,product.model_product_price_history,universal.group_universal_spv_hrd_staff,0,0,1,0
@@ -73,7 +72,6 @@ access_hr_attendance_spv_hrd_staff,hr.attendance Spv Hrd Staff,hr_attendance.mod
 access_survey_survey_spv_hrd_staff,survey.survey Spv Hrd Staff,survey.model_survey_survey,universal.group_universal_spv_hrd_staff,1,0,0,0
 access_product_template_spv_hrd_staff,product.template Spv Hrd Staff,product.model_product_template,universal.group_universal_spv_hrd_staff,1,0,0,0
 access_resource_calendar_attendance_spv_hrd_staff,resource.calendar.attendance Spv Hrd Staff,resource.model_resource_calendar_attendance,universal.group_universal_spv_hrd_staff,1,1,1,1
-access_universal_check_dupli_emp_lines_spv_hrd_staff,universal.check.dupli.emp.lines Spv Hrd Staff,universal.model_universal_check_dupli_emp_lines,universal.group_universal_spv_hrd_staff,1,1,1,1
 access_product_uom_spv_hrd_staff,product.uom Spv Hrd Staff,product.model_product_uom,universal.group_universal_spv_hrd_staff,1,0,0,0
 access_hr_holidays_reset_memory_spv_hrd_staff,hr.holidays.reset.memory Spv Hrd Staff,universal.model_hr_holidays_reset_memory,universal.group_universal_spv_hrd_staff,1,1,1,0
 access_hr_job_spv_hrd_staff,hr.job Spv Hrd Staff,hr.model_hr_job,universal.group_universal_spv_hrd_staff,1,1,1,0
@@ -180,7 +178,6 @@ access_hr_employee_category_spv_hrd_driver,hr.employee.category Spv Hrd Driver,h
 access_hr_recruitment_degree_spv_hrd_driver,hr.recruitment.degree Spv Hrd Driver,hr_recruitment.model_hr_recruitment_degree,universal.group_universal_spv_hrd_driver,1,1,1,0
 access_product_packaging_spv_hrd_driver,product.packaging Spv Hrd Driver,product.model_product_packaging,universal.group_universal_spv_hrd_driver,1,1,1,1
 access_mail_alias_spv_hrd_driver,mail.alias Spv Hrd Driver,mail.model_mail_alias,universal.group_universal_spv_hrd_driver,1,1,0,0
-access_universal_check_dupli_app_lines_spv_hrd_driver,universal.check.dupli.app.lines Spv Hrd Driver,universal.model_universal_check_dupli_app_lines,universal.group_universal_spv_hrd_driver,1,1,1,1
 access_product_pricelist_spv_hrd_driver,product.pricelist Spv Hrd Driver,product.model_product_pricelist,universal.group_universal_spv_hrd_driver,1,0,0,0
 access_universal_check_duplicate_lines_spv_hrd_driver,universal.check.duplicate.lines Spv Hrd Driver,universal.model_universal_check_duplicate_lines,universal.group_universal_spv_hrd_driver,1,1,1,1
 access_product_price_history_spv_hrd_driver,product.price.history Spv Hrd Driver,product.model_product_price_history,universal.group_universal_spv_hrd_driver,0,0,1,0
@@ -189,7 +186,6 @@ access_hr_attendance_spv_hrd_driver,hr.attendance Spv Hrd Driver,hr_attendance.m
 access_survey_survey_spv_hrd_driver,survey.survey Spv Hrd Driver,survey.model_survey_survey,universal.group_universal_spv_hrd_driver,1,0,0,0
 access_product_template_spv_hrd_driver,product.template Spv Hrd Driver,product.model_product_template,universal.group_universal_spv_hrd_driver,1,0,0,0
 access_resource_calendar_attendance_spv_hrd_driver,resource.calendar.attendance Spv Hrd Driver,resource.model_resource_calendar_attendance,universal.group_universal_spv_hrd_driver,1,1,1,1
-access_universal_check_dupli_emp_lines_spv_hrd_driver,universal.check.dupli.emp.lines Spv Hrd Driver,universal.model_universal_check_dupli_emp_lines,universal.group_universal_spv_hrd_driver,1,1,1,1
 access_product_uom_spv_hrd_driver,product.uom Spv Hrd Driver,product.model_product_uom,universal.group_universal_spv_hrd_driver,1,0,0,0
 access_hr_holidays_reset_memory_spv_hrd_driver,hr.holidays.reset.memory Spv Hrd Driver,universal.model_hr_holidays_reset_memory,universal.group_universal_spv_hrd_driver,1,1,1,0
 access_hr_job_spv_hrd_driver,hr.job Spv Hrd Driver,hr.model_hr_job,universal.group_universal_spv_hrd_driver,1,1,1,0

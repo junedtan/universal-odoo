@@ -95,6 +95,15 @@ class hr_employee(osv.osv):
 			res.append((record.id, name))
 		return res
 
+	def name_search(self, cr, uid, name, args=None, operator='ilike', context=None, limit=100):
+		if not args: args = []
+		if not context: context = {}
+		if name:
+			ids = self.search(cr, uid, ['|',('name', operator, name),('emp_no', operator, name)] + args, limit=limit, context=context)
+		else:
+			ids = self.search(cr, uid, args, limit=limit, context=context)
+		return self.name_get(cr, uid, ids, context)
+
 # ONCHANGE ----------------------------------------------------------------------------------------------------------------
 	
 	# kalau isi nama aplikan, isi langsung field bawahnya biar ga usa 2x isi

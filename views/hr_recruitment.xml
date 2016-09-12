@@ -154,7 +154,6 @@
 									<field name="company_id" widget="selection" invisible="1" />
 									<field name="user_id" context="{'default_groups_ref': ['base.group_user', 'base.group_partner_manager', 'base.group_hr_manager']}"/>
 									<field name="categ_ids" widget="many2many_tags" />
-									<field name="interview_date" />
 									<field name="survey_date" />
 								</group>
 								<group>
@@ -409,6 +408,61 @@
 				</form>
 			</field>
 		</record>
+		
+		<!-- CALENDAR, SUPAYA NGEKLIK TANGGALAN HARUS ISI DETAIL (TIDAK QUICK-ADD)-->
+		
+		<record id="universal_applicant_interview_form" model="ir.ui.view">
+			<field name="name">universal.applicant.interview.form</field>
+			<field name="model">universal.applicant.interview</field>
+			<field name="arch" type="xml">
+				<form string="Applicant Interview">
+					<group>
+						<field name="applicant_id" class="oe_inline" />
+						<field name="date_start" />
+						<field name="date_end" />
+						<field name="interviewer_id" />
+						<field name="notes" />
+					</group>
+				</form>
+			</field>
+		</record>
+		
+		<record id="universal_applicant_interview_tree" model="ir.ui.view">
+			<field name="name">universal.applicant.interview.tree</field>
+			<field name="model">universal.applicant.interview</field>
+			<field name="arch" type="xml">
+				<tree string="Applicant Interviews">
+					<field name="applicant_id" readonly="context.get('readonly_applicant')" />
+					<field name="date_start" />
+					<field name="date_end" />
+					<field name="interviewer_id" />
+					<field name="notes" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="universal_applicant_interview_search">
+			<field name="name">universal.applicant.interview.calendar</field>	
+			<field name="model">universal.applicant.interview</field>
+			<field name="arch" type="xml">
+				<search string="Interview Search">
+					<field name="applicant_id" string="Applicant" />
+					<field name="interviewer_id" string="Main Interviewer" />
+				</search>
+			</field>
+		</record>
+
+		<record id="universal_applicant_interview_calendar" model="ir.ui.view">
+			<field name="name">universal.applicant.interview.calendar</field>	
+			<field name="model">universal.applicant.interview</field>
+			<field name="arch" type="xml">
+				<calendar string="Interview Sessions" date_start="date_start" date_stop="date_end" 
+					display="[applicant_id]" color="interviewer_id" quick_add="False">
+					<field name="applicant_id"/>
+				</calendar>
+			</field>
+		</record>
+		
 		
 	</data>
 </openerp>

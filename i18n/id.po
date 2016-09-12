@@ -10819,7 +10819,7 @@ msgstr "Constraints with the same name are unique per module."
 #: view:hr.employee:universal.view_employee_form
 #, python-format
 msgid "Contact"
-msgstr "Kontrak"
+msgstr "Kontak"
 
 #. module: base
 #: model:res.groups,name:base.group_partner_manager
@@ -10835,7 +10835,7 @@ msgstr "Email Kontak"
 #. module: base
 #: model:ir.module.module,shortdesc:base.module_website_crm
 msgid "Contact Form"
-msgstr "Contact Form"
+msgstr "Form Kontak"
 
 #. module: hr
 #: view:hr.employee:hr.view_employee_form
@@ -25504,12 +25504,12 @@ msgstr "Template of Charts of Accounts"
 #. module: universal
 #: view:hr.contract:universal.hr_contract_view_form
 msgid "Terminate"
-msgstr "Akhiri"
+msgstr "Terminasi"
 
 #. module: universal
 #: view:hr.contract:universal.hr_contract_terminate_form
 msgid "Terminate Contract"
-msgstr "Akhiri Kontrak"
+msgstr "Terminasi Kontrak"
 
 #. module: hr_termination
 #: view:hr.employee:hr_termination.hr_employee_form

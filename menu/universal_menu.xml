@@ -188,8 +188,6 @@
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="1" id="universal_menu_hr_job_position" action="hr_recruitment.action_hr_job" name="Job Openings" 
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 		
-		
-		
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="5" id="hr.hr_recruitment_period_menu_period" action="hr_recruitment_period.hr_recruitment_period_action_period" 
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 			

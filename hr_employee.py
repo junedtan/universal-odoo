@@ -53,6 +53,7 @@ class hr_employee(osv.osv):
 		'driver_company_id': fields.many2one('res.partner','Current Client', domain=[('customer','=',True)]),
 		'homebase_id': fields.many2one('chjs.region', 'Homebase', domain=[('type','=','city')]),
 		'verbal_ids': fields.one2many('universal.verbal.warning', 'employee_id', 'Verbal Warnings'),
+		'cron_leaves': fields.boolean('Cron Leaves'),
 	}
 	
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------
@@ -133,5 +134,39 @@ class hr_employee(osv.osv):
 			start_working = datetime.strptime(row.start_working,'%Y-%m-%d').date()
 			work_year = abs((today_date - start_working).days)/365.0
 			self.write(cr, uid, row.id, {'work_year': work_year}, context)
-			
+	
+	def cron_calculate_leaves(self, cr, uid, context=None):
+	# ambil id cuti legal
+		model_obj = self.pool.get('ir.model.data')
+		model, legal_id = model_obj.get_object_reference(cr, uid, 'hr_holidays', 'holiday_status_cl')
+	# ambil semua employee yg belum dihitung cuti legalnya
+		emp_obj = self.pool.get('hr.employee')
+		holiday_obj = self.pool.get('hr.holidays')
+		emp_ids = emp_obj.search(cr, uid, [('cron_leaves','=',False)])
+		if len(emp_ids) > 0:
+		# bikin cuti legalnya
+			today_date = date.today()
+			this_year = today_date.strftime('%Y')
+			this_month = today_date.strftime('%m')
+			for emp_data in emp_obj.browse(cr, uid, emp_ids):
+				start_working = datetime.strptime(emp_data.start_working,'%Y-%m-%d')
+			# kalau tahunnya sama baru dikurangin
+				if start_working.strftime('%Y') == this_year:
+					month_left = 12 - int(start_working.strftime('%m'))
+				else:
+					month_left = 12 - int(this_month)
+			# buat alokasi cutinya
+				holiday_id = holiday_obj.create(cr, uid, {
+					'name': "Alokasi tahunan %s" % this_year,
+					'holiday_status_id': legal_id,
+					'number_of_days_temp': month_left,
+					'mode': 'employee',
+					'employee_id': emp_data.id,
+					'type': 'add',
+					'state': 'validate'
+				})
+			# confirm langsung
+				holiday_obj.holidays_validate(cr, uid, [holiday_id])
+			# update status employeenya supaya tidak dihitung ulang
+			emp_obj.write(cr, uid, emp_ids, {'cron_leaves': True})
 			

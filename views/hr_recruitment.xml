@@ -46,6 +46,7 @@
 				</xpath>
 				<xpath expr="//button[@name='set_recruit']" position="attributes">
 					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+					<attribute name="invisible">1</attribute>
 				</xpath>
 				<xpath expr="//group[@name='employee_data']" position="replace">
 					<group>
@@ -60,11 +61,11 @@
 									<field name="requirements" class="oe_inline" widget="selection" />
 									<field name="survey_id" class="oe_inline" widget="selection" />
 								</group>
-								<group>
+							<!--	<group>
 									<field name="document_ref" />
 									<field name="no_of_recruitment" groups="base.group_user" class="oe_inline" string="New Employees Expected" />
 									<field name="deadline" />
-								</group>
+								</group> -->
 							</group>
 						</page>
 						<page string="Job Description">

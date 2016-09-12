@@ -214,4 +214,15 @@ class hr_holidays_change_duration_memory(osv.osv_memory):
 		})
 		return result
 		
+# ==========================================================================================================================
 
+class hr_holidays_leave_rule(osv.osv):
+	
+	_name = 'hr.holidays.leave.rule'
+	_description = 'HR-Holidays Leave Rule'
+	
+	_columns = {
+		'category_id': fields.many2one('hr.employee.category', "Employee Tag", required=True),
+		'leave_type': fields.many2one('hr.holidays.status', 'Leave Type', required=True),
+		'duration': fields.integer('Duration (days)', required=True),
+	}

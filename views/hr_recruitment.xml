@@ -41,6 +41,12 @@
 				<xpath expr="//button[@name='action_get_attachment_tree_view']" position="attributes">
 					<attribute name="invisible">context.get('hide_recruitments') == 1</attribute>
 				</xpath>
+				<xpath expr="//button[@name='set_open']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+				</xpath>
+				<xpath expr="//button[@name='set_recruit']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+				</xpath>
 				<xpath expr="//group[@name='employee_data']" position="replace">
 					<group>
 						<field name="no_of_employee" string="Employees" />
@@ -104,14 +110,16 @@
 						type="object"
 						help="Approve applicant to continue to next stage"
 						attrs="{'invisible':[('is_pending','=',False)]}"
-						confirm="Are you sure to approve this pending applicant to continue to next step?">
+						confirm="Are you sure to approve this pending applicant to continue to next step?"
+						groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver">
 						<div>Approve<br/>Applicant</div>
 					</button>
 					<button name="action_refuse_applicant" 
 						class="oe_stat_button"
 						icon="fa-ban"
 						type="object"
-						help="Refuse applicant">
+						help="Refuse applicant"
+						groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver">
 						<div>Refuse<br/>Applicant</div>
 					</button>
 				</xpath>
@@ -146,7 +154,6 @@
 									<field name="company_id" widget="selection" invisible="1" />
 									<field name="user_id" context="{'default_groups_ref': ['base.group_user', 'base.group_partner_manager', 'base.group_hr_manager']}"/>
 									<field name="categ_ids" widget="many2many_tags" />
-									<field name="interview_date" />
 									<field name="survey_date" />
 								</group>
 								<group>
@@ -350,6 +357,11 @@
 						<field name="duplicate_employee_line">
 							<tree version="7.0">
 								<field name="employee_id" />
+								<field name="terminate_date" />
+								<field name="terminate_by" />
+								<field name="terminate_type" />
+								<field name="is_blacklist" />
+								<field name="blacklist_reason" />
 							</tree>
 						</field>
 						<field name="duplicate_applicant_line">
@@ -377,6 +389,80 @@
 				
 			</field>
 		</record>
+		
+		<!-- LAUNCH RECRUITMENT -->
+		
+		<record id="universal_launch_recruitment" model="ir.ui.view">
+			<field name="name">universal.launch.recruitment</field>
+			<field name="model">universal.launch.recruitment.memory</field>
+			<field name="arch" type="xml">
+				<form string="Launch Recruitment" no_save="1">
+					<group>
+						<field name="job_id" class="oe_inline"/>
+						<field name="document_ref" class="oe_inline"/>
+						<field name="deadline" />
+						<field name="no_of_recruitment" />
+					</group>
+					<button name="action_launch_recruitment" string="Launch" type="object" class="oe_button oe_highlight" confirm="Are you sure to launch this job's recruitment?"/>
+					<button string="Cancel" special="cancel" />
+				</form>
+			</field>
+		</record>
+		
+		<!-- CALENDAR, SUPAYA NGEKLIK TANGGALAN HARUS ISI DETAIL (TIDAK QUICK-ADD)-->
+		
+		<record id="universal_applicant_interview_form" model="ir.ui.view">
+			<field name="name">universal.applicant.interview.form</field>
+			<field name="model">universal.applicant.interview</field>
+			<field name="arch" type="xml">
+				<form string="Applicant Interview">
+					<group>
+						<field name="applicant_id" class="oe_inline" />
+						<field name="date_start" />
+						<field name="date_end" />
+						<field name="interviewer_id" />
+						<field name="notes" />
+					</group>
+				</form>
+			</field>
+		</record>
+		
+		<record id="universal_applicant_interview_tree" model="ir.ui.view">
+			<field name="name">universal.applicant.interview.tree</field>
+			<field name="model">universal.applicant.interview</field>
+			<field name="arch" type="xml">
+				<tree string="Applicant Interviews">
+					<field name="applicant_id" readonly="context.get('readonly_applicant')" />
+					<field name="date_start" />
+					<field name="date_end" />
+					<field name="interviewer_id" />
+					<field name="notes" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="universal_applicant_interview_search">
+			<field name="name">universal.applicant.interview.calendar</field>	
+			<field name="model">universal.applicant.interview</field>
+			<field name="arch" type="xml">
+				<search string="Interview Search">
+					<field name="applicant_id" string="Applicant" />
+					<field name="interviewer_id" string="Main Interviewer" />
+				</search>
+			</field>
+		</record>
+
+		<record id="universal_applicant_interview_calendar" model="ir.ui.view">
+			<field name="name">universal.applicant.interview.calendar</field>	
+			<field name="model">universal.applicant.interview</field>
+			<field name="arch" type="xml">
+				<calendar string="Interview Sessions" date_start="date_start" date_stop="date_end" 
+					display="[applicant_id]" color="interviewer_id" quick_add="False">
+					<field name="applicant_id"/>
+				</calendar>
+			</field>
+		</record>
+		
 		
 	</data>
 </openerp>

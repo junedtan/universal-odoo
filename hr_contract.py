@@ -63,8 +63,8 @@ class hr_contract(osv.osv):
 		'car_lisence_no': fields.char('Car Lisence No', track_visibility='onchange'),
 		'oot_roundtrip_fee': fields.float('Roundtrip Fee/day'),
 		'oot_overnight_fee': fields.float('Overnight Fee/day'),
-		'responsible': fields.many2one('hr.employee','First Party', required=True),
-		'responsible_job_id': fields.related('responsible','job_id',type="many2one",relation="hr.job",string="First Party's Job Title",readonly=True),
+		'first_party_name': fields.char('First Party Name', size=100),
+		'first_party_position': fields.char("First Party's Job Title", size=100),
 		'state': fields.selection(CONTRACT_STATE, 'State'),
 		'allow_driver_replace': fields.boolean('Allow Driver Replacement?'),
 		'meal_voc': fields.float('Meal Allowance/day', digits=(16,2)),
@@ -76,6 +76,7 @@ class hr_contract(osv.osv):
 		'terminate_by': fields.many2one('res.users', 'Terminated By', readonly=True),
 		'terminate_reason': fields.text('Termination Reason'),
 		'terminate_date': fields.date('Termination Date'),
+		'contract_sign_date': fields.date('Contract Sign Date'),
 	}
 
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------
@@ -102,8 +103,10 @@ class hr_contract(osv.osv):
 	# kalau tipe kontraknya lampiran kontrak, ambil latest contract nya
 		if vals['contract_type'] == "contract_attc":
 			emp_obj = self.pool.get('hr.employee').browse(cr, uid, vals['employee_id'], context=context)
-			if emp_obj.driver_type == "contract":
-				vals['parent_contract'] = self.get_latest_contract(cr, uid, vals['employee_id'])
+			lastest_contract = self.get_latest_contract(cr, uid, vals['employee_id'])
+			if not lastest_contract:
+				raise osv.except_osv(_('Contract Error'),_('This employee do not have parent contract. Please create parent contract first before create contract attachment.'))
+			vals['parent_contract'] = lastest_contract
 	# panggil create biasa
 		return super(hr_contract, self).create(cr, uid, vals, context)
 	
@@ -190,6 +193,14 @@ class hr_contract(osv.osv):
 		cust_contract_obj = self.pool.get('hr.customer.contract').browse(cr, uid, cust_contract, context=context)
 		return {'value': {'customer': cust_contract_obj.customer.id}}
 	
+# CRON --------------------------------------------------------------------------------------------------------------------------
+	
+	def cron_contract_finish_status(self, cr, uid, context=None):
+	# cek untuk masing2 contract apakah sudah ada yang durasinya habis?
+		contract_ids = self.search(cr, uid, [('date_end','<',datetime.today().strftime('%Y-%m-%d'))])
+		if len(contract_ids) > 0:
+			self.write(cr, uid, contract_ids, {'state': 'finished'})
+			
 
 # ==========================================================================================================================
 

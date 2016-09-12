@@ -13,16 +13,31 @@
 			<field name="sequence">2</field>
 		</record>
 
-		<record model="hr.recruitment.degree" id="hr_recruitment.degree_bachelor">
+		<record model="hr.recruitment.degree" id="hr_recruitment.degree_d1">
+			<field name="name">D1</field>
 			<field name="sequence">3</field>
 		</record>
 
-		<record model="hr.recruitment.degree" id="hr_recruitment.degree_licenced">
+		<record model="hr.recruitment.degree" id="hr_recruitment.degree_d2">
+			<field name="name">D2</field>
 			<field name="sequence">4</field>
 		</record>
 
-		<record model="hr.recruitment.degree" id="hr_recruitment.degree_bac5">
+		<record model="hr.recruitment.degree" id="hr_recruitment.degree_d3">
+			<field name="name">D3</field>
 			<field name="sequence">5</field>
+		</record>
+
+		<record model="hr.recruitment.degree" id="hr_recruitment.degree_bachelor">
+			<field name="sequence">6</field>
+		</record>
+
+		<record model="hr.recruitment.degree" id="hr_recruitment.degree_licenced">
+			<field name="sequence">7</field>
+		</record>
+
+		<record model="hr.recruitment.degree" id="hr_recruitment.degree_bac5">
+			<field name="sequence">8</field>
 		</record>
 		
 		<!-- RECRUITMENT SOURCE -->

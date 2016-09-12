@@ -11,6 +11,24 @@
 				<xpath expr="//field[@name='work_phone']" position="replace" />
 				<xpath expr="//field[@name='manager']" position="replace" />
 				<xpath expr="//field[@name='children']" position="replace" />
+				<xpath expr="//label[@for='category_ids']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+				</xpath>
+				<xpath expr="//field[@name='category_ids']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+				</xpath>
+				<xpath expr="//button[@name='action_terminate_employee']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+				</xpath>
+				<xpath expr="//button[@name='action_reactivate_employee']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+				</xpath>
+				<xpath expr="//button[@name='action_confirm_terminate_employee']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1</attribute>
+				</xpath>
+				<xpath expr="//button[@name='action_cancel_terminate_employee']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1</attribute>
+				</xpath>
 				<xpath expr="//div[@class='oe_title']" position="inside">
 					<label for="mobile_phone" class="oe_edit_only">Mobile 1</label>
 					<field name="mobile_phone" />
@@ -55,7 +73,7 @@
 						<group>
 							<group string="Position">
 								<field name="department_id" on_change="onchange_department_id(department_id)" />
-								<field name="job_id" />
+								<field name="job_id" on_change="onchange_job_id(job_id)" />
 								<field name="company_id" invisible="1" />
 								<field name="parent_id" />
 								<field name="coach_id" />
@@ -108,6 +126,19 @@
 					<group string="Payroll">
 						<field name="bank_account_id" />
 					</group>
+				</xpath>
+				<xpath expr="//page[@string='Termination']" position="before">
+					<page string="Warning">
+						<group string="Verbal Warnings">
+							<field name="verbal_ids" nolabel="1" readonly="1">
+								<tree version="7.0" create="false" edit="false" delete="false">
+									<field name="warning_date"/>
+									<field name="issued_by"/>
+									<field name="name"/>
+								</tree>
+							</field>
+						</group>
+					</page>
 				</xpath>
 			</field>
 		</record>

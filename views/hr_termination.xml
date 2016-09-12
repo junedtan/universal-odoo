@@ -1,0 +1,44 @@
+<openerp>
+	<data>
+		
+		<record model="ir.ui.view" id="hr_employee_termination_memory_form">
+			<field name="name">hr.employee.termination.memory.form</field>
+			<field name="model">hr.employee.termination.memory</field>
+			<field name="inherit_id" ref="hr_termination.hr_employee_termination_memory_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//button[@name='action_terminate_employee']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+				</xpath>
+			</field>
+		</record>
+		
+		<record model="ir.ui.view" id="universal_verbal_warning_list">
+			<field name="name">universal.verbal.warning.list</field>
+			<field name="model">universal.verbal.warning</field>
+			<field name="arch" type="xml">
+				<tree string="Verbal Warning">
+					<field name="employee_id"/>
+					<field name="warning_date"/>
+					<field name="issued_by"/>
+					<field name="name"/>
+				</tree>
+			</field>
+		</record>
+		
+		<record model="ir.ui.view" id="universal_verbal_warning_form">
+			<field name="name">universal.verbal.warning.form.form</field>
+			<field name="model">universal.verbal.warning</field>
+			<field name="arch" type="xml">
+				<form string="Verbal Warning">
+					<group>
+						<field name="employee_id"/>
+						<field name="warning_date"/>
+						<field name="issued_by"/>
+						<field name="name"/>
+					</group>
+				</form>
+			</field>
+		</record>
+		
+	</data>
+</openerp>

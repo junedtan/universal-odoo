@@ -17,6 +17,8 @@
 	],
 	'sequence': 150,
 	'data': [
+		'security/universal_security.xml',
+		'security/ir.model.access.csv',
 		'data/hr.department.csv',
 		'data/hr.job.csv',
 		'data/hr_recruitment.xml',
@@ -30,13 +32,17 @@
 		'views/hr_attendance.xml',
 		'views/hr_holidays.xml',
 		'views/hr_expense.xml',
+		'views/hr_recruitment.xml',
 		'views/hr_recruitment_period.xml',
+		'views/hr_termination.xml',
 		'views/hr_payroll.xml',
+		'views/res_config.xml',
 		'menu/universal_menu.xml',
 		'report/report_universal.xml',
 		'report/report_contract.xml',
 		'cron/hr_employee.xml',
-		'cron/hr_recruitment.xml'
+		'cron/hr_recruitment.xml',
+		'cron/hr_contract.xml',
 	],
 	'demo': [
 	],

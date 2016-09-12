@@ -16,6 +16,28 @@
 			</field>
 		</record>
 		
+		<record id="hr_holidays_change_duration" model="ir.ui.view">
+			<field name="name">hr.holidays.change.duration</field>
+			<field name="model">hr.holidays.change.duration.memory</field>
+			<field name="arch" type="xml">
+				<form string="Change Duration">
+					<group>
+						<field name="employee_id" />
+						<field name="holiday_status_id" />
+						<field name="leave_id" />
+						<field name="date_from_old" />
+						<field name="date_to_old" />
+						<field name="duration_old" /> days
+						<field name="date_from_new" on_change="onchange_date_to(date_to_new, date_from_new)" />
+						<field name="date_to_new" on_change="onchange_date_to(date_to_new, date_from_new)" />
+						<field name="duration_new" /> days
+					</group>
+					<button name="action_change_duration" string="Change" type="object" class="oe_button oe_highlight" confirm="Are you sure to change this leave request's duration?"/>
+					<button string="Cancel" special="cancel" />
+				</form>
+			</field>
+		</record>
+		
 		<record id="hr_holidays_list" model="ir.ui.view">
 			<field name="name">hr.holidays.list</field>
 			<field name="model">hr.holidays</field>
@@ -38,6 +60,62 @@
 			</field>
 		</record>
 		
+		<record model="ir.ui.view" id="allocation_company_new">
+			<field name="name">Leaves Management</field>
+			<field name="model">hr.holidays</field>
+			<field name="inherit_id" ref="hr_holidays.allocation_company_new" />
+			<field name="arch" type="xml">
+				<xpath expr="//button[@name='validate']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1</attribute>
+				</xpath>
+				<xpath expr="//button[@name='refuse']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1</attribute>
+				</xpath>
+				<xpath expr="//button[@name='reset']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1</attribute>
+				</xpath>
+			</field>
+		</record>
 		
+		<record model="ir.ui.view" id="edit_holiday_new">
+			<field name="name">Leave Request</field>
+			<field name="model">hr.holidays</field>
+			<field name="inherit_id" ref="hr_holidays.edit_holiday_new" />
+			<field name="arch" type="xml">
+				<xpath expr="//button[@name='validate']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+				</xpath>
+				<xpath expr="//button[@name='refuse']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+				</xpath>
+				<xpath expr="//button[@name='reset']" position="attributes">
+					<attribute name="groups">universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver</attribute>
+				</xpath>
+				<xpath expr="//button[@name='reset']" position="after">
+					<button name="action_change_duration" 
+						type="object"
+						help="Change duration leave after approved"
+						attrs="{'invisible':[('state','not in',('validate'))]}"
+						groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver">
+						<div>Change Duration</div>
+					</button>
+				</xpath>
+				<xpath expr="//field[@name='holiday_status_id']" position="replace" />
+				<xpath expr="//field[@name='name']" position="after">
+					<field name="holiday_status_id" on_change="onchange_status_id(holiday_status_id, date_from)" context="{'employee_id':employee_id}"/>
+				</xpath>
+			</field>
+		</record>
+		
+		<record model="ir.ui.view" id="edit_holiday_status_form">
+			<field name="name">hr.holidays.status.form</field>
+			<field name="model">hr.holidays.status</field>
+			<field name="inherit_id" ref="hr_holidays.edit_holiday_status_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='double_validation']" position="before">
+					<field name="leave_duration" />
+				</xpath>
+			</field>
+		</record>
 	</data>
 </openerp>

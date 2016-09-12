@@ -52,6 +52,7 @@ class hr_employee(osv.osv):
 		'work_year': fields.float('Work Year(s)'),
 		'driver_company_id': fields.many2one('res.partner','Current Client', domain=[('customer','=',True)]),
 		'homebase_id': fields.many2one('chjs.region', 'Homebase', domain=[('type','=','city')]),
+		'verbal_ids': fields.one2many('universal.verbal.warning', 'employee_id', 'Verbal Warnings'),
 	}
 	
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------
@@ -81,7 +82,18 @@ class hr_employee(osv.osv):
 		vals.update({'emp_no': emp_no})
 	# panggil create biasa
 		return super(hr_employee, self).create(cr, uid, vals, context)
-	
+
+	def name_get(self, cr, uid, ids, context={}):
+		if isinstance(ids, (list, tuple)) and not len(ids): return []
+		if isinstance(ids, (long, int)): ids = [ids]
+		res = []
+		for record in self.browse(cr, uid, ids):
+			name = record.name
+			if record.emp_no:
+				name = '%s (%s)' % (record.name, record.emp_no)
+			res.append((record.id, name))
+		return res
+
 	def name_search(self, cr, uid, name, args=None, operator='ilike', context=None, limit=100):
 		if not args: args = []
 		if not context: context = {}
@@ -90,6 +102,23 @@ class hr_employee(osv.osv):
 		else:
 			ids = self.search(cr, uid, args, limit=limit, context=context)
 		return self.name_get(cr, uid, ids, context)
+
+# ONCHANGE ----------------------------------------------------------------------------------------------------------------
+	
+	# kalau isi nama aplikan, isi langsung field bawahnya biar ga usa 2x isi
+	def onchange_applicant_name(self, cr, uid, ids, name, context=None):
+		if not name: return {'value': {}}
+		v = {}
+		v['partner_name'] = name 
+		return {'value': v}
+		
+	# kalau isi job, isi departmentnya juga
+	def onchange_job_id(self, cr, uid, ids, job_id, context=None):
+		if not job_id: return {'value': {}}
+		v = {}
+		job_data = self.pool.get('hr.job').browse(cr,uid,job_id)
+		v['department_id'] = job_data.department_id 
+		return {'value': v}
 		
 # CRON --------------------------------------------------------------------------------------------------------------------------
 	

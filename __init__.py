@@ -1,4 +1,5 @@
 MAX_DRIVER_AGE = 45 # in years
+MIN_STAFF_AGE = 18 # in years
 MIN_CHECK_DUPLI = 3 # in params
 
 FAMILY_RELATIONSHIP = (
@@ -95,4 +96,5 @@ import hr_expense
 import hr_recruitment_requirement
 import hr_recruitment_period
 import resource
+import res_config
 import controllers

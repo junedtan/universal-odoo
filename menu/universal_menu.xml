@@ -3,9 +3,8 @@
 		
 		<!-- GANTI TEKS MENU Job Position -->
 		
-		<record model="ir.actions.act_window" id="hr_recruitment.action_hr_job">
-			<field name="name">Job Openings</field>
-		</record>
+		<delete id="hr_recruitment.menu_hr_job_position" model="ir.ui.menu"/>
+		<delete id="hr.menu_hr_job_position" model="ir.ui.menu"/>
 
 		<record id="universal_action_job_position" model="ir.actions.act_window">
 			<field name="name">Job Positions</field>	
@@ -46,6 +45,21 @@
 			<field name="res_model">universal.check.duplicate.memory</field>
 			<field name="view_type">form</field>
 			<field name="view_mode">form</field>
+		</record>
+		
+		<record id="universal_action_interview_schedule" model="ir.actions.act_window">
+			<field name="name">Interview Schedule</field>	
+			<field name="res_model">universal.applicant.interview</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">calendar,tree,form</field>
+		</record>
+		
+		<record id="universal_action_launch_recruitment" model="ir.actions.act_window">
+			<field name="name">Launch Recruitment</field>	
+			<field name="res_model">universal.launch.recruitment.memory</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">form</field>
+			<field name="target">new</field>
 		</record>
 		
 		<record id="universal_action_absence_reason" model="ir.actions.act_window">
@@ -98,40 +112,125 @@
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
 		</record>
-
-		<record id="hr_contract.action_hr_contract" model="ir.actions.act_window">
-			<field name="name">Employee Contracts</field>
-		</record>
-				
-		<menuitem parent="hr.menu_hr_configuration" sequence="3" id="universal_menu_job_position" action="universal_action_job_position"  />
-		<menuitem parent="base.menu_crm_case_job_req_main" sequence="3" id="hr_recruitment.menu_crm_case_categ0_act_job" action="hr_recruitment.crm_case_categ0_act_job" />
-		<menuitem parent="base.menu_crm_case_job_req_main" sequence="2" id="universal_menu_check_duplicate" action="universal_action_check_duplicate"  />
-		<menuitem parent="hr_contract.next_id_56" sequence="5" id="universal_menu_resource_calendar" action="resource.action_resource_calendar_form"/>
 		
-		<menuitem parent="hr.menu_hr_main" sequence="3" id="universal_menu_customer_contract" action="universal_action_customer_contract"/>
-		<menuitem parent="hr.menu_hr_main" sequence="4" id="hr_contract.hr_menu_contract" name="Employee Contracts" action="hr_contract.action_hr_contract" groups="base.group_hr_manager" />
-       
-		<menuitem parent="hr_contract.next_id_56" sequence="2" id="universal_menu_homebase" action="universal_action_homebase" />
-
-		<record model="ir.ui.menu" id="hr.menu_hr_job_position">
-			<field name="name">Job Openings</field>
+		<record id="universal_action_verbal_warning" model="ir.actions.act_window">
+			<field name="name">Verbal Warning</field>	
+			<field name="res_model">universal.verbal.warning</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
 		</record>
+
+		<menuitem parent="hr.menu_hr_configuration" sequence="3" id="universal_menu_job_position" action="universal_action_job_position"
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+		<menuitem parent="base.menu_crm_case_job_req_main" sequence="3" id="hr_recruitment.menu_crm_case_categ0_act_job" action="hr_recruitment.crm_case_categ0_act_job" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+		<menuitem parent="base.menu_crm_case_job_req_main" sequence="4" id="universal_menu_check_duplicate" action="universal_action_check_duplicate" groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+		<menuitem parent="hr_contract.next_id_56" sequence="5" id="universal_menu_resource_calendar" action="resource.action_resource_calendar_form"
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 		
-		<menuitem parent="hr_holidays.menu_open_ask_holidays" sequence="20" id="universal_menu_holiday_reset" action="universal_action_holidays_reset" />
-		<menuitem parent="hr_holidays.menu_open_ask_holidays" sequence="21" id="universal_menu_past_holidays" action="universal_action_past_holidays" />
+		<menuitem parent="hr.menu_hr_main" sequence="3" id="universal_menu_customer_contract" action="universal_action_customer_contract" 
+			groups="universal.group_universal_staff_marketing"/>
+		<menuitem parent="hr.menu_hr_main" sequence="4" id="hr_contract.hr_menu_contract" name="Employee Contracts" action="hr_contract.action_hr_contract" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1,universal.group_universal_spv_admin_drv" />
+    <menuitem parent="hr.menu_hr_main" sequence="5" id="universal_menu_verbal_warning" action="universal_action_verbal_warning" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1" /> 
+		
+		<menuitem parent="hr_contract.next_id_56" sequence="2" id="universal_menu_homebase" action="universal_action_homebase" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+		
+		<menuitem parent="hr_holidays.menu_open_ask_holidays" sequence="20" id="universal_menu_holiday_reset" action="universal_action_holidays_reset" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1"/>
+		<menuitem parent="hr_holidays.menu_open_ask_holidays" sequence="21" id="universal_menu_past_holidays" action="universal_action_past_holidays" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1"/>
 
-		<menuitem parent="hr_attendance.menu_hr_attendance" sequence="22" id="universal_menu_attendance_mass" action="universal_action_attendance_mass" />
-		<menuitem parent="hr_attendance.menu_hr_attendance" sequence="23" id="hr_menu_employee_absence" action="universal_action_employee_absence" />
+		<menuitem parent="hr_attendance.menu_hr_attendance" sequence="22" id="universal_menu_attendance_mass" action="universal_action_attendance_mass" 
+			groups="universal.group_universal_spv_admin_drv"/>
+		<menuitem parent="hr_attendance.menu_hr_attendance" sequence="23" id="hr_menu_employee_absence" action="universal_action_employee_absence" 
+			groups="universal.group_universal_spv_admin_drv"/>
 
-		<menuitem parent="hr.menu_open_view_attendance_reason_new_config" sequence="2" id="universal_menu_absence_reason" action="universal_action_absence_reason" />
+		<menuitem parent="hr.menu_open_view_attendance_reason_new_config" sequence="2" id="universal_menu_absence_reason" action="universal_action_absence_reason" 
+			groups="universal.group_universal_staff_adm_drv_1,universal.group_universal_spv_admin_drv"/>
 		
 		<menuitem parent="hr_recruitment.menu_hr_recruitment_recruitment" sequence="1" id="hr_recruitment_requirement.hr_recruitment_requirement_menu_requirement" action="hr_recruitment_requirement.hr_recruitment_requirement_action_requirement"  />
-		<menuitem parent="hr_recruitment.menu_hr_recruitment_recruitment" sequence="2" id="hr_recruitment.menu_hr_recruitment_stage" action="hr_recruitment.hr_recruitment_stage_act"  groups="base.group_no_one"/>
+		<menuitem parent="hr_recruitment.menu_hr_recruitment_recruitment" sequence="2" id="hr_recruitment.menu_hr_recruitment_stage" action="hr_recruitment.hr_recruitment_stage_act" 
+			groups="base.group_no_one,universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 		
-		<menuitem parent="hr.menu_hr_main" sequence="5" id="universal_menu_contract_attc" action="universal_action_contract_attc" />
+		<menuitem parent="hr.menu_hr_main" sequence="5" id="universal_menu_contract_attc" action="universal_action_contract_attc" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1,universal.group_universal_spv_admin_drv"/>
 
-		<menuitem name="Leave Types" action="hr_holidays.open_view_holiday_status" id="hr_holidays.menu_open_view_holiday_status" parent="hr.menu_open_view_attendance_reason_new_config" sequence="10"/>
+		<menuitem name="Leave Types" action="hr_holidays.open_view_holiday_status" id="hr_holidays.menu_open_view_holiday_status" parent="hr.menu_open_view_attendance_reason_new_config" sequence="10" 
+			groups="universal.group_universal_staff_adm_drv_1"/>
+	
+		<menuitem parent="base.menu_crm_case_job_req_main" sequence="2" id="universal_menu_launch_recruitment" action="universal_action_launch_recruitment" 
+		groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+		
+		<menuitem action="universal_action_interview_schedule" id="universal_menu_interview_schedule" parent="base.menu_crm_case_job_req_main" sequence="3" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver" />
+	
+<!-- INHERIT -->
 
+		<menuitem name="Recruitment" id="base.menu_crm_case_job_req_main" parent="hr.menu_hr_root" groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+		<menuitem id="hr.menu_hr_configuration" name="Configuration" parent="hr.menu_hr_root" groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1,universal.group_universal_spv_admin_drv" sequence="50"/>
+		<menuitem id="hr_attendance.menu_hr_attendance" name="Attendances" parent="hr.menu_hr_root" sequence="10" groups="universal.group_universal_spv_admin_drv"/>
+		<menuitem parent="hr.menu_hr_configuration" sequence="30" id="hr_contract.next_id_56" name="Contract"  
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver" />
+
+		<menuitem parent="hr.menu_hr_main" sequence="3" id="hr.menu_open_view_employee_list_my" action="hr.open_view_employee_list_my" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_2,universal.group_universal_spv_admin_drv"/>
+		<menuitem parent="hr.menu_hr_configuration" sequence="5" id="hr.menu_hr_department_tree" action="hr.open_module_tree_department" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+		
+		<menuitem parent="hr.menu_hr_main" sequence="10" id="hr_termination.hr_termination_menu_warnings" action="hr_termination.hr_termination_action_warnings" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1"/>
+		<menuitem parent="hr.menu_hr_main" sequence="11" id="hr_termination.hr_termination_menu_pending" action="hr_termination.hr_employee_action_pending_terminated" 
+			groups="universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1,universal.group_universal_staff_adm_drv_2"/>
+
+		<menuitem parent="base.menu_crm_case_job_req_main" sequence="1" id="universal_menu_hr_job_position" action="hr_recruitment.action_hr_job" name="Job Openings" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+		
+		
+		
+		<menuitem parent="base.menu_crm_case_job_req_main" sequence="5" id="hr.hr_recruitment_period_menu_period" action="hr_recruitment_period.hr_recruitment_period_action_period" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+			
+		<menuitem parent="hr_attendance.menu_hr_attendance" sequence="20" id="hr_attendance.menu_open_view_attendance" action="hr_attendance.open_view_attendance" 
+			groups="universal.group_universal_spv_admin_drv"/>
+		<menuitem parent="hr.menu_hr_configuration" sequence="35" id="hr.menu_open_view_attendance_reason_new_config" name="Attendance" 
+			groups="universal.group_universal_staff_adm_drv_1,universal.group_universal_spv_admin_drv" />
+		<menuitem parent="hr.menu_open_view_attendance_reason_new_config" id="hr_attendance.menu_open_view_attendance_reason" action="hr_attendance.open_view_attendance_reason"   
+			groups="universal.group_universal_staff_adm_drv_1"/>
+
+		<menuitem parent="hr_holidays.menu_open_ask_holidays" id="hr_holidays.menu_open_ask_holidays_new" action="hr_holidays.open_ask_holidays"
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1"/>
+		<menuitem parent="hr_holidays.menu_open_ask_holidays" id="hr_holidays.menu_request_approve_holidays" name="Leave Requests to Approve" action="hr_holidays.request_approve_holidays" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1"/>
+		<menuitem parent="hr_holidays.menu_open_ask_holidays" id="hr_holidays.menu_open_allocation_holidays" action="hr_holidays.open_allocation_holidays"
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1"/>
+		<menuitem parent="hr_holidays.menu_open_ask_holidays" id="hr_holidays.menu_request_approve_allocation" action="hr_holidays.request_approve_allocation" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1"/>
+		<menuitem parent="hr_holidays.menu_open_ask_holidays" sequence="40" id="hr_holidays.menu_open_company_allocation" action="hr_holidays.open_company_allocation" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1"/>
+
+		<menuitem parent="hr_payroll.menu_hr_root_payroll" id="hr_payroll.menu_department_tree" action="hr_payroll.action_view_hr_payslip_form" 
+			groups="universal.group_universal_spv_admin_drv"/>
+		<menuitem parent="hr_payroll.menu_hr_root_payroll" id="hr_payroll.menu_hr_payslip_run" action="hr_payroll.action_hr_payslip_run_tree" 
+			groups="universal.group_universal_spv_admin_drv"/>
+		<menuitem parent="hr.menu_hr_configuration" sequence="1" id="hr.menu_view_employee_category_form" action="hr.open_view_categ_form" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+			
+		<menuitem parent="hr.menu_hr_configuration" id="hr_expense.menu_hr_product" action="hr_expense.hr_expense_product" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+		
+		<menuitem parent="hr_contract.next_id_56" sequence="6" id="hr_contract.hr_menu_contract_type" action="hr_contract.action_hr_contract_type" 
+			groups="base.group_no_one,universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+		<menuitem parent="hr_contract.next_id_56" sequence="7" id="hr_overtime.hr_menu_overtime" action="hr_overtime.hr_action_overtime" 
+			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+		
+		<menuitem parent="hr_recruitment.menu_hr_recruitment_recruitment" sequence="5" id="hr_recruitment.menu_hr_recruitment_degree" action="hr_recruitment.hr_recruitment_degree_action" 
+			groups="base.group_no_one,universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+			
+		<menuitem parent="hr_recruitment.menu_hr_recruitment_recruitment" sequence="10" id="hr_recruitment.menu_hr_recruitment_source" action="hr_recruitment.hr_recruitment_source_action"
+			groups="base.group_no_one,universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 
 	</data>
 </openerp>

@@ -1,5 +1,16 @@
 <openerp>
-	<data>
+	<data>]
+	
+		<record model="ir.ui.view" id="hr_customer_contract_list">
+			<field name="name">hr.customer.contract.list</field>
+			<field name="model">hr.customer.contract</field>
+			<field name="arch" type="xml">
+				<tree string="Customer Contract">
+					<field name="name" />
+					<field name="customer" />
+				</tree>
+			</field>
+		</record>
 
 		<record model="ir.ui.view" id="hr_contract_view_form">
 			<field name="name">hr.contract.view.form</field>	
@@ -14,10 +25,11 @@
 				</xpath>
 				<xpath expr="//div[@class='oe_title']" position="before">
 					<div class="oe_right oe_button_box">
-						<button name="action_finish" class="oe_stat_button" icon="fa-stop" type="object" confirm="Are you sure to finish this contract?  This action cannot be undone." attrs="{'invisible': ['|',('contract_type','!=','contract_attc'),('state','!=','ongoing')]}">
+						<button name="action_finish" class="oe_stat_button" icon="fa-stop" type="object" confirm="Are you sure to finish this contract?  This action cannot be undone." attrs="{'invisible': [('state','!=','ongoing')]}" 
+						groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1">
 							<div>Finish<br/>Contract</div>
 						</button>
-						<button name="action_terminate" class="oe_stat_button" icon="fa-eject" type="object" confirm="Are you sure to TERMINATE this contract? This action cannot be undone."  attrs="{'invisible': ['|',('contract_type','!=','contract_attc'),('state','!=','ongoing')]}">
+						<button name="action_terminate" class="oe_stat_button" icon="fa-eject" type="object" confirm="Are you sure to TERMINATE this contract? This action cannot be undone."  attrs="{'invisible': [('state','!=','ongoing')]}" groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver">
 							<div>Terminate<br/>Contract</div>
 						</button>
 					</div>
@@ -51,8 +63,9 @@
 				</xpath>
 				<xpath expr="//group[@name='duration_group']" position="after">
 					<group string="Contract Letter">
-						<field name="responsible" />
-						<field name="responsible_job_id" />
+						<field name="first_party_name" readonly="1" />
+						<field name="first_party_position" readonly="1" />
+						<field name="contract_sign_date" />
 					</group>
 				</xpath>
 				<xpath expr="//page[@name='information']" position="after">
@@ -71,7 +84,7 @@
 					</page>
 				</xpath>
 				<xpath expr="//page[@name='termination']" position="after">
-					<page name="contract_attc" string="Contract Attachment">
+					<page name="contract_attc" string="Contract Attachment" attrs="{'invisible': [('contract_type','=','contract_attc')]}">
 						<group>
 							<field name="contract_ids" nolabel="1">
 								<tree string="Past Contract Attachment" create="false" edit="false" delete="false">
@@ -99,16 +112,16 @@
 				</xpath>
 				<xpath expr="//group[@name='duration_group']" position="replace">
 					<group name="duration_group" string="Duration">
-	                    <label for="trial_date_start" string="Trial Period Duration" attrs="{'invisible': [('contract_type','=','contract_attc')]}"/>
-	                    <div attrs="{'invisible': [('contract_type','=','contract_attc')]}">
-	                        <field name="trial_date_start" class="oe_inline"/> - <field name="trial_date_end" class="oe_inline"/>
-	                    </div>
-	                    <label for="date_start" string="Duration"/>
-	                    <div>
-	                        <field name="date_start" class="oe_inline"/> - <field name="date_end" class="oe_inline"/>
-	                    </div>
-	                    <field name="working_hours" attrs="{'required': [('contract_type','=','contract_attc')]}"/>
-	                </group>
+						<label for="trial_date_start" string="Trial Period Duration" attrs="{'invisible': [('contract_type','=','contract_attc')]}"/>
+						<div attrs="{'invisible': [('contract_type','=','contract_attc')]}">
+							<field name="trial_date_start" class="oe_inline"/> - <field name="trial_date_end" class="oe_inline"/>
+						</div>
+						<label for="date_start" string="Duration"/>
+						<div>
+							<field name="date_start" class="oe_inline"/> - <field name="date_end" class="oe_inline" attrs="{'required': [('job_id','=',%(universal.hr_job_driver)d)]}"/>
+						</div>
+						<field name="working_hours" attrs="{'required': [('contract_type','=','contract_attc')]}"/>
+					</group>
 				</xpath>
 				
 			</field>
@@ -131,6 +144,9 @@
 						<filter string="Rent Driver" name="filter_rent_driver" domain="[('contract_type','=','rent_driver')]" />
 						<filter string="Non-Rent Driver" name="filter_non_rent_driver" domain="[('contract_type','=','non_rent_driver')]" />
 						<filter string="Contract Attachment" name="filter_contract_attc" domain="[('contract_type','=','contract_attc')]" />
+					</group>
+					<group string="Date Range">
+						<filter string="Soon-to-be-expired" name="filter_next_month" domain="[('date_end','&gt;=',time.strftime('%%Y-%%m-%%d')),('date_end','&lt;=',(context_today()+relativedelta(months=1)).strftime('%%Y-%%m-%%d')),('state','=','ongoing')]" />
 					</group>
 				</xpath>
 			</field>

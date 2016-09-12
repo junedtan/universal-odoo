@@ -22,7 +22,7 @@ class product_template(osv.osv):
 		
 # ==========================================================================================================================
 
-class hr_hr_expense_expense(osv.osv):
+class hr_expense_expense(osv.osv):
 	
 	_inherit = 'hr.expense.expense'
 	

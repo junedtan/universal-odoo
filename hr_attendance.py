@@ -104,8 +104,8 @@ class hr_attendance_mass_memory(osv.osv_memory):
 		if not emp_id or not contract_id or not att_date: return False
 		absence_obj = self.pool.get('hr.employee.absence')
 		absence_ids = absence_obj.search(cr, uid, [('employee_id','=',emp_id),('absence_date','=',att_date),('contract','=',contract_id)])
-		if len(driver_rep_ids) > 0:
-			driver_rep = driver_rep_obj.browse(cr, uid, driver_rep_ids[0])
+		if len(absence_ids) > 0:
+			driver_rep = driver_rep_obj.browse(cr, uid, absence_ids[0])
 			return driver_rep.driver_replace.id
 		return False
 	

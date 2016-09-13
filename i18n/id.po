@@ -19157,7 +19157,7 @@ msgstr "HP:"
 #: view:hr.holidays:hr_holidays.edit_holiday_new
 #: view:hr.holidays:hr_holidays.view_holiday
 msgid "Mode"
-msgstr "Contoh"
+msgstr "Mode"
 
 #. modules: mail, base
 #: field:ir.actions.report.xml,model:0

@@ -1,6 +1,6 @@
 from openerp.osv import osv, fields
 from openerp.tools.translate import _
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from . import CONTRACT_STATE
 
 _CONTRACT_TYPE = [
@@ -71,12 +71,15 @@ class hr_contract(osv.osv):
 		'transport_voc': fields.float('Transport Allowance/day', digits=(16,2)),
 		'absence_voc': fields.float('Absence Allowance/month', digits=(16,2)),
 		'allowance': fields.float('Allowance/day', digits=(16,2)),
-		'finished_by': fields.many2one('res.users', 'Finished By', readonly=True),
-		'finished_date': fields.date('Finish Date'),
-		'terminate_by': fields.many2one('res.users', 'Terminated By', readonly=True),
-		'terminate_reason': fields.text('Termination Reason'),
-		'terminate_date': fields.date('Termination Date'),
-		'contract_sign_date': fields.date('Contract Sign Date'),
+		'finished_by': fields.many2one('res.users', 'Finished By', readonly=True, copy=False),
+		'finished_date': fields.date('Finish Date', copy=False),
+		'terminate_by': fields.many2one('res.users', 'Terminated By', readonly=True, copy=False),
+		'terminate_reason': fields.text('Termination Reason', copy=False),
+		'terminate_date': fields.date('Termination Date', copy=False),
+		'contract_sign_date': fields.date('Contract Sign Date', copy=False),
+		'trial_date_start': fields.date('Trial Start Date', copy=False),
+		'trial_date_end': fields.date('Trial End Date', copy=False),
+		'extension_of': fields.many2one('hr.contract', 'Extended Contract'),
 	}
 
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------
@@ -129,13 +132,26 @@ class hr_contract(osv.osv):
 			'finished_date': date.today(),
 			'state': 'finished',
 		}, context=context)
+	
+	def action_extend(self, cr, uid, ids, context=None):
+		return {
+			'name': _('Extend Contract'),
+			'view_mode': 'form',
+			'view_type': 'form',
+			'res_model': 'hr.contract.extend.memory',
+			'type': 'ir.actions.act_window',
+			'context': {
+				'default_contract_id': ids[0],
+			},
+			'target': 'new',
+		}
 		
 	def action_terminate(self, cr, uid, ids, context=None):
 		contract_data = self.browse(cr, uid, ids[0], context)
 		model_obj = self.pool.get('ir.model.data')
 		model, view_id = model_obj.get_object_reference(cr, uid, 'universal', 'hr_contract_terminate_form')
 		return {
-			'name': _('Terminate contract'),
+			'name': _('Terminate Contract'),
 			'view_mode': 'form',
 			'view_id': view_id,
 			'view_type': 'form',
@@ -202,6 +218,35 @@ class hr_contract(osv.osv):
 			self.write(cr, uid, contract_ids, {'state': 'finished'})
 			
 
+# ==========================================================================================================================
+
+class hr_contract_extend_memory(osv.osv):
+	_name = "hr.contract.extend.memory"
+	
+	_columns = {
+		'contract_id': fields.many2one('hr.contract', 'Contract to be Extended'),
+		'start_date': fields.date('Date Start', required=True),
+		'end_date': fields.date('Date End', required=True),
+	}
+	
+	def action_save(self, cr, uid, ids, context=None):
+		form_data = self.browse(cr, uid, ids, context)[0]
+		old_contract_id = form_data.contract_id.id
+		contract_obj = self.pool.get('hr.contract')
+		new_contract_id = contract_obj.copy(cr, uid, old_contract_id, context=context)
+		contract_obj.write(cr, uid, [new_contract_id], {
+			'extension_of': old_contract_id,
+			'date_start': form_data.start_date,
+			'date_end': form_data.end_date,
+		}, context=context)
+		start_date = datetime.strptime(form_data.start_date, '%Y-%m-%d')
+		finish_date = start_date + timedelta(hours=-24)
+		contract_obj.write(cr, uid, [old_contract_id], {
+			'finished_by': uid,
+			'finished_date': finish_date.strftime('%Y-%m-%d'),
+		})
+		return True
+	
 # ==========================================================================================================================
 
 class resource_calendar_attendance(osv.osv):

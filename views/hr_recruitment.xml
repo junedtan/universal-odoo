@@ -397,7 +397,7 @@
 			<field name="name">universal.launch.recruitment</field>
 			<field name="model">universal.launch.recruitment.memory</field>
 			<field name="arch" type="xml">
-				<form string="Launch Recruitment" no_save="1">
+				<form string="Launch Recruitment">
 					<group>
 						<field name="job_id" class="oe_inline"/>
 						<field name="document_ref" class="oe_inline"/>
@@ -412,7 +412,7 @@
 			</field>
 		</record>
 		
-		<!-- CALENDAR, SUPAYA NGEKLIK TANGGALAN HARUS ISI DETAIL (TIDAK QUICK-ADD)-->
+		<!-- INTERVIEW SESSIONS -->
 		
 		<record id="universal_applicant_interview_form" model="ir.ui.view">
 			<field name="name">universal.applicant.interview.form</field>

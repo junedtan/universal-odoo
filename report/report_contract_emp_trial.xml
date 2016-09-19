@@ -1,0 +1,128 @@
+<openerp>
+	<data>
+		
+		<template id="report_contract_emp_trial">
+			<t t-call="report.html_container">
+				<t t-foreach="doc_ids" t-as="doc_id">
+					<t t-raw="translate_doc(doc_id, doc_model, 'customer.lang','universal.report_contract_emp_trial_document')"/>
+				</t>
+			</t>
+		</template>
+		
+		<template id="report_contract_emp_trial_document">
+			<div class="page">
+				<div class="row">
+					<div class="header-title">
+						<b><u>SURAT KEPUTUSAN</u></b><br/>
+						No: HRD-JK/026/VIII/2016<br/><br/><br/>
+						<b>Tentang<br/>
+						PENGANGKATAN KARYAWAN PERCOBAAN</b>
+					</div>
+					<br/>
+					<div class="content">
+						<div class="sub-title center">Menimbang:</div>
+						<div>
+							Berdasarkan evaluasi dan penilaian kerja yang dilakukan oleh management PT. Universal terhadap calon karyawan sebagai berikut :<br/>
+							<div class="container-employee">
+								<table width="100%">
+									<tbody>
+										<tr>
+											<td width="20%">Nama</td>
+											<td width="3%">:</td>
+											<td><span t-field="o.employee_id.name" /></td>
+										</tr>
+										<tr>
+											<td>Hasil Wawancara</td>
+											<td>:</td>
+											<td></td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<br/>
+						<div class="sub-title center">Mengingat:</div>
+						<div class="center">Berdasarkan Anggaran Dasar dan Peraturan Perusahaan PT. Universal</div>
+						<br/>
+						<div class="sub-title center">Memperhatikan:</div>
+						<div class="center">Kebutuhan Sumber Daya manusia PT. Universal</div>
+						<br/>
+						<div class="sub-title center">Memutuskan:</div>
+						<div>
+							<b>Pertama:</b><br/>
+							Mengangkat saudara/i <span t-field="o.employee_id.name" /> sebagai karyawan PT. Universal dengan masa percobaan 3 (tiga) bulan terhitung sejak tanggal <span t-field="o.trial_date_start" />. Dan apabila dirasakan perlu, maka masa percobaan dapat diperpanjang paling lama 2 (dua) bulan disesuaikan dari hasil evaluasi masa dari percobaan 3 (tiga) bulan tersebut.<br/><br/>
+							<b>Kedua:</b><br/>
+							Pengangkatan sebagai karyawan dengan masa percobaan tersebut berlaku untuk jabatan <span t-field="o.job_id.name" /> dengan tugas yang akan disesuaikan dengan kemampuan karyawan yang bersangkutan maupun dengan kebutuhan perusahaan.<br/><br/>
+							<b>Ketiga</b><br/>
+							Dengan dikeluarkannya surat pengangkatan ini, maka gaji, tunjangan dan fasilitas sesuai jabatan ataupun kesepakatan yang berlaku.<br/>
+							Adapun Jam kerja yang diberlakukan adalah :<br/>
+							<table width="50%">
+								<tbody>
+									<tr>
+										<td width="30%">- Senin s/d Jumat</td>
+										<td>:</td>
+										<td width="65%">Pukul 08.30 wib – Pukul 17.00 wib</td>
+									</tr>
+									<tr>
+										<td>- Sabtu</td>
+										<td>:</td>
+										<td>Pukul 08.30 wib – Pukul 12.00 wib</td>
+									</tr>
+								</tbody>
+							</table><br/><br/>
+							<b>Keempat :</b><br/>
+							Apabila saudara lulus dalam masa percobaan, maka akan diangkat sebagai karyawan tetap dengan dievaluasi kembali komponen gaji yang disesuaikan dengan hasil evaluasi kerja saudara.<br/><br/>
+							Demikian surat keputusan ini disampaikan untuk dapat dipergunakan sebagaimana mestinya.<br/><br/>
+						</div>
+						<div class="ttd-container">
+							<table width="100%">
+								<tbody>
+									<tr>
+										<td width="30%">
+											Jakarta, [tanggal]<br/>
+											Menyetujui,<br/><br/><br/><br/><br/><br/>
+											<b><u>Jimmy Wibowo</u><br/>Direktur HRD</b>
+										</td>
+										<td width="30%"></td>
+										<td width="30%">
+											<br/>Yang menerima,<br/><br/><br/><br/><br/><br/>
+											<b><u><span t-field="o.employee_id.name" /></u><br/>Karyawan YBS</b>
+										</td>
+									</tr>
+									<tr>
+										<td></td>
+										<td>
+											Mengetahui,<br/><br/><br/><br/><br/>
+											<b><u><span t-field="o.first_party_name" /></u><br/>Direktur</b>
+										</td>
+										<td></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</template>
+		
+		<template id="report_contract_emp_trial_style" inherit_id="report.style">
+			<xpath expr=".">
+				<t>
+					.header-title {
+						text-align: center;
+					}
+					.sub-title {
+						font-weight: bold;
+					}
+					.center {
+						text-align: center;
+					}
+					.container-employee {
+						font-weight: bold;
+						padding-left: 30px;
+					}
+				</t>
+			</xpath>
+		</template>
+	</data>
+</openerp>

@@ -1,0 +1,581 @@
+<openerp>
+	<data>
+		
+		<template id="report_contract_driver">
+			<t t-call="report.html_container">
+				<t t-foreach="doc_ids" t-as="doc_id">
+					<t t-raw="translate_doc(doc_id, doc_model, 'customer.lang','universal.report_contract_driver_document')"/>
+				</t>
+			</t>
+		</template>
+		
+		<template id="report_contract_driver_document">
+			<div class="header">
+				<div class="row">
+					<div style="font-size:12pt; text-align: center; ">
+						<span class="page"/>
+					</div>
+				</div>
+			</div>
+			<div class="page">
+				<div class="row">
+					<div class="header-title">
+						<b><u>PERJANJIAN KERJA UNTUK WAKTU TERTENTU</u></b><br/>
+						Nomor: <span t-field="o.name" />
+					</div>
+					<br/><br/>
+					Yang bertanda tangan di bawah ini, kami masing-masing pihak<br/><br/>
+					<div class="first-party">
+						<div class="first-party-data">
+							<table width="100%">
+								<tbody>
+									<tr>
+										<td width="3%">1.</td>
+										<td width="20%">Nama</td>
+										<td>:</td>
+										<td width="76%"><span t-field="o.first_party_name" /></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td>Jabatan</td>
+										<td>:</td>
+										<td><span t-field="o.first_party_position" /></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<br/>
+						Yang bertindak untuk dan atas nama Perusahaan PT. Universal yang berkedudukan di Jl. Arjuna Selatan no 168 - Jakarta Barat, selanjutnya dalam perjanjian ini disebut sebagai <b>Pihak Pertama</b>.
+					</div>
+					<br/>
+					<div class="second-party">
+						<div class="first-party-data">
+							<table>
+								<tbody>
+									<tr>
+										<td width="3%">2.</td>
+										<td width="20%">Nama</td>
+										<td>:</td>
+										<td width="76%"><span t-field="o.employee_id.name" /></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td>Jenis Kelamin</td>
+										<td>:</td>
+										<td><span t-field="o.employee_id.gender" /></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td>Tempat/tgl lahir</td>
+										<td>:</td>
+										<td><span t-field="o.employee_id.place_of_birth" />/<span t-field="o.employee_id.date_of_birth" /></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td>Agama</td>
+										<td>:</td>
+										<td><span t-field="o.employee_id.religion" /></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td>No. KTP</td>
+										<td>:</td>
+										<td><span t-field="o.employee_id.identification_id" /></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td>Alamat KTP</td>
+										<td>:</td>
+										<td><span t-field="o.employee_id.residential_address" /></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td>Alamat Domisili</td>
+										<td>:</td>
+										<td><span t-field="o.employee_id.address" /></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<br/>
+						Yang bertindak untuk atas nama sendiri, selanjutnya dalam perjanjian ini disebut sebagai <b>Pihak Kedua</b>.
+					</div>
+					<br/>
+					<div>
+						Selanjutnya Pihak Pertama dan Pihak Kedua bersepakat untuk mengadakan Perjanjian Kerja untuk Waktu Tertentu seperti diatur pada pasal-pasal di bawah ini<br/><br/>
+						<div class="center">Pasal 1<br/>
+						<b>DASAR ADANYA PERJANJIAN KERJA UNTUK WAKTU TERTENTU</b></div>
+						<br/>
+						Dasar Perjanjian Kerja untuk Waktu Tertentu antara Pihak Pertama dan Pihak Kedua ini adalah dimana Pihak Pertama mendapat pekerjaan dari Pihak Ketiga yaitu berupa penyediaan tenaga kerja pengemudi untuk ditempatkan di lingkungan Perusahaan Pihak Ketiga.<br/>
+						<div class="center">Pasal 2<br/>
+						<b>PENGERTIAN DAN RUANG LINGKUP PERJANJIAN</b></div>
+						<br/>
+						<ol class="numbered">
+							<li>Bahwa Pihak Pertama adalah suatu Badan Usaha yang bergerak dibidang Pelatihan, penyediaan dan penyaluran sumber daya manusia untuk disalurkan dan dipekerjakan di perusahaan Pihak Ketiga, dengan jangka waktu tertentu.</li>
+							<li>Bahwa Pihak Kedua adalah sebagai tenaga kerja yang akan dilatih dan disalurkan atau dipekerjakan oleh Pihak Pertama pada perusahaan Pihak Ketiga.</li>
+						</ol>
+						<br/>
+						<div class="center">Pasal 3<br/>
+						<b>IKATAN DAN PENEMPATAN KERJA</b></div>
+						<br/>
+						<ol style="list-style-type:decimal;">
+							<li>Pihak Pertama bersedia dan menyetujui untuk menerima Pihak Kedua sebagai karyawan dengan status sebagai pekerja kontrak untuk waktu tertentu.</li>
+							<li>Pihak Kedua menyatakan menerima dan bersedia untuk bekerja sebagai pengemudi kendaraan bermotor (mobil) dengan status sebagai pekerja kontrak untuk waktu tertentu serta bersedia mengabdi dan mencurahkan segala pikiran, kemampuan serta tenaga untuk bekerja pada perusahaan Pihak Ketiga.</li>
+							<li>Pihak Pertama mempunyai wewenang penuh menentukan jadwal jam kerja, sistem dan/atau aturan kerja serta penempatan kerja dalam memberi tugas dan pekerjaan kepada Pihak Kedua sesuai dengan kebutuhan Pihak Ketiga.</li>
+							<li>Pihak Kedua akan mentaati dan mematuhi Peraturan Perusahaan serta ketentuan-ketentuan lainnya yang terlampir dalam Perjanjian Kerja untuk Waktu Tertentu ini.</li>
+						</ol>
+						<div class="center">Pasal 4<br/>
+						<b>JANGKA WAKTU PERJANJIAN</b></div>
+						<br/>
+						<ol>
+							<li>Jangka waktu perjanjian diuraikan di dalam Addendum.</li>
+							<li>Jika Perjanjian Kerja untuk Waktu Tertentu ini telah berakhir sesuai dengan yang diuraikan dalam Addendum, maka hubungan kerja akan putus dengan sendirinya dan Pihak Pertama tidak mempunyai kewajiban untuk memberikan kompensasi ataupun kebijaksanaan dalam bentuk apapun kepada Pihak Kedua, serta Pihak Kedua menyepakati dan menyetujui untuk tidak akan melakukan tuntutan dalam bentuk apapun dikemudian hari kepada Pihak Pertama.</li>
+							<li>Perjanjian Kerja untuk Waktu Tertentu ini berlaku paling lama 2 (dua) tahun.<br/>
+							Perpanjangan Perjanjian Kerja untuk Waktu Tertentu ini dapat dilakukan sesuai dengan kebutuhan Pihak Pertama, dan Pihak Pertama akan menyampaikan maksudnya kepada Pihak Kedua selambat-lambatnya 7 (tujuh) hari kerja sebelum Perjanjian Kerja untuk Waktu Tertentu ini berakhir.</li>
+						</ol>
+						<div class="center">Pasal 5<br/>
+						<b>UPAH</b></div>
+						<br/>
+						<ol class="alphabet">
+							<li>Pihak Pertama akan memberikan imbalan atau upah kepada Pihak Kedua dengan tidak kurang dari ketentuan perundang-undangan tentang Upah Minimum yang berlaku.</li>
+							<li>Komposisi upah diuraikan di dalam Addendum</li>
+							<li>Besarnya upah seperti yang diuraikan di dalam Addendum dapat berubah disesuaikan dengan penempatan lokasi kerja (Home Base) dari perusahaan Pihak Ketiga dengan tidak kurang dari ketentuan UMR/UMP/UMK setempat.</li>
+							<li>Pembayaran upah tetap dan tidak tetap (lembur dan tunjangan) bulan sebelumnya diberikan pada tanggal 25 atau 30 setiap bulannya disesuaikan dengan pola perhitungan daftar hadir dari perusahaan pihak ketiga, melalui transfer ke rekening Bank BCA milik Pihak Kedua.</li>
+							<li>Dalam hal Pihak Kedua tidak memiliki rekening Bank BCA, maka keterlambatan dalam pembayaran upah yang disebabkan oleh jangka waktu transfer antar Bank dan biaya yang timbul sebagai biaya transfer antar Bank adalah tanggungan Pihak Kedua.</li>
+							<li>Pihak Pertama tidak memberikan upah secara tunai kepada Pihak Kedua.</li>
+							<li>Slip rincian upah Pihak Kedua akan diberikan oleh Pihak Pertama kepada Pihak Kedua selambat-lambatnya 10 (sepuluh) hari kerja setelah tanggal pemberian upah di kantor Pihak Pertama pada jam kerja.</li>
+							<li>Pajak atas upah Pihak Kedua (Pph21) adalah menjadi tanggungan Pihak Kedua dan akan dipotong langsung oleh Pihak Pertama setiap bulannya pada saat pembayaran upah, dan Pihak Pertama akan menyetorkan potongan pajak atas upah Pihak Kedua kepada Dirjen Pajak Republik Indonesia.<br/>
+							Perhitungan pemotongan Pph21 adalah disesuaikan dengan peraturan Perundang-undangan perpajakan Republik Indonesia.</li>
+							<li>Dalam hal Pihak Kedua tidak masuk bekerja, maka upah tidak tetap yang berkaitan dengan kehadiran akan dipotong sesuai dengan jumlah hari dimana Pihak Kedua tidak masuk bekerja.</li>
+							<li>Pihak Pertama akan memberikan Tunjangan Hari Raya Keagamaan (THR) kepada Pihak Kedua sesuai dengan ketentuan peraturan perundang-undangan yang berlaku, dan Tunjangan Hari Raya tersebut akan diberikan berdasarkan pada saat perayaan hari raya masing-masing Agama 1 (satu) minggu sebelum hari raya.</li>
+						</ol>
+						<div class="center">Pasal 6<br/>
+						<b>JAM KERJA DAN KERJA LEMBUR</b></div>
+						<br/>
+						<ol>
+							<li>Hari dan Jam kerja diuraikan di dalam Addendum</li>
+							<li>Kelebihan dari jam kerja akan diperhitungkan sebagai jam kerja lembur dan perhitungan kerja lembur tersebut sesuai dengan ketentuan yang berlaku.</li>
+							<li>Pihak Kedua bersedia dan patuh jika diperintah untuk bekerja lembur, meskipun kerja lembur tersebut jatuh pada hari istirahat mingguan maupun hari libur resmi (Maksimal 2 kali dalam sebulan untuk lembur pada hari libur resmi, kecuali atas permintaan Pihak Kedua).</li>
+							<li>Pihak Kedua bersedia dan menyetujui pembayaran upah lembur dibayarkan pada bulan berikutnya bersamaan dengan pembayaran upah.</li>
+							<li>Data absensi kehadiran dan rincian lembur Pihak Kedua harus sudah diberikan kepada Pihak Pertama selambat-lambatnya setiap tanggal 1 (satu) bagi yang berlokasi kerja di dalam kota dan setiap tanggal 5 (lima) bagi yang berlokasi kerja diluar kota.</li>
+							<li>Keterlambatan pembayaran upah lembur yang disebabkan oleh terlambatnya pengiriman rincian oleh Pihak Kedua adalah menjadi tanggungan Pihak Kedua.</li>
+						</ol>
+						<div class="center">Pasal 7<br/>
+						<b>CUTI</b></div>
+						<br/>
+						<ol>
+							<li>Pengajuan cuti oleh Pihak Kedua kepada Pihak Pertama dilakukan dalam masa ikatan kerja sesuai Perjanjian Kerja untuk Waktu Tertentu</li>
+							<li>Cuti yang diberikan adalah 12 hari kerja (termasuk cuti bersama) apabila masa kerja Pihak Kedua telah genap 1 tahun atau lebih, dan apabila masa kerja Pihak Kedua belum genap 1 tahun, maka cuti yang diberikan dihitung pro-rata berdasarkan masa ikatan kerja dalam Perjanjian Kerja untuk Waktu Tertentu.</li>
+							<li>Pengambilan hak cuti hanya diperbolehkan paling banyak 6 (enam) hari selama 6 (enam) bulan pertama dan 6 (enam) hari pada 6 (enam) bulan kedua dalam periode setelah genap 1 tahun atau lebih.</li>
+							<li>Pihak Kedua wajib mengajukan cuti secara tertulis kepada Pihak Pertama selambat-lambatnya 7 (tujuh) hari sejak tanggal cuti yang diajukan</li>
+							<li>Pihak Pertama berhak dan berkuasa penuh untuk menolak pengajuan cuti atau menentukan tanggal cuti Pihak Kedua disesuaikan dengan kebutuhan Pihak Pertama dan atau Pihak Ketiga di mana Pihak Kedua ditempatkan</li>
+						</ol>
+						<div class="center">Pasal 8<br/>
+						<b>IZIN SAKIT</b></div>
+						<br/>
+						<ol>
+							<li>Izin tidak masuk kerja dari Pihak Kedua dikarenakan sakit, wajib melampirkan Surat Keterangan Sakit dari Dokter paling lama 2 (dua) hari setelah masuk kerja kepada Pihak Pertama.</li>
+							<li>Apabila Pihak Kedua tidak masuk kerja karena sakit namun tidak dapat memberikan Surat Keterangan Sakit dari Dokter kepada Pihak Pertama maka akan dihitung Alpha.</li>
+						</ol>
+						<div class="center">Pasal 9<br/>
+						<b>MUTASI</b></div>
+						<br/>
+						<ol>
+							<li>Pihak Pertama berhak dan berkuasa penuh untuk memutasikan atau memindahkan lokasi kerja Pihak Kedua, di sepanjang wilayah Republik Indonesia dan Pihak Kedua bersedia menerima dan melaksanakan dengan sepenuh hati.</li>
+							<li>Selama berlakunya Perjanjian Kerja untuk Waktu Tertentu ini, penempatan kerja tidak berlaku atau terikat pada 1 (satu) perusahaan Pihak Ketiga saja, untuk itu Pihak Pertama sewaktu-waktu dapat memutasi Pihak Kedua ke perusahaan lain kapan saja sesuai dengan kebutuhan Pihak Pertama dan Pihak Kedua bersedia untuk ditempatkan dimana saja dan kapan saja di perusahaan Pihak Ketiga dan akan melakukan pekerjaan sebaik-baiknya dengan penuh dedikasi dan tanggung jawab</li>
+						</ol>
+						<div class="center">Pasal 10<br/>
+						<b>BERAKHIRNYA PERJANJIAN KERJA</b></div>
+						<br/>
+						Perjanjian Kerja untuk Waktu Tertentu ini selesai atau habis dengan sendirinya jika :<br/>
+						<ol>
+							<li>Seperti yang diuraikan dalam Addendum.</li>
+							<li>Selama masih terikat dalam perjanjian kerja ini, Pihak Kedua melakukan perjanjian kerja dengan pihak lain, baik menerima upah maupun tidak menerima upah tanpa seizin Pihak Pertama dan/atau Pihak Kedua membatalkan kontrak kerja ini sebelum berakhir, maka Pihak Pertama akan menganggap Pihak Kedua telah mengundurkan diri dengan tanpa adanya tuntutan dalam bentuk apapun terhadap Pihak Pertama.</li>
+							<li>Pihak Kedua melakukan pelanggaran atau kesalahan seperti yang tertulis pada Lampiran II ayat 5 yang terlampir dalam Perjanjian Kontrak ini.</li>
+							<li>Selama masih terikat dalam perjanjian ini, Pihak Kedua menolak dan tidak bersedia ditempatkan di lokasi kerja yang baru, maka Pihak Pertama akan menganggap Pihak Kedua telah mengundurkan diri dengan tanpa adanya tuntutan dalam bentuk apapun terhadap Pihak Pertama.</li>
+						</ol>
+						<div class="center">Pasal 11<br/>
+						<b>LAMPIRAN PERJANJIAN</b></div>
+						<br/>
+						Dalam Perjanjian Kerja untuk Waktu Tertentu ini Pihak Pertama melampirkan beberapa penjelasan tentang Tata Tertib maupun sanksi-sanksi yang berlaku di perusahaan milik Pihak Pertama.<br/>
+						<ol style="padding-left: 30px;">
+							<li>Lampiran I    : Tata Tertib dan Larangan-larangan</li>
+							<li>Lampiran II    : Sanksi-Sanksi</li>
+							<li>Lampiran III    : Fasilitas dan Perlengkapan kerja</li>
+						</ol>
+						Adapun bila terdapat beberapa Addendum, maka Addendum yang terbaru adalah yang berlaku.<br/><br/>
+						<div class="center">Pasal 12<br/>
+						<b>PENUTUP</b></div>
+						<br/>
+						<ol>
+							<li>Pihak Kedua wajib menjalankan dan mentaati Perjanjian Kerja Untuk Waktu Tertentu ini, Peraturan Perusahaan, Prosedur Kerja, serta segala ketentuan yang dinyatakan berlaku di perusahaan milik Pihak Pertama.</li>
+							<li>Pelanggaran yang dilakukan oleh Pihak Kedua terhadap isi Perjanjian Kerja ini akan berakibat berakhirnya hubungan kerja tanpa tuntutan atau kompensasi apapun di kemudian hari.</li>
+							<li>Perjanjian Kerja untuk Waktu Tertentu ini dibuat, disetujui dan ditandatangani bersama dengan sadar serta akal dan pikiran yang sehat tanpa ada unsur paksaan dari pihak manapun, dan ditandatangani oleh masing-masing pihak dalam rangkap 2 (dua) bermaterai cukup yang isinya mempunyai kekuatan hukum yang sama.</li>
+						</ol>
+						<br/><br/><br/>
+						<div>
+							<div class="center">
+								Dikeluarkan di: Jakarta<br/>
+								Pada tanggal: [TANGGAL]
+							</div>
+							<br/>
+							<table width="100%" style="text-align:center;">
+								<tbody>
+									<tr>
+										<td width="50%">Pihak Pertama,<br/><br/><br/><br/></td>
+										<td><span t-field="o.first_party_name" /></td>
+									</tr>
+									<tr>
+										<td>Pihak Kedua,<br/><br/><br/><br/></td>
+										<td><span t-field="o.employee_id.name" /></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<div style="page-break-before:always;display: block; clear: both" />
+					<div class="attachment">
+						<div style="font-size:12pt;"><b><u>LAMPIRAN I</u></b></div><br/><br/><br/>
+						<div class="center" style="font-size:10pt; ">I. TATA TERTIB</div>
+						<br/><br/>
+						<table style="font-size: 8pt;width: 100%;">
+							<tbody>
+								<tr>
+									<td style="width: 49%; padding-right: 20px; text-align: justify;">
+										<ol>
+											<li>Mengisi daftar kehadiran, jam kerja dan jam lembur pada form yang disediakan oleh perusahaan pada saat memulai pekerjaan dan pada saat mengakhiri pekerjaan dan menyerahkan</li>
+											<li>Karyawan wajib memulai dan mengakhiri pekerjaan sesuai dengan jam kerja yang telah ditetapkan oleh perusahaan</li>
+											<li>Dalam keadaan mendesak atau darurat, karyawan wajib menginformasikan ke Perusahaan bila tidak hadir bekerja sedikitnya 3 jam sebelum dimulainya jam kerja.</li>
+											<li>Memberi informasi yang jelas, lengkap dan benar tentang data-data identitas diri untuk kepentingan perusahaan dan kelancaran administrasi perusahaan </li>
+											<li>
+												Karyawan wajib melapor kepada bagian administrasi perusahaan atas perubahan dari data-data identitas diri, seperti :<br/>
+												-	Perubahan kendaraan.<br/>
+												-	Perubahan nomor telephone / HP<br/>
+												-	Perubahan tempat tinggal<br/>
+												-	Perubahan status keluarga.<br/>
+												- dll
+											</li>
+											<li>Pada saat jam kerja, karyawan diwajibkan memakai seragam perusahaan</li>
+											<li>Karyawan pria wajib berambut pendek</li>
+											<li>Karyawan dilarang mempunyai tatto</li>
+											<li>Karyawan wajib memeriksa kendaraan dan semua perlengkapan kendaraan dan melaporkan segala kerusakan yang terjadi sebelum dan setelah bekerja guna menghindari bahaya yang sifatnya dapat menimbulkan kecelakaan kerja serta terganggunya operasional perusahaan.</li>
+										</ol>
+									</td>
+									<td style="width:49%; padding-left: 20px;text-align: justify;">
+										<ol start="10">
+											<li>Karyawan tidak diperbolehkan menggunakan alat-alat kerja yang bukan menjadi tujuan penggunaan alat-alat tersebut</li>
+											<li>Karyawan harus aktif memelihara pergaulan yang sehat dengan teman sekerja dan atasan serta pemakai jasa di dalam maupun di luar lingkungan kerja</li>
+											<li>Karyawan harus mengutamakan kepentingan pelanggan daripada diri sendiri</li>
+											<li>Karyawan harus menjunjung tinggi nama baik perusahaan serta menjaga kepercayaan yang telah diberikan oleh perusahaan</li>
+											<li>Karyawan wajib memegang teguh rahasia perusahaan Pihak Pertama maupun Perusahaan Pihak ketiga serta pemakai jasa dalam bentuk apapun terhadap pihak lain</li>
+											<li>Karyawan wajib membina hubungan kerja yang harmonis antara sesama rekan kerja dan pemakai jasa</li>
+											<li>Karyawan wajib merawat kendaraan dan memelihara lingkungan kerja yang bersih, sehat dan aman</li>
+											<li>Karyawan wajib menjalankan kebijaksanaan yang ditetapkan oleh perusahaan dengan penuh tanggung jawab</li>
+											<li>Karyawan wajib mentaati rambu-rambu lalu lintas</li>
+											<li>Karyawan wajib melaporkan ke staff operasional Pihak Pertama bila dalam bekerja tiba-tiba mengalami kondisi tidak sehat</li>
+											<li>Karyawan wajib membawa Handphone dengan keadaan aktif.</li>
+										</ol>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						<br/><br/>
+						<div style="text-align: center;">II. LARANGAN-LARANGAN</div>
+						<br/><br/>
+						<table style="font-size: 8pt;width: 100%;">
+							<tbody>
+								<tr>
+									<td style="width: 49%; padding-right: 20px; text-align: justify;">
+										<ol>
+											<li>Karyawan dilarang masuk ke ruangan yang bukan tempat kerjanya kecuali atas perintah atasan, atau sifat pekerjaan yang dilaksanakan mengharuskan ia memasuki tempat tersebut.</li>
+											<li>Karyawan dilarang mengadakan kegiatan baik di luar maupun di dalam lingkungan tempat kerja yang dapat menimbulkan ketertiban umum, keresahan, kekacauan serta gangguan kelancaran pekerjaan</li>
+											<li>Karyawan dilarang memindahkan barang-barang milik perusahaan dengan maksud untuk memiliki atau tanpa seijin dari perusahaan</li>
+										</ol>
+									</td>
+									<td style="width: 49%; padding-left: 20px; text-align: justify;">
+										<ol start="4">
+											<li>Karyawan dilarang menggunakan barang-barang milik perusahaan untuk keperluan pribadi baik di dalam jam kerja maupun di luar jam kerja tanpa kecuali</li>
+											<li>Karyawan tidak diperbolehkan menggunakan alat-alat kerja yang bukan menjadi tujuan penggunaan alat-alat tersebut</li>
+											<li>Karyawan dilarang membawa, menyimpan, mengedarkan, menjual serta memakai untuk diri sendiri minuman beralkohol, dan narkotika di dalam lingkungan kerja</li>
+											<li>Karyawan dilarang meminjam uang kepada pemakai jasa.</li>
+										</ol>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						<br/><br/><br/><br/>
+						<div>
+							<table width="100%">
+								<tbody>
+									<tr>
+										<td width="53%"></td>
+										<td>
+											TATA TERTIB DAN LARANGAN2 TELAH DIBACA,<br/>DIMENGERTI DAN DIPAHAMI OLEH PIHAK KEDUA,<br/><br/><br/><br/>
+											________________________<br/>
+											Tanda tangan dan nama jelas
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div style="page-break-before:always;display: block; clear: both" />
+						<div style="font-size: 12pt;"><b><u>LAMPIRAN II</u></b></div><br/><br/><br/>
+						<div class="center" style="font-size: 10pt;">II. SANKSI-SANKSI</div>
+						<br/>
+						<div class="div-sanksi">
+							<ol>
+								<li>
+									Dalam hal Pihak Kedua melakukan pelanggaran terhadap peraturan perusahaan ini, maka Pihak Pertama akan menetapkan sanksi-sanksi dengan memperhatikan ketentuan sbb :<br/>
+									- Bentuk pelanggaran<br/>
+									- Surat peringatan yang telah diberikan<br/>
+									- Berat ringan pelanggaran
+								</li>
+								<li>
+									Pihak Pertama berhak untuk melakukan tindakan apabila Pihak Kedua melakukan pelanggaran terhadap peraturan perusahaan dalam bentuk :<br/>
+									2.1. Teguran lisan<br/>
+									2.2. Surat Peringatan I, II, III<br/>
+									2.3. Pemutusan Hubungan Kerja
+								</li>
+								<li>
+									Surat peringatan tersebut dalam point 2.2 berlaku untuk jangka waktu enam bulan dan bila Pihak Kedua melakukan pelanggaran kembali selama masa berlakunya surat peringatan tersebut, maka Pihak Pertama berhak mengeluarkan surat peringatan kembali menurut urutannya
+								</li>
+								<li>
+									Surat peringatan tidak harus diberikan menurut urutannya tetapi dinilai berdasarkan berat ringannya pelanggaran yang dilakukan oleh Pihak Kedua, sebagai  berikut :<br/>
+									<ol class="alphabet">
+										<li>
+											<b>Kesalahan-kesalahan yang dapat diberikan Surat Peringatan I</b>
+											<ol>
+												<li>Berkali-kali datang terlambat tanpa alasan yang sah</li>
+												<li>Tidak mengisi kartu / buku absensi</li>
+												<li>Tidak hadir dua hari berturut-turut dan tiga hari tidak berturut-turut dalam sebulan tanpa keterangan dan alasan yang sah</li>
+												<li>Melakukan pelanggaran terhadap tata tertib perusahaan yang belum termasuk dalam peringatan lainnya.</li>
+											</ol>
+										</li>
+										<li>
+											<b>Kesalahan-kesalahan yang dapat diberikan Surat Peringatan II</b>
+											<ol>
+												<li>Melakukan pelanggaran dalam masa berlakunya surat peringatan I</li>
+												<li>Mengisi kartu / buku absensi milik orang lain</li>
+												<li>Melakukan pekerjaan-pekerjaan yang bukan tugasnya kecuali atas perintah dan persetujuan atasan</li>
+												<li>Memindahkan barang-barang keluar dari tempat kerjanya tanpa seizing atasan</li>
+												<li>Memasuki ruangan yang bukan tempat kerjanya tanpa izin</li>
+												<li>Tidak mematuhi peraturan keselamatan kerja dan fasilitas perlengkapan keselamatan kerja yang  tersedia</li>
+												<li>Melakukan pelanggaran mengenai ketentuan keselamatan kerja yang mengakibatkan kecelakaan saat bekerja.</li>
+												<li>Tidak hadir berturut-turut selama tiga hari atau empat hari tidak berturut-turut dalam satu bulan tanpa alasan yang sah</li>
+											</ol>
+										</li>
+										<li>
+											<b>Kesalahan-kesalahan yang dapat diberikan Surat Peringatan III</b>
+											<ol>
+												<li>Melakukan pelanggaran dalam masa berlakunya surat peringatan II</li>
+												<li>Menolak perintah atau penugasan kerja yang sesuai kepadanya oleh atasan / perusahaan, sedangkan perintah / penugasan tersebut tidak melanggar perjanjian kerja maupun peraturan perusahaan</li>
+												<li>Meninggalkan pekerjaan tanpa alasan yang sah</li>
+												<li>Dengan sengaja atau kelalaiannya mengakibatkan kerusakan sarana maupun prasarana perusahaan baik milik Pihak Pertama maupun milik perusahaan Pihak Ketiga</li>
+												<li>Dengan sengaja atau kelalaiannya dalam bekerja sehingga menimbulkan kerugian pada pihak lain, Pihak Pertama maupun milik perusahaan Pihak Ketiga</li>
+												<li>Melakukan tindakan menentang dengan nyata kebijaksanaan perusahaan dan atau atasan yang mengakibatkan kerugian perusahaan.</li>
+												<li>Merokok di tempat kerja yang terdapat larangan</li>
+												<li>Tidak hadir selama empat hari berturut-turut dan lima hari tidak berurutan dalam sebulan tanpa keterangan yang sah</li>
+												<li>Tidak cakap dalam melakukan pekerjaan walaupun telah dicoba sebanyak 3 kali ditempatkan pada Pihak Ketiga yang berbeda.</li>
+											</ol>
+										</li>
+									</ol>
+								</li>
+								<li>
+									<b>Pemutusan Hubungan Kerja</b><br/>
+									Pemutusan Hubungan Kerja dapat dilaksanakan karena :
+									<ol>
+										<li>Dalam hal segala cara telah ditempuh untuk menghindari pemutusan hubungan kerja maka perusahaan dapat memutuskan hubungan kerja dengan karyawan</li>
+										<li>
+											Berakhirnya hubungan kerja adalah dengan alasan sbb :
+											<ol class="alphabet">
+												<li>
+													<b>Pemutusan hubungan kontrak kerja oleh pihak perusahaan tanpa syarat</b>
+													<ol>
+														<li>
+															Pemutusan hubungan kontrak kerja tanpa syarat apapun oleh pihak perusahaan dilaksanakan karena,
+															<ol class="lower-alphabet">
+																<li>Pada saat perjanjian kerja diadakan memberi keterangan palsu tentang dirinya dan memalsukan surat-surat yang menjadi persyaratan untuk diterima sebagai karyawan</li>
+																<li>Memalsukan data laporan kehadiran dan jam lembur</li>
+																<li>
+																	Memalsukan bukti-bukti pembelian barang dan bukti-bukti biaya perjalanan seperti :<br/>
+																	- Bukti pembelian bahan bakar<br/>
+																	- Bukti biaya tol<br/>
+																	- Bukti biaya parkir
+																</li>
+																<li>Mabuk, judi, berkelahi, membawa senjata tajam atau sejenisnya tanpa sah, menyimpan, mengedarkan, menjual, mempergunakan untuk diri sendiri minuman beralkohol atau narkotika di lingkungan tempat kerja</li>
+																<li>Melakukan perbuatan asusila di tempat kerja atau di lingkungan perusahaan</li>
+																<li>Melakukan tindakan kejahatan berupa pencurian, penggelapan, penipuan, pemalsuan barang-barang milik perusahaan di dalam lingkungan perusahaan maupun di luar lingkungan perusahaan</li>
+																<li>Menganiaya, menghina secara kasar atau mengancam pengusaha dan keluarga, atau  pekerja lainnya  baik di dalam lingkungan  perusahaan maupun di luar lingkungan perusahaan</li>
+																<li>Membujuk pengusaha atau teman sekerja untuk melakukan sesuatu tindakan atau perbuatan yang bertentangan dengan hukum, ketertiban umum atau kesusilaan</li>
+																<li>Membongkar rahasia perusahaan atau mencemarkan nama baik pimpinan perusahaan dan keluarga yang seharusnya dirahasiakan kecuali untuk kepentingan Negara</li>
+																<li>Pemberian barang yang berupa sogokan terhadap rekan kerja, atasan atau pemakai jasa dalam bentuk benda atau uang yang dapat merugikan dan merusak nama baik perusahaan</li>
+																<li>Memeras rekan kerja atau pemakai jasa dengan alasan apapun untuk kepentingan pribadi</li>
+																<li>Merencanakan, mengorganisir atau menggerakkan suatu aksi yang merongrong kewibawaan perusahaan</li>
+																<li>Dengan sengaja atau kelalaiannya merusak, menghilangkan, membiarkan dalam keadaan bahaya kendaraan atau barang milik perusahaan sehingga terganggunya operasional perusahaan, dan karyawan wajib bertanggung jawab sepenuhnya atas segala kerugian dan biaya-biaya yang ditimbulkannya</li>
+																<li>Dengan sengaja atau kelalaiannya menyebabkan kecelakaan yang berakibat  cacat sementara, cacat permanent atau hilangnya nyawa seseorang dan karyawan wajib bertanggung jawab sepenuhnya atas segala kerugian dan biaya-biaya yang ditimbulkannya</li>
+																<li>Apabila dalam masa berlakunya surat peringatan III tetap masih melakukan pelanggaran</li>
+																<li>Tidak masuk bekerja tanpa keterangan yang sah sebanyak 5 hari berturut-turut atau 7 hari tidak berurutan dalam 1 bulan</li>
+															</ol>
+															Pada Butir- butir tersebut diatas selain dikenakan sanksi pemutusan hubungan kontrak kerja oleh Pihak Perusahaan, apabila diperlukan, maka Pihak Perusahaan akan melaporkan tindakan atau perbuatan yang telah dilakukan oleh Pihak Kedua kepada Pihak yang Berwajib untuk diselesaikan secara hukum.
+														</li>
+														<br/>
+														<li>
+															Pihak perusahaan dapat melakukan pemutusan hubungan kerja karena sakit dengan ketentuan sbb :
+															<ol class="lower-alphabet">
+																<li>Karyawan tidak masuk kerja karena sakit selama 6 hari dalam 1 bulan</li>
+																<li>Apabila Karyawan telah dinyatakan sehat dari Surat Keterangan Sehat dari Dokter, maka Karyawan tersebut dapat diterima kembali bekerja dan akan diprioritaskan</li>
+																<li>Fisik karyawan tidak memungkinkan lagi untuk melakukan pekerjaan</li>
+																<li>Karyawan kedapatan menderita penyakit menahun, kronis dan dapat menular kepada karyawan yang lain</li>
+															</ol>
+														</li>
+													</ol>
+												</li>
+												<br/>
+												<li>
+													<b>Pemutusan hubungan kerja oleh pihak karyawan</b>
+													<ol>
+														<li>Karyawan yang memutuskan hubungan kerja dengan perusahaan karena alasan pribadi wajib memberitahukan kepada Pihak Pertama secara tertulis 30 (tiga puluh) hari sebelum yang bersangkutan mengundurkan diri</li>
+														<li>Selama 5 hari berturut-turut tidak hadir atau selama 5 hari berturut-turut tidak melaporkan diri setelah masa cutinya habis, tanpa keterangan tertulis dan alasan yang dapat diterima</li>
+														<li>Karena karyawan meninggal dunia, dalam hal ini perusahaan memberikan penghargaan dan bantuan atas pengabdiannya sesuai dengan kemampuan Pihak Pertama</li>
+														<li>Pemutusan Hubungan Kerja oleh Pihak Kedua sesuai dengan huruf B point 1 dan 2, maka Pihak Pertama tidak berkewajiban memberikan kompensasi dalam bentuk apapun kepada Pihak Kedua. Hak yang diberikan kepada Pihak Kedua hanya berupa upah yang belum diterima sampai dengan hari terakhir Pihak Kedua melakukan pekerjaan setelah dikurangi kewajiban atau hutang (bila ada)</li>
+													</ol>
+												</li>
+												<li>
+													<b>Pemutusan hubungan kerja karena persoalan pidana</b>
+													<ol>
+														<li>Karyawan yang mendapat hukuman dalam kasus perdata, pidana atau kasus kriminal lainnya dari pengadilan untuk alasan apapun</li>
+														<li>Karyawan yang dituduh oleh pemerintah melakukan suatu tindakan melanggar hukum dan ditahan untuk proses selanjutnya lebih dari 5 hari tanpa pemberitahuan kepada perusahaan, maka karyawan tersebut telah dianggap melakukan pemutusan hubungan kerja dengan perusahaan</li>
+													</ol>
+												</li>
+											</ol>
+										</li>
+									</ol>
+								</li>
+							</ol>
+							<br/><br/><br/>
+							<div>
+								<table width="100%">
+									<tbody>
+										<tr>
+											<td width="53%"></td>
+											<td>
+												SANKSI-SANKSI TELAH DIBACA, DIMENGERTI DAN<br/>DIPAHAMI OLEH PIHAK KEDUA<br/><br/><br/><br/>
+												________________________<br/>
+												Tanda tangan dan nama jelas
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						
+						<div style="page-break-before:always;display: block; clear: both" />
+						<div style="font-size:12pt;"><b><u>LAMPIRAN III</u></b></div><br/><br/><br/>
+						<div style="text-align: center;">FASILITAS</div>
+						<br/>
+						<div>
+							<ol class="alphabet">
+								<li>
+									<span style="font-size: 11pt;"><b>BPJS</b></span>
+									<ul>
+										<li>Pihak pertama akan mengikutsertakan Pihak Kedua ke dalam Program BPJS yang meliputi Jaminan Kecelakaan Kerja, Jaminan Kematian, Jaminan Hari Tua dan Jaminan Pemeliharaan Kesehatan, yang mana ketentuannya telah diatur oleh pihak penyelenggara Program BPJS.</li>
+										<li>
+											Premi kepesertaan BPJS, Pihak Kedua akan dipotong sebesar :<br/>
+											- 3% untuk BPJS ketenagakerjaan<br/>
+											- 1% untuk BPJS pemeliharaan kesehatan atau sesuai dengan ketentuan yang berlaku<br/>
+											Yang pemotongannya adalah langsung dari upah Pihak Kedua setiap bulannya untuk disetorkan kepada Pihak penyelenggara Program BPJS.
+										</li>
+									</ul>
+								</li>
+								<br/>
+								<li>
+									<b>PERLENGKAPAN KERJA</b><br/>
+									Pihak Pertama akan memberikan kepada Pihak Kedua perlengkapan kerja berupa seragam sebanyak 2 pasangnya setiap tahunnya dengan ketentuan sebagai berikut:
+									<ul>
+										<li>Seragam wajib dikenakan oleh Pihak Kedua saat jam kerja dan dalam lingkungan kerja</li>
+										<li>Apabila Perjanjian Kerja untuk Waktu Tertentu ini berakhir dan/ atau Pihak Kedua tidak lagi menjadi karyawan Pihak Pertama, maka seragam tersebut wajib di kembalikan kepada Pihak Pertama dalam kondisi apapun.</li>
+										<li>Apabila Perjanjian Kerja untuk Waktu Tertentu ini berakhir dan/atau Pihak Kedua tidak lagi menjadi karyawan Pihak Pertama, dan Pihak Kedua tidak mengembalikan seragam kepada Pihak Pertama, mak Pihak Kedua akan dikenakan biaya penggantian seragam sebesar Rp. 150,000 untuk setiap pasangnya.
+Dan apabila pada saat hari terakhir bekerja Pihak Kedua tidak menyerahkan penggantian biaya tersebut, maka penggantian biaya seragam di lakukan melalui pemotongan gaji terakhir Pihak Kedua.</li>
+									</ul>
+								</li>
+								<br/>
+								<li>
+									<b>PROGRAM PEMERIKSAAN KESEHATAN ATAU MEDICAL CHECK UP(MCU)</b>
+									<ul>
+										<li>Pihak Pertama akan mengikutsertakan Pihak Kedua ke dalam Program Pemeriksaan Kesehatan atau Medical Check Up (MCU), yaitu suatu rangkaian uji kesehatan yang dilakukan secara menyeluruh dengan tujuan untuk mengetahui kondisi kesehatan secara berkala yang meliputi Pemeriksaan Dokter Umum, Pemeriksaan fisik, Analisa urin, Analisa darah, Rontgen, Pemeriksaan Electrocardiografi ( ECG ), dan Pemeriksaan mata. Fasilitas Medical Check Up (MCU) ini dilakukan setiap tahunnya dibulan Maret.</li>
+										<li>
+											Apabila Pihak Kedua mulai masuk bekerja 3 (tiga) bulan sebelum Program Pemeriksaan Kesehatan atau Medical Check Up (MCU), yaitu di bulan Desember dan Pihak Kedua mengundurkan diri atau atau Pemutusan hubungan kontrak kerja oleh Pihak Pertama di bulan April, Mei dan Juni setelah Program Pemeriksaan Kesehatan atau Medical Check Up (MCU), maka Pihak Kedua akan dikenakan biaya penggantian Medical Check Up sebesar Rp. 1.000.000 (satu juta rupiah)
+										</li>
+									</ul>
+								</li>
+							</ol>
+							<br/><br/><br/>
+							<div>
+								<table width="100%">
+									<tbody>
+										<tr>
+											<td width="53%"></td>
+											<td>
+												FASILITAS TELAH DIBACA,<br/>
+												DIMENGERTI, DAN DIPAHAMI OLEH PIHAK KEDUA,<br/><br/><br/><br/>
+												________________________<br/>
+												Tanda tangan dan nama jelas
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="footer">
+				<div class="row">
+					<div style="padding-top: 20px;"> </div>
+					<div style="font-size:10pt; text-align: right; border-top: 1px solid #000000;">
+						<table width="100%">
+							<tbody>
+								<tr>
+									<td width="50%"><i>CONFIDENTIAL HRD/ 2950.151012</i></td>
+									<td><div style="text-align: right;">Page <span class="page"/> of <span class="topage" /></div></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</template>
+		
+		<template id="report_contract_driver_style" inherit_id="report.style">
+			<xpath expr=".">
+				<t>
+					body {
+						word-spacing: 2px;
+					}
+					.header-title {
+						padding-top: 30px;
+					}					
+					ol, ul {
+						margin-left: 20px;
+					}
+					ol.alphabet {
+						list-style-type: upper-latin;
+					}
+					ol.lower-alphabet {
+						list-style-type:lower-latin;
+					}
+					.div-sanksi {
+						font-size: 8pt;
+					}
+					.first-party-data td{
+						font-weight: bold;
+						padding-left: 30px;
+					}
+					.center {
+						text-align: center;
+					}
+				</t>
+			</xpath>
+		</template>
+	</data>
+</openerp>

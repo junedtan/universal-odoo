@@ -46,6 +46,12 @@ RELIGION = (
 	('other','Other'),
 )
 
+SPECIAL_PERMIT = (
+	('no_action','No Action'),
+	('leave','Leave'),
+	('absence','Absence'),
+)
+
 PARAM_CHECK_DUPLI = (
 	('name','Name'),
 	('gender','Gender'),

@@ -76,11 +76,11 @@
 			<field name="view_mode">tree,form</field>
 		</record>
 		
-		<record id="universal_action_holidays_reset" model="ir.actions.act_window">
-			<field name="name">Reset Allocations</field>	
-			<field name="res_model">hr.holidays.reset.memory</field>	
+		<record id="universal_action_special_permit" model="ir.actions.act_window">
+			<field name="name">Special Permit</field>	
+			<field name="res_model">universal.special.permit</field>	
 			<field name="view_type">form</field>
-			<field name="view_mode">form</field>
+			<field name="view_mode">tree,form</field>
 		</record>
 		
 		<record id="universal_action_past_holidays" model="ir.actions.act_window">
@@ -120,6 +120,13 @@
 			<field name="view_mode">tree,form</field>
 		</record>
 
+		<record id="universal_action_leave_rule" model="ir.actions.act_window">
+			<field name="name">Leave Rule</field>	
+			<field name="res_model">universal.leave.rule</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
 		<menuitem parent="hr.menu_hr_configuration" sequence="3" id="universal_menu_job_position" action="universal_action_job_position"
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="3" id="hr_recruitment.menu_crm_case_categ0_act_job" action="hr_recruitment.crm_case_categ0_act_job" 
@@ -138,7 +145,7 @@
 		<menuitem parent="hr_contract.next_id_56" sequence="2" id="universal_menu_homebase" action="universal_action_homebase" 
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 		
-		<menuitem parent="hr_holidays.menu_open_ask_holidays" sequence="20" id="universal_menu_holiday_reset" action="universal_action_holidays_reset" 
+		<menuitem parent="hr_holidays.menu_open_ask_holidays" sequence="20" id="universal_menu_special_permit" action="universal_action_special_permit" 
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1"/>
 		<menuitem parent="hr_holidays.menu_open_ask_holidays" sequence="21" id="universal_menu_past_holidays" action="universal_action_past_holidays" 
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1"/>
@@ -149,6 +156,8 @@
 			groups="universal.group_universal_spv_admin_drv"/>
 
 		<menuitem parent="hr.menu_open_view_attendance_reason_new_config" sequence="2" id="universal_menu_absence_reason" action="universal_action_absence_reason" 
+			groups="universal.group_universal_staff_adm_drv_1,universal.group_universal_spv_admin_drv"/>
+		<menuitem parent="hr.menu_open_view_attendance_reason_new_config" sequence="4" id="universal_menu_leave_rule" action="universal_action_leave_rule" 
 			groups="universal.group_universal_staff_adm_drv_1,universal.group_universal_spv_admin_drv"/>
 		
 		<menuitem parent="hr_recruitment.menu_hr_recruitment_recruitment" sequence="1" id="hr_recruitment_requirement.hr_recruitment_requirement_menu_requirement" action="hr_recruitment_requirement.hr_recruitment_requirement_action_requirement"  />

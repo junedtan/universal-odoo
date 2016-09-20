@@ -51,9 +51,11 @@
 						<button name="action_set_decision" 
 							type="object"
 							help="Set decision for special permit"
-							groups="">
+							groups=""
+							states="approved">
 							<div>Set Decision</div>
 						</button>
+						<field name="state" widget="statusbar" />
 					</header>
 					<group>
 						<field name="employee_id" class="oe_inline" />
@@ -96,10 +98,14 @@
 						<field name="act_date_end" />
 						<field name="name" />
 						<field name="decision" />
+						<field name="absence_reason" attrs="{'invisible': [('decision','!=','absence')],'required': [('decision','=','absence')]}" />
+						<field name="holiday_status_id" attrs="{'invisible': [('decision','!=','leave')],'required': [('decision','=','leave')]}" />
 						<field name="permit_id" invisible="1"/>
 					</group>
-					<button name="action_set_decision" string="Save" type="object" class="oe_button oe_highlight" confirm="Are you sure to choose this decision for this special permit?"/>
-					<button string="Cancel" special="cancel" />
+					<footer>
+						<button name="action_set_decision" string="Save" type="object" class="oe_button oe_highlight" confirm="Are you sure to choose this decision for this special permit?"/>
+						<button string="Cancel" special="cancel" />
+					</footer>
 				</form>
 			</field>
 		</record>

@@ -271,6 +271,8 @@ class universal_special_permit(osv.osv):
 	_name = 'universal.special.permit'
 	_description = 'Universal - Special Permit'
 	
+	_inherit = ['document.approval']
+	
 	_columns = {
 		'name': fields.char('Description', required=True),
 		'employee_id': fields.many2one('hr.employee', "Employee", required=True),
@@ -278,7 +280,17 @@ class universal_special_permit(osv.osv):
 		'req_date_end': fields.datetime('Request Date End', required=True),
 		'act_date_start': fields.datetime('Actual Date Start'),
 		'act_date_end': fields.datetime('Actual Date End'),
+		'state': fields.selection((
+			('new','Proposed'),
+			('approved','Approved'),
+			('rejected','Rejected'),
+			('done','Done'),
+		)),
 		'decision': fields.selection(SPECIAL_PERMIT, 'Decision'),
+	}
+	
+	_defaults = {
+		'state': 'new',
 	}
 	
 # ACTION BUTTON HANDLER ----------------------------------------------------------------------------------------------------
@@ -292,6 +304,7 @@ class universal_special_permit(osv.osv):
 			'view_type': 'form',
 			'res_model': 'universal.special.permit.decision.memory',
 			'context': {
+				'default_permit_id': form_data.id,
 				'default_employee_id': form_data.employee_id.id,
 				'default_req_date_start': form_data.req_date_start,
 				'default_req_date_end': form_data.req_date_end,
@@ -316,7 +329,9 @@ class universal_special_permit_decision_memory(osv.osv_memory):
 		'req_date_end': fields.datetime('Request Date End', readonly=True),
 		'act_date_start': fields.datetime('Actual Date Start', readonly=True),
 		'act_date_end': fields.datetime('Actual Date End', readonly=True),
-		'decision': fields.selection(SPECIAL_PERMIT, 'Decision'),
+		'decision': fields.selection(SPECIAL_PERMIT, 'Decision', required=True),
+		'absence_reason': fields.many2one('hr.absence.reason', 'Absence Reason'),
+		'holiday_status_id': fields.many2one('hr.holidays.status', 'Leave Type'),
 		'name': fields.char('Description', readonly=True),
 	}
 	
@@ -327,5 +342,24 @@ class universal_special_permit_decision_memory(osv.osv_memory):
 		special_permit_obj = self.pool.get('universal.special.permit')
 		result = special_permit_obj.write(cr, uid, [form_data.permit_id.id], {
 			'decision': form_data.decision,
+			'state': 'done',
 		})
+		if form_data.decision == "absence":
+			absence_obj = self.pool.get('hr.employee.absence')
+			absence_obj.create(cr, uid, {
+				'employee_id': form_data.employee_id.id,
+				'absence_date': form_data.req_date_start,
+				'absence_reason_id': form_data.absence_reason.id,
+			})
+		elif form_data.decision == "leave":
+			leave_obj = self.pool.get('hr.holidays')
+			leave_obj.create(cr, uid, {
+				'name': _('Decision of special permit'),
+				'holiday_status_id': form_data.holiday_status_id.id,
+				'date_from': form_data.req_date_start,
+				'date_to': form_data.req_date_end,
+				'number_of_days_temp': 1.0,
+				'employee_id': form_data.employee_id.id,
+				'department_id': form_data.employee_id.department_id.id,
+			})
 		return result

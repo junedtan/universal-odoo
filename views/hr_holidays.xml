@@ -51,7 +51,7 @@
 						<button name="action_set_decision" 
 							type="object"
 							help="Set decision for special permit"
-							groups=""
+							groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1"
 							states="approved">
 							<div>Set Decision</div>
 						</button>

@@ -36,9 +36,10 @@
 			<field name="name">STAFF MARKETING</field>
 			<field name="category_id" ref="universal.module_category_universal"/>
 		</record>
-		
-		<record id="hr_holidays.property_rule_holidays_employee" model="ir.rule">
-			<field name="active" eval="False" />
+	
+		<record id="group_universal_launcher" model="res.groups">
+			<field name="name">LAUNCHER</field>
+			<field name="category_id" ref="universal.module_category_universal"/>
 		</record>
 	
 	</data>

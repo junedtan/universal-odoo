@@ -4,6 +4,13 @@ from openerp.tools.translate import _
 
 # ==========================================================================================================================
 
+class hr_warning_letter(osv.osv):
+	
+	_name = 'hr.warning.letter'
+	_inherit = ['document.approval','hr.warning.letter']
+	
+# ==========================================================================================================================
+
 class hr_employee_termination_memory(osv.osv_memory):
 	
 	_inherit = 'hr.employee.termination.memory'

@@ -13,6 +13,7 @@
 		"chjs_custom_view","chjs_region",
 		"hr","hr_recruitment","hr_contract","hr_attendance","hr_holidays","hr_expense","hr_payroll",
 		"hr_recruitment_period","hr_recruitment_requirement","hr_employee_family","hr_employee_health",
+		"document_approval",
 		"hr_termination","hr_overtime",
 	],
 	'sequence': 150,

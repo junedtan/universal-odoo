@@ -1,0 +1,130 @@
+<openerp>
+	<data>
+		
+		<template id="report_contract_attachment">
+			<t t-call="report.html_container">
+				<t t-foreach="doc_ids" t-as="doc_id">
+					<t t-raw="translate_doc(doc_id, doc_model, 'customer.lang','universal.report_contract_attachment_document')"/>
+				</t>
+			</t>
+		</template>
+		
+		<template id="report_contract_attachment_document">
+				<div class="page">
+					<div class="row">
+						<b><u><span style="font-size: 12pt;">ADDEDUM I</span></u></b><br/><br/>
+						<div>
+							<ol class="alphabet" >
+								<li>
+									<b><u>JANGKA WAKTU PERJANJIAN:</u></b><br/>
+									Perjanjian Kerja untuk Waktu Tertentu ini berlaku mulai tanggal [TANGGAL] dan berakhir apabila :
+									<ol class="lower-alphabet">
+										<li>
+											Project perusahaan Pihak Ketiga selesai.
+										</li>
+										<li>Bila Pihak Kedua sudah tidak diperlukan lagi oleh rekanan perusahaan Pihak Pertama atau dikembalikan oleh rekanan perusahaan Pihak Pertama kepada Pihak Pertama</li>
+										<li>Bila masa kontrak sewa kendaraan yang digunakan oleh Pihak Kedua berakhir.</li>
+									</ol>
+									<br/>
+								</li>
+								<li>
+									<b><u>UPAH</u></b><br/>
+									Komposisi upah yang akan diterima oleh Pihak Kedua adalah sebagai berikut :
+									<ol>
+										<li>
+											<b>Upah Tetap/Pokok (Upah yang tidak berkaitan dengan kehadiran)</b><br/>
+											- Gaji Pokok : Rp <span t-field="o.wage" /> / bulan 
+											<ul>
+												<li>Upah tetap akan tetap diberikan bila Pihak Kedua menjalani hak cuti</li>
+												<li>Bila Pihak Kedua Alpa, maka Upah tetap akan diprorata sesuai kehadiran</li>
+											</ul>
+										</li>
+										<li>
+											<b>Upah tidak tetap</b><br/>
+											- Allowance : Rp <span t-esc="o.allowance * 30" /> / bulan
+											<ul>
+												<li>Upah tersebut di atas adalah berlaku apabila Pihak Kedua ditempatkan Pihak Pertama di lingkungan kerja Pihak Ketiga yaitu <span t-field="o.customer.name" /></li>
+												<li>Allowance diberikan bila hadir secara terus menerus selama 1 bulan dan akan tetap diberikan bila Pihak kedua mengambil hak cuti.</li>
+												<li>Allowance akan dipotong sebesar Rp. 25,000 paling banyak 4 kali apabila tidak hadir bekerja karena sakit dan tidak ada surat keterangan dari Dokter.</li>
+												<li>Apabila Pihak Kedua ditempatkan di Pihak Ketiga selain yang tersebut di atas, maka jumlah upah tidak tetap tersebut disesuaikan dengan kebijakan dari Pihak Ketiga di mana Pihak Kedua ditempatkan</li>
+											</ul>
+										</li>
+										<li>
+											<b>Upah perjalanan luar kota</b><br/>
+											- Pulang Pergi (PP) = Rp <span t-field="o.oot_roundtrip_fee" /> / hari<br/>
+											- Menginap = Rp <span t-field="o.oot_overnight_fee" /> / hari
+										</li>
+									</ol>
+									<br/>
+								</li>
+								<li>
+									<b><u>JAM KERJA DAN KERJA LEMBUR</u></b><br/>
+									<ol>
+										<li>Pihak Kedua bersedia bekerja dengan ketentuan sebagai berikut: <br/>
+											Wilayah <span t-field="o.homebase" /><br/>
+											<table width="50%">
+												<tbody>
+													<tr t-foreach="o.working_hours.attendance_ids" t-as="attendance" border="1">
+														<td width="25%"><span t-field="attendance.name"/></td>
+														<td width="10%">=</td>
+														<td>
+															<span t-if="attendance.working_time_type == 'duration'"><span t-esc="'%s:%s' % (str(attendance.hour_from).split('.')[0].zfill(2), str(int(float(str('%.2f' % attendance.hour_from).split('.')[1])/100*60)).zfill(2))"/> - <span t-esc="'%s:%s' % (str(attendance.hour_to).split('.')[0].zfill(2), str(int(float(str('%.2f' % attendance.hour_to).split('.')[1])/100*60)).zfill(2))"/></span>
+															<span t-if="attendance.working_time_type == 'max_hour'"><span t-field="attendance.max_hour"/> jam</span>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</li>
+										<li>
+											Upah lembur yang diterima adalah sesuai dengan persetujuan dari Pihak Ketiga. Bila Upah lembur tidak disetujui dan sudah dibayarkan terlebih dahulu oleh Pihak Pertama, maka Pihak Pertama berhak untuk memotong kelebihan penghitungan upah lembur kepada Pihak Kedua sesuai dengan persetujuan dari Pihak Ketiga.
+										</li>
+										<li>
+											Pengaturan hari kerja seperti ayat (1) diatas dapat diubah disesuaikan dengan kondisi dan kebutuhan dari Pihak Ketiga
+										</li>
+									</ol>
+									<br/><br/>
+									Adapun bila terdapat beberapa Addendum, maka Addendum yang terbaru adalah yang berlaku.
+								</li>
+								<br/>
+							</ol>
+							<br/>
+							<table width="100%">
+								<tbody>
+									<tr>
+										<td width="50%"></td>
+										<td width="50%">
+											ADDEDUM INI TELAH DIBACA, DIMENGERTI,<br/>DAN DIPAHAMI OLEH PIHAK KEDUA,<br/>
+											Jakarta, [TANGGAL]<br/><br/><br/><br/><br/>
+											________________________<br/>
+											Tanda tangan dan nama jelas
+										</td>
+									</tr>
+									
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+		</template>
+		
+		<template id="report_contract_attachment_style" inherit_id="report.style">
+			<xpath expr=".">
+				<t>
+					body {
+						font-size: 10pt;
+						text-align: justify;
+					}
+					.header-title {
+						text-align: center;
+					}
+					.sub-title {
+						font-weight: bold;
+					}
+					.center {
+						text-align: center;
+					}
+				</t>
+			</xpath>
+		</template>
+	</data>
+</openerp>

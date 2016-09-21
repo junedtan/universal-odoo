@@ -16,6 +16,100 @@
 			</field>
 		</record>
 		
+		<record id="universal_leave_rule_form" model="ir.ui.view">
+			<field name="name">universal.leave.rule.form</field>
+			<field name="model">universal.leave.rule</field>
+			<field name="arch" type="xml">
+				<form string="Leave Rule">
+					<group>
+						<field name="category_id" class="oe_inline"/>
+						<field name="holiday_status_id" class="oe_inline"/>
+						<field name="duration" />
+					</group>
+				</form>
+			</field>
+		</record>
+		
+		<record id="universal_leave_rule_list" model="ir.ui.view">
+			<field name="name">universal.leave.rule.list</field>
+			<field name="model">universal.leave.rule</field>
+			<field name="arch" type="xml">
+				<tree string="Leave Rule">
+					<field name="category_id" />
+					<field name="holiday_status_id" />
+					<field name="duration" />
+				</tree>
+			</field>
+		</record>
+		
+		<record id="universal_special_permit_form" model="ir.ui.view">
+			<field name="name">universal.special.permit.form</field>
+			<field name="model">universal.special.permit</field>
+			<field name="arch" type="xml">
+				<form string="Special Permit">
+					<header>
+						<button name="action_set_decision" 
+							type="object"
+							help="Set decision for special permit"
+							groups=""
+							states="approved">
+							<div>Set Decision</div>
+						</button>
+						<field name="state" widget="statusbar" />
+					</header>
+					<group>
+						<field name="employee_id" class="oe_inline" />
+						<field name="req_date_start"/>
+						<field name="req_date_end" />
+						<field name="act_date_start" />
+						<field name="act_date_end" />
+						<field name="name" />
+					</group>
+				</form>
+			</field>
+		</record>
+		
+		<record id="universal_special_permit_list" model="ir.ui.view">
+			<field name="name">universal.special.permit.list</field>
+			<field name="model">universal.special.permit</field>
+			<field name="arch" type="xml">
+				<tree string="Special Permit">
+					<field name="employee_id"/>
+					<field name="req_date_start"/>
+					<field name="req_date_end" />
+					<field name="act_date_start" />
+					<field name="act_date_end" />
+					<field name="name" />
+					<field name="decision" />
+				</tree>
+			</field>
+		</record>
+		
+		<record id="universal_special_permit_set_decision" model="ir.ui.view">
+			<field name="name">universal.special.permit.set.decision</field>
+			<field name="model">universal.special.permit.decision.memory</field>
+			<field name="arch" type="xml">
+				<form string="Set Decision">
+					<group>
+						<field name="employee_id" />
+						<field name="req_date_start" />
+						<field name="req_date_end" />
+						<field name="act_date_start" />
+						<field name="act_date_end" />
+						<field name="name" />
+						<field name="decision" />
+						<field name="absence_reason" attrs="{'invisible': [('decision','!=','absence')],'required': [('decision','=','absence')]}" />
+						<field name="holiday_status_id" attrs="{'invisible': [('decision','!=','leave')],'required': [('decision','=','leave')]}" />
+						<field name="permit_id" invisible="1"/>
+					</group>
+					<footer>
+						<button name="action_set_decision" string="Save" type="object" class="oe_button oe_highlight" confirm="Are you sure to choose this decision for this special permit?"/>
+						<button string="Cancel" special="cancel" />
+					</footer>
+				</form>
+			</field>
+		</record>
+		
 		<record id="hr_holidays_change_duration" model="ir.ui.view">
 			<field name="name">hr.holidays.change.duration</field>
 			<field name="model">hr.holidays.change.duration.memory</field>

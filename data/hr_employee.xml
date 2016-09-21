@@ -11,6 +11,13 @@
 			<field name="name">Driver Beginner</field>
 		</record>
 		
+		<!-- system parameter -->
+		
+		<record model="ir.config_parameter" id="database_year_ongoing">
+			<field name="key">database.year.ongoing</field>
+			<field name="value" eval="time.strftime('%Y')" />
+		</record>
+		
 	</data>
 	
 	<data noupdate="1">

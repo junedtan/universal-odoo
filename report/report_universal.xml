@@ -1,14 +1,99 @@
 <openerp>
 	<data>
+	
+		<record id="paperformat_contract_driver" model="report.paperformat">
+			<field name="name">Paper Format for Contract</field>
+			<field name="default" eval="False"/>
+			<field name="format">A4</field>
+			<field name="orientation">Portrait</field>
+			<field name="margin_top">25</field>
+			<field name="margin_bottom">25</field>
+			<field name="margin_left">25</field>
+			<field name="margin_right">25</field>
+			<field name="header_line" eval="False"/>
+			<field name="header_spacing">10</field>
+			<field name="dpi">90</field>
+		</record>
 		
 		<report
-		id="action_report_contract"
+		id="action_report_contract_driver"
 		model="hr.contract"
-		string="Contract"
+		string="Contract Driver"
 		report_type="qweb-pdf"
-		name="universal.report_contract"
-		file="universal.report_contract"
+		name="universal.report_contract_driver"
+		file="universal.report_contract_driver"
 		/>
+		
+		<record id="action_report_contract_driver" model="ir.actions.report.xml">
+			<field name="paperformat_id" ref="universal.paperformat_contract_driver"/>
+		</record>
+		
+		<record id="paperformat_contract_trial" model="report.paperformat">
+			<field name="name">Paper Format for Contract</field>
+			<field name="default" eval="False"/>
+			<field name="format">A4</field>
+			<field name="orientation">Portrait</field>
+			<field name="margin_top">25</field>
+			<field name="margin_bottom">25</field>
+			<field name="margin_left">20</field>
+			<field name="margin_right">20</field>
+			<field name="header_line" eval="False"/>
+			<field name="header_spacing">0</field>
+			<field name="dpi">90</field>
+		</record>
+		
+		<report
+		id="action_report_contract_emp_trial"
+		model="hr.contract"
+		string="Contract Employee Trial"
+		report_type="qweb-pdf"
+		name="universal.report_contract_emp_trial"
+		file="universal.report_contract_emp_trial"
+		/>
+		
+		<record id="action_report_contract_emp_trial" model="ir.actions.report.xml">
+			<field name="paperformat_id" ref="universal.paperformat_contract_trial"/>
+		</record>
+		
+		<record id="paperformat_contract" model="report.paperformat">
+			<field name="name">Paper Format for Contract</field>
+			<field name="default" eval="False"/>
+			<field name="format">A4</field>
+			<field name="orientation">Portrait</field>
+			<field name="margin_top">25</field>
+			<field name="margin_bottom">25</field>
+			<field name="margin_left">25</field>
+			<field name="margin_right">25</field>
+			<field name="header_line" eval="False"/>
+			<field name="header_spacing">0</field>
+			<field name="dpi">90</field>
+		</record>
+		
+		<report
+		id="action_report_contract_employee"
+		model="hr.contract"
+		string="Contract Employee"
+		report_type="qweb-pdf"
+		name="universal.report_contract_employee"
+		file="universal.report_contract_employee"
+		/>
+		
+		<record id="action_report_contract_employee" model="ir.actions.report.xml">
+			<field name="paperformat_id" ref="universal.paperformat_contract"/>
+		</record>
+		
+		<report
+		id="action_report_contract_attachment"
+		model="hr.contract"
+		string="Contract Attachment"
+		report_type="qweb-pdf"
+		name="universal.report_contract_attachment"
+		file="universal.report_contract_attachment"
+		/>
+		
+		<record id="action_report_contract_attachment" model="ir.actions.report.xml">
+			<field name="paperformat_id" ref="universal.paperformat_contract"/>
+		</record>
 		
 	</data>
 </openerp>

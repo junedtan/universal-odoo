@@ -16,12 +16,6 @@ class hr_job(osv.osv):
 	
 	_inherit = 'hr.job'
 	
-# COLUMNS ------------------------------------------------------------------------------------------------------------------
-
-	_columns = {
-		'deadline': fields.date('Deadline')
-	}
-	
 # CUSTOM METHODS -----------------------------------------------------------------------------------------------------------
 
 	# apakah job ini adalah driver atau bukan, dilihat dari xml id
@@ -30,22 +24,7 @@ class hr_job(osv.osv):
 		model_obj = self.pool.get('ir.model.data')
 		model, job_id = model_obj.get_object_reference(cr, uid, 'universal', 'hr_job_driver')
 		return ids[0] == job_id
-	
-# OVERRIDES ----------------------------------------------------------------------------------------------------------------
-	
-	def set_recruit(self, cr, uid, ids, context=None):
-		if ids[0]:
-		# cek dulu apakah field yg dibutuhkan uda diisi atau belum
-			job_data = self.browse(cr, uid, ids[0], context=context)
-			if not job_data.deadline or not job_data.no_of_recruitment or not job_data.document_ref:
-				raise osv.except_osv(_('Recruitment Error !'), _('Please fill out Deadline, Document Ref and Expected New Employees.')) 
-		return super(hr_job, self).set_recruit(cr, uid, ids, context=context)
-	
-	def set_open(self, cr, uid, ids, context=None):
-		if ids[0]:
-		# kosongkan data deadline di hr_job 
-			self.write(cr, uid, ids, {'deadline': None})
-		return super(hr_job, self).set_open(cr, uid, ids, context=context)
+
 	
 # CRON --------------------------------------------------------------------------------------------------------------------------
 	
@@ -652,7 +631,6 @@ class universal_launch_recruitment_memory(osv.osv_memory):
 		'document_ref': fields.char('Document Ref', size=64, required=True),
 		'deadline': fields.date('Deadline',required=True),
 		'start_date': fields.date('Start Date',required=True),
-		'planned_end_date': fields.date('Planned End Date'),
 		'no_of_recruitment': fields.integer('Expected New Employees', help='Number of new employees you expect to recruit.', required=True),
 	}
 	
@@ -676,7 +654,7 @@ class universal_launch_recruitment_memory(osv.osv_memory):
 			'deadline': form_data.deadline,
 			'no_of_recruitment': form_data.no_of_recruitment,
 			'start_date': form_data.start_date,
-			'planned_end_date': form_data.planned_end_date,
+			'deadline': form_data.deadline,
 		})
 	# baru panggil methodnya
 		return job_obj.set_recruit(cr, uid, [job_id], context=context)

@@ -171,7 +171,7 @@
 			groups="universal.group_universal_staff_adm_drv_1"/>
 	
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="2" id="universal_menu_launch_recruitment" action="universal_action_launch_recruitment" 
-		groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_launcher"/>
+		groups="universal.group_universal_launcher"/>
 		
 		<menuitem action="universal_action_interview_schedule" id="universal_menu_interview_schedule" parent="base.menu_crm_case_job_req_main" sequence="3" 
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver" />

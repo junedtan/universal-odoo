@@ -403,6 +403,8 @@
 						<field name="document_ref" class="oe_inline"/>
 						<field name="deadline" />
 						<field name="no_of_recruitment" />
+						<field name="start_date" />
+						<field name="planned_end_date" />
 					</group>
 					<footer>
 						<button name="action_launch_recruitment" string="Launch" type="object" class="oe_button oe_highlight" confirm="Are you sure to launch this job's recruitment?"/>

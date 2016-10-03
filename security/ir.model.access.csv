@@ -30,7 +30,7 @@ access_hr_absence_reason_spv_admin_drv,hr.absence.reason Spv Admin Drv,universal
 access_hr_contract_spv_admin_drv,hr.contract Spv Admin Drv,hr_contract.model_hr_contract,universal.group_universal_spv_admin_drv,1,0,0,0
 access_hr_payroll_structure_spv_admin_drv,hr.payroll.structure Spv Admin Drv,hr_payroll.model_hr_payroll_structure,universal.group_universal_spv_admin_drv,1,0,0,0
 access_hr_employee_termination_log_spv_admin_drv,hr.employee.termination.log Spv Admin Drv,hr_termination.model_hr_employee_termination_log,universal.group_universal_spv_admin_drv,1,0,0,0
-access_hr_job_launcher,hr.job Launcher,hr.model_hr_job,universal.group_universal_launcher,0,0,0,0
+access_hr_job_launcher,hr.job Launcher,hr.model_hr_job,universal.group_universal_launcher,1,1,1,0
 access_survey_user_input_spv_hrd_staff,survey.user_input Spv Hrd Staff,survey.model_survey_user_input,universal.group_universal_spv_hrd_staff,1,0,1,0
 access_hr_employee_health_spv_hrd_staff,hr.employee.health Spv Hrd Staff,hr_employee_health.model_hr_employee_health,universal.group_universal_spv_hrd_staff,1,1,1,1
 access_hr_holidays_status_spv_hrd_staff,hr.holidays.status Spv Hrd Staff,hr_holidays.model_hr_holidays_status,universal.group_universal_spv_hrd_staff,1,0,0,0
@@ -209,3 +209,4 @@ access_hr_holidays_spv_hrd_driver,hr.holidays Spv Hrd Driver,hr_holidays.model_h
 access_hr_contract_spv_hrd_driver,hr.contract Spv Hrd Driver,hr_contract.model_hr_contract,universal.group_universal_spv_hrd_driver,1,1,1,1
 access_hr_recruitment_stage_spv_hrd_driver,hr.recruitment.stage Spv Hrd Driver,hr_recruitment.model_hr_recruitment_stage,universal.group_universal_spv_hrd_driver,1,1,1,0
 access_hr_warning_letter_spv_hrd_driver,hr.warning.letter Spv Hrd Driver,hr_termination.model_hr_warning_letter,universal.group_universal_spv_hrd_driver,1,1,1,0
+access_hr_recruitment_period_launcher,hr.recruitment.period Launcher,hr_recruitment_period.model_hr_recruitment_period,universal.group_universal_launcher,1,1,1,0

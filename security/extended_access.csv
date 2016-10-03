@@ -1,0 +1,2 @@
+access_hr_recruitment_period_launcher,hr.recruitment.period Launcher,hr_recruitment_period.model_hr_recruitment_period,universal.group_universal_launcher,1,1,1,0
+access_hr_job_launcher,hr.job Launcher,hr.model_hr_job,universal.group_universal_launcher,1,1,1,0

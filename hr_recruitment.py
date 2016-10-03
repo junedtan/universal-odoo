@@ -651,6 +651,8 @@ class universal_launch_recruitment_memory(osv.osv_memory):
 		'job_id': fields.many2one('hr.job','Job', required=True),
 		'document_ref': fields.char('Document Ref', size=64, required=True),
 		'deadline': fields.date('Deadline',required=True),
+		'start_date': fields.date('Start Date',required=True),
+		'planned_end_date': fields.date('Planned End Date'),
 		'no_of_recruitment': fields.integer('Expected New Employees', help='Number of new employees you expect to recruit.', required=True),
 	}
 	
@@ -672,7 +674,9 @@ class universal_launch_recruitment_memory(osv.osv_memory):
 		job_obj.write(cr, uid, [job_id], {
 			'document_ref': form_data.document_ref,
 			'deadline': form_data.deadline,
-			'no_of_recruitment': form_data.no_of_recruitment
+			'no_of_recruitment': form_data.no_of_recruitment,
+			'start_date': form_data.start_date,
+			'planned_end_date': form_data.planned_end_date,
 		})
 	# baru panggil methodnya
 		return job_obj.set_recruit(cr, uid, [job_id], context=context)

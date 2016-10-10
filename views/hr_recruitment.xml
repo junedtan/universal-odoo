@@ -399,10 +399,15 @@
 			<field name="arch" type="xml">
 				<form string="Launch Recruitment">
 					<group>
-						<field name="job_id" class="oe_inline"/>
-						<field name="document_ref" class="oe_inline"/>
-						<field name="deadline" />
-						<field name="no_of_recruitment" />
+						<group>
+							<field name="job_id" class="oe_inline"/>
+							<field name="document_ref" class="oe_inline"/>
+							<field name="no_of_recruitment" />
+						</group>
+						<group>
+							<field name="start_date" />
+							<field name="deadline" />
+						</group>
 					</group>
 					<footer>
 						<button name="action_launch_recruitment" string="Launch" type="object" class="oe_button oe_highlight" confirm="Are you sure to launch this job's recruitment?"/>

@@ -1,0 +1,28 @@
+<openerp>
+	<data>
+		
+		<!-- Fleet Vehicle State-->
+		
+		<record model="fleet.vehicle.state" id="vehicle_state_active">
+			<field name="name">Active</field>
+			<field name="sequence">1</field>
+		</record>
+		
+		<record model="fleet.vehicle.state" id="vehicle_state_on_use">
+			<field name="name">On Use</field>
+			<field name="sequence">2</field>
+		</record>
+		
+		<record model="fleet.vehicle.state" id="vehicle_state_on_repair">
+			<field name="name">On Repair</field>
+			<field name="sequence">3</field>
+		</record>
+		
+		<record model="fleet.vehicle.state" id="vehicle_state_write_off">
+			<field name="name">Write-off</field>
+			<field name="sequence">4</field>
+		</record>
+
+	</data>
+	
+</openerp>

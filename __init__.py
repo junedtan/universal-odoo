@@ -104,3 +104,9 @@ import hr_recruitment_period
 import resource
 import res_config
 import controllers
+import res_partner
+import fleet
+import hr_payroll
+import hr_contract
+import forms_order
+import forms_contract

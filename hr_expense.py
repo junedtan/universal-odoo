@@ -19,6 +19,10 @@ class product_template(osv.osv):
 		'is_trip_related': fields.boolean('Trip Related?', 
 			help="Specify if the expense is trip-related. Only these will show up in driver's menu."),
 	}
+	
+	_defaults = {
+		'is_trip_related': False,
+	}
 		
 # ==========================================================================================================================
 

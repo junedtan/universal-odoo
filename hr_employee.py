@@ -25,7 +25,7 @@ class hr_employee(osv.osv):
 
 	_columns = {
 		'driver_type': fields.selection(DRIVER_TYPE, 'Driver Type'),
-		'emp_no': fields.char('Employee No', size=32, readonly=True),
+		'emp_no': fields.char('Employee No', size=32),
 		'place_of_birth': fields.char('Place of Birth', size=100),
 		'date_of_birth': fields.date('Date of Birth'),
 		'interview_date': fields.date('Interview Date'),
@@ -73,14 +73,15 @@ class hr_employee(osv.osv):
 			if job_obj.is_driver(cr, uid, job_id):
 				vals.update({'driver_type': 'active'})
 	# siapkan data untuk employee code
-		start_working = ''
-		if 'start_working' in vals:
-			start_working = datetime.strptime(vals['start_working'],'%Y-%m-%d').strftime('%d%m%y')
-		else:
-			start_working = datetime.today().strftime('%d%m%y')
-		emp_seq = self.pool.get('ir.sequence').next_by_code(cr, uid, 'hr.employee.seq')
-		emp_no = '%s.%s' % (emp_seq, start_working)
-		vals.update({'emp_no': emp_no})
+		if not vals.get('emp_no',False):
+			start_working = ''
+			if 'start_working' in vals:
+				start_working = datetime.strptime(vals['start_working'],'%Y-%m-%d').strftime('%d%m%y')
+			else:
+				start_working = datetime.today().strftime('%d%m%y')
+			emp_seq = self.pool.get('ir.sequence').next_by_code(cr, uid, 'hr.employee.seq')
+			emp_no = '%s.%s' % (emp_seq, start_working)
+			vals.update({'emp_no': emp_no})
 	# panggil create biasa
 		return super(hr_employee, self).create(cr, uid, vals, context)
 

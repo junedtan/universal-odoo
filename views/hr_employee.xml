@@ -80,7 +80,7 @@
 								<field name="user_id" on_change="onchange_user(user_id)" string="Employee Login" context="{'default_groups_ref': ['base.group_user']}" />
 							</group>
 							<group string="Information">
-								<field name="emp_no" />
+								<field name="emp_no" readonly="1" />
 								<field name="start_working" />
 								<field name="interview_date" />
 								<field name="last_survey_date" />

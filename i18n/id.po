@@ -18751,7 +18751,7 @@ msgstr "Maksimal Jam Lembur"
 #. module: hr_overtime
 #: field:hr.overtime,max_overtime_unit:0
 msgid "Max Overtime Unit"
-msgstr "Perhitungan Maksimal Jam Lembur"
+msgstr "Satuan Maksimal Jam Lembur"
 
 #. module: universal
 #: field:resource.calendar.attendance,max_hour:0

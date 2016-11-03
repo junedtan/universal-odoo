@@ -91,7 +91,6 @@ DOMAIN_DUPLI_DICT = {
 	'name': 'ilike'
 }
 
-import chjs_region
 import hr_recruitment
 import hr_employee
 import hr_contract
@@ -108,5 +107,5 @@ import res_partner
 import fleet
 import hr_payroll
 import hr_contract
-import forms_order
-import forms_contract
+import foms_contract
+import foms_order

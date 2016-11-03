@@ -91,13 +91,15 @@
 			<field name="view_id" ref="hr_holidays_list"/>
 			<field name="domain">[('active','=',False)]</field>
 		</record>
-
+		
+		<!--
 		<record id="universal_menu_start_stop" model="website.menu">
 			<field name="name">Driver Attendance</field>
 			<field name="url">/hr/attendance</field>
 			<field name="parent_id" ref="website.main_menu"/>
 			<field name="sequence" type="int">50</field>
 		</record>
+		-->
 
 		<record id="universal_action_attendance_mass" model="ir.actions.act_window">
 			<field name="name">Mass Input Attendance</field>	
@@ -127,13 +129,18 @@
 			<field name="view_mode">tree,form</field>
 		</record>
 
+		<record id="universal_action_foms_contract" model="ir.actions.act_window">
+			<field name="name">Customer Contracts</field>	
+			<field name="res_model">foms.contract</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
 		<menuitem parent="hr.menu_hr_configuration" sequence="3" id="universal_menu_job_position" action="universal_action_job_position"
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="3" id="hr_recruitment.menu_crm_case_categ0_act_job" action="hr_recruitment.crm_case_categ0_act_job" 
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="4" id="universal_menu_check_duplicate" action="universal_action_check_duplicate" groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
-		<menuitem parent="hr_contract.next_id_56" sequence="5" id="universal_menu_resource_calendar" action="resource.action_resource_calendar_form"
-			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 		
 		<menuitem parent="hr.menu_hr_main" sequence="3" id="universal_menu_customer_contract" action="universal_action_customer_contract" 
 			groups="universal.group_universal_staff_marketing"/>
@@ -141,9 +148,6 @@
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1,universal.group_universal_spv_admin_drv" />
     <menuitem parent="hr.menu_hr_main" sequence="5" id="universal_menu_verbal_warning" action="universal_action_verbal_warning" 
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1" /> 
-		
-		<menuitem parent="hr_contract.next_id_56" sequence="2" id="universal_menu_homebase" action="universal_action_homebase" 
-			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 		
 		<menuitem parent="hr_holidays.menu_open_ask_holidays" sequence="20" id="universal_menu_special_permit" action="universal_action_special_permit" 
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1"/>
@@ -175,7 +179,21 @@
 		
 		<menuitem action="universal_action_interview_schedule" id="universal_menu_interview_schedule" parent="base.menu_crm_case_job_req_main" sequence="3" 
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver" />
-	
+
+		<menuitem sequence="20" name="FOMS" id="universal_menu_foms" />
+		
+		<menuitem sequence="1" parent="universal_menu_foms" name="Contract and Orders" id="universal_menu_foms_contract" />
+			<menuitem sequence="1" parent="universal_menu_foms_contract" action="universal_action_foms_contract" id="universal_menu_foms_contract1" />
+		
+		<menuitem sequence="2" parent="universal_menu_foms" name="Configuration" id="menu_universal_foms_config"/>
+			<menuitem parent="menu_universal_foms_config" sequence="1" id="universal_menu_config_customer" action="base.action_partner_customer_form" />
+			<menuitem parent="menu_universal_foms_config" sequence="2" id="universal_menu_homebase" action="universal_action_homebase" 
+				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+			<menuitem parent="menu_universal_foms_config" sequence="3" id="universal_menu_resource_calendar" action="resource.action_resource_calendar_form"
+				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+			<menuitem parent="menu_universal_foms_config" sequence="4" id="hr_overtime.hr_menu_overtime" action="hr_overtime.hr_action_overtime" 
+				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+		
 <!-- INHERIT -->
 
 		<menuitem name="Recruitment" id="base.menu_crm_case_job_req_main" parent="hr.menu_hr_root" groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
@@ -230,8 +248,6 @@
 		
 		<menuitem parent="hr_contract.next_id_56" sequence="6" id="hr_contract.hr_menu_contract_type" action="hr_contract.action_hr_contract_type" 
 			groups="base.group_no_one,universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
-		<menuitem parent="hr_contract.next_id_56" sequence="7" id="hr_overtime.hr_menu_overtime" action="hr_overtime.hr_action_overtime" 
-			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 		
 		<menuitem parent="hr_recruitment.menu_hr_recruitment_recruitment" sequence="5" id="hr_recruitment.menu_hr_recruitment_degree" action="hr_recruitment.hr_recruitment_degree_action" 
 			groups="base.group_no_one,universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>

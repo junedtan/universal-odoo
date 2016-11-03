@@ -42,5 +42,25 @@
 			<field name="category_id" ref="universal.module_category_universal"/>
 		</record>
 	
+		<record id="group_universal_customer_pic" model="res.groups">
+			<field name="name">CUSTOMER PIC</field>
+			<field name="category_id" ref="universal.module_category_universal"/>
+		</record>
+	
+		<record id="group_universal_approver" model="res.groups">
+			<field name="name">CUSTOMER ORDER APPROVER</field>
+			<field name="category_id" ref="universal.module_category_universal"/>
+		</record>
+	
+		<record id="group_universal_booker" model="res.groups">
+			<field name="name">CUSTOMER ORDER BOOKER</field>
+			<field name="category_id" ref="universal.module_category_universal"/>
+		</record>
+	
+		<record id="group_universal_driver" model="res.groups">
+			<field name="name">DRIVER</field>
+			<field name="category_id" ref="universal.module_category_universal"/>
+		</record>
+	
 	</data>
 </openerp>

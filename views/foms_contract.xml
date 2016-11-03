@@ -1,0 +1,223 @@
+<openerp>
+	<data>
+		
+		<!-- CONTRACT -->
+		
+		<record model="ir.ui.view" id="foms_contract_form">
+			<field name="name">foms.contract.form</field>	
+			<field name="model">foms.contract</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Customer Contract">
+					<header>
+						<button string="Plan Fleet" name="action_plan_fleet" type="object" states="confirmed,planned,active" class="oe_button oe_highlight" />
+						<button string="Confirm" name="action_confirm" type="object" states="proposed" class="oe_button oe_highlight" confirm="This action singnifies that both parties (customer and PT Universal) have agreed on all terms written in the contract, including and especially Fee Calculation Scheme and Fleet Types and number of fleet required. Are you sure to continue? PS: you can still edit all data before system automatically starts the contract at its start date." />
+						<field name="state" widget="statusbar" readonly="1" />
+					</header>
+					<group>
+						<group>
+							<field name="customer_id" on_change="onchange_customer(customer_id)" />
+							<field name="customer_contact_id" />
+							<field name="service_type" />
+							<field name="is_order_replacement_vehicle" />
+						</group>
+						<group>
+							<field name="name" />
+							<field name="contract_date" />
+							<field name="start_date" />
+							<field name="end_date" />
+						</group>
+					</group>
+					<notebook>
+						<page string="Fleet and Driver">
+							<group>
+								<group string="Fleet Types">
+									<field name="fleet_types" nolabel="1">
+										<tree version="7.0" editable="bottom">
+											<field name="fleet_type_id" />
+											<field name="number" />
+										</tree>
+									</field>
+								</group>
+								<group string="Vehicle and Driver Allocation">
+									<field name="car_drivers" readonly="1" nolabel="1">
+										<tree version="7.0" editable="bottom">
+											<field name="fleet_vehicle_id" />
+											<field name="driver_id" />
+										</tree>
+									</field>
+								</group>
+							</group>
+						</page>
+						<page string="Fee Calculation">
+							<div class="oe_right oe_edit_only">
+								<button name="action_load_customer_defaults" string="Load Customer Defaults" type="object" confirm="This action will reset previous and current fee calculation settings. Are you sure to continue?" />
+							</div>
+							<group>
+								<group>
+									<group string="Driver Setting" colspan="4">
+										<field name="homebase_id" />
+										<field name="working_time_id" />
+										<field name="overtime_id" />
+										<field name="fee_calculation_type" />
+									</group>
+									<group string="Vehicle Fees" colspan="4">
+										<field name="fee_fleet" nolabel="1" colspan="2">
+											<tree version="7.0" editable="bottom">
+												<field name="fleet_type_id" />
+												<field name="monthly_fee" />
+											</tree>
+										</field>
+										<field name="fee_premature_termination" />
+									</group>
+								</group>
+								<group>
+									<group string="Driver Fees (Period-Based)" colspan="4" attrs="{'invisible': [('fee_calculation_type','not in',['monthly'])]}">
+										<p colspan="4">
+											Except specifically mentioned, all fees are per month.
+										</p>
+										<field name="fee_structure_id" />
+										<field name="fee_gapok" />
+										<field name="fee_varpok" />
+										<field name="fee_management" />
+										<field name="fee_makan" />
+										<field name="fee_pulsa" />
+										<field name="fee_hadir" />
+										<field name="fee_seragam" />
+										<field name="fee_bpjs_tk" placeholder="in percent (%)" />
+										<field name="fee_bpjs_ks" placeholder="in percent (%)" />
+										<field name="fee_insurance" />
+										<field name="fee_cuti" />
+										<field name="fee_mcu" />
+										<field name="fee_training" />
+										<field name="fee_lk_pp" />
+										<field name="fee_lk_inap" />
+										<field name="fee_holiday_allowance" />
+									</group>
+									<group string="Driver Fees (Order-Based)" colspan="4" attrs="{'invisible': [('fee_calculation_type','not in',['order_based'])]}">
+										<field name="fee_order_based" nolabel="1">
+											<tree version="7.0" editable="bottom">
+												<field name="fleet_vehicle_model_id" />
+												<field name="fee_by_order" />
+												<field name="fee_by_hour" />
+												<field name="fee_by_day" />
+											</tree>
+										</field>
+									</group>
+								</group>
+							</group>
+						</page>
+						<page string="Shuttle Schedule" attrs="{'invisible': [('service_type','not in',['shuttle'])]}">
+							<field name="shuttle_schedules">
+								<tree version="7.0" editable="bottom">
+									<field name="dayofweek" />
+									<field name="sequence" />
+									<field name="route_id" />
+									<field name="fleet_vehicle_id" />
+									<field name="departure_time" widget="time" />
+									<field name="arrival_time" widget="time" />
+								</tree>
+							</field>
+						</page>
+						<page string="Allocation Units" attrs="{'invisible': [('service_type','not in',['by_order','shuttle'])]}">
+							<field name="allocation_units">
+								<tree version="7.0" editable="bottom">
+									<field name="name" />
+									<field name="approver_ids" />
+									<field name="booker_ids" />
+								</tree>
+							</field>
+						</page>
+						<page string="Usage Control" attrs="{'invisible': [('service_type','not in',['by_order'])]}">
+							<group>
+								<field name="usage_control_level" class="oe_inline" />
+							</group>
+							<group attrs="{'invisible': [('usage_control_level','not in',['warning','approval'])]}">
+								<group>
+									<field name="usage_allocation_maintained_by" />
+									<field name="usage_control_setting" />
+									<field name="global_yellow_limit" attrs="{'invisible': [('usage_control_setting','!=','global')]}" />
+									<field name="global_red_limit" attrs="{'invisible': [('usage_control_setting','!=','global')]}" />
+									<field name="global_balance_credit_per_usage" attrs="{'invisible': [('usage_control_setting','!=','global')]}" />
+								</group>
+							</group>
+							<group attrs="{'invisible': [('usage_control_setting','!=','per_alloc_unit')]}">
+								<field name="allocation_unit_limits" nolabel="1">
+									<tree version="7.0" editable="bottom">
+										<field name="name" />
+										<field name="yellow_limit" />
+										<field name="red_limit" />
+										<field name="balance_credit_per_usage" />
+									</tree>
+								</field>
+							</group>
+						</page>
+						<page string="Other Info">
+							<group>
+								<field name="termination_reason" attrs="{'invisible': [('state','not in',['terminated'])]}" />
+								<field name="default_pin" class="oe_inline" />
+								<field name="extended_contract_id" />
+							</group>
+						</page>
+					</notebook>
+					<div class="oe_chatter">
+						<field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+						<field name="message_ids" widget="mail_thread"/>
+					</div>
+				</form>
+			</field>
+		</record>
+		
+		<record model="ir.ui.view" id="foms_contract_tree">
+			<field name="name">foms.contract.tree</field>	
+			<field name="model">foms.contract</field>
+			<field name="arch" type="xml">
+				<tree version="7.0" string="Customer Contracts">
+					<field name="name" />
+					<field name="customer_id" />
+					<field name="contract_date" />
+					<field name="start_date" />
+					<field name="end_date" />
+					<field name="state" />
+				</tree>
+			</field>
+		</record>
+
+		<!-- FLEET PLANNING -->
+		
+		<record model="ir.ui.view" id="foms_contract_fleet_planning_form">
+			<field name="name">foms.contract.fleet.planning.form</field>	
+			<field name="model">foms.contract.fleet.planning.memory</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Contract Fleet Planning">
+					<group>
+						<group>
+							<field name="contract_id" invisible="1" />
+							<field name="contract_no" />
+							<field name="customer_id" />
+						</group>
+						<group>
+							<field name="start_date" />
+							<field name="end_date" />
+						</group>
+					</group>
+					<group>
+						<field name="planning_line" nolabel="1">
+							<tree version="7.0" editable="bottom" delete="false" create="false">
+								<field name="fleet_type_id" />
+								<field name="fleet_vehicle_id" domain="[('model_id','=',fleet_type_id)]" />
+								<field name="driver_id" />
+							</tree>
+						</field>
+					</group>
+					<footer>
+						<button string="Save Planning" name="action_save_planning" type="object" class="oe_highlight" />
+						or
+						<button string="Cancel" special="cancel" />
+					</footer>
+				</form>
+			</field>
+		</record>
+		
+		
+	</data>
+</openerp>

@@ -1,0 +1,81 @@
+<openerp>
+	<data>
+		
+		<!-- PARTNER -->
+		
+		<record model="ir.ui.view" id="fleet_vehicle_form">
+			<field name="name">fleet.vehicle.form</field>
+			<field name="model">fleet.vehicle</field>
+			<field name="inherit_id" ref="fleet.fleet_vehicle_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//sheet//group" position="replace" />
+				<xpath expr="//sheet//group" position="replace" />
+				<xpath expr="//div[@class='oe_right oe_button_box']" position="after">
+					<notebook>
+						<page string="General">
+							<group>
+								<group>
+									<field name="vin_sn" />
+									<field name="seats" />
+									<field name="doors" />
+									<field name="color" />
+									<field name="bpkb" />
+									<field name="current_contract_id" />
+									<field name="company_id" groups="base.group_multi_company"/>
+								</group>
+								<group>
+									<label for="odometer" />
+									<div>
+										<field name="odometer" class="oe_inline"/>
+										<field name="odometer_unit" class="oe_inline"/>
+									</div>
+									<field name="acquisition_date" />
+									<field name="car_value" />
+								</group>
+							</group>
+						</page>
+						<page string="Engine">
+							<group>
+								<group>
+									<field name="transmission" />
+									<field name="fuel_type" />
+									<label for="co2"/>
+									<div>
+										<field name="co2" class="oe_inline"/> g/km
+									</div>
+								</group>
+								<group>
+									<field name="horsepower" />
+									<field name="horsepower_tax" />
+									<label for="power"/>
+									<div>
+										<field name="power" class="oe_inline"/> kW
+									</div>
+								</group>
+							</group>
+						</page>
+						<page string="Contracts">
+							<field name="contract_ids" readonly="1">
+								<tree version="7.0" editable="bottom">
+									<field name="header_id" />
+									<field name="driver_id" />
+								</tree>
+							</field>
+						</page>
+						<page string="Status Changes">
+							<field name="state_change_ids" readonly="1">
+								<tree version="7.0" editable="bottom">
+									<field name="state_from" />
+									<field name="state_to" />
+									<field name="change_date" />
+									<field name="change_by" />
+								</tree>
+							</field>
+						</page>
+					</notebook>
+				</xpath>
+			</field>
+		</record>
+		
+	</data>
+</openerp>

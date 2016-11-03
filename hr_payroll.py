@@ -4,12 +4,18 @@ from datetime import datetime, date
 
 # ==========================================================================================================================
 
-class chjs_region(osv.osv):
+class hr_payroll_structure(osv.osv):
 	
-	_inherit = 'chjs.region'
+	_inherit = 'hr.payroll.structure'
 	
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'default_wage': fields.float('Default Wage'),
+		'is_customer_contract': fields.boolean('Customer Contract?'),
 	}
+	
+# DEFAULTS ----------------------------------------------------------------------------------------------------------------------
+	
+	_defaults = {
+		'is_customer_contract': True,
+	}	

@@ -266,4 +266,10 @@ class resource_calendar_attendance(osv.osv):
 	}
 	
 	
-			
+
+
+	
+	
+	
+	
+	

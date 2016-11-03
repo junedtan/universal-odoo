@@ -1,0 +1,108 @@
+<openerp>
+	<data>
+		
+		<!-- PARTNER -->
+		
+		<record model="ir.ui.view" id="res_partner_form">
+			<field name="name">res.partner.form</field>
+			<field name="model">res.partner</field>
+			<field name="inherit_id" ref="base.view_partner_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//page[@name='internal_notes']" position="before">
+					<page string="Allocation Units" attrs="{'invisible': [('is_company','=',False)]}">
+						<p colspan="2">
+							Allocation units are used in By-Order service contracts to determine which user requests an order. Furthermore, if the customer 
+							utilizes Usage Control feature, each allocation unit can be given monthly usage quota and each order will substract this quota. 
+							Each allocation unit is given one/more responsibles, who can request for additional quota and monitor his/her allocation 
+							unit's usage.
+						</p>
+						<field name="default_alloc_units">
+							<tree version="7.0" editable="bottom">
+								<field name="name" />
+							</tree>
+						</field>
+					</page>
+					<page string="Locations &amp; Routes" attrs="{'invisible': [('is_company','=',False)]}">
+						<p colspan="2">
+							Locations and Routes are used in Shuttle service contracts to plan for daily schedule. You can omit this if this customer 
+							will not have any Shuttle service contract.<br/>
+							Google Map Coordinates and Radius are used to automatically start and end Shuttle orders. Be advised that if these are left 
+							blank you must use other means to record order start and end.<br/>
+							For new customers, please first fill in Location before filling in Routes. Save the input after adding locations, then edit
+							the customer to add new routes.
+						</p>
+						<group string="Locations">
+							<field name="favorite_locations" nolabel="1">
+								<tree version="7.0" editable="bottom">
+									<field name="name" />
+									<field name="google_map_coordinates" />
+									<field name="radius" />
+								</tree>
+							</field>
+						</group>
+						<group string="Routes">
+							<field name="default_routes" nolabel="1">
+								<tree version="7.0" editable="bottom">
+									<field name="name" />
+									<field name="start_location" />
+									<field name="end_location" />
+								</tree>
+							</field>
+						</group>
+					</page>
+					<page string="Contract Defaults" attrs="{'invisible': [('is_company','=',False)]}">
+						<group>
+							<group string="Contract Settings">
+								<field name="default_working_time" />
+								<field name="default_overtime" />
+							</group>
+							<group string="Vehicle Fees">
+								<field name="rent_fees" nolabel="1" colspan="2">
+									<tree version="7.0" editable="bottom">
+										<field name="fleet_vehicle_model_id" />
+										<field name="monthly_fee" />
+									</tree>
+								</field>
+								<field name="default_fee_premature_termination" placeholder="in percent (%)" />
+							</group>
+							<group string="Driver Fees (Period-Based)">
+								<p colspan="2">
+									Except specifically mentioned, all fees are per month.
+								</p>
+								<field name="gapok_fee" nolabel="1" colspan="2">
+									<tree version="7.0" editable="bottom">
+										<field name="homebase_id" />
+										<field name="gapok_fee" />
+									</tree>
+								</field>
+								<field name="default_fee_makan" />
+								<field name="default_fee_pulsa" />
+								<field name="default_fee_hadir" />
+								<field name="default_fee_seragam" />
+								<field name="default_fee_bpjs_tk" placeholder="in percent (%)" />
+								<field name="default_fee_bpjs_ks" placeholder="in percent (%)" />
+								<field name="default_fee_insurance" />
+								<field name="default_fee_cuti" />
+								<field name="default_fee_mcu" />
+								<field name="default_fee_training" />
+								<field name="default_fee_lk_pp" />
+								<field name="default_fee_lk_inap" />
+							</group>
+							<group string="Driver Fees (Order-Based)">
+								<field name="order_based_fee" nolabel="1" colspan="2">
+									<tree version="7.0" editable="bottom">
+										<field name="fleet_vehicle_model_id" />
+										<field name="fee_by_order" />
+										<field name="fee_by_hour" />
+										<field name="fee_by_day" />
+									</tree>
+								</field>
+							</group>
+						</group>
+					</page>
+				</xpath>
+			</field>
+		</record>
+		
+	</data>
+</openerp>

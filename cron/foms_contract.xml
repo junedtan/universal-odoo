@@ -1,0 +1,18 @@
+<openerp>
+	<data>
+		
+		<record forcecreate="True" id="ir_cron_set_contract_start_end" model="ir.cron">
+		  <field name="name">Set Start/Finish status of customer contracts</field>
+		  <field eval="True" name="active" />
+		  <field name="user_id" ref="base.user_root" />
+		  <field name="interval_number">1</field>
+		  <field name="interval_type">hours</field>
+		  <field name="numbercall">-1</field>
+		  <field name="active">1</field>
+		  <field eval="'foms.contract'" name="model" />
+		  <field eval="'cron_set_contract_start_end'" name="function" />
+		  <field eval="" name="args" />
+		</record>
+		
+	</data>
+</openerp>

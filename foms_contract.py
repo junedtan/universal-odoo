@@ -1,6 +1,6 @@
 from openerp.osv import osv, fields
 from openerp.tools.translate import _
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 # ==========================================================================================================================
 
@@ -196,6 +196,19 @@ class foms_contract(osv.osv):
 					}
 			else:
 				raise osv.except_osv(_('Contract Error'),_('Please select Fee Calculation Type first.'))
+		# load rent fees (sewa mobil)
+			rent_fees = []
+			if len(contract.fee_fleet) > 0:
+				for fee in contract.fee_fleet:
+					rent_fees.append([2,fee.id,{}])
+			for fee in customer.rent_fees:
+				rent_fees.append([0,False,{
+					'fleet_type_id': fee.fleet_vehicle_model_id.id,
+					'monthly_fee': fee.monthly_fee,
+				}])
+			new_data.update({
+				'fee_fleet': rent_fees,
+			})
 		# update kontrak dengan mengisi default values dari customer
 			self.write(cr, uid, [contract.id], new_data)
 		return True
@@ -206,7 +219,7 @@ class foms_contract(osv.osv):
 		# cek setting2an yang seharusnya sudah ada by the time kontrak di-confirm
 			if len(contract.fleet_types) == 0:
 				raise osv.except_osv(_('Contract Error'),_('Please input Fleet Types first.'))
-			if not contract.homebase_id or not contract.working_time_id or not contract.overtime_id or not contract.fee_calculation_type:
+			if not contract.homebase_id or not contract.working_time_id or not contract.fee_calculation_type:
 				raise osv.except_osv(_('Contract Error'),_('Please complete Fee Basic Setting first.'))
 			if len(contract.fee_fleet) == 0:
 				raise osv.except_osv(_('Contract Error'),_('Please input Vehicle Fees first.'))
@@ -223,6 +236,9 @@ class foms_contract(osv.osv):
 					has_user = True
 			if not has_user:
 				raise osv.except_osv(_('Contract Error'),_('Customer PIC has not been given user login, or the user login does not belong to Customer PIC group.'))
+		# default PIN harus sudah diisi, untuk fullday dan shuttle
+			if contract.service_type in ['full_day','shuttle'] and not contract.default_pin:
+				raise osv.except_osv(_('Contract Error'),_('Please input default PIN.'))
 		# ganti status menjadi Confirmed
 			self.write(cr, uid, [contract.id], {'state': 'confirmed'})
 	
@@ -307,6 +323,21 @@ class foms_contract(osv.osv):
 		})
 	# sudah selesai
 		return result
+
+# CRON ---------------------------------------------------------------------------------------------------------------------
+
+	def cron_set_contract_start_end(self, cr, uid, context=None):
+	# otomatis ubah status menjadi started atau finished sesuai tanggal kontrak
+		today = (datetime.now() - timedelta(hours=7) + timedelta(hours=24)).strftime('%Y-%m-%d')
+	# ubah status menjadi mulai
+		contract_ids = self.search(cr, uid, [('state','in',['planned']),('start_date','<=',today)])
+		if len(contract_ids) > 0:
+			self.write(cr, uid, contract_ids, {'state': 'active'})
+	# ubah status menjadi selesai
+		today = (datetime.now() - timedelta(hours=7)).strftime('%Y-%m-%d')
+		contract_ids = self.search(cr, uid, [('state','in',['active']),('end_date','<=',today)])
+		if len(contract_ids) > 0:
+			self.write(cr, uid, contract_ids, {'state': 'finished'})
 
 # ==========================================================================================================================
 
@@ -424,18 +455,23 @@ class foms_contract_fleet_planning_memory(osv.osv):
 					'state': 'planned',
 				})
 			# sync post outgoing ke user-user yang terkait (PIC, driver, PJ Alloc unit) , memberitahukan ada contract baru
-				sync_obj = self.pool.get('chjs.webservice.sync.bridge')
-				user_obj = self.pool.get('res.users')
-			# PIC customer
+				self.post_webservice(cr, uid, ['pic','driver'], 'create', contract_data, context=context)
+		return True
+		
+# SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------
+
+	def post_webservice(self, cr, uid, targets, command, contract_data, context=None):
+		sync_obj = self.pool.get('chjs.webservice.sync.bridge')
+		user_obj = self.pool.get('res.users')
+		if command == 'create':
+			if 'pic' in targets:
 				pic_user_ids = user_obj.search(cr, uid, [('partner_id','=',contract_data.customer_contact_id.id)])
 				if len(pic_user_ids) > 0:
 					sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.contract', 'create', contract_data.id)
-			# driver
+			if 'driver' in targets:
 				for car_driver in contract_data.car_drivers:
 					if not car_driver.driver_id: continue
 					sync_obj.post_outgoing(cr, car_driver.driver_id.user_id.id, 'foms.contract', 'create', contract_data.id)
-		return True
-		
 
 # ==========================================================================================================================
 

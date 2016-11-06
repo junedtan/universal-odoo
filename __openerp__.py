@@ -50,6 +50,8 @@
 		'cron/hr_employee.xml',
 		'cron/hr_recruitment.xml',
 		'cron/hr_contract.xml',
+		'cron/foms_contract.xml',
+		'cron/foms_order.xml',
 		'cron/hr_holidays.xml',
 	],
 	'demo': [

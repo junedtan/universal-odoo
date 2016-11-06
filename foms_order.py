@@ -1,5 +1,6 @@
 from openerp.osv import fields, osv
 from openerp.tools.translate import _
+from datetime import datetime, date, timedelta
 
 _ORDER_STATE = [
 	('new','New'),
@@ -90,14 +91,138 @@ class foms_order(osv.osv):
 		'is_lk_pp': False,
 		'is_lk_inap': False,
 	}	
+
+# OVERRIDES ----------------------------------------------------------------------------------------------------------------
+	
+	def create(self, cr, uid, vals, context=None):
+		new_id = super(foms_order, self).create(cr, uid, vals, context=context)
+		new_data = self.browse(cr, uid, new_id, context=context)
+	# untuk order fullday diasumsikan sudah ready karena vehicle dan drivernya pasti standby kecuali nanti diganti
+		if new_data.service_type == 'full_day':
+			self.write(cr, uid, [new_id], {
+				'state': 'ready',
+			})
+		return new_id
+	
+	def write(self, cr, uid, ids, vals, context=None):
+		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
+	# kalau status berubah menjadi ready, maka post ke mobile app
+		if vals.get('state', False) == 'ready':
+			for order_data in self.browse(cr, uid, ids, context=context):
+			# kalau fullday karena langsung ready maka asumsinya di mobile app belum ada order itu. maka commandnya adalah create
+				if order_data.service_type == 'full_day':
+					self.post_webservice(cr, uid, ['pic','driver'], 'create', order_data, context=context)
+			# untuk by order ... (dilanjut nanti)
+		return result
 	
 # CRON ---------------------------------------------------------------------------------------------------------------------
 
 	def cron_autogenerate_fullday(self, cr, uid, context=None):
-		today = datetime.now().strftime('%Y-%m-%d')
-	# ambil contract yang start date nya dalam 7 hari ke depan atau kurang dan berstatus planned atau active
+		
+		def get_contract_workdays(contract_data):
+		# return dict of workday dengan key=workday (0,1,2,3,4 - senin selasa rabu, dst) dan value {start, finish}
+			if not contract_data.working_time_id: return {}
+			working_days = {}
+			for working_time in contract_data.working_time_id.attendance_ids:
+				if working_time.working_time_type == 'duration':
+					start = working_time.hour_from
+					end = working_time.hour_to
+				elif working_time.working_time_type == 'max_hour':
+					start = working_time.hour_from
+					end = working_time.hour_from + working_time.max_hour
+				working_days.update({int(working_time.dayofweek): {
+					'start': start,
+					'end': end,
+				}})
+		# nanti dulu
+			holidays = []
+			for holiday in contract_data.working_time_id.leave_ids:
+				date_from = (datetime.strptime(holiday.date_from,"%Y-%m-%d %H:%M:%S") + timedelta(hours=7)).replace(hour=0,minute=0,second=0)
+				date_to = (datetime.strptime(holiday.date_to,"%Y-%m-%d %H:%M:%S") + timedelta(hours=7)).replace(hour=23,minute=59,second=59)
+				day = date_from
+				while day < date_to:
+					holidays.append(day)
+					day = day + timedelta(hours=24)
+			return working_days, holidays
+		
+		def next_workday(work_date, working_day_keys, holidays):
+			while work_date in holidays: work_date = work_date + timedelta(hours=24)
+			while work_date.weekday() not in working_day_keys: work_date = work_date + timedelta(hours=24)
+			return work_date
+			
 		contract_obj = self.pool.get('foms.contract')
-		contract_ids = contract_obj.search(cr, uid, [('start_date','<=')])
+		order_obj = self.pool.get('foms.order')
+	# bikin order fullday untuk n hari ke depan secara berkala
+	# set tanggal2
+		today = (datetime.now() - timedelta(hours=7)).replace(hour=0, minute=0, second=0, microsecond=0)
+		next_day = today + timedelta(hours=24)
+		next7days = today + timedelta(hours=24*7)
+	# ambil contract yang baru aktif (last_fullday_autogenerate_date kosong)
+		contract_ids = contract_obj.search(cr, uid, [
+			('service_type','=','full_day'),('state','in',['active','planned']),
+			('start_date','<=',next7days.strftime('%Y-%m-%d'))
+		])
+		if len(contract_ids) > 0:
+			for contract in contract_obj.browse(cr, uid, contract_ids):
+			# ambil working days dan holidays
+				working_days, holidays = get_contract_workdays(contract)
+				working_day_keys = working_days.keys()
+				contract_start_date = datetime.strptime(contract.start_date,"%Y-%m-%d")
+				last_fullday_autogenerate = contract.last_fullday_autogenerate_date and datetime.strptime(contract.last_fullday_autogenerate_date,'%Y-%m-%d') or None
+			# tentukan first order date dan mau berapa banyak bikin ordernya
+				last_order_date = last_fullday_autogenerate or datetime.strptime('1970-01-01','%Y-%m-%d') + timedelta(hours=24)
+				if not contract.last_fullday_autogenerate_date:
+					first_order_date = max([contract_start_date, last_order_date, today])
+					max_orders = 7
+				else:
+					first_order_date = last_order_date + timedelta(hours=24)
+					max_orders = 1 # kalo udah pernah autogenerate maka cukup generate satu hari berikutnya
+				first_order_date = next_workday(first_order_date, working_day_keys, holidays)
+			# kalo last generatenya masih kejauhan (lebih dari 7 hari) maka ngga usah generate dulu, bisi kebanyakan
+				if last_fullday_autogenerate and first_order_date > next7days: 
+					print "No generate"
+					return
+			# mulai bikin order satu2
+				day = 1
+				counter_date = first_order_date
+				while day <= max_orders:
+					for fleet in contract.car_drivers:
+						new_id = order_obj.create(cr, uid, {
+							'name': 'XXX',
+							'customer_contract_id': contract.id,
+							'service_type': contract.service_type,
+							'request_date': counter_date,
+							'order_by': uid,
+							'assigned_vehicle_id': fleet.fleet_vehicle_id.id,
+							'assigned_driver_id': fleet.driver_id.id,
+							'pin': contract.default_pin,
+							'start_planned_date': counter_date + timedelta(hours=working_days[counter_date.weekday()]['start']) - timedelta(hours=7),
+							'finish_planned_date': counter_date + timedelta(hours=working_days[counter_date.weekday()]['end']) - timedelta(hours=7),
+						}, context=context)
+					last_fullday = counter_date
+					counter_date = counter_date + timedelta(hours=24)
+					counter_date = next_workday(counter_date, working_day_keys, holidays)
+					day += 1
+			# update last_fullday_autogenerate_date untuk kontrak ini
+				print "Last fullday: %s" % last_fullday
+				contract_obj.write(cr, uid, [contract.id], {
+					'last_fullday_autogenerate_date': last_fullday
+				})
+
+# SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------
+
+	def post_webservice(self, cr, uid, targets, command, order_data, context=None):
+		sync_obj = self.pool.get('chjs.webservice.sync.bridge')
+		user_obj = self.pool.get('res.users')
+		if command == 'create':
+			if 'pic' in targets:
+				pic_user_ids = user_obj.search(cr, uid, [('partner_id','=',order_data.customer_contract_id.customer_contact_id.id)])
+				if len(pic_user_ids) > 0:
+					sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.order', 'create', order_data.id)
+			if 'driver' in targets:
+				if order_data.assigned_driver_id:
+					driver_user_id = order_data.assigned_driver_id.user_id.id
+					sync_obj.post_outgoing(cr, driver_user_id, 'foms.order', 'create', order_data.id)
 
 # ==========================================================================================================================
 

@@ -9,7 +9,7 @@
 			<field name="arch" type="xml">
 				<form version="7.0" string="Customer Contract">
 					<header>
-						<button string="Plan Fleet" name="action_plan_fleet" type="object" states="confirmed,planned,active" class="oe_button oe_highlight" />
+						<button string="Plan/Modify Fleet" name="action_plan_fleet" type="object" states="confirmed,planned,active" class="oe_button oe_highlight" />
 						<button string="Confirm" name="action_confirm" type="object" states="proposed" class="oe_button oe_highlight" confirm="This action singnifies that both parties (customer and PT Universal) have agreed on all terms written in the contract, including and especially Fee Calculation Scheme and Fleet Types and number of fleet required. Are you sure to continue? PS: you can still edit all data before system automatically starts the contract at its start date." />
 						<field name="state" widget="statusbar" readonly="1" />
 					</header>

@@ -196,6 +196,19 @@ class foms_contract(osv.osv):
 					}
 			else:
 				raise osv.except_osv(_('Contract Error'),_('Please select Fee Calculation Type first.'))
+		# load rent fees (sewa mobil)
+			rent_fees = []
+			if len(contract.fee_fleet) > 0:
+				for fee in contract.fee_fleet:
+					rent_fees.append([2,fee.id,{}])
+			for fee in customer.rent_fees:
+				rent_fees.append([0,False,{
+					'fleet_type_id': fee.fleet_vehicle_model_id.id,
+					'monthly_fee': fee.monthly_fee,
+				}])
+			new_data.update({
+				'fee_fleet': rent_fees,
+			})
 		# update kontrak dengan mengisi default values dari customer
 			self.write(cr, uid, [contract.id], new_data)
 		return True
@@ -206,7 +219,7 @@ class foms_contract(osv.osv):
 		# cek setting2an yang seharusnya sudah ada by the time kontrak di-confirm
 			if len(contract.fleet_types) == 0:
 				raise osv.except_osv(_('Contract Error'),_('Please input Fleet Types first.'))
-			if not contract.homebase_id or not contract.working_time_id or not contract.overtime_id or not contract.fee_calculation_type:
+			if not contract.homebase_id or not contract.working_time_id or not contract.fee_calculation_type:
 				raise osv.except_osv(_('Contract Error'),_('Please complete Fee Basic Setting first.'))
 			if len(contract.fee_fleet) == 0:
 				raise osv.except_osv(_('Contract Error'),_('Please input Vehicle Fees first.'))

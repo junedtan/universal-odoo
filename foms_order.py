@@ -180,7 +180,7 @@ class foms_order(osv.osv):
 				first_order_date = next_workday(first_order_date, working_day_keys, holidays)
 			# kalo last generatenya masih kejauhan (lebih dari 7 hari) maka ngga usah generate dulu, bisi kebanyakan
 				if last_fullday_autogenerate and first_order_date > next7days: 
-					print "No generate"
+					print "No generate -------------------------------------"
 					return
 			# mulai bikin order satu2
 				day = 1

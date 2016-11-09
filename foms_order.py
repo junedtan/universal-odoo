@@ -22,18 +22,20 @@ class foms_order(osv.osv):
 
 	_name = 'foms.order'
 	_description = 'Forms Order'
+	
+	_inherit = ['mail.thread','chjs.base.webservice']
 
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
 		'name': fields.char('Order #', required=True),
-		'customer_contract_id': fields.many2one('foms.contract', 'Forms Contract', required=True, ondelete='restrict'),
+		'customer_contract_id': fields.many2one('foms.contract', 'Customer Contract', required=True, ondelete='restrict'),
 		'service_type': fields.selection([
 			('full_day','Full-day Service'),
 			('by_order','By Order'),
 			('shuttle','Shuttle')], 'Service Type', required=True),
 		'request_date': fields.datetime('Request Date', required=True),
-		'state': fields.selection(_ORDER_STATE, 'State', required=True),
+		'state': fields.selection(_ORDER_STATE, 'State', required=True, track_visiblity="onchange"),
 		'order_by': fields.many2one('res.users', 'Order By', required=True, ondelete='restrict'),
 		'confirm_date': fields.datetime('Confirm Date'),
 		'confirm_by': fields.many2one('res.users', 'Confirm By', ondelete='restrict'),
@@ -54,7 +56,7 @@ class foms_order(osv.osv):
 			('one_way_pickup','One-way Pick-up'),
 			('two_way','Two Way')], 'Order Type by Order'),
 		'passenger_count': fields.integer('Passenger Count'),
-		'is_orderer_passenger': fields.boolean('Is Orderer = Passenger?'),
+		'is_orderer_passenger': fields.boolean('Orderer Is Passenger?'),
 		'passengers': fields.one2many('foms.order.passenger', 'header_id', 'Passengers'),
 		'assigned_vehicle_id': fields.many2one('fleet.vehicle', 'Assigned Vehicle', ondelete='restrict'),
 		'assigned_driver_id': fields.many2one('hr.employee', 'Assigned Driver', ondelete='restrict'),
@@ -106,13 +108,23 @@ class foms_order(osv.osv):
 	
 	def write(self, cr, uid, ids, vals, context=None):
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
+		orders = self.browse(cr, uid, ids, context=context)
 	# kalau status berubah menjadi ready, maka post ke mobile app
 		if vals.get('state', False) == 'ready':
-			for order_data in self.browse(cr, uid, ids, context=context):
+			for order_data in orders:
 			# kalau fullday karena langsung ready maka asumsinya di mobile app belum ada order itu. maka commandnya adalah create
 				if order_data.service_type == 'full_day':
-					self.post_webservice(cr, uid, ['pic','driver'], 'create', order_data, context=context)
+					self.webservice_post(cr, uid, ['pic','driver'], 'create', order_data, context=context)
 			# untuk by order ... (dilanjut nanti)
+		if context.get('from_webservice') == True:
+			sync_obj = self.pool.get('chjs.webservice.sync.bridge')
+			user_id = context.get('user_id', uid)
+		# kalau ngubah start_date atau finish_date dan dari webservice, maka post ke mobile app pic, approver, booker
+			if vals.get('start_date') or vals.get('finish_date'):
+				for order_data in orders:
+				# kalau yang ngupdate driver maka perintahkan update juga ke pic
+					if user_obj.has_group(cr, user_id, 'universal.group_universal_driver'):
+						self.webservice_post(cr, uid, ['pic','approver','booker'], 'update', order_data, context=context)
 		return result
 	
 # CRON ---------------------------------------------------------------------------------------------------------------------
@@ -211,18 +223,26 @@ class foms_order(osv.osv):
 
 # SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------
 
-	def post_webservice(self, cr, uid, targets, command, order_data, context=None):
+	def webservice_post(self, cr, uid, targets, command, order_data, context=None):
 		sync_obj = self.pool.get('chjs.webservice.sync.bridge')
 		user_obj = self.pool.get('res.users')
-		if command == 'create':
-			if 'pic' in targets:
-				pic_user_ids = user_obj.search(cr, uid, [('partner_id','=',order_data.customer_contract_id.customer_contact_id.id)])
-				if len(pic_user_ids) > 0:
-					sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.order', 'create', order_data.id)
-			if 'driver' in targets:
-				if order_data.assigned_driver_id:
-					driver_user_id = order_data.assigned_driver_id.user_id.id
-					sync_obj.post_outgoing(cr, driver_user_id, 'foms.order', 'create', order_data.id)
+		if 'pic' in targets:
+			pic_user_ids = user_obj.search(cr, uid, [('partner_id','=',order_data.customer_contract_id.customer_contact_id.id)])
+			if len(pic_user_ids) > 0:
+				sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.order', command, order_data.id)
+		if 'driver' in targets:
+			if order_data.assigned_driver_id:
+				driver_user_id = order_data.assigned_driver_id.user_id.id
+				sync_obj.post_outgoing(cr, driver_user_id, 'foms.order', command, order_data.id)
+		if 'approver' in targets:
+			if order_data.confirm_by:
+				approver_user_id = order_data.confirm_by.id
+				sync_obj.post_outgoing(cr, approver_user_id, 'foms.order', command, order_data.id)
+		if 'booker' in targets:
+			if order_data.order_by:
+				booker_user_id = order_data.order_by.id
+				sync_obj.post_outgoing(cr, booker_user_id, 'foms.order', command, order_data.id)
+			
 
 # ==========================================================================================================================
 

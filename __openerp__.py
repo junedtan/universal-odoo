@@ -41,6 +41,7 @@
 		'views/res_config.xml',
 		'views/fleet.xml',
 		'views/foms_contract.xml',
+		'views/foms_order.xml',
 		'menu/universal_menu.xml',
 		'report/report_universal.xml',
 		'report/report_contract_driver.xml',

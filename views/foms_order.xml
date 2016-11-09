@@ -1,0 +1,131 @@
+<openerp>
+	<data>
+		
+		<!-- CONTRACT -->
+		
+		<record model="ir.ui.view" id="foms_order_form">
+			<field name="name">foms.order.form</field>	
+			<field name="model">foms.order</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Customer Order">
+					<header>
+						<field name="state" widget="statusbar" readonly="1" />
+					</header>
+					<group>
+						<group>
+							<field name="name" />
+							<field name="customer_contract_id" />
+							<field name="service_type" />
+							<field name="order_type_by_order" attrs="{'invisible': [('service_type','!=','by_order')]}" />
+							<field name="order_by" />
+						</group>
+						<group>
+							<field name="request_date" />
+							<field name="actual_vehicle_id" string="Vehicle" />
+							<field name="actual_driver_id" string="Driver" />
+						</group>
+					</group>
+					<notebook>
+						<page string="Planning">
+							<group>
+								<group string="Dates and Places">
+									<field name="start_planned_date" />
+									<field name="finish_planned_date" />
+									<field name="origin_location" attrs="{'invisible': [('service_type','!=','by_order')]}" />
+									<field name="dest_location" attrs="{'invisible': [('service_type','!=','by_order')]}" />
+									<field name="route_id" attrs="{'invisible': [('service_type','!=','shuttle')]}" />
+								</group>
+								<group string="Assignments">
+									<field name="alloc_unit_id" attrs="{'invisible': [('service_type','!=','by_order')]}" />
+									<field name="alloc_unit_usage" attrs="{'invisible': [('service_type','!=','by_order')]}" />
+									<field name="assigned_vehicle_id" />
+									<field name="assigned_driver_id" />
+								</group>
+							</group>
+						</page>
+						<page string="Passengers">
+							<group>
+								<field name="passenger_count" />
+							</group>
+							<field name="passengers">
+								<tree version="7.0" editable="bottom">
+									<field name="name" />
+									<field name="phone_no" />
+									<field name="is_orderer" />
+								</tree>
+							</field>
+						</page>
+						<page string="Execution">
+							<group>
+								<group>
+									<field name="confirm_date" />
+									<field name="confirm_by" />
+								</group>
+								<group>
+									
+								</group>
+							</group>
+							<group>
+								<group>
+									<field name="start_date" />
+									<field name="start_confirm_date" />
+									<field name="start_confirm_by" />
+									<field name="start_from" />
+								</group>
+								<group>
+									<field name="finish_date" />
+									<field name="finish_confirm_date" />
+									<field name="finish_confirm_by" />
+									<field name="finish_from" />
+								</group>
+							</group>
+							<group>
+								<group>
+									<field name="pause_count" />
+									<field name="is_lk_pp" />
+									<field name="is_lk_inap" />
+								</group>
+								<group></group>
+							</group>
+						</page>
+						<page string="Cancellation">
+							<group>
+								<group>
+									<field name="cancel_date" />
+									<field name="cancel_by" />
+									<field name="cancel_previous_state" />
+								</group>
+								<group>
+									<field name="cancel_reason" />
+									<field name="cancel_reason_other" string="Other Reason" />
+								</group>
+							</group>
+						</page>
+					</notebook>
+					<div class="oe_chatter">
+						<field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+						<field name="message_ids" widget="mail_thread"/>
+					</div>
+				</form>
+			</field>
+		</record>
+		
+		<record model="ir.ui.view" id="foms_order_tree">
+			<field name="name">foms.order.tree</field>	
+			<field name="model">foms.order</field>
+			<field name="arch" type="xml">
+				<tree version="7.0" string="Customer Orders">
+					<field name="name" />
+					<field name="customer_contract_id" />
+					<field name="service_type" />
+					<field name="actual_vehicle_id" string="Vehicle" />
+					<field name="actual_driver_id" string="Driver" />
+					<field name="state" />
+					<field name="start_date" />
+					<field name="finish_date" />
+				</tree>
+			</field>
+		</record>		
+		
+	</data>
+</openerp>

@@ -136,6 +136,13 @@
 			<field name="view_mode">tree,form</field>
 		</record>
 
+		<record id="universal_action_foms_order" model="ir.actions.act_window">
+			<field name="name">Customer Orders</field>	
+			<field name="res_model">foms.order</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
 		<menuitem parent="hr.menu_hr_configuration" sequence="3" id="universal_menu_job_position" action="universal_action_job_position"
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="3" id="hr_recruitment.menu_crm_case_categ0_act_job" action="hr_recruitment.crm_case_categ0_act_job" 
@@ -184,6 +191,7 @@
 		
 		<menuitem sequence="1" parent="universal_menu_foms" name="Contract and Orders" id="universal_menu_foms_contract" />
 			<menuitem sequence="1" parent="universal_menu_foms_contract" action="universal_action_foms_contract" id="universal_menu_foms_contract1" />
+			<menuitem sequence="2" parent="universal_menu_foms_contract" action="universal_action_foms_order" id="universal_menu_foms_order" />
 		
 		<menuitem sequence="2" parent="universal_menu_foms" name="Configuration" id="menu_universal_foms_config"/>
 			<menuitem parent="menu_universal_foms_config" sequence="1" id="universal_menu_config_customer" action="base.action_partner_customer_form" />

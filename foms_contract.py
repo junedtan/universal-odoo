@@ -7,7 +7,7 @@ from datetime import datetime, date, timedelta
 class foms_contract(osv.osv):
 
 	_name = "foms.contract"
-	_inherit = ['mail.thread']
+	_inherit = ['mail.thread','chjs.base.webservice']
 	_description = 'Forms Contract'
 	
 # FUNCTION FIELD METHODS ---------------------------------------------------------------------------------------------------
@@ -455,12 +455,12 @@ class foms_contract_fleet_planning_memory(osv.osv):
 					'state': 'planned',
 				})
 			# sync post outgoing ke user-user yang terkait (PIC, driver, PJ Alloc unit) , memberitahukan ada contract baru
-				self.post_webservice(cr, uid, ['pic','driver'], 'create', contract_data, context=context)
+				self.webservice_post(cr, uid, ['pic','driver'], 'create', contract_data, context=context)
 		return True
 		
 # SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------
 
-	def post_webservice(self, cr, uid, targets, command, contract_data, context=None):
+	def webservice_post(self, cr, uid, targets, command, contract_data, context=None):
 		sync_obj = self.pool.get('chjs.webservice.sync.bridge')
 		user_obj = self.pool.get('res.users')
 		if command == 'create':

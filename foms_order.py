@@ -127,6 +127,39 @@ class foms_order(osv.osv):
 						self.webservice_post(cr, uid, ['pic','approver','booker'], 'update', order_data, context=context)
 		return result
 	
+	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
+		user_obj = self.pool.get('res.users')
+		contract_obj = self.pool.get('contract')
+	# kalau diminta untuk mengambil semua kontrak by user_id tertentu
+		if context.get('by_user_id',False):
+			domain = []
+			user_id = context.get('user_id', uid)
+			is_pic = user_obj.has_group(cr, user_id, 'universal.group_universal_customer_pic')
+			is_approver = user_obj.has_group(cr, user_id, 'universal.group_universal_approver')
+			is_driver = user_obj.has_group(cr, user_id, 'universal.group_universal_driver')
+			is_booker = user_obj.has_group(cr, user_id, 'universal.group_universal_booker')
+		# kalau pic, domainnya menjadi semua order dengan contract yang pic nya adalah partner terkait
+			if is_pic:
+				user_data = user_obj.browse(cr, uid, user_id)
+				if user_data.partner_id:
+					contract_ids = contract_obj.search(cr, uid, [('customer_contact_id','=',user_data.partner_id.id)])
+					domain.append(('customer_contract_id','in',contract_ids))
+		# kalau driver, domainnya menjadi semua order yang di-assign ke dia, atau actual nya dia
+			if is_driver:
+				employee_obj = self.pool.get('hr.employee')
+				employee_ids = employee_obj.search(cr, uid, [('user_id','=',user_id)])
+				if len(employee_ids) > 0:
+					domain = [
+						'|',
+						('assigned_driver_id','=',employee_ids[0]),
+						('actual_driver_id','=',employee_ids[0]),
+					]
+			if len(domain) > 0:
+				args = domain + args
+			else:
+				return []
+		return super(foms_contract, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
+		
 # CRON ---------------------------------------------------------------------------------------------------------------------
 
 	def cron_autogenerate_fullday(self, cr, uid, context=None):

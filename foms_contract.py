@@ -154,6 +154,42 @@ class foms_contract(osv.osv):
 		('const_holiday_allowance', 'CHECK(fee_holiday_allowance >= 0)', _('Fee holiday allowance must be greater than or equal to zero.')),
 	]		
 
+# OVERRIDES ----------------------------------------------------------------------------------------------------------------
+
+	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
+		user_obj = self.pool.get('res.users')
+	# kalau diminta untuk mengambil semua kontrak by user_id tertentu
+		if context.get('by_user_id',False):
+			domain = []
+			user_id = context.get('user_id', uid)
+			is_pic = user_obj.has_group(cr, user_id, 'universal.group_universal_customer_pic')
+			is_approver = user_obj.has_group(cr, user_id, 'universal.group_universal_approver')
+			is_driver = user_obj.has_group(cr, user_id, 'universal.group_universal_driver')
+			is_booker = user_obj.has_group(cr, user_id, 'universal.group_universal_booker')
+		# kalau pic, domainnya menjadi semua contract yang pic nya adalah partner terkait
+			if is_pic:
+				user_data = user_obj.browse(cr, uid, user_id)
+				if user_data.partner_id:
+					domain.append(('customer_contact_id','=',user_data.partner_id.id))
+		# kalau driver, domainnya menjadi semua contract yang car_drivers assignment nya adalah dia
+			if is_driver:
+				employee_obj = self.pool.get('hr.employee')
+				employee_ids = employee_obj.search(cr, uid, [('user_id','=',user_id)])
+				if len(employee_ids) > 0:
+					contract_fleet_obj = self.pool.get('foms.contract.fleet')
+					contract_fleet_ids = contract_fleet_obj.search(cr, uid, [('driver_id','=',employee_ids[0])])
+					if len(contract_fleet_ids) > 0:
+						contract_ids = []
+						for contract_fleet in contract_fleet_obj.browse(cr, uid, contract_fleet_ids):
+							contract_ids.append(contract_fleet.header_id.id)
+						contract_ids = list(set(contract_ids))
+						domain.append(('id','in',contract_ids))
+			if len(domain) > 0:
+				args = domain + args
+			else:
+				return []
+		return super(foms_contract, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
+		
 # ACTION -------------------------------------------------------------------------------------------------------------------
 
 	def action_load_customer_defaults(self, cr, uid, ids, context=None):

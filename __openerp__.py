@@ -26,6 +26,7 @@
 		'data/hr_employee.xml',
 		'data/hr_contract.xml',
 		'data/fleet.xml',
+		'data/hr_expense.xml',
 		'views/universal.xml',
 		'views/hr_recruitment.xml',
 		'views/hr_employee.xml',

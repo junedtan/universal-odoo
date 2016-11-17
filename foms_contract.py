@@ -493,23 +493,25 @@ class foms_contract_fleet_planning_memory(osv.osv):
 					'state': 'planned',
 				})
 			# sync post outgoing ke user-user yang terkait (PIC, driver, PJ Alloc unit) , memberitahukan ada contract baru
-				self.webservice_post(cr, uid, ['pic','driver'], 'create', contract_data, context=context)
+				self.webservice_post(cr, uid, ['pic','driver'], 'create', contract_data, {
+					'notification': 'contract_new',
+				}, context=context)
 		return True
 		
 # SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------
 
-	def webservice_post(self, cr, uid, targets, command, contract_data, context=None):
+	def webservice_post(self, cr, uid, targets, command, contract_data, webservice_context={}, context=None):
 		sync_obj = self.pool.get('chjs.webservice.sync.bridge')
 		user_obj = self.pool.get('res.users')
 		if command == 'create':
 			if 'pic' in targets:
 				pic_user_ids = user_obj.search(cr, uid, [('partner_id','=',contract_data.customer_contact_id.id)])
 				if len(pic_user_ids) > 0:
-					sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.contract', 'create', contract_data.id)
+					sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.contract', 'create', contract_data.id, data_context=webservice_context)
 			if 'driver' in targets:
 				for car_driver in contract_data.car_drivers:
 					if not car_driver.driver_id: continue
-					sync_obj.post_outgoing(cr, car_driver.driver_id.user_id.id, 'foms.contract', 'create', contract_data.id)
+					sync_obj.post_outgoing(cr, car_driver.driver_id.user_id.id, 'foms.contract', 'create', contract_data.id, data_context=webservice_context)
 
 # ==========================================================================================================================
 

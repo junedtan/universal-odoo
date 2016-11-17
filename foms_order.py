@@ -107,9 +107,18 @@ class foms_order(osv.osv):
 		return new_id
 	
 	def write(self, cr, uid, ids, vals, context={}):
+		
 		context = context and context or {}
+		
+	# kalau ada perubahan start_planned_date, ambil dulu planned start date aslinya
+		original_start_date = {}
+		if vals.get('start_planned_date'):
+			for data in self.browse(cr, uid, ids):
+				original_start_date.update({data.id: data.start_planned_date})
+		
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
 		orders = self.browse(cr, uid, ids, context=context)
+		
 	# kalau status berubah menjadi ready, maka post ke mobile app
 		if vals.get('state', False) == 'ready':
 			for order_data in orders:
@@ -117,6 +126,19 @@ class foms_order(osv.osv):
 				if order_data.service_type == 'full_day':
 					self.webservice_post(cr, uid, ['pic','driver'], 'create', order_data, context=context)
 			# untuk by order ... (dilanjut nanti)
+			
+	# kalau ada perubahan start_planned_date
+		if vals.get('start_planned_date'):
+			for order_data in orders:
+			# message_post supaya kedeteksi perubahannya
+				original = datetime.strptime((original_start_date[order_data.id],'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)).strftime('%d/%m/%Y %H:%M:%S')
+				new = datetime.strptime((order_data.start_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)).strftime('%d/%m/%Y %H:%M:%S')
+				if context.get('from_webservice') == True:
+					message_body = _("Planned start date is changed from %s to %s as requested by client.") % (original,new)
+				else:
+					message_body = _("Planned start date is changed from %s to %s.") % (original,new)
+				self.message_post(cr, uid, order_data.id, body=message_body)
+			
 	# kalau jadi start atau start confirmed dan actual vehicle atau driver masih kosong, maka isikan
 		if vals.get('state', False) in ['started','start_confirmed','finished','finish_confirmed']:
 			for order_data in orders:
@@ -130,14 +152,21 @@ class foms_order(osv.osv):
 						'actual_vehicle_id': order_data.assigned_vehicle_id.id,
 					})
 				super(foms_order, self).write(cr, uid, [order_data.id], update_data, context={})
+	
+	# kalau updatenya dari mobile app...
 		if context.get('from_webservice') == True:
 			sync_obj = self.pool.get('chjs.webservice.sync.bridge')
 			user_obj = self.pool.get('res.users')
 			user_id = context.get('user_id', uid)
-		# kalau ngubah start_date atau finish_date dan dari webservice, maka post ke mobile app pic, approver, booker
+		# kalau ngubah tanggal planned, post ke pic, passenger, dan driver
+			if vals.get('start_planned_date'):
+				for order_data in orders:
+					self.webservice_post(cr, uid, ['pic','passenger','driver'], 'update', order_data, {
+						'notification': 'order_change_date',
+					}, context=context)
+		# kalau ngubah start_date atau finish_date maka post ke mobile app pic, approver, booker
 			if vals.get('start_date') or vals.get('finish_date'):
 				for order_data in orders:
-				# kalau yang ngupdate driver maka perintahkan update juga ke pic
 					if user_obj.has_group(cr, user_id, 'universal.group_universal_driver'):
 						self.webservice_post(cr, uid, ['pic','approver','booker'], 'update', order_data, context=context)
 		return result
@@ -271,25 +300,25 @@ class foms_order(osv.osv):
 
 # SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------
 
-	def webservice_post(self, cr, uid, targets, command, order_data, context=None):
+	def webservice_post(self, cr, uid, targets, command, order_data, webservice_context={}, context=None):
 		sync_obj = self.pool.get('chjs.webservice.sync.bridge')
 		user_obj = self.pool.get('res.users')
 		if 'pic' in targets:
 			pic_user_ids = user_obj.search(cr, uid, [('partner_id','=',order_data.customer_contract_id.customer_contact_id.id)])
 			if len(pic_user_ids) > 0:
-				sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.order', command, order_data.id)
+				sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.order', command, order_data.id, data_context=webservice_context)
 		if 'driver' in targets:
 			if order_data.assigned_driver_id:
 				driver_user_id = order_data.assigned_driver_id.user_id.id
-				sync_obj.post_outgoing(cr, driver_user_id, 'foms.order', command, order_data.id)
+				sync_obj.post_outgoing(cr, driver_user_id, 'foms.order', command, order_data.id, data_context=webservice_context)
 		if 'approver' in targets:
 			if order_data.confirm_by:
 				approver_user_id = order_data.confirm_by.id
-				sync_obj.post_outgoing(cr, approver_user_id, 'foms.order', command, order_data.id)
+				sync_obj.post_outgoing(cr, approver_user_id, 'foms.order', command, order_data.id, data_context=webservice_context)
 		if 'booker' in targets:
 			if order_data.order_by:
 				booker_user_id = order_data.order_by.id
-				sync_obj.post_outgoing(cr, booker_user_id, 'foms.order', command, order_data.id)
+				sync_obj.post_outgoing(cr, booker_user_id, 'foms.order', command, order_data.id, data_context=webservice_context)
 			
 
 # ==========================================================================================================================

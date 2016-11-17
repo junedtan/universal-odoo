@@ -192,8 +192,10 @@
 		<menuitem sequence="1" parent="universal_menu_foms" name="Contract and Orders" id="universal_menu_foms_contract" />
 			<menuitem sequence="1" parent="universal_menu_foms_contract" action="universal_action_foms_contract" id="universal_menu_foms_contract1" />
 			<menuitem sequence="2" parent="universal_menu_foms_contract" action="universal_action_foms_order" id="universal_menu_foms_order" />
-		
-		<menuitem sequence="2" parent="universal_menu_foms" name="Configuration" id="menu_universal_foms_config"/>
+
+		<menuitem sequence="2" parent="universal_menu_foms" name="Expenses" id="hr_expense.next_id_49" />
+
+		<menuitem sequence="3" parent="universal_menu_foms" name="Configuration" id="menu_universal_foms_config"/>
 			<menuitem parent="menu_universal_foms_config" sequence="1" id="universal_menu_config_customer" action="base.action_partner_customer_form" />
 			<menuitem parent="menu_universal_foms_config" sequence="2" id="universal_menu_homebase" action="universal_action_homebase" 
 				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
@@ -201,6 +203,8 @@
 				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 			<menuitem parent="menu_universal_foms_config" sequence="4" id="hr_overtime.hr_menu_overtime" action="hr_overtime.hr_action_overtime" 
 				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+			<menuitem parent="menu_universal_foms_config" sequence="5" id="hr_expense.menu_hr_product" action="hr_expense.hr_expense_product"/>
+
 		
 <!-- INHERIT -->
 

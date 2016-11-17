@@ -116,6 +116,19 @@ class foms_order(osv.osv):
 				if order_data.service_type == 'full_day':
 					self.webservice_post(cr, uid, ['pic','driver'], 'create', order_data, context=context)
 			# untuk by order ... (dilanjut nanti)
+	# kalau jadi start atau start confirmed dan actual vehicle atau driver masih kosong, maka isikan
+		if vals.get('state', False) in ['started','start_confirmed','finished','finish_confirmed']:
+			for order_data in orders:
+				update_data = {}
+				if not order_data.actual_driver_id:
+					update_data.update({
+						'actual_driver_id': order_data.planned_driver_id.id,
+					})
+				if not order_data.actual_vehicle_id:
+					update_data.update({
+						'actual_vehicle_id': order_data.planned_vehicle_id.id,
+					})
+				self.write(cr, uid, [order_data.id], update_data, context={})
 		if context.get('from_webservice') == True:
 			sync_obj = self.pool.get('chjs.webservice.sync.bridge')
 			user_id = context.get('user_id', uid)
@@ -129,7 +142,7 @@ class foms_order(osv.osv):
 	
 	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
 		user_obj = self.pool.get('res.users')
-		contract_obj = self.pool.get('contract')
+		contract_obj = self.pool.get('foms.contract')
 	# kalau diminta untuk mengambil semua kontrak by user_id tertentu
 		if context.get('by_user_id',False):
 			domain = []

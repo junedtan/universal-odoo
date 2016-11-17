@@ -1,0 +1,40 @@
+<openerp>
+	<data>
+		
+		<!-- Fleet Vehicle State-->
+		
+		<record model="product.product" id="expense_type_fuel">
+			<field name="name">Fuel</field>
+			<field name="type">service</field>
+			<field name="sale_ok" eval="False" />
+			<field name="hr_expense_ok" eval="True" />
+			<field name="is_trip_related" eval="True" />
+		</record>
+		
+		<record model="product.product" id="expense_type_toll">
+			<field name="name">Toll</field>
+			<field name="type">service</field>
+			<field name="sale_ok" eval="False" />
+			<field name="hr_expense_ok" eval="True" />
+			<field name="is_trip_related" eval="True" />
+		</record>
+		
+		<record model="product.product" id="expense_type_parking">
+			<field name="name">Parking</field>
+			<field name="type">service</field>
+			<field name="sale_ok" eval="False" />
+			<field name="hr_expense_ok" eval="True" />
+			<field name="is_trip_related" eval="True" />
+		</record>
+		
+		<record model="product.product" id="expense_type_other">
+			<field name="name">Other Trip Expenses</field>
+			<field name="type">service</field>
+			<field name="sale_ok" eval="False" />
+			<field name="hr_expense_ok" eval="True" />
+			<field name="is_trip_related" eval="True" />
+		</record>
+		
+	</data>
+	
+</openerp>

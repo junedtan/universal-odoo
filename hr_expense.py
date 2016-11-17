@@ -29,6 +29,7 @@ class product_template(osv.osv):
 class hr_expense_expense(osv.osv):
 	
 	_inherit = ['chjs.base.webservice','hr.expense.expense']
+	_name = 'hr.expense.expense'
 	
 	_valid_commands = ['search_read', 'search_by_user_id', 'create', 'update', 'delete', 'expense_types']
 	

@@ -143,6 +143,14 @@
 			<field name="view_mode">tree,form</field>
 		</record>
 
+		<record id="universal_action_trip_expenses" model="ir.actions.act_window">
+			<field name="name">Trip Expenses</field>	
+			<field name="res_model">hr.expense.expense</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="domain">[('contract_id','!=',False),('contract_id','!=',None)]</field>
+		</record>
+
 		<menuitem parent="hr.menu_hr_configuration" sequence="3" id="universal_menu_job_position" action="universal_action_job_position"
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="3" id="hr_recruitment.menu_crm_case_categ0_act_job" action="hr_recruitment.crm_case_categ0_act_job" 
@@ -193,7 +201,8 @@
 			<menuitem sequence="1" parent="universal_menu_foms_contract" action="universal_action_foms_contract" id="universal_menu_foms_contract1" />
 			<menuitem sequence="2" parent="universal_menu_foms_contract" action="universal_action_foms_order" id="universal_menu_foms_order" />
 
-		<menuitem sequence="2" parent="universal_menu_foms" name="Expenses" id="hr_expense.next_id_49" />
+		<menuitem sequence="2" parent="universal_menu_foms" name="Expenses" id="universal_menu_expense_parent" />
+			<menuitem action="universal_action_trip_expenses" id="universal_menu_expense" parent="universal_menu_expense_parent"/>
 
 		<menuitem sequence="3" parent="universal_menu_foms" name="Configuration" id="menu_universal_foms_config"/>
 			<menuitem parent="menu_universal_foms_config" sequence="1" id="universal_menu_config_customer" action="base.action_partner_customer_form" />
@@ -203,7 +212,6 @@
 				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 			<menuitem parent="menu_universal_foms_config" sequence="4" id="hr_overtime.hr_menu_overtime" action="hr_overtime.hr_action_overtime" 
 				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
-			<menuitem parent="menu_universal_foms_config" sequence="5" id="hr_expense.menu_hr_product" action="hr_expense.hr_expense_product"/>
 
 		
 <!-- INHERIT -->

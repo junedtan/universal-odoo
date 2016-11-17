@@ -26,14 +26,14 @@ class foms_contract(osv.osv):
 
 	_columns = {
 	# BASIC INFORMATION
-		'name': fields.char('Contract No.', required=True),
+		'name': fields.char('Contract No.', required=True, copy=False),
 		'contract_date': fields.date('Contract Date'),
 		'homebase_id' : fields.many2one('chjs.region', 'Homebase'),
 		'customer_id' : fields.many2one('res.partner', 'Customer', required=True, domain=[('customer','=',True),('is_company','=',True)], ondelete='restrict'),
 		'customer_contact_id' : fields.many2one('res.partner', 'Customer PIC', required=True, domain=[('customer','=',True),('is_company','=',False)], ondelete='restrict'),
 		'is_order_replacement_vehicle': fields.boolean('Can Have Replacement?'),
-		'start_date': fields.date('Start Date', required=True),
-		'end_date': fields.date('End Date', required=True),
+		'start_date': fields.date('Start Date', required=True, copy=False),
+		'end_date': fields.date('End Date', required=True, copy=False),
 		'service_type': fields.selection([
 			('full_day','Full-day Service'),
 			('by_order','By Order'),
@@ -45,9 +45,9 @@ class foms_contract(osv.osv):
 			('active','Active'),
 			('prolonged','Prolonged'),
 			('terminated','Terminated'),
-			('finished','Finished')], 'State', required=True, track_visibility="onchange"),
+			('finished','Finished')], 'State', required=True, track_visibility="onchange", copy=False),
 		'termination_reason': fields.text('Termination Reason'),
-		'default_pin': fields.char('Default PIN', 
+		'default_pin': fields.char('Default PIN', copy=False, 
 			help="Default PIN for Full-day Service and Shuttle orders."),
 		'overtime_id' : fields.many2one('hr.overtime', 'Overtime Setting', ondelete='restrict'),
 		'working_time_id' : fields.many2one('resource.calendar', 'Working Time', ondelete='restrict'),
@@ -55,10 +55,10 @@ class foms_contract(osv.osv):
 		'car_drivers': fields.one2many('foms.contract.fleet', 'header_id', 'Car and Drivers'),
 		'shuttle_schedules': fields.one2many('foms.contract.shuttle.schedule', 'header_id', 'Shuttle Schedules'),
 		'allocation_units': fields.one2many('foms.contract.alloc.unit', 'header_id', 'Allocation Units'),
-		'extended_contract_id' : fields.many2one('foms.contract', 'Extended Contract', readonly=True,
+		'extended_contract_id' : fields.many2one('foms.contract', 'Extended Contract', readonly=True, copy=False,
 			help="If not empty, this contract is an extension of the contract."),
-		'last_fullday_autogenerate_date': fields.date('Last Fullday Autogenerate Date'),
-		'last_shuttle_autogenerate_date': fields.date('Last Shuttle Autogenerate Date'),
+		'last_fullday_autogenerate_date': fields.date('Last Fullday Autogenerate Date', copy=False),
+		'last_shuttle_autogenerate_date': fields.date('Last Shuttle Autogenerate Date', copy=False),
 	# FEES
 		'fee_calculation_type': fields.selection([
 			('monthly','Period-based'),
@@ -157,6 +157,7 @@ class foms_contract(osv.osv):
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 
 	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
+		context = context and context or {}
 		user_obj = self.pool.get('res.users')
 	# kalau diminta untuk mengambil semua kontrak by user_id tertentu
 		if context.get('by_user_id',False):
@@ -411,6 +412,7 @@ class foms_contract_fleet(osv.osv):
 	def _constraint_employee_is_driver(self, cr, uid, ids, context=None):
 		employee_obj = self.pool.get('hr.employee')
 		for data in self.browse(cr, uid, ids, context):
+			if not data.driver_id: continue
 			if not employee_obj.emp_is_driver(cr, uid, data.driver_id.id, context):
 				raise osv.except_osv(_('Contract Error'),_('Employee %s is not a driver. Please check his/her job position.' % data.driver_id.name))
 				return False

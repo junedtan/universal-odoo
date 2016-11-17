@@ -96,7 +96,7 @@ class foms_order(osv.osv):
 
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
-	def create(self, cr, uid, vals, context=None):
+	def create(self, cr, uid, vals, context={}):
 		new_id = super(foms_order, self).create(cr, uid, vals, context=context)
 		new_data = self.browse(cr, uid, new_id, context=context)
 	# untuk order fullday diasumsikan sudah ready karena vehicle dan drivernya pasti standby kecuali nanti diganti
@@ -106,7 +106,8 @@ class foms_order(osv.osv):
 			})
 		return new_id
 	
-	def write(self, cr, uid, ids, vals, context=None):
+	def write(self, cr, uid, ids, vals, context={}):
+		context = context and context or {}
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
 		orders = self.browse(cr, uid, ids, context=context)
 	# kalau status berubah menjadi ready, maka post ke mobile app
@@ -122,15 +123,16 @@ class foms_order(osv.osv):
 				update_data = {}
 				if not order_data.actual_driver_id:
 					update_data.update({
-						'actual_driver_id': order_data.planned_driver_id.id,
+						'actual_driver_id': order_data.assigned_driver_id.id,
 					})
 				if not order_data.actual_vehicle_id:
 					update_data.update({
-						'actual_vehicle_id': order_data.planned_vehicle_id.id,
+						'actual_vehicle_id': order_data.assigned_vehicle_id.id,
 					})
-				self.write(cr, uid, [order_data.id], update_data, context={})
+				super(foms_order, self).write(cr, uid, [order_data.id], update_data, context={})
 		if context.get('from_webservice') == True:
 			sync_obj = self.pool.get('chjs.webservice.sync.bridge')
+			user_obj = self.pool.get('res.users')
 			user_id = context.get('user_id', uid)
 		# kalau ngubah start_date atau finish_date dan dari webservice, maka post ke mobile app pic, approver, booker
 			if vals.get('start_date') or vals.get('finish_date'):
@@ -141,6 +143,7 @@ class foms_order(osv.osv):
 		return result
 	
 	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
+		context = context and context or {}
 		user_obj = self.pool.get('res.users')
 		contract_obj = self.pool.get('foms.contract')
 	# kalau diminta untuk mengambil semua kontrak by user_id tertentu
@@ -171,7 +174,7 @@ class foms_order(osv.osv):
 				args = domain + args
 			else:
 				return []
-		return super(foms_contract, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
+		return super(foms_order, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
 		
 # CRON ---------------------------------------------------------------------------------------------------------------------
 
@@ -238,8 +241,8 @@ class foms_order(osv.osv):
 				first_order_date = next_workday(first_order_date, working_day_keys, holidays)
 			# kalo last generatenya masih kejauhan (lebih dari 7 hari) maka ngga usah generate dulu, bisi kebanyakan
 				if last_fullday_autogenerate and first_order_date > next7days: 
-					print "No generate"
-					return
+					print "No generate order for contract %s -------------------------------------" % contract.name
+					continue
 			# mulai bikin order satu2
 				day = 1
 				counter_date = first_order_date
@@ -262,7 +265,6 @@ class foms_order(osv.osv):
 					counter_date = next_workday(counter_date, working_day_keys, holidays)
 					day += 1
 			# update last_fullday_autogenerate_date untuk kontrak ini
-				print "Last fullday: %s" % last_fullday
 				contract_obj.write(cr, uid, [contract.id], {
 					'last_fullday_autogenerate_date': last_fullday
 				})

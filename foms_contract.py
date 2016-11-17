@@ -157,6 +157,7 @@ class foms_contract(osv.osv):
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 
 	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
+		context = context and context or {}
 		user_obj = self.pool.get('res.users')
 	# kalau diminta untuk mengambil semua kontrak by user_id tertentu
 		if context.get('by_user_id',False):
@@ -411,6 +412,7 @@ class foms_contract_fleet(osv.osv):
 	def _constraint_employee_is_driver(self, cr, uid, ids, context=None):
 		employee_obj = self.pool.get('hr.employee')
 		for data in self.browse(cr, uid, ids, context):
+			if not data.driver_id: continue
 			if not employee_obj.emp_is_driver(cr, uid, data.driver_id.id, context):
 				raise osv.except_osv(_('Contract Error'),_('Employee %s is not a driver. Please check his/her job position.' % data.driver_id.name))
 				return False

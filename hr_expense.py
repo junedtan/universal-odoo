@@ -37,6 +37,7 @@ class hr_expense_expense(osv.osv):
 
 	_columns = {
 		'contract_id': fields.many2one('foms.contract','Contract Reference'),
+		'order_id': fields.many2one('foms.order', 'Order'),
 		'source': fields.selection(_EXPENSE_INPUT_SOURCE,'Source', readonly=True),
 	}
 	
@@ -61,6 +62,57 @@ class hr_expense_expense(osv.osv):
 			vals.update({'employee_id': employee_ids[0]})
 		return super(hr_expense_expense, self).create(cr, uid, vals, context=context)
 	
+	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
+		context = context and context or {}
+		user_obj = self.pool.get('res.users')
+		contract_obj = self.pool.get('foms.contract')
+		order_obj = self.pool.get('foms.order')
+	# kalau diminta untuk mengambil semua order by user_id tertentu
+		if context.get('by_user_id',False):
+			domain = []
+			user_id = context.get('user_id', uid)
+			is_pic = user_obj.has_group(cr, user_id, 'universal.group_universal_customer_pic')
+			is_approver = user_obj.has_group(cr, user_id, 'universal.group_universal_approver')
+			is_driver = user_obj.has_group(cr, user_id, 'universal.group_universal_driver')
+			is_booker = user_obj.has_group(cr, user_id, 'universal.group_universal_booker')
+			is_fullday_passenger = user_obj.has_group(cr, user_id, 'universal.group_universal_passenger')
+		# kalau pic, domainnya menjadi semua expense dengan contract yang pic nya adalah partner terkait
+			if is_pic:
+				user_data = user_obj.browse(cr, uid, user_id)
+				if user_data.partner_id:
+					contract_ids = contract_obj.search(cr, uid, [('customer_contact_id','=',user_data.partner_id.id)])
+					domain.append(('contract_id','in',contract_ids))
+		# kalau driver, domainnya menjadi expense semua order yang di-assign ke dia, atau actual nya dia
+			if is_driver:
+				employee_obj = self.pool.get('hr.employee')
+				employee_ids = employee_obj.search(cr, uid, [('user_id','=',user_id)])
+				if len(employee_ids) > 0:
+					order_ids = order_obj.search(cr, uid, [
+						'|',
+						('assigned_driver_id','=',employee_ids[0]),
+						('actual_driver_id','=',employee_ids[0]),
+					])
+					if len(order_ids) > 0:
+						domain.append(('order_id','in',order_ids))
+					else:
+						args = [('id','=',-1)] # supaya ga keambil apa2
+				else:
+					args = [('id','=',-1)] # supaya ga keambil apa2
+		# kalau passenger, ambil expense yang order.order_by nya adalah dia
+			if is_fullday_passenger:
+				order_ids = order_obj.search(cr, uid, [
+					('order_by','=',user_ud)
+				])
+				if len(order_ids) > 0:
+					domain.append(('order_id','in',order_ids))
+				else:
+					args = [('id','=',-1)] # supaya ga keambil apa2
+			if len(domain) > 0:
+				args = domain + args
+			else:
+				return []
+		return super(hr_expense_expense, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
+		
 	def webservice_handle(self, cr, uid, user_id, command, data_id, model_data, context={}):
 		result = super(hr_expense_expense, self).webservice_handle(cr, uid, user_id, command, data_id, model_data, context=context)
 		if command == 'expense_types':

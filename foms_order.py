@@ -17,7 +17,6 @@ _ORDER_STATE = [
 ]
 
 
-
 class foms_order(osv.osv):
 
 	_name = 'foms.order'
@@ -124,7 +123,7 @@ class foms_order(osv.osv):
 			for order_data in orders:
 			# kalau fullday karena langsung ready maka asumsinya di mobile app belum ada order itu. maka commandnya adalah create
 				if order_data.service_type == 'full_day':
-					self.webservice_post(cr, uid, ['pic','driver'], 'create', order_data, context=context)
+					self.webservice_post(cr, uid, ['pic','driver','passenger'], 'create', order_data, context=context)
 			# untuk by order ... (dilanjut nanti)
 			
 	# kalau ada perubahan start_planned_date
@@ -158,24 +157,31 @@ class foms_order(osv.osv):
 			sync_obj = self.pool.get('chjs.webservice.sync.bridge')
 			user_obj = self.pool.get('res.users')
 			user_id = context.get('user_id', uid)
+		# kalau ada perubahan pin, broadcast ke pihak ybs
+			if vals.get('pin', False):
+				for order_data in orders:
+					self.webservice_post(cr, uid, ['pic','fullday_passenger','driver'], 'update', order_data, data_columns=['pin'], context=context)
 		# kalau ngubah tanggal planned, post ke pic, passenger, dan driver
 			if vals.get('start_planned_date'):
 				for order_data in orders:
-					self.webservice_post(cr, uid, ['pic','passenger','driver'], 'update', order_data, {
-						'notification': 'order_change_date',
-					}, context=context)
+					self.webservice_post(cr, uid, ['pic','fullday_passenger','driver'], 'update', order_data, \
+						data_columns=['start_planned_date'], 
+						webservice_context={
+								'notification': 'order_change_date',
+						}, context=context)
 		# kalau ngubah start_date atau finish_date maka post ke mobile app pic, approver, booker
 			if vals.get('start_date') or vals.get('finish_date'):
 				for order_data in orders:
 					if user_obj.has_group(cr, user_id, 'universal.group_universal_driver'):
-						self.webservice_post(cr, uid, ['pic','approver','booker'], 'update', order_data, context=context)
+						self.webservice_post(cr, uid, ['pic','approver','booker','fullday_passenger'], 'update', order_data, \
+							data_columns=['start_date','finish_date'], context=context)
 		return result
 	
 	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
 		context = context and context or {}
 		user_obj = self.pool.get('res.users')
 		contract_obj = self.pool.get('foms.contract')
-	# kalau diminta untuk mengambil semua kontrak by user_id tertentu
+	# kalau diminta untuk mengambil semua order by user_id tertentu
 		if context.get('by_user_id',False):
 			domain = []
 			user_id = context.get('user_id', uid)
@@ -183,6 +189,7 @@ class foms_order(osv.osv):
 			is_approver = user_obj.has_group(cr, user_id, 'universal.group_universal_approver')
 			is_driver = user_obj.has_group(cr, user_id, 'universal.group_universal_driver')
 			is_booker = user_obj.has_group(cr, user_id, 'universal.group_universal_booker')
+			is_fullday_passenger = user_obj.has_group(cr, user_id, 'universal.group_universal_passenger')
 		# kalau pic, domainnya menjadi semua order dengan contract yang pic nya adalah partner terkait
 			if is_pic:
 				user_data = user_obj.browse(cr, uid, user_id)
@@ -199,6 +206,11 @@ class foms_order(osv.osv):
 						('assigned_driver_id','=',employee_ids[0]),
 						('actual_driver_id','=',employee_ids[0]),
 					]
+		# kalau passenger, ambil semua order yang order_by nya dia
+			if is_fullday_passenger:
+				domain = [
+					('order_by','=',user_id)
+				]
 			if len(domain) > 0:
 				args = domain + args
 			else:
@@ -282,10 +294,10 @@ class foms_order(osv.osv):
 							'customer_contract_id': contract.id,
 							'service_type': contract.service_type,
 							'request_date': counter_date,
-							'order_by': uid,
+							'order_by': fleet.fullday_user_id.id,
 							'assigned_vehicle_id': fleet.fleet_vehicle_id.id,
 							'assigned_driver_id': fleet.driver_id.id,
-							'pin': contract.default_pin,
+							'pin': fleet.fullday_user_id.pin,
 							'start_planned_date': counter_date + timedelta(hours=working_days[counter_date.weekday()]['start']) - timedelta(hours=7),
 							'finish_planned_date': counter_date + timedelta(hours=working_days[counter_date.weekday()]['end']) - timedelta(hours=7),
 						}, context=context)
@@ -300,25 +312,25 @@ class foms_order(osv.osv):
 
 # SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------
 
-	def webservice_post(self, cr, uid, targets, command, order_data, webservice_context={}, context=None):
+	def webservice_post(self, cr, uid, targets, command, order_data, webservice_context={}, data_columns=[], context=None):
 		sync_obj = self.pool.get('chjs.webservice.sync.bridge')
 		user_obj = self.pool.get('res.users')
 		if 'pic' in targets:
 			pic_user_ids = user_obj.search(cr, uid, [('partner_id','=',order_data.customer_contract_id.customer_contact_id.id)])
 			if len(pic_user_ids) > 0:
-				sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.order', command, order_data.id, data_context=webservice_context)
+				sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.order', command, order_data.id, data_columns=data_columns, data_context=webservice_context)
 		if 'driver' in targets:
 			if order_data.assigned_driver_id:
 				driver_user_id = order_data.assigned_driver_id.user_id.id
-				sync_obj.post_outgoing(cr, driver_user_id, 'foms.order', command, order_data.id, data_context=webservice_context)
+				sync_obj.post_outgoing(cr, driver_user_id, 'foms.order', command, order_data.id, data_columns=data_columns, data_context=webservice_context)
 		if 'approver' in targets:
 			if order_data.confirm_by:
 				approver_user_id = order_data.confirm_by.id
-				sync_obj.post_outgoing(cr, approver_user_id, 'foms.order', command, order_data.id, data_context=webservice_context)
-		if 'booker' in targets:
+				sync_obj.post_outgoing(cr, approver_user_id, 'foms.order', command, order_data.id, data_columns=data_columns, data_context=webservice_context)
+		if 'booker' in targets or 'fullday_passenger' in targets:
 			if order_data.order_by:
 				booker_user_id = order_data.order_by.id
-				sync_obj.post_outgoing(cr, booker_user_id, 'foms.order', command, order_data.id, data_context=webservice_context)
+				sync_obj.post_outgoing(cr, booker_user_id, 'foms.order', command, order_data.id, data_columns=data_columns, data_context=webservice_context)
 			
 
 # ==========================================================================================================================

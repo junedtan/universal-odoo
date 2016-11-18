@@ -154,7 +154,6 @@
 						<page string="Other Info">
 							<group>
 								<field name="termination_reason" attrs="{'invisible': [('state','not in',['terminated'])]}" />
-								<field name="default_pin" class="oe_inline" />
 								<field name="extended_contract_id" />
 							</group>
 						</page>

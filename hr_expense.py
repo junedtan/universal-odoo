@@ -98,6 +98,15 @@ class hr_expense_expense(osv.osv):
 						args = [('id','=',-1)] # supaya ga keambil apa2
 				else:
 					args = [('id','=',-1)] # supaya ga keambil apa2
+		# kalau passenger, ambil expense yang order.order_by nya adalah dia
+			if is_fullday_passenger:
+				order_ids = order_obj.search(cr, uid, [
+					('order_by','=',user_ud)
+				])
+				if len(order_ids) > 0:
+					domain.append(('order_id','in',order_ids))
+				else:
+					args = [('id','=',-1)] # supaya ga keambil apa2
 			if len(domain) > 0:
 				args = domain + args
 			else:

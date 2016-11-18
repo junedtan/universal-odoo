@@ -47,8 +47,6 @@ class foms_contract(osv.osv):
 			('terminated','Terminated'),
 			('finished','Finished')], 'State', required=True, track_visibility="onchange", copy=False),
 		'termination_reason': fields.text('Termination Reason', copy=False),
-		'default_pin': fields.char('Default PIN', copy=False,
-			help="Default PIN for Full-day Service and Shuttle orders."),
 		'overtime_id' : fields.many2one('hr.overtime', 'Overtime Setting', ondelete='restrict'),
 		'working_time_id' : fields.many2one('resource.calendar', 'Working Time', ondelete='restrict'),
 		'fleet_types': fields.one2many('foms.contract.fleet.type', 'header_id', 'Fleet Types'),
@@ -167,6 +165,7 @@ class foms_contract(osv.osv):
 			is_approver = user_obj.has_group(cr, user_id, 'universal.group_universal_approver')
 			is_driver = user_obj.has_group(cr, user_id, 'universal.group_universal_driver')
 			is_booker = user_obj.has_group(cr, user_id, 'universal.group_universal_booker')
+			is_fullday_passenger = user_obj.has_group(cr, user_id, 'universal.group_universal_passenger')
 		# kalau pic, domainnya menjadi semua contract yang pic nya adalah partner terkait
 			if is_pic:
 				user_data = user_obj.browse(cr, uid, user_id)
@@ -185,12 +184,51 @@ class foms_contract(osv.osv):
 							contract_ids.append(contract_fleet.header_id.id)
 						contract_ids = list(set(contract_ids))
 						domain.append(('id','in',contract_ids))
+		# kalau full-day passenger
+			if is_fullday_passenger:
+				contract_fleet_obj = self.pool.get('foms.contract.fleet')
+				contract_fleet_ids = contract_fleet_obj.search(cr, uid, [('fullday_user_id','=',user_id)])
+				if len(contract_fleet_ids) > 0:
+					contract_ids = []
+					for contract_fleet in contract_fleet_obj.browse(cr, uid, contract_fleet_ids):
+						contract_ids.append(contract_fleet.header_id.id)
+					contract_ids = list(set(contract_ids))
+					domain.append(('id','in',contract_ids))
+				else:
+					args = [('id','=',-1)] # supaya ga keambil apapun despite isi args nya
 			if len(domain) > 0:
 				args = domain + args
 			else:
 				return []
 		return super(foms_contract, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
 		
+	def webservice_handle(self, cr, uid, user_id, command, data_id, model_data, context={}):
+		result = super(foms_contract, self).webservice_handle(cr, uid, user_id, command, data_id, model_data, context=context)
+		is_fullday_passenger = user_obj.has_group(cr, user_id, 'universal.group_universal_passenger')
+	# untuk command change_password
+		if command == 'change_password':
+			user_obj = self.pool.get('res.users')
+			old_password = model_data.get('old_password')
+			new_password = model_data.get('new_password')
+		# change password usernya
+			user_obj.change_password(cr, uid, old_password, new_password)
+		# kalau fullday passenger
+			if is_fullday_passenger:
+			# ubah juga pin nya. asumsikan user_id adalah usernya itu sendiri (tidak diwakilkan)
+				user_obj.write(cr, uid, [user_id], {
+					'pin': new_password,
+				})
+			# ubah pin semua order yang sudha keburu dibuat, yang order_by nya adalah user ini
+				order_obj = self.pool.get('foms.order')
+				order_ids = order_obj.search(cr, uid, [('order_by','=',user_id),\
+					('state','in',['new','confirmed','ready','started','start_confirmed','paused','resumed'])])
+				if len(order_ids) > 0:
+					order_obj.write(cr, uid, order_ids, {
+						'pin': new_password,
+					}, context=context)
+			result = 'ok'
+		return result
+
 # ACTION -------------------------------------------------------------------------------------------------------------------
 
 	def action_load_customer_defaults(self, cr, uid, ids, context=None):
@@ -273,9 +311,6 @@ class foms_contract(osv.osv):
 					has_user = True
 			if not has_user:
 				raise osv.except_osv(_('Contract Error'),_('Customer PIC has not been given user login, or the user login does not belong to Customer PIC group.'))
-		# default PIN harus sudah diisi, untuk fullday dan shuttle
-			if contract.service_type in ['full_day','shuttle'] and not contract.default_pin:
-				raise osv.except_osv(_('Contract Error'),_('Please input default PIN.'))
 		# ganti status menjadi Confirmed
 			self.write(cr, uid, [contract.id], {'state': 'confirmed'})
 	
@@ -405,6 +440,7 @@ class foms_contract_fleet(osv.osv):
 		'fleet_type_id': fields.many2one('fleet.vehicle.model', 'Fleet Type', ondelete='restrict'),
 		'fleet_vehicle_id': fields.many2one('fleet.vehicle', 'Vehicle', ondelete='restrict'),
 		'driver_id': fields.many2one('hr.employee', 'Driver', ondelete='restrict'),
+		'fullday_user_id': fields.many2one('res.users', 'Fullday User', ondelete='restrict'),
 	}
 
 # CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
@@ -477,6 +513,15 @@ class foms_contract_fleet_planning_memory(osv.osv):
 				if not fleet.driver_id: continue
 				if not fleet.driver_id.user_id.id or not user_obj.has_group(cr, fleet.driver_id.user_id.id, 'universal.group_universal_driver'):
 					raise osv.except_osv(_('Contract Error'),_('Driver %s has not been given user login, or the user login does not belong to Driver group.') % fleet.driver_id.name)
+	# fullday user harus termasuk group fullday-service passenger sudah diset passwordnya
+		if contract_data.service_type in ['full_day']:
+			for fleet in contract_data.car_drivers:
+				if not fleet.fullday_user_id: continue
+				if not user_obj.has_group(cr, fleet.fullday_user_id.id, 'universal.group_universal_passenger'):
+					raise osv.except_osv(_('Contract Error'),_('User %s does not belong to Fullday-service Passenger group.') % fleet.fullday_user_id.name)
+				user_data = user_obj.browse(cr, uid, fleet.fullday_user_id.id)
+				if user_data.password_crypt == '':
+					raise osv.except_osv(_('Contract Error'),_('A password has not been set to user %s. Password (PIN) is needed to confirm start/finish order.') % fleet.fullday_user_id.name)
 	# kalau status sekarang adalah confirmed, ubah menjadi planned
 		if contract_data.state in ['confirmed']:
 		# ...hanya jika semua vehicle dan driver sudah diset
@@ -486,6 +531,10 @@ class foms_contract_fleet_planning_memory(osv.osv):
 					if not fleet.fleet_vehicle_id or not fleet.driver_id:
 						all_set = False
 						break
+					if contract_data.service_type in ['full_day']:
+						if not fleet.fullday_user_id:
+							all_set = False
+							break
 			else:
 				all_set = False
 			if all_set:
@@ -493,14 +542,14 @@ class foms_contract_fleet_planning_memory(osv.osv):
 					'state': 'planned',
 				})
 			# sync post outgoing ke user-user yang terkait (PIC, driver, PJ Alloc unit) , memberitahukan ada contract baru
-				self.webservice_post(cr, uid, ['pic','driver'], 'create', contract_data, {
+				self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'create', contract_data, webservice_context={
 					'notification': 'contract_new',
 				}, context=context)
 		return True
 		
 # SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------
 
-	def webservice_post(self, cr, uid, targets, command, contract_data, webservice_context={}, context=None):
+	def webservice_post(self, cr, uid, targets, command, contract_data, webservice_context={}, data_columns=[], context=None):
 		sync_obj = self.pool.get('chjs.webservice.sync.bridge')
 		user_obj = self.pool.get('res.users')
 		if command == 'create':
@@ -512,6 +561,10 @@ class foms_contract_fleet_planning_memory(osv.osv):
 				for car_driver in contract_data.car_drivers:
 					if not car_driver.driver_id: continue
 					sync_obj.post_outgoing(cr, car_driver.driver_id.user_id.id, 'foms.contract', 'create', contract_data.id, data_context=webservice_context)
+			if 'fullday_passenger' in targets:
+				for car_driver in contract_data.car_drivers:
+					if not car_driver.fullday_user_id: continue
+					sync_obj.post_outgoing(cr, car_driver.fullday_user_id.id, 'foms.contract', 'create', contract_data.id, data_context=webservice_context)
 
 # ==========================================================================================================================
 

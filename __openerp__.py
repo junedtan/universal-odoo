@@ -9,7 +9,7 @@
 	'maintainer': 'Christyan Juniady and Associates',
 	'website': 'http://www.chjs.biz',
 	'depends': [
-		"base","board","web",
+		"base","board","web","auth_crypt",
 		"chjs_custom_view","chjs_region","chjs_webservice_sync",
 		"hr","hr_recruitment","hr_contract","hr_attendance","hr_holidays","hr_expense","hr_payroll","fleet",
 		"hr_recruitment_period","hr_recruitment_requirement","hr_employee_family","hr_employee_health",

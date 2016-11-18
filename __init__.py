@@ -102,6 +102,7 @@ import hr_recruitment_requirement
 import hr_recruitment_period
 import resource
 import res_config
+import res_users
 import controllers
 import res_partner
 import fleet

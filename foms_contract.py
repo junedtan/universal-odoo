@@ -500,6 +500,7 @@ class foms_contract_fleet_planning_memory(osv.osv):
 				'fleet_type_id': fleet.fleet_type_id.id,
 				'fleet_vehicle_id': vehicle_id,
 				'driver_id': fleet.driver_id and fleet.driver_id.id or None,
+				'fullday_user_id': fleet.fullday_user_id and fleet.fullday_user_id.id or None,
 			}])
 		contract_obj.write(cr, uid, [contract_id], {
 			'car_drivers': new_fleet_data,
@@ -580,6 +581,7 @@ class foms_contract_fleet_planning_line_memory(osv.osv):
 		'fleet_type_id': fields.many2one('fleet.vehicle.model', 'Fleet Type'),
 		'fleet_vehicle_id': fields.many2one('fleet.vehicle', 'Vehicle'),
 		'driver_id': fields.many2one('hr.employee', 'Driver'),
+		'fullday_user_id': fields.many2one('res.users', 'Fullday User', ondelete='restrict'),
 	}
 	
 # ==========================================================================================================================

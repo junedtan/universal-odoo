@@ -98,11 +98,23 @@ class foms_order(osv.osv):
 	def create(self, cr, uid, vals, context={}):
 		new_id = super(foms_order, self).create(cr, uid, vals, context=context)
 		new_data = self.browse(cr, uid, new_id, context=context)
-	# untuk order fullday diasumsikan sudah ready karena vehicle dan drivernya pasti standby kecuali nanti diganti
+	# untuk order fullday diasumsikan sudah ready karena vehicle dan drivernya pasti standby kecuali nanti diganti.
+	# pula, berdasarkan order_by dan customer_contract_id, tentukan assigned_driver_id dan assigned_vehicle_id
 		if new_data.service_type == 'full_day':
+			fleet_data = None
+			for fleet in new_data.customer_contract_id.car_drivers:
+				if fleet.fullday_user_id.id == new_data.order_by.id:
+					fleet_data = fleet
+					break
+			if fleet_data:
+				self.write(cr, uid, [new_id], {
+					'assigned_driver_id': fleet_data.driver_id.id,
+					'assigned_vehicle_id': fleet_data.fleet_vehicle_id.id,
+					'pin': fleet_data.fullday_user_id.pin,
+				}) # sengaja ngga pake konteks supaya baik dari autogenerate order maupun manual via app tidak akan broadcast
 			self.write(cr, uid, [new_id], {
 				'state': 'ready',
-			})
+			}, context=context)
 		return new_id
 	
 	def write(self, cr, uid, ids, vals, context={}):

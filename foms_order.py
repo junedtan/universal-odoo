@@ -130,8 +130,8 @@ class foms_order(osv.osv):
 		if vals.get('start_planned_date'):
 			for order_data in orders:
 			# message_post supaya kedeteksi perubahannya
-				original = datetime.strptime((original_start_date[order_data.id],'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)).strftime('%d/%m/%Y %H:%M:%S')
-				new = datetime.strptime((order_data.start_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)).strftime('%d/%m/%Y %H:%M:%S')
+				original = (datetime.strptime(original_start_date[order_data.id],'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)).strftime('%d/%m/%Y %H:%M:%S')
+				new = (datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)).strftime('%d/%m/%Y %H:%M:%S')
 				if context.get('from_webservice') == True:
 					message_body = _("Planned start date is changed from %s to %s as requested by client.") % (original,new)
 				else:

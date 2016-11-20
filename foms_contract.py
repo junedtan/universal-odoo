@@ -203,6 +203,7 @@ class foms_contract(osv.osv):
 		return super(foms_contract, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
 		
 	def webservice_handle(self, cr, uid, user_id, command, data_id, model_data, context={}):
+		user_obj = self.pool.get('res.users')
 		result = super(foms_contract, self).webservice_handle(cr, uid, user_id, command, data_id, model_data, context=context)
 		is_fullday_passenger = user_obj.has_group(cr, user_id, 'universal.group_universal_passenger')
 	# untuk command change_password
@@ -211,7 +212,7 @@ class foms_contract(osv.osv):
 			old_password = model_data.get('old_password')
 			new_password = model_data.get('new_password')
 		# change password usernya
-			user_obj.change_password(cr, uid, old_password, new_password)
+			user_obj.change_password(cr, user_id, old_password, new_password)
 		# kalau fullday passenger
 			if is_fullday_passenger:
 			# ubah juga pin nya. asumsikan user_id adalah usernya itu sendiri (tidak diwakilkan)

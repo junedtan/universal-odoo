@@ -98,10 +98,7 @@ class foms_order(osv.osv):
 	def create(self, cr, uid, vals, context={}):
 	# bikin nomor order dulu
 		if 'name' not in vals:
-			print "mulai update"
-			print vals
 			vals.update({'name': 'XXX'}) # later
-			print "selesia update"
 		new_id = super(foms_order, self).create(cr, uid, vals, context=context)
 		new_data = self.browse(cr, uid, new_id, context=context)
 	# untuk order fullday diasumsikan sudah ready karena vehicle dan drivernya pasti standby kecuali nanti diganti.
@@ -170,15 +167,16 @@ class foms_order(osv.osv):
 					})
 				super(foms_order, self).write(cr, uid, [order_data.id], update_data, context={})
 	
+	# kalau ada perubahan pin, broadcast ke pihak ybs
+		if vals.get('pin', False):
+			for order_data in orders:
+				self.webservice_post(cr, uid, ['pic','fullday_passenger','driver'], 'update', order_data, data_columns=['pin'], context=context)
+				
 	# kalau updatenya dari mobile app...
 		if context.get('from_webservice') == True:
 			sync_obj = self.pool.get('chjs.webservice.sync.bridge')
 			user_obj = self.pool.get('res.users')
 			user_id = context.get('user_id', uid)
-		# kalau ada perubahan pin, broadcast ke pihak ybs
-			if vals.get('pin', False):
-				for order_data in orders:
-					self.webservice_post(cr, uid, ['pic','fullday_passenger','driver'], 'update', order_data, data_columns=['pin'], context=context)
 		# kalau ngubah tanggal planned, post ke pic, passenger, dan driver
 			if vals.get('start_planned_date'):
 				for order_data in orders:

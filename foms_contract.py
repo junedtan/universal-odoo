@@ -201,11 +201,10 @@ class foms_contract(osv.osv):
 			else:
 				return []
 		return super(foms_contract, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
-		
+	
 	def webservice_handle(self, cr, uid, user_id, command, data_id, model_data, context={}):
 		user_obj = self.pool.get('res.users')
 		result = super(foms_contract, self).webservice_handle(cr, uid, user_id, command, data_id, model_data, context=context)
-		is_fullday_passenger = user_obj.has_group(cr, user_id, 'universal.group_universal_passenger')
 	# untuk command change_password
 		if command == 'change_password':
 			user_obj = self.pool.get('res.users')
@@ -213,20 +212,6 @@ class foms_contract(osv.osv):
 			new_password = model_data.get('new_password')
 		# change password usernya
 			user_obj.change_password(cr, user_id, old_password, new_password)
-		# kalau fullday passenger
-			if is_fullday_passenger:
-			# ubah juga pin nya. asumsikan user_id adalah usernya itu sendiri (tidak diwakilkan)
-				user_obj.write(cr, uid, [user_id], {
-					'pin': new_password,
-				})
-			# ubah pin semua order yang sudha keburu dibuat, yang order_by nya adalah user ini
-				order_obj = self.pool.get('foms.order')
-				order_ids = order_obj.search(cr, uid, [('order_by','=',user_id),\
-					('state','in',['new','confirmed','ready','started','start_confirmed','paused','resumed'])])
-				if len(order_ids) > 0:
-					order_obj.write(cr, uid, order_ids, {
-						'pin': new_password,
-					}, context=context)
 			result = 'ok'
 		return result
 
@@ -360,7 +345,6 @@ class foms_contract(osv.osv):
 	
 	def onchange_customer(self, cr, uid, ids, customer_id):
 		if not customer_id: return {}
-		print "masuk onchange_customer"
 		result = {'value': {}, 'domain': {}}
 		customer_obj = self.pool.get('res.partner')
 		customer_data = customer_obj.browse(cr, uid, customer_id)

@@ -19,6 +19,7 @@
 							<field name="customer_contact_id" />
 							<field name="service_type" />
 							<field name="is_order_replacement_vehicle" />
+							<field name="is_expense_record" />
 						</group>
 						<group>
 							<field name="name" />

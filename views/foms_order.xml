@@ -1,7 +1,7 @@
 <openerp>
 	<data>
 		
-		<!-- CONTRACT -->
+		<!-- ORDER -->
 		
 		<record model="ir.ui.view" id="foms_order_form">
 			<field name="name">foms.order.form</field>	
@@ -9,6 +9,7 @@
 			<field name="arch" type="xml">
 				<form version="7.0" string="Customer Order">
 					<header>
+						<button name="action_cancel" string="Cancel Order" type="object" states="new,rejected,confirmed,ready" /> 
 						<field name="state" widget="statusbar" readonly="1" />
 					</header>
 					<group>
@@ -127,5 +128,28 @@
 			</field>
 		</record>		
 		
+		<!-- ORDER CANCELLATION -->
+		
+		<record model="ir.ui.view" id="foms_order_cancel_memory_form">
+			<field name="name">foms.order.cancel.memory.form</field>	
+			<field name="model">foms.order.cancel.memory</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Order Cancellation Form">
+					<group>
+						<field name="order_id" readonly="1" />
+						<field name="start_planned_date" readonly="1" />
+						<field name="finish_planned_date" readonly="1" />
+						<field name="cancel_reason" widget="selection" />
+						<field name="cancel_reason_other" />
+					</group>
+					<footer>
+						<button string="Save Planning" name="action_execute_cancel" type="object" class="oe_highlight" />
+						or
+						<button string="Cancel" special="cancel" />
+					</footer>
+				</form>
+			</field>
+		</record>
+				
 	</data>
 </openerp>

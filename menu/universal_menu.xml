@@ -150,6 +150,15 @@
 			<field name="view_mode">tree,form</field>
 			<field name="domain">[('contract_id','!=',False),('contract_id','!=',None)]</field>
 		</record>
+		
+		<record id="universal_action_order_cancel_reason" model="ir.actions.act_window">
+			<field name="name">Order Cancel Reasons</field>	
+			<field name="res_model">foms.order.cancel.reason</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		
 
 		<menuitem parent="hr.menu_hr_configuration" sequence="3" id="universal_menu_job_position" action="universal_action_job_position"
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
@@ -212,6 +221,7 @@
 				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 			<menuitem parent="menu_universal_foms_config" sequence="4" id="hr_overtime.hr_menu_overtime" action="hr_overtime.hr_action_overtime" 
 				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+			<menuitem parent="menu_universal_foms_config" sequence="5" id="universal_menu_order_cancel_reason" action="universal_action_order_cancel_reason" />
 
 		
 <!-- INHERIT -->

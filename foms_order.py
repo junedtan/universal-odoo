@@ -16,7 +16,6 @@ _ORDER_STATE = [
 	('canceled','Canceled')
 ]
 
-
 class foms_order(osv.osv):
 
 	_name = 'foms.order'
@@ -79,7 +78,10 @@ class foms_order(osv.osv):
 		'pause_count': fields.integer('Pause Count'),
 		'is_lk_pp': fields.boolean('Luar Kota PP?'),
 		'is_lk_inap': fields.boolean('Luar Kota Menginap?'),
-		
+		'create_source': fields.selection((
+			('app', 'Mobile App'),
+			('central', 'Central'),
+		), 'Create Source', readonly=True),
 	}
 	
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------
@@ -91,8 +93,15 @@ class foms_order(osv.osv):
 		'pause_count': 0,
 		'is_lk_pp': False,
 		'is_lk_inap': False,
+		'create_source': 'central',
 	}	
 
+# CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
+	
+	_sql_constraints = [
+		('const_start_end_date','CHECK(finish_planned_date > start_planned_date)',_('Finish data must be after start date.')),
+	]
+	
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
 	def create(self, cr, uid, vals, context={}):
@@ -134,11 +143,13 @@ class foms_order(osv.osv):
 		orders = self.browse(cr, uid, ids, context=context)
 		
 	# kalau status berubah menjadi ready, maka post ke mobile app
-		if vals.get('state', False) == 'ready':
+		if vals.get('state', False):
 			for order_data in orders:
 			# kalau fullday karena langsung ready maka asumsinya di mobile app belum ada order itu. maka commandnya adalah create
-				if order_data.service_type == 'full_day':
+				if vals['state'] == 'ready' and order_data.service_type == 'full_day':
 					self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'create', order_data, context=context)
+				else:
+					self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'update', order_data, context=context)
 			# untuk by order ... (dilanjut nanti)
 			
 	# kalau ada perubahan start_planned_date
@@ -232,6 +243,46 @@ class foms_order(osv.osv):
 			else:
 				return []
 		return super(foms_order, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
+
+	def webservice_handle(self, cr, uid, user_id, command, data_id, model_data, context={}):
+		result = super(foms_order, self).webservice_handle(cr, uid, user_id, command, data_id, model_data, context=context)
+	# ambil master cancel reason
+		if command == 'cancel_reasons':
+			cancel_reason_obj = self.pool.get('foms.order.cancel.reason')
+			cancel_reason_ids = cancel_reason_obj.search(cr, uid, [])
+			result = []
+			for cancel_reason in cancel_reason_obj.browse(cr, uid, cancel_reason_ids):
+				result.append({
+					'id': cancel_reason.id,
+					'name': cancel_reason.name,
+				})
+	# eksekusi cancel order
+		if command == 'cancel_order':
+			model_data.update({
+				'cancel_by': user_id,
+			})
+			cancel_memory_obj = self.pool.get('foms.order.cancel.memory')
+			result = cancel_memory_obj.action_execute_cancel(cr, uid, [], model_data)
+			if result == True: result = 'ok'
+		return result
+
+# ACTION -------------------------------------------------------------------------------------------------------------------
+
+	def action_cancel(self, cr, uid, ids, context=None):
+		order = self.browse(cr, uid, ids[0])
+		return {
+			'name': _('Cancel Order'),
+			'view_mode': 'form',
+			'view_type': 'form',
+			'res_model': 'foms.order.cancel.memory',
+			'type': 'ir.actions.act_window',
+			'context': {
+				'default_order_id': order.id,
+				'default_start_planned_date': order.start_planned_date,
+				'default_finish_planned_date': order.finish_planned_date,
+			},
+			'target': 'new',
+		}
 		
 # CRON ---------------------------------------------------------------------------------------------------------------------
 
@@ -416,5 +467,53 @@ class foms_order_mass_input_memory_line(osv.osv_memory):
 		'finish_date': fields.datetime('Finish Date'),
 	}		
 	
+# ==========================================================================================================================
+
+class foms_order_cancel_memory(osv.osv_memory):
+
+	_name = "foms.order.cancel.memory"
+	_description = 'Order Cancel Input Memory'
+	
+# COLUMNS ------------------------------------------------------------------------------------------------------------------
+
+	_columns = {
+		'order_id': fields.many2one('foms.order', 'Order'),
+		'start_planned_date': fields.datetime('Start Date'),
+		'finish_planned_date': fields.datetime('Finish Date'),
+		'cancel_reason': fields.many2one('foms.order.cancel.reason', 'Cancel Reason'),
+		'cancel_reason_other': fields.text('Other Cancel Reason'),
+	}		
+	
+	def action_execute_cancel(self, cr, uid, ids, context={}):
+	# kalao ids berisi [] berarti dari mobile app, karena formnya di sono dan dia manggil langsung execute nya
+		if ids == []:
+			order_id = context.get('order_id')
+			cancel_reason = context.get('cancel_reason')
+			cancel_reason_other = context.get('cancel_reason_other')
+			cancel_by = context.get('cancel_by')
+	# kalo ada ids nya maka dari memory form Odoo
+		else:
+			form_data = self.browse(cr, uid, ids[0])
+			order_id = form_data.order_id.id
+			cancel_reason = form_data.cancel_reason.id
+			cancel_reason_other = form_data.cancel_reason_other
+			cancel_by = uid
+	# cancel lah is ordernya
+		order_obj = self.pool.get('foms.order')
+		order_data = order_obj.browse(cr, uid, order_id, context=context)
+	# state harus belum start
+		if order_data.state not in ['new','rejected','confirmed','ready']:
+			raise osv.except_osv(_('Order Error'),_('Order has already ongoing or finished, so it cannot be canceled.'))
+	# entah cancel reason atau cancel reason other harus diisi
+		if not cancel_reason and not cancel_reason_other:
+			raise osv.except_osv(_('Order Error'),_('Please choose Cancel Reason or type in Other Reason.'))
+		return order_obj.write(cr, uid, [order_id], {
+			'state': 'canceled',
+			'cancel_reason': cancel_reason,
+			'cancel_reason_other': cancel_reason_other,
+			'cancel_date': datetime.now(),
+			'cancel_by': cancel_by,
+			'cancel_previous_state': order_data.state,
+		})
 	
 	

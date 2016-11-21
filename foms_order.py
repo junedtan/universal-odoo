@@ -96,6 +96,12 @@ class foms_order(osv.osv):
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
 	def create(self, cr, uid, vals, context={}):
+	# bikin nomor order dulu
+		if 'name' not in vals:
+			print "mulai update"
+			print vals
+			vals.update({'name': 'XXX'}) # later
+			print "selesia update"
 		new_id = super(foms_order, self).create(cr, uid, vals, context=context)
 		new_data = self.browse(cr, uid, new_id, context=context)
 	# untuk order fullday diasumsikan sudah ready karena vehicle dan drivernya pasti standby kecuali nanti diganti.
@@ -135,7 +141,7 @@ class foms_order(osv.osv):
 			for order_data in orders:
 			# kalau fullday karena langsung ready maka asumsinya di mobile app belum ada order itu. maka commandnya adalah create
 				if order_data.service_type == 'full_day':
-					self.webservice_post(cr, uid, ['pic','driver','passenger'], 'create', order_data, context=context)
+					self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'create', order_data, context=context)
 			# untuk by order ... (dilanjut nanti)
 			
 	# kalau ada perubahan start_planned_date

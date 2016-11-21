@@ -97,6 +97,7 @@ class foms_contract(osv.osv):
 		'global_yellow_limit': fields.float('Yellow Limit (Rp)'),	
 		'global_red_limit': fields.float('Red Limit (Rp)'),	
 		'global_balance_credit_per_usage': fields.float('Balance Credit per Usage'),	
+		'is_expense_record': fields.boolean('Include Expense Report'),
 	}
 	
 # DEFAULTS ----------------------------------------------------------------------------------------------------------------------
@@ -120,6 +121,7 @@ class foms_contract(osv.osv):
 		'fee_lk_inap': 0,
 		'fee_holiday_allowance': 0,
 		'fee_management': 0,
+		'is_expense_record': False,
 	}	
 	
 # CONSTRAINTS -------------------------------------------------------------------------------------------------------------------

@@ -200,6 +200,35 @@ class foms_contract(osv.osv):
 					domain.append(('id','in',contract_ids))
 				else:
 					args = [('id','=',-1)] # supaya ga keambil apapun despite isi args nya
+		# kalau booker, tambahkan semua alloc unit yang salah satu bookernya dia
+			alloc_unit_obj = self.pool.get('foms.contract.alloc.unit')
+			if is_booker:
+				cr.execute("SELECT * FROM foms_alloc_unit_bookers WHERE booker_id = %s" % user_id)
+				booker_alloc_units = []
+				for row in cr.dictfetchall():
+					booker_alloc_units.append(row['alloc_unit_id'])
+				booker_alloc_units = list(set(booker_alloc_units))
+				contract_ids = []
+				for alloc_unit in alloc_unit_obj.browse(cr, uid, booker_alloc_units):
+					contract_ids.append(alloc_unit.header_id.id)
+				if len(contract_ids) > 0:
+					domain = [('id','in',contract_ids)]
+				else:
+					domain = [('id','=',-1)] # supaya ngga ngambil apa2
+		# kalau approver, tambahkan semua alloc unit yang salah satu approvernya dia
+			if is_approver:
+				cr.execute("SELECT * FROM foms_alloc_unit_approvers WHERE user_id = %s" % user_id)
+				approver_alloc_units = []
+				for row in cr.dictfetchall():
+					approver_alloc_units.append(row['alloc_unit_id'])
+				approver_alloc_units = list(set(approver_alloc_units))
+				contract_ids = []
+				for alloc_unit in alloc_unit_obj.browse(cr, uid, approver_alloc_units):
+					contract_ids.append(alloc_unit.header_id.id)
+				if len(contract_ids) > 0:
+					domain = [('id','in',contract_ids)]
+				else:
+					domain = [('id','=',-1)] # supaya ngga ngambil apa2
 			if len(domain) > 0:
 				args = domain + args
 			else:
@@ -220,13 +249,13 @@ class foms_contract(osv.osv):
 		if command == 'fetch_user_details':
 			user_data = user_obj.browse(cr, uid, user_id)
 			partner_data = user_data.partner_id
-			result = {
+			result = [{
 				'name': partner_data.name,
 				'mobile': partner_data.mobile,
 				'email': partner_data.email,
 				'company_name': partner_data.parent_id.name,
 				'company_id': partner_data.parent_id.id,
-			}
+			}]
 		return result
 
 # ACTION -------------------------------------------------------------------------------------------------------------------
@@ -575,7 +604,7 @@ class foms_contract_fleet_planning_memory(osv.osv):
 					'state': 'planned',
 				})
 			# sync post outgoing ke user-user yang terkait (PIC, driver, PJ Alloc unit) , memberitahukan ada contract baru
-				self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'create', contract_data, webservice_context={
+				self.webservice_post(cr, uid, ['pic','driver','fullday_passenger','booker','approver'], 'create', contract_data, webservice_context={
 					'notification': 'contract_new',
 				}, context=context)
 		return True

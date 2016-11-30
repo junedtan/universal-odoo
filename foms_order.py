@@ -204,7 +204,7 @@ class foms_order(osv.osv):
 						self.webservice_post(cr, uid, ['booker','approver','driver'], 'update', order_data, 
 							webservice_context={
 								'notification': 'order_ready',
-							} context=context)
+							}, context=context)
 			# kalau state menjadi rejected dan service_type == by_order, maka post_outgoing + notif ke booker. 
 				elif vals['state'] == 'rejected' and order_data.service_type == 'by_order':
 					self.webservice_post(cr, uid, ['booker'], 'update', order_data, \
@@ -237,7 +237,7 @@ class foms_order(osv.osv):
 						self.webservice_post(cr, uid, ['booker','approver'], 'update', order_data, 
 							webservice_context={
 									'notification': 'order_fleet_not_ready',
-							} context=context)
+							}, context=context)
 						central_user_ids = user_obj.get_user_ids_by_group(cr, uid, 'universal', 'group_universal_central_dispatch')
 						central_user_ids += [SUPERUSER_ID]
 						for central_user_id in central_user_ids:

@@ -618,15 +618,25 @@ class foms_contract_fleet_planning_memory(osv.osv):
 			if 'pic' in targets:
 				pic_user_ids = user_obj.search(cr, uid, [('partner_id','=',contract_data.customer_contact_id.id)])
 				if len(pic_user_ids) > 0:
-					sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.contract', 'create', contract_data.id, data_context=webservice_context)
+					sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.contract', command, contract_data.id, data_context=webservice_context)
 			if 'driver' in targets:
 				for car_driver in contract_data.car_drivers:
 					if not car_driver.driver_id: continue
-					sync_obj.post_outgoing(cr, car_driver.driver_id.user_id.id, 'foms.contract', 'create', contract_data.id, data_context=webservice_context)
+					sync_obj.post_outgoing(cr, car_driver.driver_id.user_id.id, 'foms.contract', command, contract_data.id, data_context=webservice_context)
 			if 'fullday_passenger' in targets:
 				for car_driver in contract_data.car_drivers:
 					if not car_driver.fullday_user_id: continue
-					sync_obj.post_outgoing(cr, car_driver.fullday_user_id.id, 'foms.contract', 'create', contract_data.id, data_context=webservice_context)
+					sync_obj.post_outgoing(cr, car_driver.fullday_user_id.id, 'foms.contract', command, contract_data.id, data_context=webservice_context)
+			if 'booker' in targets:
+				for alloc_unit in contract_data.allocation_units:
+					cr.execute("SELECT * FROM foms_alloc_unit_bookers WHERE alloc_unit_id = %s" % alloc_unit.id)
+					for row in cr.dictfetchall():
+						sync_obj.post_outgoing(cr, row['booker_id'], 'foms.contract', command, contract_data.id, data_context=webservice_context)
+			if 'approver' in targets:
+				for alloc_unit in contract_data.allocation_units:
+					cr.execute("SELECT * FROM foms_alloc_unit_approvers WHERE alloc_unit_id = %s" % alloc_unit.id)
+					for row in cr.dictfetchall():
+						sync_obj.post_outgoing(cr, row['user_id'], 'foms.contract', command, contract_data.id, data_context=webservice_context)
 
 # ==========================================================================================================================
 

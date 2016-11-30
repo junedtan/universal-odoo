@@ -259,6 +259,7 @@ class foms_order(osv.osv):
 	# eksekusi cancel order
 		if command == 'cancel_order':
 			model_data.update({
+				'order_id': data_id,
 				'cancel_by': user_id,
 			})
 			cancel_memory_obj = self.pool.get('foms.order.cancel.memory')

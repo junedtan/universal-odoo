@@ -42,6 +42,11 @@
 			<field name="category_id" ref="universal.module_category_universal"/>
 		</record>
 	
+		<record id="group_universal_central_dispatch" model="res.groups">
+			<field name="name">CENTRAL DISPATCH</field>
+			<field name="category_id" ref="universal.module_category_universal"/>
+		</record>
+	
 		<record id="group_universal_customer_pic" model="res.groups">
 			<field name="name">CUSTOMER PIC</field>
 			<field name="category_id" ref="universal.module_category_universal"/>

@@ -16,7 +16,7 @@ class res_users(osv.osv):
 		result = super(res_users, self).write(cr, uid, ids, vals, context=context)
 	# bila ada perubahan password, untuk fullday_passenger ubah juga pin nya (idem password), dan broadcast perubahannya
 		if vals.get('password'):
-			user_id = isinstance(ids, list) and ids[0] or ids
+			user_id = ids[0]
 			order_obj = self.pool.get('foms.order')
 			is_fullday_passenger = self.has_group(cr, user_id, 'universal.group_universal_passenger')
 		# kalau fullday passenger
@@ -32,4 +32,14 @@ class res_users(osv.osv):
 					order_obj.write(cr, uid, order_ids, {
 						'pin': vals.get('password'),
 					}, context=context)
+		return result
+
+	def get_user_ids_by_group(self, cr, uid, module_name, usergroup_id):
+		if isinstance(usergroup_id, (str)):
+			model_obj = self.pool.get('ir.model.data')
+			model, usergroup_id = model_obj.get_object_reference(cr, uid, module_name, usergroup_id)
+		cr.execute("SELECT * FROM res_groups_users_rel WHERE gid=%s" % usergroup_id)
+		result = []
+		for row in cr.dictfetchall():
+			result.append(row['uid'])
 		return result

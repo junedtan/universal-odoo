@@ -20,6 +20,7 @@
 							<field name="service_type" />
 							<field name="is_order_replacement_vehicle" />
 							<field name="is_expense_record" />
+							<field name="by_order_minimum_hours" attrs="{'invisible': [('service_type','not in',['by_order'])], 'required': [('service_type','in',['by_order'])]}" />
 						</group>
 						<group>
 							<field name="name" />
@@ -123,8 +124,8 @@
 							<field name="allocation_units">
 								<tree version="7.0" editable="bottom">
 									<field name="name" />
-									<field name="approver_ids" />
-									<field name="booker_ids" />
+									<field name="approver_ids" widget="many2many_tags" />
+									<field name="booker_ids" widget="many2many_tags" />
 								</tree>
 							</field>
 						</page>

@@ -1,6 +1,9 @@
 from openerp.osv import fields, osv
 from openerp.tools.translate import _
 from datetime import datetime, date, timedelta
+from openerp import SUPERUSER_ID
+
+import random, string
 
 _ORDER_STATE = [
 	('new','New'),
@@ -108,6 +111,20 @@ class foms_order(osv.osv):
 	# bikin nomor order dulu
 		if 'name' not in vals:
 			vals.update({'name': 'XXX'}) # later
+	# untuk order by order, harus dicek dulu bahwa order harus dalam maksimal jam sebelumnya
+		if new_data.service_type == 'by_order':
+		# cek start date harus sudah ada
+			if not vals.get('start_planned_date', False):
+				raise osv.except_osv(_('Order Error'),_('Please input start date.'))
+			start_date = datetime.strptime(vals['start_planned_date'],'%Y-%m-%d %H:%M:%S')
+		# cek start date harus minimal n jam dari sekarang
+			contract_obj = self.pool.get('foms.contract')
+			contract_data = contract_obj.browse(cr, uid, vals['customer_contract_id'])
+			now = datetime.now() - timedelta(hours=7)
+			delta = float((start_date - now).days * 86400 + (start_date - now).seconds) / 3600
+			if delta < contract_data.by_order_minimum_hours:
+				raise osv.except_osv(_('Order Error'),_('Start date is too close to current time. There must be at least %s hours between now and start date.' % _BY_ORDER_HOUR_LIMIT))
+	# jalankan createnya
 		new_id = super(foms_order, self).create(cr, uid, vals, context=context)
 		new_data = self.browse(cr, uid, new_id, context=context)
 	# untuk order fullday diasumsikan sudah ready karena vehicle dan drivernya pasti standby kecuali nanti diganti.
@@ -127,30 +144,119 @@ class foms_order(osv.osv):
 			self.write(cr, uid, [new_id], {
 				'state': 'ready',
 			}, context=context)
+	# untuk order By Order, post notification ke approver yang ada + bookernya untuk konfirmasi order sudah masuk
+		if new_data.service_type == 'by_order':
+			self.webservice_post(cr, uid, ['approver'], 'create', new_data, \
+				webservice_context={
+						'notification': 'order_approve',
+				}, context=context)
+			self.webservice_post(cr, uid, ['booker'], 'update', new_data, \
+				webservice_context={
+						'notification': 'order_waiting_approve',
+				}, context=context)
 		return new_id
 	
 	def write(self, cr, uid, ids, vals, context={}):
 		
 		context = context and context or {}
 		
+		orders = self.browse(cr, uid, ids)
+		
 	# kalau ada perubahan start_planned_date, ambil dulu planned start date aslinya
 		original_start_date = {}
-		if vals.get('start_planned_date'):
-			for data in self.browse(cr, uid, ids):
+		if vals.get('start_planned_date', False):
+			for data in orders:
 				original_start_date.update({data.id: data.start_planned_date})
-		
+	
+	# kalau order diconfirm dari mobile app, cek dulu apakah sudah diconfirm sebelumnya
+	# ini untuk mengantisipasi kalau satu alloc unit ada beberapa approver dan pada balapan meng-approve
+		if vals.get('state', False) == 'confirmed' and context.get('from_webservice') == True:
+			for data in orders:
+				if data.state == 'confirmed':
+					context.update({
+						'target_user_id': context.get('user_id', uid),
+					})
+					self.webservice_post(cr, uid, ['approver'], 'update', data, \
+						data_columns=['state'],
+						webservice_context={
+								'notification': 'order_other_approved',
+						}, context=context)
+					return True
+	
+	# eksekusi write nya dan ambil ulang data hasil update
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
 		orders = self.browse(cr, uid, ids, context=context)
-		
-	# kalau status berubah menjadi ready, maka post ke mobile app
+	
+	# kalau ada perubahan status...
 		if vals.get('state', False):
 			for order_data in orders:
-			# kalau fullday karena langsung ready maka asumsinya di mobile app belum ada order itu. maka commandnya adalah create
-				if vals['state'] == 'ready' and order_data.service_type == 'full_day':
-					self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'create', order_data, context=context)
+			# kalau status berubah menjadi ready, maka post ke mobile app
+				if vals['state'] == 'ready':
+				# kalau fullday karena langsung ready maka asumsinya di mobile app belum ada order itu. maka commandnya adalah create
+					if order_data.service_type == 'full_day':
+						self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'create', order_data, context=context)
+				# kalau yang by order, sebelum ready order belum ada di pic dan driver, maka create
+				# tapi udah ada di booker dan approver, maka update
+				# driver diikutsertakan di update supaya dia muncul notifnya. di mobile app sudah ada logic bahwa kalau command = update 
+				# dan data belum ada maka create. so practically utk driver ya create juga
+					elif order_data.service_type == 'by_order':
+						self.webservice_post(cr, uid, ['pic'], 'create', order_data, context=context)
+						self.webservice_post(cr, uid, ['booker','approver','driver'], 'update', order_data, 
+							webservice_context={
+								'notification': 'order_ready',
+							} context=context)
+			# kalau state menjadi rejected dan service_type == by_order, maka post_outgoing + notif ke booker. 
+				elif vals['state'] == 'rejected' and order_data.service_type == 'by_order':
+					self.webservice_post(cr, uid, ['booker'], 'update', order_data, \
+						data_columns=['state'], 
+						webservice_context={
+								'notification': 'order_reject',
+						}, context=context)
+			# kalau order di-confirm maka isi confirmed_by dan confirmed_at lalu coba cari fleet yang tersedia di jam itu
+			# khusus service type By Order
+				elif vals['state'] == 'confirmed' and order_data.service_type == 'by_order':
+					user_id = context.get('user_id', uid)
+				# isi data konfirmasi
+					super(foms_order, self).write(cr, uid, [order_data.id], {
+						'confirmed_by': user_id,
+						'confirmed_date': (datetime.now() - timedelta(hours=7)),
+					}, context=context)
+				# cari vehicle dan driver yang available di jam itu
+					vehicle_id, driver_id = self.search_first_available_fleet(cr, uid, order_data.contract_id.id, order_data.id, order_data.start_planned_date)
+				# kalo ada, langsung jadi ready
+				# sengaja pake self bukan super supaya kena webservice_post
+					if vehicle_id and driver_id:
+						self.write(cr, uid, [order_data.id], {
+							'assigned_vehicle_id': vehicle_id,
+							'assigned_driver_id': driver_id,
+							'state': 'ready',
+							'pin': self._generate_random_pin(),
+						}, context=context)
+				# kalau tidak ada, kirim message ke central dispatch dan notif ke booker dan approver
+					else:
+						self.webservice_post(cr, uid, ['booker','approver'], 'update', order_data, 
+							webservice_context={
+									'notification': 'order_fleet_not_ready',
+							} context=context)
+						central_user_ids = user_obj.get_user_ids_by_group(cr, uid, 'universal', 'group_universal_central_dispatch')
+						central_user_ids += [SUPERUSER_ID]
+						for central_user_id in central_user_ids:
+							self.message_post(cr, central_user_id, order_data.id, body=_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order_data.name)
+						return result
+			# kalau jadi start atau start confirmed dan actual vehicle atau driver masih kosong, maka isikan
+				elif vals['state'] in ['started','start_confirmed','finished','finish_confirmed']:
+					update_data = {}
+					if not order_data.actual_driver_id:
+						update_data.update({
+							'actual_driver_id': order_data.assigned_driver_id.id,
+						})
+					if not order_data.actual_vehicle_id:
+						update_data.update({
+							'actual_vehicle_id': order_data.assigned_vehicle_id.id,
+						})
+					super(foms_order, self).write(cr, uid, [order_data.id], update_data, context={})
 				else:
 					self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'update', order_data, context=context)
-			# untuk by order ... (dilanjut nanti)
 			
 	# kalau ada perubahan start_planned_date
 		if vals.get('start_planned_date'):
@@ -163,45 +269,25 @@ class foms_order(osv.osv):
 				else:
 					message_body = _("Planned start date is changed from %s to %s.") % (original,new)
 				self.message_post(cr, uid, order_data.id, body=message_body)
+			# kalau ngubah tanggal planned, post ke pic, passenger, dan driver
+				self.webservice_post(cr, uid, ['pic','fullday_passenger','driver','booker','approver'], 'update', order_data, \
+					data_columns=['start_planned_date'], 
+					webservice_context={
+						'notification': 'order_change_date',
+					}, context=context)
 			
-	# kalau jadi start atau start confirmed dan actual vehicle atau driver masih kosong, maka isikan
-		if vals.get('state', False) in ['started','start_confirmed','finished','finish_confirmed']:
-			for order_data in orders:
-				update_data = {}
-				if not order_data.actual_driver_id:
-					update_data.update({
-						'actual_driver_id': order_data.assigned_driver_id.id,
-					})
-				if not order_data.actual_vehicle_id:
-					update_data.update({
-						'actual_vehicle_id': order_data.assigned_vehicle_id.id,
-					})
-				super(foms_order, self).write(cr, uid, [order_data.id], update_data, context={})
-	
 	# kalau ada perubahan pin, broadcast ke pihak ybs
 		if vals.get('pin', False):
 			for order_data in orders:
 				self.webservice_post(cr, uid, ['pic','fullday_passenger','driver'], 'update', order_data, data_columns=['pin'], context=context)
 				
-	# kalau updatenya dari mobile app...
-		if context.get('from_webservice') == True:
-			sync_obj = self.pool.get('chjs.webservice.sync.bridge')
-			user_obj = self.pool.get('res.users')
-			user_id = context.get('user_id', uid)
-		# kalau ngubah tanggal planned, post ke pic, passenger, dan driver
-			if vals.get('start_planned_date'):
-				for order_data in orders:
-					self.webservice_post(cr, uid, ['pic','fullday_passenger','driver'], 'update', order_data, \
-						data_columns=['start_planned_date'], 
-						webservice_context={
-								'notification': 'order_change_date',
-						}, context=context)
-		# kalau ngubah start_date atau finish_date maka post ke mobile app pic, approver, booker
-			if vals.get('start_date') or vals.get('finish_date'):
-				for order_data in orders:
-					if user_obj.has_group(cr, user_id, 'universal.group_universal_driver'):
-						self.webservice_post(cr, uid, ['pic','approver','booker','fullday_passenger'], 'update', order_data, \
-							data_columns=['start_date','finish_date'], context=context)
+	# kalau ngubah start_date atau finish_date maka post ke mobile app pic, approver, booker
+		if vals.get('start_date') or vals.get('finish_date'):
+			for order_data in orders:
+				if user_obj.has_group(cr, user_id, 'universal.group_universal_driver'):
+					self.webservice_post(cr, uid, ['pic','approver','booker','fullday_passenger','driver'], 'update', order_data, \
+						data_columns=['start_date','finish_date'], context=context)
+
 		return result
 	
 	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
@@ -267,6 +353,36 @@ class foms_order(osv.osv):
 			if result == True: result = 'ok'
 		return result
 
+# METHODS ------------------------------------------------------------------------------------------------------------------
+
+	def search_first_available_fleet(self, cr, uid, contract_id, order_id, start_planned_date):
+	# ambil semua order yang lagi jalan
+		ongoing_order_ids = self.search(cr, uid, [
+			('contract_id','=',contract_id),
+			('state','in',['ready', 'started', 'start_confirmed', 'paused', 'resumed', 'finished']),
+			('id','!=',order_id),
+		])
+		vehicle_in_use_ids = []
+		for order in self.browse(cr, uid, ongoing_order_ids):
+			if order.finish_planned_date >= start_planned_date: continue # udah jelas ngga available
+			if order.assigned_vehicle_id: vehicle_in_use_ids.append(order.assigned_vehicle_id.id)
+			if order.actual_vehicle_id: vehicle_in_use_ids.append(order.actual_vehicle_id.id)
+		vehicle_in_use_ids = list(set(vehicle_in_use_ids))
+	# ambil vehicle pertama yang available
+		current_order = self.browse(cr, uid, order_id)
+		selected_fleet_line = None
+		for fleet in current_order.customer_contract_id.car_drivers:
+			if fleet.fleet_vehicle_id.id in vehicle_in_use_ids: continue
+			selected_fleet_line = fleet
+			break
+		if selected_fleet_line:
+			return selected_fleet_line.fleet_vehicle_id.id, selected_fleet_line.driver_id.id
+		else:
+			return None, None
+	
+	def _generate_random_pin(self):
+		return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(8))		
+		
 # ACTION -------------------------------------------------------------------------------------------------------------------
 
 	def action_cancel(self, cr, uid, ids, context=None):
@@ -380,25 +496,36 @@ class foms_order(osv.osv):
 
 # SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------
 
-	def webservice_post(self, cr, uid, targets, command, order_data, webservice_context={}, data_columns=[], context=None):
+	def webservice_post(self, cr, uid, targets, command, order_data, webservice_context={}, data_columns=[], context={}):
 		sync_obj = self.pool.get('chjs.webservice.sync.bridge')
 		user_obj = self.pool.get('res.users')
-		if 'pic' in targets:
-			pic_user_ids = user_obj.search(cr, uid, [('partner_id','=',order_data.customer_contract_id.customer_contact_id.id)])
-			if len(pic_user_ids) > 0:
-				sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.order', command, order_data.id, data_columns=data_columns, data_context=webservice_context)
-		if 'driver' in targets:
-			if order_data.assigned_driver_id:
-				driver_user_id = order_data.assigned_driver_id.user_id.id
-				sync_obj.post_outgoing(cr, driver_user_id, 'foms.order', command, order_data.id, data_columns=data_columns, data_context=webservice_context)
-		if 'approver' in targets:
-			if order_data.confirm_by:
-				approver_user_id = order_data.confirm_by.id
-				sync_obj.post_outgoing(cr, approver_user_id, 'foms.order', command, order_data.id, data_columns=data_columns, data_context=webservice_context)
-		if 'booker' in targets or 'fullday_passenger' in targets:
-			if order_data.order_by:
-				booker_user_id = order_data.order_by.id
-				sync_obj.post_outgoing(cr, booker_user_id, 'foms.order', command, order_data.id, data_columns=data_columns, data_context=webservice_context)
+	# user spesifik
+		target_user_ids = context.get('target_user_id', [])
+		if target_user_ids:
+			if isinstance(target_user_ids, (int, long)): target_user_ids = [target_user_ids]
+	# massal tergantung target
+		else:
+			if 'pic' in targets:
+				target_user_ids = user_obj.search(cr, uid, [('partner_id','=',order_data.customer_contract_id.customer_contact_id.id)])
+			if 'driver' in targets:
+				if order_data.assigned_driver_id:
+					target_user_ids = [order_data.assigned_driver_id.user_id.id]
+			if 'approver' in targets:
+				if order_data.confirm_by:
+					target_user_ids = [order_data.confirm_by.id]
+				else:
+					alloc_unit_id = order_data.alloc_unit_id and order_data.alloc_unit_id or None
+					if alloc_unit_id:
+						cr.execute("SELECT * FROM foms_alloc_unit_approvers WHERE alloc_unit_id = %s" % alloc_unit_id)
+						target_user_ids = []
+						for row in cr.dictfetchall():
+							target_user_ids.append(row['user_id'])
+			if 'booker' in targets or 'fullday_passenger' in targets:
+				if order_data.order_by:
+					target_user_ids = [order_data.order_by.id]
+		if len(target_user_ids) > 0:
+			for user_id in target_user_ids:
+				sync_obj.post_outgoing(cr, user_id, 'foms.order', command, order_data.id, data_columns=data_columns, data_context=webservice_context)
 			
 
 # ==========================================================================================================================

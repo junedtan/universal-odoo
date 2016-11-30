@@ -57,6 +57,8 @@ class foms_contract(osv.osv):
 			help="If not empty, this contract is an extension of the contract."),
 		'last_fullday_autogenerate_date': fields.date('Last Fullday Autogenerate Date', copy=False),
 		'last_shuttle_autogenerate_date': fields.date('Last Shuttle Autogenerate Date', copy=False),
+		'by_order_minimum_hours': fields.float('Minimum Delay',
+			help='This is the limit where By Order bookings are still allowed. For example, minumum delay of 2 hours means for 18:30 may still book at 16:30 but not 17:00 or 16:31.'),
 	# FEES
 		'fee_calculation_type': fields.selection([
 			('monthly','Period-based'),
@@ -205,16 +207,26 @@ class foms_contract(osv.osv):
 		return super(foms_contract, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
 	
 	def webservice_handle(self, cr, uid, user_id, command, data_id, model_data, context={}):
-		user_obj = self.pool.get('res.users')
 		result = super(foms_contract, self).webservice_handle(cr, uid, user_id, command, data_id, model_data, context=context)
+		user_obj = self.pool.get('res.users')
 	# untuk command change_password
 		if command == 'change_password':
-			user_obj = self.pool.get('res.users')
 			old_password = model_data.get('old_password')
 			new_password = model_data.get('new_password')
 		# change password usernya
 			user_obj.change_password(cr, user_id, old_password, new_password)
 			result = 'ok'
+	# untuk ngambil detail user (diambil dari detail partner)
+		if command == 'fetch_user_details':
+			user_data = user_obj.browse(cr, uid, user_id)
+			partner_data = user_data.partner_id
+			result = {
+				'name': partner_data.name,
+				'mobile': partner_data.mobile,
+				'email': partner_data.email,
+				'company_name': partner_data.parent_id.name,
+				'company_id': partner_data.parent_id.id,
+			}
 		return result
 
 # ACTION -------------------------------------------------------------------------------------------------------------------
@@ -275,6 +287,28 @@ class foms_contract(osv.osv):
 		# update kontrak dengan mengisi default values dari customer
 			self.write(cr, uid, [contract.id], new_data)
 		return True
+	
+	def _check_approvers_bookers(self, cr, uid, contract):
+		user_obj = self.pool.get('res.users')
+	# untuk service type by order, harus ada minimal 1 allocation unit, dan semua allocation unit ada booker serta approver
+	# selain itu, booker dan approver (partner nya) harus berada di bawah perusahaan yang sama
+	# juga, user groupnya harus booker dan approver
+		if contract.service_type == 'by_order':
+			if len(contract.allocation_units) == 0:
+				raise osv.except_osv(_('Contract Error'),_('For service type of By Order, there must be at least one allocation unit.'))
+			for alloc_unit in contract.allocation_units:
+				if len(alloc_unit.approver_ids) == 0 or len(alloc_unit.booker_ids) == 0:
+					raise osv.except_osv(_('Contract Error'),_('Please input at least one booker and one approver for each allocation unit.'))
+				for booker in alloc_unit.booker_ids:
+					if not user_obj.has_group(cr, booker.id, 'universal.group_universal_booker'):
+						raise osv.except_osv(_('Contract Error'),_('Booker %s does not belong to Customer Order Booker group.') % booker.name)
+					if not booker.partner_id.parent_id or booker.partner_id.parent_id.id != contract.customer_id.id:
+						raise osv.except_osv(_('Contract Error'),_('Booker %s must be under the same company as that of the contract.') % booker.name)
+				for approver in alloc_unit.approver_ids:
+					if not user_obj.has_group(cr, approver.id, 'universal.group_universal_approver'):
+						raise osv.except_osv(_('Contract Error'),_('Approver %s does not belong to Customer Order Approver group.') % booker.name)
+					if not approver.partner_id.parent_id or approver.partner_id.parent_id.id != contract.customer_id.id:
+						raise osv.except_osv(_('Contract Error'),_('Approver %s must be under the same company as that of the contract.') % booker.name)
 
 	def action_confirm(self, cr, uid, ids, context=None):
 		user_obj = self.pool.get('res.users')
@@ -299,6 +333,7 @@ class foms_contract(osv.osv):
 					has_user = True
 			if not has_user:
 				raise osv.except_osv(_('Contract Error'),_('Customer PIC has not been given user login, or the user login does not belong to Customer PIC group.'))
+			self._check_approvers_bookers(cr, uid, contract)
 		# ganti status menjadi Confirmed
 			self.write(cr, uid, [contract.id], {'state': 'confirmed'})
 	
@@ -379,6 +414,16 @@ class foms_contract(osv.osv):
 			'working_time_id': customer_data.default_working_time.id,
 			'overtime_id': customer_data.default_overtime.id,
 			'fee_premature_termination': customer_data.default_fee_premature_termination,
+		})
+	# isi default allocation units
+		alloc_units = []
+		if len(customer_data.default_alloc_units):
+			for alloc_unit in customer_data.default_alloc_units:
+				alloc_units.append({
+					'name': alloc_unit.name
+				})
+		result['value'].update({
+			'allocation_units': alloc_units,
 		})
 	# sudah selesai
 		return result
@@ -661,6 +706,7 @@ class foms_contract_alloc_unit(osv.osv):
 
 	_name = "foms.contract.alloc.unit"
 	_description = 'Contract Allocation Unit'
+	_inherit = 'chjs.base.webservice'
 	
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
@@ -678,7 +724,66 @@ class foms_contract_alloc_unit(osv.osv):
 	_sql_constraints = [
 		('unique_contract_alloc_unit', 'UNIQUE(header_id,name)', _('Please input unique contract allocation unit.')),
 	]	
-	
+
+# OVERRIDES ----------------------------------------------------------------------------------------------------------------
+
+	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
+		context = context and context or {}
+		user_obj = self.pool.get('res.users')
+		contract_obj = self.pool.get('foms.contract')
+	# kalau diminta untuk mengambil semua order by user_id tertentu
+		if context.get('by_user_id',False):
+			domain = []
+			user_id = context.get('user_id', uid)
+			is_pic = user_obj.has_group(cr, user_id, 'universal.group_universal_customer_pic')
+			is_approver = user_obj.has_group(cr, user_id, 'universal.group_universal_approver')
+			is_driver = user_obj.has_group(cr, user_id, 'universal.group_universal_driver')
+			is_booker = user_obj.has_group(cr, user_id, 'universal.group_universal_booker')
+			is_fullday_passenger = user_obj.has_group(cr, user_id, 'universal.group_universal_passenger')
+		# kalau pic, domainnya menjadi semua alloc unit dengan contract yang pic nya adalah partner terkait
+			if is_pic:
+				user_data = user_obj.browse(cr, uid, user_id)
+				if user_data.partner_id:
+					contract_ids = contract_obj.search(cr, uid, [('customer_contact_id','=',user_data.partner_id.id)])
+					domain.append(('header_id','in',contract_ids))
+		# kalau driver, domainnya menjadi semua contract yang car_drivers assignment nya adalah dia
+			if is_driver:
+				employee_obj = self.pool.get('hr.employee')
+				employee_ids = employee_obj.search(cr, uid, [('user_id','=',user_id)])
+				if len(employee_ids) > 0:
+					contract_fleet_obj = self.pool.get('foms.contract.fleet')
+					contract_fleet_ids = contract_fleet_obj.search(cr, uid, [('driver_id','=',employee_ids[0])])
+					if len(contract_fleet_ids) > 0:
+						contract_ids = []
+						for contract_fleet in contract_fleet_obj.browse(cr, uid, contract_fleet_ids):
+							contract_ids.append(contract_fleet.header_id.id)
+						alloc_unit_ids = []
+						for contract in contract_obj.browse(cr, uid, contract_ids):
+							for alloc_unit in contract.allocation_units:
+								alloc_unit_ids.append(alloc_unit.id)
+						domain.append(('id','in',alloc_unit_ids))
+		# kalau booker, tambahkan semua alloc unit yang salah satu bookernya dia
+			if is_booker:
+				cr.execute("SELECT * FROM foms_alloc_unit_bookers WHERE booker_id = %s" % user_id)
+				booker_alloc_units = []
+				for row in cr.dictfetchall():
+					booker_alloc_units.append(row['alloc_unit_id'])
+				booker_alloc_units = list(set(booker_alloc_units))
+				domain = [('id','in',booker_alloc_units)]
+		# kalau approver, tambahkan semua alloc unit yang salah satu approvernya dia
+			if is_approver:
+				cr.execute("SELECT * FROM foms_alloc_unit_approvers WHERE user_id = %s" % user_id)
+				approver_alloc_units = []
+				for row in cr.dictfetchall():
+					approver_alloc_units.append(row['alloc_unit_id'])
+				approver_alloc_units = list(set(approver_alloc_units))
+				domain = [('id','in',approver_alloc_units)]
+			if len(domain) > 0:
+				args = domain + args
+			else:
+				return []
+		return super(foms_contract_alloc_unit, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
+
 # ==========================================================================================================================
 
 class foms_contract_alloc_unit_limit(osv.osv):

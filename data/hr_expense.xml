@@ -1,10 +1,10 @@
 <openerp>
 	<data>
 		
-		<!-- Fleet Vehicle State-->
+		<!-- Expense types -->
 		
-		<record model="product.product" id="expense_type_fuel">
-			<field name="name">Fuel</field>
+		<record model="product.product" id="expense_type_parking">
+			<field name="name">Parking</field>
 			<field name="type">service</field>
 			<field name="sale_ok" eval="False" />
 			<field name="hr_expense_ok" eval="True" />
@@ -19,8 +19,8 @@
 			<field name="is_trip_related" eval="True" />
 		</record>
 		
-		<record model="product.product" id="expense_type_parking">
-			<field name="name">Parking</field>
+		<record model="product.product" id="expense_type_fuel">
+			<field name="name">Fuel</field>
 			<field name="type">service</field>
 			<field name="sale_ok" eval="False" />
 			<field name="hr_expense_ok" eval="True" />

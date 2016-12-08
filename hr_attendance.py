@@ -18,7 +18,8 @@ _OUT_OF_TOWN = (
 
 class hr_attendance(osv.osv):
 	
-	_inherit = 'hr.attendance'
+	_inherit = ['hr.attendance','chjs.base.webservice']
+	_name = 'hr.attendance'
 	
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
@@ -30,6 +31,41 @@ class hr_attendance(osv.osv):
 		'routes': fields.text('Routes'),
 	}
 	
+# OVERRIDES ----------------------------------------------------------------------------------------------------------------
+	
+	def create(self, cr, uid, vals, context={}):
+		context = context and context or {}
+	# bila ini dari mobile apps, asumsikan employee_id adalah user_id driver, sehingga harus dicari employee_idnya
+		if context.get('from_webservice') == True:
+			user_id = vals.get('employee_id')
+			employee_obj = self.pool.get('hr.employee')
+			employee_ids = employee_obj.search(cr, uid, [('user_id','=',user_id)])
+			if len(employee_ids) == 0:
+				raise osv.except_osv(_('Expense Error'),_('There is no driver with requested user id.'))
+			vals.update({'employee_id': employee_ids[0]})
+		return super(hr_attendance, self).create(cr, uid, vals, context=context)
+	
+	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
+		context = context and context or {}
+	# kalau diminta untuk mengambil semua order by user_id tertentu
+		if context.get('by_user_id',False):
+			domain = []
+			user_id = context.get('user_id', uid)
+			is_driver = user_obj.has_group(cr, user_id, 'universal.group_universal_driver')
+		# kalau driver, domainnya menjadi semua attendance dia, dan 100 data terakhir
+			if is_driver:
+				employee_obj = self.pool.get('hr.employee')
+				employee_ids = employee_obj.search(cr, uid, [('user_id','=',user_id)])
+				if len(employee_ids) > 0:
+					domain = [('employee_id','=',employee_ids[0])]
+					limit = 100
+					order = 'name desc'
+			if len(domain) > 0:
+				args = domain + args
+			else:
+				return []
+		return super(foms_order, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
+
 # ==========================================================================================================================
 
 class hr_absence_reason(osv.osv):

@@ -21,6 +21,7 @@
 							<field name="is_order_replacement_vehicle" />
 							<field name="is_expense_record" />
 							<field name="by_order_minimum_hours" attrs="{'invisible': [('service_type','not in',['by_order'])], 'required': [('service_type','in',['by_order'])]}" />
+							<field name="min_start_minutes" attrs="{'invisible': [('service_type','not in',['by_order'])], 'required': [('service_type','in',['by_order'])]}" />
 						</group>
 						<group>
 							<field name="name" />

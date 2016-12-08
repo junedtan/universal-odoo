@@ -57,8 +57,10 @@ class foms_contract(osv.osv):
 			help="If not empty, this contract is an extension of the contract."),
 		'last_fullday_autogenerate_date': fields.date('Last Fullday Autogenerate Date', copy=False),
 		'last_shuttle_autogenerate_date': fields.date('Last Shuttle Autogenerate Date', copy=False),
-		'by_order_minimum_hours': fields.float('Minimum Delay',
+		'by_order_minimum_hours': fields.float('Minimum Delay (hours)',
 			help='This is the limit where By Order bookings are still allowed. For example, minumum delay of 2 hours means for 18:30 may still book at 16:30 but not 17:00 or 16:31.'),
+		'min_start_minutes': fields.float('Maximum Start Minutes (minutes)',
+			help='How long prior to start time do order of this contract are allowed to be started. For example, Maximum Start Minutes of 30 minutes means that order booked for 16:00 can only be started 15:30 onward.'),
 	# FEES
 		'fee_calculation_type': fields.selection([
 			('monthly','Period-based'),

@@ -112,7 +112,7 @@ class foms_order(osv.osv):
 		if 'name' not in vals:
 			vals.update({'name': 'XXX'}) # later
 	# untuk order by order, harus dicek dulu bahwa order harus dalam maksimal jam sebelumnya
-		if new_data.service_type == 'by_order':
+		if vals['service_type'] == 'by_order':
 		# cek start date harus sudah ada
 			if not vals.get('start_planned_date', False):
 				raise osv.except_osv(_('Order Error'),_('Please input start date.'))
@@ -120,10 +120,10 @@ class foms_order(osv.osv):
 		# cek start date harus minimal n jam dari sekarang
 			contract_obj = self.pool.get('foms.contract')
 			contract_data = contract_obj.browse(cr, uid, vals['customer_contract_id'])
-			now = datetime.now() - timedelta(hours=7)
+			now = datetime.now()
 			delta = float((start_date - now).days * 86400 + (start_date - now).seconds) / 3600
 			if delta < contract_data.by_order_minimum_hours:
-				raise osv.except_osv(_('Order Error'),_('Start date is too close to current time. There must be at least %s hours between now and start date.' % _BY_ORDER_HOUR_LIMIT))
+				raise osv.except_osv(_('Order Error'),_('Start date is too close to current time. There must be at least %s hours between now and start date.' % contract_data.by_order_minimum_hours))
 	# jalankan createnya
 		new_id = super(foms_order, self).create(cr, uid, vals, context=context)
 		new_data = self.browse(cr, uid, new_id, context=context)
@@ -186,7 +186,6 @@ class foms_order(osv.osv):
 	# eksekusi write nya dan ambil ulang data hasil update
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
 		orders = self.browse(cr, uid, ids, context=context)
-	
 	# kalau ada perubahan status...
 		if vals.get('state', False):
 			for order_data in orders:
@@ -218,11 +217,11 @@ class foms_order(osv.osv):
 					user_id = context.get('user_id', uid)
 				# isi data konfirmasi
 					super(foms_order, self).write(cr, uid, [order_data.id], {
-						'confirmed_by': user_id,
-						'confirmed_date': (datetime.now() - timedelta(hours=7)),
+						'confirm_by': user_id,
+						'confirm_date': datetime.now(),
 					}, context=context)
 				# cari vehicle dan driver yang available di jam itu
-					vehicle_id, driver_id = self.search_first_available_fleet(cr, uid, order_data.contract_id.id, order_data.id, order_data.start_planned_date)
+					vehicle_id, driver_id = self.search_first_available_fleet(cr, uid, order_data.customer_contract_id.id, order_data.id, order_data.start_planned_date)
 				# kalo ada, langsung jadi ready
 				# sengaja pake self bukan super supaya kena webservice_post
 					if vehicle_id and driver_id:
@@ -283,8 +282,9 @@ class foms_order(osv.osv):
 				
 	# kalau ngubah start_date atau finish_date maka post ke mobile app pic, approver, booker
 		if vals.get('start_date') or vals.get('finish_date'):
+			user_obj = self.pool.get('res.users')
 			for order_data in orders:
-				if user_obj.has_group(cr, user_id, 'universal.group_universal_driver'):
+				if user_obj.has_group(cr, context.get('user_id', uid), 'universal.group_universal_driver'):
 					self.webservice_post(cr, uid, ['pic','approver','booker','fullday_passenger','driver'], 'update', order_data, \
 						data_columns=['start_date','finish_date'], context=context)
 
@@ -320,9 +320,18 @@ class foms_order(osv.osv):
 						('actual_driver_id','=',employee_ids[0]),
 					]
 		# kalau passenger, ambil semua order yang order_by nya dia
-			if is_fullday_passenger:
+			if is_fullday_passenger or is_booker:
 				domain = [
 					('order_by','=',user_id)
+				]
+		# kalau approver, ambil semua order yang allocation unit nya di bawah dia
+			if is_approver:
+				cr.execute("SELECT * FROM foms_alloc_unit_approvers WHERE user_id = %s" % user_id)
+				approver_alloc_units = []
+				for row in cr.dictfetchall():
+					approver_alloc_units.append(row['alloc_unit_id'])
+				domain = [
+					('alloc_unit_id','in',approver_alloc_units)
 				]
 			if len(domain) > 0:
 				args = domain + args
@@ -358,7 +367,7 @@ class foms_order(osv.osv):
 	def search_first_available_fleet(self, cr, uid, contract_id, order_id, start_planned_date):
 	# ambil semua order yang lagi jalan
 		ongoing_order_ids = self.search(cr, uid, [
-			('contract_id','=',contract_id),
+			('customer_contract_id','=',contract_id),
 			('state','in',['ready', 'started', 'start_confirmed', 'paused', 'resumed', 'finished']),
 			('id','!=',order_id),
 		])
@@ -440,7 +449,7 @@ class foms_order(osv.osv):
 		order_obj = self.pool.get('foms.order')
 	# bikin order fullday untuk n hari ke depan secara berkala
 	# set tanggal2
-		today = (datetime.now() - timedelta(hours=7)).replace(hour=0, minute=0, second=0, microsecond=0)
+		today = (datetime.now()).replace(hour=0, minute=0, second=0, microsecond=0)
 		next_day = today + timedelta(hours=24)
 		next7days = today + timedelta(hours=24*7)
 	# ambil contract yang baru aktif (last_fullday_autogenerate_date kosong)
@@ -514,7 +523,7 @@ class foms_order(osv.osv):
 				if order_data.confirm_by:
 					target_user_ids = [order_data.confirm_by.id]
 				else:
-					alloc_unit_id = order_data.alloc_unit_id and order_data.alloc_unit_id or None
+					alloc_unit_id = order_data.alloc_unit_id and order_data.alloc_unit_id.id or None
 					if alloc_unit_id:
 						cr.execute("SELECT * FROM foms_alloc_unit_approvers WHERE alloc_unit_id = %s" % alloc_unit_id)
 						target_user_ids = []

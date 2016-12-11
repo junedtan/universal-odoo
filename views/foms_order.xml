@@ -1,6 +1,46 @@
 <openerp>
 	<data>
 		
+		<!-- ORDER AREA -->
+		
+		<record model="ir.ui.view" id="foms_order_area_form">
+			<field name="name">foms.order.area.form</field>	
+			<field name="model">foms.order.area</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Order Area">
+					<group>
+						<field name="homebase_id" />
+						<field name="name" />
+					</group>
+				</form>
+			</field>
+		</record>
+				
+		<record model="ir.ui.view" id="foms_order_area_tree">
+			<field name="name">foms.order.area.tree</field>	
+			<field name="model">foms.order.area</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Order Area">
+					<field name="homebase_id" />
+					<field name="name" />
+				</form>
+			</field>
+		</record>
+				
+		<!-- ORDER AREA DELAY -->
+		
+		<record model="ir.ui.view" id="foms_order_area_delay_tree">
+			<field name="name">foms.order.area.delay.tree</field>	
+			<field name="model">foms.order.area.delay</field>
+			<field name="arch" type="xml">
+				<tree version="7.0" string="Order Area Delay" editable="bottom">
+					<field name="area_from_id" />
+					<field name="area_to_id" />
+					<field name="delay" />
+				</tree>
+			</field>
+		</record>
+				
 		<!-- ORDER -->
 		
 		<record model="ir.ui.view" id="foms_order_form">
@@ -33,7 +73,9 @@
 									<field name="start_planned_date" />
 									<field name="finish_planned_date" />
 									<field name="origin_location" attrs="{'invisible': [('service_type','!=','by_order')]}" />
+									<field name="origin_area_id" attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')]}" />
 									<field name="dest_location" attrs="{'invisible': [('service_type','!=','by_order')]}" />
+									<field name="dest_area_id" attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')]}" />
 									<field name="route_id" attrs="{'invisible': [('service_type','!=','shuttle')]}" />
 								</group>
 								<group string="Assignments">

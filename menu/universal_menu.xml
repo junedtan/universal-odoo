@@ -158,7 +158,19 @@
 			<field name="view_mode">tree,form</field>
 		</record>
 
-		
+		<record id="universal_action_order_area" model="ir.actions.act_window">
+			<field name="name">Order Areas</field>	
+			<field name="res_model">foms.order.area</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record id="universal_action_order_area_delay" model="ir.actions.act_window">
+			<field name="name">Order Area Delays</field>	
+			<field name="res_model">foms.order.area.delay</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree</field>
+		</record>
 
 		<menuitem parent="hr.menu_hr_configuration" sequence="3" id="universal_menu_job_position" action="universal_action_job_position"
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
@@ -217,11 +229,13 @@
 			<menuitem parent="menu_universal_foms_config" sequence="1" id="universal_menu_config_customer" action="base.action_partner_customer_form" />
 			<menuitem parent="menu_universal_foms_config" sequence="2" id="universal_menu_homebase" action="universal_action_homebase" 
 				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
-			<menuitem parent="menu_universal_foms_config" sequence="3" id="universal_menu_resource_calendar" action="resource.action_resource_calendar_form"
+			<menuitem parent="menu_universal_foms_config" sequence="3" id="universal_menu_order_area" action="universal_action_order_area" />
+			<menuitem parent="menu_universal_foms_config" sequence="4" id="universal_menu_order_area_delay" action="universal_action_order_area_delay" />
+			<menuitem parent="menu_universal_foms_config" sequence="5" id="universal_menu_resource_calendar" action="resource.action_resource_calendar_form"
 				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
-			<menuitem parent="menu_universal_foms_config" sequence="4" id="hr_overtime.hr_menu_overtime" action="hr_overtime.hr_action_overtime" 
+			<menuitem parent="menu_universal_foms_config" sequence="6" id="hr_overtime.hr_menu_overtime" action="hr_overtime.hr_action_overtime" 
 				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
-			<menuitem parent="menu_universal_foms_config" sequence="5" id="universal_menu_order_cancel_reason" action="universal_action_order_cancel_reason" />
+			<menuitem parent="menu_universal_foms_config" sequence="7" id="universal_menu_order_cancel_reason" action="universal_action_order_cancel_reason" />
 
 		
 <!-- INHERIT -->

@@ -10,6 +10,7 @@
 				<xpath expr="//field[@name='name']" position="after">
 					<field name="contract_id" />
 					<field name="source" />
+					<field name="proof_of_payment" />
 				</xpath>
 			</field>
 		</record>

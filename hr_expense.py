@@ -39,6 +39,7 @@ class hr_expense_expense(osv.osv):
 		'contract_id': fields.many2one('foms.contract','Contract Reference'),
 		'order_id': fields.many2one('foms.order', 'Order'),
 		'source': fields.selection(_EXPENSE_INPUT_SOURCE,'Source', readonly=True),
+		'prove_of_payment': fields.binary('Proof of Payment'),
 	}
 	
 

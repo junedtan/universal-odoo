@@ -197,8 +197,6 @@ class foms_order(osv.osv):
 			for order_data in orders:
 			# kalau status berubah menjadi ready, maka post ke mobile app
 				if vals['state'] == 'ready':
-					print "masuk ready"
-					print order_data.service_type
 				# kalau fullday karena langsung ready maka asumsinya di mobile app belum ada order itu. maka commandnya adalah create
 					if order_data.service_type == 'full_day':
 						self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'create', order_data, context=context)

@@ -205,9 +205,17 @@ class foms_order(osv.osv):
 				# dan data belum ada maka create. so practically utk driver ya create juga
 					elif order_data.service_type == 'by_order':
 						self.webservice_post(cr, uid, ['pic'], 'create', order_data, context=context)
-						self.webservice_post(cr, uid, ['booker','approver','driver'], 'update', order_data, 
+						self.webservice_post(cr, uid, ['booker'], 'update', order_data, 
 							webservice_context={
-								'notification': 'order_ready',
+								'notification': 'order_ready_booker',
+							}, context=context)
+						self.webservice_post(cr, uid, ['approver'], 'update', order_data, 
+							webservice_context={
+								'notification': 'order_ready_approver',
+							}, context=context)
+						self.webservice_post(cr, uid, ['driver'], 'update', order_data, 
+							webservice_context={
+								'notification': 'order_ready_driver',
 							}, context=context)
 			# kalau state menjadi rejected dan service_type == by_order, maka post_outgoing + notif ke booker. 
 				elif vals['state'] == 'rejected' and order_data.service_type == 'by_order':
@@ -304,7 +312,7 @@ class foms_order(osv.osv):
 		if vals.get('assigned_vehicle_id', False) and vals.get('assigned_driver_id', False):
 			for order_data in orders:
 			# untuk by_order yang masih new, directly ubah state menjadi ready
-				if order_data.service_type == 'by_order' and order_data.state == 'new':
+				if order_data.service_type == 'by_order' and order_data.state in ['new','confirmed']:
 					self.write(cr, uid, [order_data.id], {
 						'state': 'ready',
 						'pin': self._generate_random_pin(),

@@ -102,7 +102,7 @@ class hr_expense_expense(osv.osv):
 		# kalau passenger, ambil expense yang order.order_by nya adalah dia
 			if is_fullday_passenger:
 				order_ids = order_obj.search(cr, uid, [
-					('order_by','=',user_ud)
+					('order_by','=',user_id)
 				])
 				if len(order_ids) > 0:
 					domain.append(('order_id','in',order_ids))

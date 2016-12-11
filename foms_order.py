@@ -123,7 +123,7 @@ class foms_order(osv.osv):
 			now = datetime.now() - timedelta(hours=7)
 			delta = float((start_date - now).days * 86400 + (start_date - now).seconds) / 3600
 			if delta < contract_data.by_order_minimum_hours:
-				raise osv.except_osv(_('Order Error'),_('Start date is too close to current time. There must be at least %s hours between now and start date.' % _BY_ORDER_HOUR_LIMIT))
+				raise osv.except_osv(_('Order Error'),_('Start date is too close to current time. There must be at least %s hours between now and start date.' % contract_data.by_order_minimum_hours))
 	# bikin nomor order dulu
 		if 'name' not in vals:
 			vals.update({'name': 'XXX'}) # later
@@ -165,7 +165,9 @@ class foms_order(osv.osv):
 		context = context and context or {}
 		
 		orders = self.browse(cr, uid, ids)
-		
+
+		user_obj = self.pool.get('res.users')
+
 	# kalau ada perubahan start_planned_date, ambil dulu planned start date aslinya
 		original_start_date = {}
 		if vals.get('start_planned_date', False):
@@ -190,12 +192,13 @@ class foms_order(osv.osv):
 	# eksekusi write nya dan ambil ulang data hasil update
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
 		orders = self.browse(cr, uid, ids, context=context)
-	
 	# kalau ada perubahan status...
 		if vals.get('state', False):
 			for order_data in orders:
 			# kalau status berubah menjadi ready, maka post ke mobile app
 				if vals['state'] == 'ready':
+					print "masuk ready"
+					print order_data.service_type
 				# kalau fullday karena langsung ready maka asumsinya di mobile app belum ada order itu. maka commandnya adalah create
 					if order_data.service_type == 'full_day':
 						self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'create', order_data, context=context)
@@ -231,7 +234,7 @@ class foms_order(osv.osv):
 				# isi data konfirmasi
 					super(foms_order, self).write(cr, uid, [order_data.id], {
 						'confirm_by': user_id,
-						'confirm_date': (datetime.now() - timedelta(hours=7)),
+						'confirm_date': datetime.now(),
 					}, context=context)
 					central_user_ids = user_obj.get_user_ids_by_group(cr, uid, 'universal', 'group_universal_central_dispatch')
 					central_user_ids += [SUPERUSER_ID]
@@ -240,7 +243,7 @@ class foms_order(osv.osv):
 					if order_data.origin_area_id and order_data.dest_area_id and \
 					order_data.origin_area_id.homebase_id.id == order_data.dest_area_id.homebase_id.id:
 					# cari vehicle dan driver yang available di jam itu
-						vehicle_id, driver_id = self.search_first_available_fleet(cr, uid, order_data.contract_id.id, order_data.id, order_data.start_planned_date)
+						vehicle_id, driver_id = self.search_first_available_fleet(cr, uid, order_data.customer_contract_id.id, order_data.id, order_data.start_planned_date)
 					# kalo ada, langsung jadi ready
 					# sengaja pake self bukan super supaya kena webservice_post
 						if vehicle_id and driver_id:
@@ -304,7 +307,7 @@ class foms_order(osv.osv):
 	# kalau ngubah start_date atau finish_date maka post ke mobile app pic, approver, booker
 		if vals.get('start_date') or vals.get('finish_date'):
 			for order_data in orders:
-				if user_obj.has_group(cr, user_id, 'universal.group_universal_driver'):
+				if user_obj.has_group(cr, context.get('user_id', uid), 'universal.group_universal_driver'):
 					self.webservice_post(cr, uid, ['pic','approver','booker','fullday_passenger','driver'], 'update', order_data, \
 						data_columns=['start_date','finish_date'], context=context)
 
@@ -409,7 +412,7 @@ class foms_order(osv.osv):
 		area_delay_obj = self.pool.get('foms.order.area.delay')
 	# ambil semua order yang lagi jalan
 		ongoing_order_ids = self.search(cr, uid, [
-			('contract_id','=',contract_id),
+			('customer_contract_id','=',contract_id),
 			('state','in',['ready', 'started', 'start_confirmed', 'paused', 'resumed', 'finished']),
 			('id','!=',order_id),
 		])
@@ -497,7 +500,7 @@ class foms_order(osv.osv):
 		order_obj = self.pool.get('foms.order')
 	# bikin order fullday untuk n hari ke depan secara berkala
 	# set tanggal2
-		today = (datetime.now() - timedelta(hours=7)).replace(hour=0, minute=0, second=0, microsecond=0)
+		today = (datetime.now()).replace(hour=0, minute=0, second=0, microsecond=0)
 		next_day = today + timedelta(hours=24)
 		next7days = today + timedelta(hours=24*7)
 	# ambil contract yang baru aktif (last_fullday_autogenerate_date kosong)
@@ -563,25 +566,29 @@ class foms_order(osv.osv):
 	# massal tergantung target
 		else:
 			if 'pic' in targets:
-				target_user_ids = user_obj.search(cr, uid, [('partner_id','=',order_data.customer_contract_id.customer_contact_id.id)])
+				target_user_ids += user_obj.search(cr, uid, [('partner_id','=',order_data.customer_contract_id.customer_contact_id.id)])
 			if 'driver' in targets:
 				if order_data.assigned_driver_id:
-					target_user_ids = [order_data.assigned_driver_id.user_id.id]
+					target_user_ids += [order_data.assigned_driver_id.user_id.id]
 			if 'approver' in targets:
 				if order_data.confirm_by:
-					target_user_ids = [order_data.confirm_by.id]
+					target_user_ids += [order_data.confirm_by.id]
 				else:
-					alloc_unit_id = order_data.alloc_unit_id and order_data.alloc_unit_id or None
+					alloc_unit_id = order_data.alloc_unit_id and order_data.alloc_unit_id.id or None
 					if alloc_unit_id:
 						cr.execute("SELECT * FROM foms_alloc_unit_approvers WHERE alloc_unit_id = %s" % alloc_unit_id)
-						target_user_ids = []
 						for row in cr.dictfetchall():
 							target_user_ids.append(row['user_id'])
 			if 'booker' in targets or 'fullday_passenger' in targets:
 				if order_data.order_by:
-					target_user_ids = [order_data.order_by.id]
+					target_user_ids += [order_data.order_by.id]
 		if len(target_user_ids) > 0:
 			for user_id in target_user_ids:
+				print "======================================================================================"
+				print command
+				print order_data.id
+				print user_id
+				print webservice_context
 				sync_obj.post_outgoing(cr, user_id, 'foms.order', command, order_data.id, data_columns=data_columns, data_context=webservice_context)
 
 # ==========================================================================================================================

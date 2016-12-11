@@ -50,6 +50,7 @@ class hr_attendance(osv.osv):
 	# kalau diminta untuk mengambil semua order by user_id tertentu
 		if context.get('by_user_id',False):
 			domain = []
+			user_obj = self.pool.get('res.users')
 			user_id = context.get('user_id', uid)
 			is_driver = user_obj.has_group(cr, user_id, 'universal.group_universal_driver')
 		# kalau driver, domainnya menjadi semua attendance dia, dan 100 data terakhir
@@ -64,7 +65,7 @@ class hr_attendance(osv.osv):
 				args = domain + args
 			else:
 				return []
-		return super(foms_order, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
+		return super(hr_attendance, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
 
 # ==========================================================================================================================
 

@@ -86,21 +86,16 @@ class foms_contract(osv.osv):
 		'fee_management': fields.float('Management Fee (%)'),
 		'fee_order_based': fields.one2many('foms.contract.order.based.fee', 'header_id', 'Order-Based Fees'),
 	# USAGE CONTROL
-		'allocation_unit_limits': fields.one2many('foms.contract.alloc.unit.limit', 'header_id', 'Allocation Unit Usage Limits'),
 		'usage_control_level': fields.selection([
 			('no_control','No Control'),
 			('warning','Limit with Warning'),
 			('approval','Limit with Approval')], 'Usage Control Level'),
-		'usage_control_setting': fields.selection([
-			('global', 'Single setting applies to all allocation units'),
-			('per_alloc_unit', 'Each allocation unit may have different setting'),
-		], 'Usage Control Setting'),
 		'usage_allocation_maintained_by': fields.selection([
 			('customer','Customer'),
-			('universal','Universal')], 'Usage Allocation Maintained By'),
+			('universal','Universal')], 'Limits Maintained By'),
 		'global_yellow_limit': fields.float('Yellow Limit (Rp)'),	
 		'global_red_limit': fields.float('Red Limit (Rp)'),	
-		'global_balance_credit_per_usage': fields.float('Balance Credit per Usage'),	
+		'global_balance_credit_per_usage': fields.float('Credit/Usage (Rp)'),	
 		'is_expense_record': fields.boolean('Include Expense Report'),
 	}
 	
@@ -126,6 +121,9 @@ class foms_contract(osv.osv):
 		'fee_holiday_allowance': 0,
 		'fee_management': 0,
 		'is_expense_record': False,
+		'global_yellow_limit': 0,
+		'global_red_limit': 0,
+		'global_balance_credit_per_usage': 0,
 	}	
 	
 # CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
@@ -458,6 +456,60 @@ class foms_contract(osv.osv):
 		})
 	# sudah selesai
 		return result
+	
+	def onchange_global_yellow_limit(self, cr, uid, ids, global_yellow_limit, allocation_units):
+		result = {'value': {}}
+		new_alloc_units = []
+		for idx, value in enumerate(allocation_units):
+			if len(value) < 2 or not value[2]: continue
+			if isinstance(value[2],list): 
+				alloc_unit_obj = self.pool.get('foms.contract.alloc.unit')
+				for existing_id in value[2]:
+					data = alloc_unit_obj.browse(cr, uid, existing_id)
+					new_alloc_units.append([1, existing_id, {
+						'yellow_limit': global_yellow_limit,
+					}])
+			else:
+				allocation_units[idx][2]['yellow_limit'] = global_yellow_limit
+				new_alloc_units.append(allocation_units[idx])
+		result['value']['allocation_units'] = new_alloc_units
+		return result
+
+	def onchange_global_red_limit(self, cr, uid, ids, global_red_limit, allocation_units):
+		result = {'value': {}}
+		new_alloc_units = []
+		for idx, value in enumerate(allocation_units):
+			if len(value) < 2 or not value[2]: continue
+			if isinstance(value[2],list): 
+				alloc_unit_obj = self.pool.get('foms.contract.alloc.unit')
+				for existing_id in value[2]:
+					data = alloc_unit_obj.browse(cr, uid, existing_id)
+					new_alloc_units.append([1, existing_id, {
+						'red_limit': global_red_limit,
+					}])
+			else:
+				allocation_units[idx][2]['red_limit'] = global_red_limit
+				new_alloc_units.append(allocation_units[idx])
+		result['value']['allocation_units'] = new_alloc_units
+		return result
+
+	def onchange_global_credit_per_usage(self, cr, uid, ids, global_balance_credit_per_usage, allocation_units):
+		result = {'value': {}}
+		new_alloc_units = []
+		for idx, value in enumerate(allocation_units):
+			if len(value) < 2 or not value[2]: continue
+			if isinstance(value[2],list): 
+				alloc_unit_obj = self.pool.get('foms.contract.alloc.unit')
+				for existing_id in value[2]:
+					data = alloc_unit_obj.browse(cr, uid, existing_id)
+					new_alloc_units.append([1, existing_id, {
+						'balance_credit_per_usage': global_balance_credit_per_usage,
+					}])
+			else:
+				allocation_units[idx][2]['balance_credit_per_usage'] = balance_credit_per_usage
+				new_alloc_units.append(allocation_units[idx])
+		result['value']['allocation_units'] = new_alloc_units
+		return result
 
 # CRON ---------------------------------------------------------------------------------------------------------------------
 
@@ -758,12 +810,16 @@ class foms_contract_alloc_unit(osv.osv):
 			'user_id', string='Responsibles'),
 		'booker_ids': fields.many2many('res.users', 'foms_alloc_unit_bookers', 'alloc_unit_id', 
 			'booker_id', string='Bookers'),
+		'yellow_limit': fields.float('Yellow Limit'),
+		'red_limit': fields.float('Red Limit'),
+		'balance_credit_per_usage': fields.float('Credit/Usage'),
 	}		
 	
 # CONSTRAINTS --------------------------------------------------------------------------------------------------------------
 	
 	_sql_constraints = [
 		('unique_contract_alloc_unit', 'UNIQUE(header_id,name)', _('Please input unique contract allocation unit.')),
+		('check_limit', 'CHECK(red_limit >= yellow_limit)', _('Red Limit must be greater than or equal to Yellow Limit.')),
 	]	
 
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
@@ -825,23 +881,6 @@ class foms_contract_alloc_unit(osv.osv):
 				return []
 		return super(foms_contract_alloc_unit, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
 
-# ==========================================================================================================================
-
-class foms_contract_alloc_unit_limit(osv.osv):
-
-	_name = "foms.contract.alloc.unit.limit"
-	_description = 'Contract Allocation Unit Usage Limit'
-	
-# COLUMNS ------------------------------------------------------------------------------------------------------------------
-
-	_columns = {
-		'header_id': fields.many2one('foms.contract', 'Contract', ondelete='cascade'),
-		'name': fields.char('Name', required=True),
-		'yellow_limit': fields.float('Yellow Limit'),
-		'red_limit': fields.float('Red Limit'),
-		'balance_credit_per_usage': fields.float('Balance Credit Per Usage'),
-	}		
-	
 # DEFAULTS ----------------------------------------------------------------------------------------------------------------------
 	
 	_defaults = {
@@ -861,15 +900,35 @@ class foms_contract_quota(osv.osv):
 
 	_name = "foms.contract.quota"
 	_description = 'Contract Quota'
+	_inherit = ['mail.thread','chjs.base.webservice']
 	
+# FUNCTION FIELD METHODS ---------------------------------------------------------------------------------------------------
+
+	def _current_usage(self, cr, uid, ids, field_name, arg, context):
+		res = {}
+		for row in self.browse(cr, uid, ids, context):
+			cr.execute("""
+				SELECT SUM(usage_amount) AS usage 
+				FROM foms_contract_quota_usage_log 
+				WHERE 
+					customer_contract_id = %s AND 
+					allocation_unit_id = %s AND 
+					period = '%s'
+			""" % (row.customer_contract_id.id, row.allocation_unit_id.id, row.period))
+			sum_result = cr.dictfetchone()
+			res[row.id] = sum_result['usage'] or 0
+		return res
+
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'customer_contract_id': fields.many2one('foms.contract', 'Contract', required=True, ondelete='cascade'),
-		'allocation_unit_id': fields.many2one('foms.contract.alloc.unit', 'Alloc. Unit', required=True, ondelete='cascade'),
-		'period': fields.char('Period', required=True),
-		'yellow_limit': fields.float('Yellow Limit'),
-		'red_limit': fields.float('Red Limit'),
+		'customer_contract_id': fields.many2one('foms.contract', 'Contract', required=True, readonly=True, ondelete='cascade'),
+		'allocation_unit_id': fields.many2one('foms.contract.alloc.unit', 'Alloc. Unit', required=True, readonly=True, ondelete='cascade'),
+		'period': fields.char('Period', required=True, readonly=True),
+		'yellow_limit': fields.float('Yellow Limit', track_visibility="onchange"),
+		'red_limit': fields.float('Red Limit', track_visibility="onchange"),
+		'balance_credit_per_usage': fields.float('Credit/Usage', track_visibility="onchange"),
+		'current_usage': fields.function(_current_usage, type='float', method=True, string="Current Usage"),
 	}		
 	
 # CONSTRAINTS --------------------------------------------------------------------------------------------------------------
@@ -877,7 +936,109 @@ class foms_contract_quota(osv.osv):
 	_sql_constraints = [
 		('unique_contract_alloc_period', 'UNIQUE(customer_contract_id,allocation_unit_id,period)', _('Please input unique contract, allocation unit, and period.')),
 	]	
+
+# OVERRIDES ----------------------------------------------------------------------------------------------------------------
+
+	def create(self, cr, uid, vals, context={}):
+		new_id = super(foms_contract_quota, self).create(cr, uid, vals, context=context)
+		new_data = self.browse(cr, uid, new_id, context=context)
+		self.webservice_post(cr, uid, ['approver','pic'], 'create', new_data, context=context)
+		return new_id
+
+	def write(self, cr, uid, ids, vals, context={}):
+		result = super(foms_contract_quota, self).write(cr, uid, ids, vals, context=context)
+		for data in self.browse(cr, uid, ids, context=context):
+			self.webservice_post(cr, uid, ['approver','pic'], 'update', data, context=context)
+		return result
 	
+	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
+		context = context and context or {}
+		user_obj = self.pool.get('res.users')
+		contract_obj = self.pool.get('foms.contract')
+	# kalau diminta untuk mengambil semua order by user_id tertentu
+		if context.get('by_user_id',False):
+			domain = []
+			user_id = context.get('user_id', uid)
+			is_pic = user_obj.has_group(cr, user_id, 'universal.group_universal_customer_pic')
+			is_approver = user_obj.has_group(cr, user_id, 'universal.group_universal_approver')
+		# kalau pic, domainnya menjadi semua order dengan contract yang pic nya adalah partner terkait
+			if is_pic:
+				user_data = user_obj.browse(cr, uid, user_id)
+				if user_data.partner_id:
+					contract_ids = contract_obj.search(cr, uid, [('customer_contact_id','=',user_data.partner_id.id)])
+					domain.append(('customer_contract_id','in',contract_ids))
+		# kalau approver, ambil semua order yang allocation unit nya di bawah dia
+			if is_approver:
+				cr.execute("SELECT * FROM foms_alloc_unit_approvers WHERE user_id = %s" % user_id)
+				approver_alloc_units = []
+				for row in cr.dictfetchall():
+					approver_alloc_units.append(row['alloc_unit_id'])
+				domain = [
+					('allocation_unit_id','in',approver_alloc_units)
+				]
+			if len(domain) > 0:
+				args = domain + args
+			else:
+				return []
+		return super(foms_contract_quota, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
+
+# CRON ---------------------------------------------------------------------------------------------------------------------
+
+	def cron_fillin_periodic_limit(self, cr, uid, context={}):
+		print "eh mulai"
+		def search_create(contract_id, alloc_unit_id, period, yellow_limit, red_limit, balance_credit_per_usage):
+			quota_ids = self.search(cr, uid, [
+				('customer_contract_id','=',contract_id),
+				('allocation_unit_id','=',alloc_unit_id),
+				('period','=',period)
+			])
+			if len(quota_ids) == 0:
+				self.create(cr, uid, {
+					'customer_contract_id': contract_id,
+					'allocation_unit_id': alloc_unit_id,
+					'period': period,
+					'yellow_limit': yellow_limit,
+					'red_limit': red_limit,
+					'balance_credit_per_usage': balance_credit_per_usage,
+				})
+			
+	# ambil semua kontrak aktif dengan service_type by Order
+		contract_obj = self.pool.get('foms.contract')
+		contract_ids = contract_obj.search(cr, uid, [('state','=','active'),('service_type','=','by_order'),('usage_control_level','!=','no_control')])
+		if len(contract_ids) == 0: return
+		current_period = datetime.now().strftime('%m/%Y')
+		next_period = (datetime.now() + timedelta(days=14)).strftime('%m/%Y')
+		for contract in contract_obj.browse(cr, uid, contract_ids):
+			if len(contract.allocation_units) == 0: continue
+			for alloc_unit in contract.allocation_units:
+				search_create(contract.id, alloc_unit.id, current_period, alloc_unit.yellow_limit, alloc_unit.red_limit, alloc_unit.balance_credit_per_usage)
+				if next_period != current_period:
+					search_create(contract.id, alloc_unit.id, next_period, alloc_unit.yellow_limit, alloc_unit.red_limit, alloc_unit.balance_credit_per_usage)
+	
+# SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------
+
+	def webservice_post(self, cr, uid, targets, command, quota_data, webservice_context={}, data_columns=[], context={}):
+		sync_obj = self.pool.get('chjs.webservice.sync.bridge')
+		user_obj = self.pool.get('res.users')
+		contract_obj = self.pool.get('foms.contract')
+	# user spesifik
+		target_user_ids = context.get('target_user_id', [])
+		if target_user_ids:
+			if isinstance(target_user_ids, (int, long)): target_user_ids = [target_user_ids]
+	# massal tergantung target
+		else:
+			if 'pic' in targets:
+				target_user_ids += user_obj.search(cr, uid, [('partner_id','=',quota_data.customer_contract_id.customer_contact_id.id)])
+			if 'approver' in targets:
+				contract_data = contract_obj.browse(cr, uid, quota_data.customer_contract_id.id)
+				for alloc_unit in contract_data.allocation_units:
+					if alloc_unit.id == quota_data.allocation_unit_id.id:
+						cr.execute("SELECT * FROM foms_alloc_unit_approvers WHERE alloc_unit_id = %s" % alloc_unit.id)
+						for row in cr.dictfetchall():
+							target_user_ids.append(row['user_id'])
+		if len(target_user_ids) > 0:
+			for user_id in target_user_ids:
+				sync_obj.post_outgoing(cr, user_id, 'foms.contract.quota', command, quota_data.id, data_columns=data_columns, data_context=webservice_context)
 
 # ==========================================================================================================================
 
@@ -885,11 +1046,12 @@ class foms_contract_quota_change_log(osv.osv):
 
 	_name = "foms.contract.quota.change.log"
 	_description = 'Contract Quota Change Log'
+	_inherit = ['mail.thread','chjs.base.webservice']
 	
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'customer_contract_id': fields.many2one('foms.contract', 'Contract', required=True, ondelete='cascade'),
+		'customer_contract_id': fields.many2one('foms.contract', 'Contract', required=True, ondelete='cascade', domain=[('state','=','active')]),
 		'allocation_unit_id': fields.many2one('foms.contract.alloc.unit', 'Alloc. Unit', required=True, ondelete='cascade'),
 		'state': fields.selection([
 			('draft','Draft'),
@@ -905,6 +1067,8 @@ class foms_contract_quota_change_log(osv.osv):
 		'old_red_limit': fields.float('Old Red Limit', readonly=True),
 		'new_yellow_limit': fields.float('New Yellow Limit'),
 		'new_red_limit': fields.float('New Red Limit'),
+		'old_balance_credit_per_usage': fields.float('Old Credit/Usage', readonly=True),
+		'new_balance_credit_per_usage': fields.float('New Credit/Usage'),
 		'confirm_by': fields.many2one('res.users', 'Confirm By', ondelete='restrict'),
 		'confirm_date': fields.datetime('Confirm Date'),
 		'reject_reason': fields.text('Reject Reason'),
@@ -913,6 +1077,7 @@ class foms_contract_quota_change_log(osv.osv):
 # DEFAULTS ----------------------------------------------------------------------------------------------------------------------
 	
 	_defaults = {
+		'period': lambda *a: datetime.today().strftime('%m/%Y'),
 		'request_date': lambda *a: datetime.today().strftime('%Y-%m-%d %H:%M:%S'),
 		'request_by': lambda self, cr, uid, ctx: uid,
 		'request_longevity': 'temporary',
@@ -924,7 +1089,147 @@ class foms_contract_quota_change_log(osv.osv):
 	_sql_constraints = [
 		('const_new_red_yellow_limit', 'CHECK(new_yellow_limit < new_red_limit)', _('New red limit must be greater than new yellow limit.')),
 	]	
+
+# ONCHANGE -----------------------------------------------------------------------------------------------------------------
+
+	def onchange_quota_data(self, cr, uid, ids, customer_contract_id, allocation_unit_id, period, is_contract):
+		result = {'value': {}, 'domain': {}}
+		if is_contract:
+			result['domain'].update({
+				'allocation_unit_id': [('header_id','=',customer_contract_id)]
+			})
+		if not (customer_contract_id and allocation_unit_id and period): return result
+		quota_obj = self.pool.get('foms.contract.quota')
+		quota_ids = quota_obj.search(cr, uid, [
+			('customer_contract_id','=',customer_contract_id),
+			('allocation_unit_id','=',allocation_unit_id),
+			('period','=',period),
+		])
+		if len(quota_ids) == 0:
+			raise osv.except_osv(_('Usage Control Error'),_('You can only request usage control changes on existing quota.'))
+		quota_data = quota_obj.browse(cr, uid, quota_ids[0])
+		result['value'].update({
+			'old_yellow_limit': quota_data.yellow_limit,
+			'old_red_limit': quota_data.red_limit,
+			'old_balance_credit_per_usage': quota_data.balance_credit_per_usage,
+		})
+		return result
 	
+# OVERRIDES ----------------------------------------------------------------------------------------------------------------
+
+	def create(self, cr, uid, vals, context={}):
+	# ambil ulang old2nya soalnya di formnya readonly
+		temp_data = self.onchange_quota_data(cr, uid, [], vals['customer_contract_id'], vals['allocation_unit_id'], vals['period'], False)
+		vals.update({
+			'old_yellow_limit': temp_data['value']['old_yellow_limit'],
+			'old_red_limit': temp_data['value']['old_red_limit'],
+			'old_balance_credit_per_usage': temp_data['value']['old_balance_credit_per_usage'],
+		})
+	# create lah
+		new_id = super(foms_contract_quota_change_log, self).create(cr, uid, vals, context=context)
+	# ambil managed by dari kontraknya
+		if vals.get('customer_contract_id', False):
+			contract_obj = self.pool.get('foms.contract')
+			contract_data = contract_obj.browse(cr, uid, vals['customer_contract_id'], context=context)
+			managed_by = contract_data.usage_allocation_maintained_by
+	# kalau quota dihandle sama universal, setiap permintaan langsung disetujui
+	# asumsinya sudah ada pembicaraan di telepon or something dan sudah ada kesepakatan
+		if managed_by == 'universal':
+			self.write(cr, uid, [new_id], {
+				'state': 'approved',
+				'confirm_by': uid,
+				'confirm_date': datetime.now(),
+			}, context=context)
+	# kalau di-manage sama customer, asumsinya approver yang minta perubahan quota, ditujukan kepada pic
+	# maka push data ke pic sambil menampilkan notif
+		elif managed_by == 'customer':
+			if context.get('from_webservice', False):
+				new_data = self.browse(cr, uid, new_id, context=context)
+				self.webservice_post(cr, uid, ['pic'], 'create', new_data, webservice_context={
+					'notification': 'contract_quota_limit_request',
+				}, context=context)
+			else:
+			 # cuman boleh dari app, ga boleh langsung input dari Odoo
+				raise osv.except_osv(_('Usage Control Error'),_('Usage control of this contract is handled by customer. You cannot record change log, changes must originate from the customer itself.'))
+		return new_id
+	
+	def write(self, cr, uid, ids, vals, context={}):
+		quota_obj = self.pool.get('foms.contract.quota')
+		alloc_unit_obj = self.pool.get('foms.contract.alloc.unit')
+		result = super(foms_contract_quota_change_log, self).write(cr, uid, ids, vals, context=context)
+	# kalau status berubah jadi approved, maka update contract.quota nya dan alternaively update juga yang di alloc unit 
+	# sesuai permintaan (isi field request_longevity)
+		change_datas = self.browse(cr, uid, ids, context=context)
+		new_state = vals.get('state', False)
+		notif = ''
+		if new_state == 'approved':
+			notif = 'contract_quota_limit_approve'
+			for change_data in change_datas:
+				quota_ids = quota_obj.search(cr, uid, [
+					('customer_contract_id', '=',change_data.customer_contract_id.id),
+					('allocation_unit_id','=',change_data.allocation_unit_id.id),
+					('period','=',change_data.period),
+				])
+				if len(quota_ids) == 0: continue
+				new_data = {}
+				if change_data.new_yellow_limit != None: new_data.update({'yellow_limit': change_data.new_yellow_limit})
+				if change_data.new_red_limit != None: new_data.update({'red_limit': change_data.new_red_limit})
+				if change_data.new_balance_credit_per_usage != None: new_data.update({'balance_credit_per_usage': change_data.new_balance_credit_per_usage})
+				if new_data == {}: continue
+				quota_obj.write(cr, uid, quota_ids, new_data, context=context)
+			# kalau diinginkan perubahan menjadi permanent maka update juga yang di alloc unit nya
+				if change_data.request_longevity == 'permanent':
+					alloc_unit_ids = alloc_unit_obj.search(cr, uid, [
+						('customer_contract_id', '=',change_data.customer_contract_id.id),
+						('allocation_unit_id','=',change_data.allocation_unit_id.id),
+					])
+					if len(alloc_unit_ids) == 0: continue
+					alloc_unit_obj.write(cr, uid, alloc_unit_ids, new_data, context=context)
+				# karena ketika autofill monthly quota bisa kejadian udah keburu dibikin buat yang bulan depannya,
+				# pastikan yang di bulan depannya juga diganti
+					current_period = datetime.now().strftime('%m/%Y')
+					if change_data.period == current_period:
+						next_period = (datetime.now() + timedelta(days=14)).strftime('%m/%Y')
+						quota_ids = quota_obj.search(cr, uid, [
+							('customer_contract_id', '=',change_data.customer_contract_id.id),
+							('allocation_unit_id','=',change_data.allocation_unit_id.id),
+							('period','=',next_period),
+						])
+						if len(quota_ids) == 0: continue
+						quota_obj.write(cr, uid, quota_ids, new_data, context=context)
+		elif new_state == 'rejected':
+			notif = 'contract_quota_limit_reject'
+	# apapun yang terjadi, broadcast perubahan ke pic dan approver alloc unit ybs
+		for change_data in change_datas:
+			self.webservice_post(cr, uid, ['pic','approver'], 'create', change_data, webservice_context=notif and {
+				'notification': notif,
+			} or {}, context=context)
+		return result
+
+# SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------
+
+	def webservice_post(self, cr, uid, targets, command, quota_data, webservice_context={}, data_columns=[], context={}):
+		sync_obj = self.pool.get('chjs.webservice.sync.bridge')
+		user_obj = self.pool.get('res.users')
+		contract_obj = self.pool.get('foms.contract')
+	# user spesifik
+		target_user_ids = context.get('target_user_id', [])
+		if target_user_ids:
+			if isinstance(target_user_ids, (int, long)): target_user_ids = [target_user_ids]
+	# massal tergantung target
+		else:
+			if 'pic' in targets:
+				target_user_ids += user_obj.search(cr, uid, [('partner_id','=',quota_data.customer_contract_id.customer_contact_id.id)])
+			if 'approver' in targets:
+				contract_data = contract_obj.browse(cr, uid, quota_data.customer_contract_id.id)
+				for alloc_unit in contract_data.allocation_units:
+					if alloc_unit.id == quota_data.allocation_unit_id.id:
+						cr.execute("SELECT * FROM foms_alloc_unit_approvers WHERE alloc_unit_id = %s" % alloc_unit.id)
+						for row in cr.dictfetchall():
+							target_user_ids.append(row['user_id'])
+		if len(target_user_ids) > 0:
+			for user_id in target_user_ids:
+				sync_obj.post_outgoing(cr, user_id, 'foms.contract.quota.change.log', command, quota_data.id, data_columns=data_columns, data_context=webservice_context)
 
 # ==========================================================================================================================
 

@@ -39,7 +39,7 @@ class hr_expense_expense(osv.osv):
 		'contract_id': fields.many2one('foms.contract','Contract Reference'),
 		'order_id': fields.many2one('foms.order', 'Order'),
 		'source': fields.selection(_EXPENSE_INPUT_SOURCE,'Source', readonly=True),
-		'prove_of_payment': fields.binary('Proof of Payment'),
+		'proof_of_payment': fields.binary('Proof of Payment'),
 	}
 	
 
@@ -52,6 +52,7 @@ class hr_expense_expense(osv.osv):
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
 	def create(self, cr, uid, vals, context={}):
+		# print vals.get('proof_of_payment', False)
 		context = context and context or {}
 	# bila ini dari mobile apps, asumsikan employee_id adalah user_id driver, sehingga harus dicari employee_idnya
 		if context.get('from_webservice') == True:

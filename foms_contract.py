@@ -1194,19 +1194,14 @@ class foms_contract_quota_change_log(osv.osv):
 				])
 				if len(quota_ids) == 0: continue
 				new_data = {}
-				if change_data.new_yellow_limit != None: new_data.update({'yellow_limit': change_data.new_yellow_limit})
-				if change_data.new_red_limit != None: new_data.update({'red_limit': change_data.new_red_limit})
-				if change_data.new_balance_credit_per_usage != None: new_data.update({'balance_credit_per_usage': change_data.new_balance_credit_per_usage})
+				if change_data.new_yellow_limit: new_data.update({'yellow_limit': change_data.new_yellow_limit})
+				if change_data.new_red_limit: new_data.update({'red_limit': change_data.new_red_limit})
+				if change_data.new_balance_credit_per_usage: new_data.update({'balance_credit_per_usage': change_data.new_balance_credit_per_usage})
 				if new_data == {}: continue
 				quota_obj.write(cr, uid, quota_ids, new_data, context=context)
 			# kalau diinginkan perubahan menjadi permanent maka update juga yang di alloc unit nya
 				if change_data.request_longevity == 'permanent':
-					alloc_unit_ids = alloc_unit_obj.search(cr, uid, [
-						('customer_contract_id', '=',change_data.customer_contract_id.id),
-						('allocation_unit_id','=',change_data.allocation_unit_id.id),
-					])
-					if len(alloc_unit_ids) == 0: continue
-					alloc_unit_obj.write(cr, uid, alloc_unit_ids, new_data, context=context)
+					alloc_unit_obj.write(cr, uid, [change_data.allocation_unit_id.id], new_data, context=context)
 				# karena ketika autofill monthly quota bisa kejadian udah keburu dibikin buat yang bulan depannya,
 				# pastikan yang di bulan depannya juga diganti
 					current_period = datetime.now().strftime('%m/%Y')
@@ -1222,11 +1217,43 @@ class foms_contract_quota_change_log(osv.osv):
 		elif new_state == 'rejected':
 			notif = 'contract_quota_limit_reject'
 	# apapun yang terjadi, broadcast perubahan ke pic dan approver alloc unit ybs
+		print notif
 		for change_data in change_datas:
 			self.webservice_post(cr, uid, ['pic','approver'], 'create', change_data, webservice_context=notif and {
 				'notification': notif,
 			} or {}, context=context)
 		return result
+
+	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
+		context = context and context or {}
+		user_obj = self.pool.get('res.users')
+		contract_obj = self.pool.get('foms.contract')
+	# kalau diminta untuk mengambil semua order by user_id tertentu
+		if context.get('by_user_id',False):
+			domain = []
+			user_id = context.get('user_id', uid)
+			is_pic = user_obj.has_group(cr, user_id, 'universal.group_universal_customer_pic')
+			is_approver = user_obj.has_group(cr, user_id, 'universal.group_universal_approver')
+		# kalau pic, domainnya menjadi semua order dengan contract yang pic nya adalah partner terkait
+			if is_pic:
+				user_data = user_obj.browse(cr, uid, user_id)
+				if user_data.partner_id:
+					contract_ids = contract_obj.search(cr, uid, [('customer_contact_id','=',user_data.partner_id.id)])
+					domain.append(('customer_contract_id','in',contract_ids))
+		# kalau approver, ambil semua order yang allocation unit nya di bawah dia
+			if is_approver:
+				cr.execute("SELECT * FROM foms_alloc_unit_approvers WHERE user_id = %s" % user_id)
+				approver_alloc_units = []
+				for row in cr.dictfetchall():
+					approver_alloc_units.append(row['alloc_unit_id'])
+				domain = [
+					('allocation_unit_id','in',approver_alloc_units)
+				]
+			if len(domain) > 0:
+				args = domain + args
+			else:
+				return []
+		return super(foms_contract_quota_change_log, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
 
 # SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------
 
@@ -1274,10 +1301,10 @@ class foms_contract_quota_usage_log(osv.osv):
 # METHODS ------------------------------------------------------------------------------------------------------------------
 
 # kalau ada pencatatan usage log maka current_usage monthl quota contract ybs juga berubah. maka post outgoing di month quota ybs
-	def _post_monthly_quota_changes(self, cr, uid, change_log_id):
+	def _post_monthly_quota_changes(self, cr, uid, change_log_id, context={}):
 		change_log_data = self.browse(cr, uid, change_log_id)
-		customer_contract_id = change_log_data.customer_contract_id
-		allocation_unit_id = change_log_data.allocation_unit_id
+		customer_contract_id = change_log_data.customer_contract_id.id
+		allocation_unit_id = change_log_data.allocation_unit_id.id
 		period = change_log_data.period
 		quota_obj = self.pool.get('foms.contract.quota')
 		quota_ids = quota_obj.search(cr, uid, [
@@ -1285,7 +1312,7 @@ class foms_contract_quota_usage_log(osv.osv):
 			('allocation_unit_id','=',allocation_unit_id),
 			('period','=',period),
 		])
-		if len(quota_ids) == 0:
+		if len(quota_ids) > 0:
 			for quota_data in quota_obj.browse(cr, uid, quota_ids, context=context):
 				quota_obj.webservice_post(cr, uid, ['approver','pic'], 'update', quota_data, context=context)
 		

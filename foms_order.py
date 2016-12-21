@@ -37,6 +37,7 @@ class foms_order(osv.osv):
 			('shuttle','Shuttle')], 'Service Type', required=True),
 		'over_quota_status': fields.selection((
 			('normal','Normal'),
+			('yellow','Yellow Limit'),
 			('warning','Over-quota with Warning'),
 			('approval','Over-quota with Approval'),
 		),'Over-Quota Status', required=True),
@@ -183,7 +184,7 @@ class foms_order(osv.osv):
 					quota_obj = self.pool.get('foms.contract.quota')
 					quota_ids = quota_obj.search(cr, uid, [
 						('customer_contract_id','=',new_data.customer_contract_id.id),
-						('allocation_unit_id','=',new_data.alloc_unit_id),
+						('allocation_unit_id','=',new_data.alloc_unit_id.id),
 						('period','=',datetime.strptime(new_data.request_date,'%Y-%m-%d %H:%M:%S').strftime('%m/%Y')),
 					])
 					if len(quota_ids) > 0:
@@ -288,7 +289,7 @@ class foms_order(osv.osv):
 							'customer_contract_id': contract.id,
 							'allocation_unit_id': order_data.alloc_unit_id.id,
 							'period': datetime.now().strftime('%m/%Y'),
-							'usage_amount': alloc_unit_usage,
+							'usage_amount': order_data.alloc_unit_usage,
 						})
 				# apakah source_area dan dest_area ada di bawah homebase yang sama?
 				# kalo sama, langsung cariin mobil dan supir

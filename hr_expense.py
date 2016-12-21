@@ -32,7 +32,15 @@ class hr_expense_expense(osv.osv):
 	_name = 'hr.expense.expense'
 	
 	_valid_commands = ['search_read', 'search_by_user_id', 'create', 'update', 'delete', 'expense_types']
-	
+
+# FIELD FUNCTION -----------------------------------------------------------------------------------------------------------
+
+	def _has_proof_of_payment(self, cr, uid, ids, field_name, arg, context):
+		res = {}
+		for row in self.browse(cr, uid, ids, context):
+			res[row.id] = not (row.proof_of_payment == False or row.proof_of_payment == None)
+		return res
+
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
@@ -40,6 +48,7 @@ class hr_expense_expense(osv.osv):
 		'order_id': fields.many2one('foms.order', 'Order'),
 		'source': fields.selection(_EXPENSE_INPUT_SOURCE,'Source', readonly=True),
 		'proof_of_payment': fields.binary('Proof of Payment'),
+		'has_proof_of_payment': fields.function(_has_proof_of_payment, type="boolean", method=True, string="Has Proof of Payment"),
 	}
 	
 
@@ -126,6 +135,13 @@ class hr_expense_expense(osv.osv):
 					'id': expense_type.id,
 					'name': expense_type.name,
 				})
+		elif command == 'get_proof_of_payment':
+			expense_data = self.browse(cr, uid, data_id)
+			if expense_data.proof_of_payment:
+				result = str(expense_data.proof_of_payment).replace('+','-')
+				result = result.replace('/','_')
+			else:
+				result = None
 		return result
 
 # ==========================================================================================================================

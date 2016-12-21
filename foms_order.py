@@ -35,6 +35,11 @@ class foms_order(osv.osv):
 			('full_day','Full-day Service'),
 			('by_order','By Order'),
 			('shuttle','Shuttle')], 'Service Type', required=True),
+		'over_quota_status': fields.selection((
+			('normal','Normal'),
+			('warning','Over-quota with Warning'),
+			('approval','Over-quota with Approval'),
+		),'Over-Quota Status', required=True),
 		'request_date': fields.datetime('Request Date', required=True),
 		'state': fields.selection(_ORDER_STATE, 'State', required=True, track_visiblity="onchange"),
 		'order_by': fields.many2one('res.users', 'Order By', ondelete='restrict'),
@@ -97,6 +102,7 @@ class foms_order(osv.osv):
 		'is_lk_pp': False,
 		'is_lk_inap': False,
 		'create_source': 'central',
+		'over_quota_status': 'normal',
 	}	
 
 # CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
@@ -120,10 +126,29 @@ class foms_order(osv.osv):
 				raise osv.except_osv(_('Order Error'),_('Please input start date.'))
 			start_date = datetime.strptime(vals['start_planned_date'],'%Y-%m-%d %H:%M:%S')
 		# cek start date harus minimal n jam dari sekarang
-			now = datetime.now() - timedelta(hours=7)
+			now = datetime.now()
 			delta = float((start_date - now).days * 86400 + (start_date - now).seconds) / 3600
 			if delta < contract_data.by_order_minimum_hours:
 				raise osv.except_osv(_('Order Error'),_('Start date is too close to current time. There must be at least %s hours between now and start date.' % contract_data.by_order_minimum_hours))
+		# kalau usage control diaktifkan, isi over_quota_status
+			if contract_data.usage_control_level != 'no_control':
+				quota_obj = self.pool.get('foms.contract.quota')
+				current_quota = quota_obj.get_current_quota_usage(cr, uid, vals['customer_contract_id'], vals['alloc_unit_id'])
+				if not current_quota:
+					raise osv.except_osv(_('Order Error'),_('Quota for this month has not been set. Please contact PT Universal.'))
+				over_quota_status = 'normal'
+				after_usage = current_quota.balance_credit_per_usage + current_quota.current_usage
+				if after_usage >= current_quota.red_limit:
+					if contract_data.usage_control_level == 'warning':
+						over_quota_status = 'warning'
+					elif contract_data.usage_control_level == 'approval':
+						over_quota_status = 'approval'
+				elif after_usage >= current_quota.yellow_limit:
+					over_quota_status = 'yellow'
+				vals.update({
+					'alloc_unit_usage': current_quota.balance_credit_per_usage,
+					'over_quota_status': over_quota_status,
+				})
 	# bikin nomor order dulu
 		if 'name' not in vals:
 			vals.update({'name': 'XXX'}) # later
@@ -149,10 +174,30 @@ class foms_order(osv.osv):
 			}, context=context)
 	# untuk order By Order, post notification ke approver yang ada + bookernya untuk konfirmasi order sudah masuk
 		if new_data.service_type == 'by_order':
+			webservice_context = {
+					'notification': 'order_approve',
+			}
+		# kalau usage control di-on-kan, ada sedikit perbedaan di notificationnya
+			if new_data.customer_contract_id.usage_control_level != 'no_control':
+				if new_data.over_quota_status in ['warning','approval']:
+					quota_obj = self.pool.get('foms.contract.quota')
+					quota_ids = quota_obj.search(cr, uid, [
+						('customer_contract_id','=',new_data.customer_contract_id.id),
+						('allocation_unit_id','=',new_data.alloc_unit_id),
+						('period','=',datetime.strptime(new_data.request_date,'%Y-%m-%d %H:%M:%S').strftime('%m/%Y')),
+					])
+					if len(quota_ids) > 0:
+						quota_data = quota_obj.browse(cr, uid, quota_ids[0])
+						red_limit = quota_data.red_limit
+					else:
+						red_limit = 0
+					webservice_context = {
+						'notification': 'order_over_quota_%s' % new_data.over_quota_status,
+						'order_usage': new_data.alloc_unit_usage,
+						'red_limit': red_limit,
+					}
 			self.webservice_post(cr, uid, ['approver'], 'create', new_data, \
-				webservice_context={
-						'notification': 'order_approve',
-				}, context=context)
+				webservice_context=webservice_context, context=context)
 		# tetep notif ke booker bahwa ordernya udah masuk
 			self.webservice_post(cr, uid, ['booker'], 'update', new_data, \
 				webservice_context={
@@ -195,10 +240,9 @@ class foms_order(osv.osv):
 	# kalau ada perubahan status...
 		if vals.get('state', False):
 			for order_data in orders:
+				contract = order_data.customer_contract_id
 			# kalau status berubah menjadi ready, maka post ke mobile app
 				if vals['state'] == 'ready':
-					print "masuk ready"
-					print order_data.service_type
 				# kalau fullday karena langsung ready maka asumsinya di mobile app belum ada order itu. maka commandnya adalah create
 					if order_data.service_type == 'full_day':
 						self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'create', order_data, context=context)
@@ -227,8 +271,7 @@ class foms_order(osv.osv):
 						webservice_context={
 								'notification': 'order_reject',
 						}, context=context)
-			# kalau order di-confirm maka isi confirmed_by dan confirmed_at lalu coba cari fleet yang tersedia di jam itu
-			# khusus service type By Order
+			# kalau order di-confirm (khusus service type By Order)
 				elif vals['state'] == 'confirmed' and order_data.service_type == 'by_order':
 					user_id = context.get('user_id', uid)
 				# isi data konfirmasi
@@ -236,10 +279,21 @@ class foms_order(osv.osv):
 						'confirm_by': user_id,
 						'confirm_date': datetime.now(),
 					}, context=context)
-					central_user_ids = user_obj.get_user_ids_by_group(cr, uid, 'universal', 'group_universal_central_dispatch')
-					central_user_ids += [SUPERUSER_ID]
+				# masukin ke usage log, bila memang pakai usage control
+					if contract.usage_control_level != 'no_control':
+						usage_log_obj = self.pool.get('foms.contract.quota.usage.log')
+						usage_log_obj.create(cr, uid, {
+							'usage_date': datetime.now(),
+							'order_id': order_data.id,
+							'customer_contract_id': contract.id,
+							'allocation_unit_id': order_data.alloc_unit_id.id,
+							'period': datetime.now().strftime('%m/%Y'),
+							'usage_amount': alloc_unit_usage,
+						})
 				# apakah source_area dan dest_area ada di bawah homebase yang sama?
 				# kalo sama, langsung cariin mobil dan supir
+					central_user_ids = user_obj.get_user_ids_by_group(cr, uid, 'universal', 'group_universal_central_dispatch')
+					central_user_ids += [SUPERUSER_ID]
 					if order_data.origin_area_id and order_data.dest_area_id and \
 					order_data.origin_area_id.homebase_id.id == order_data.dest_area_id.homebase_id.id:
 					# cari vehicle dan driver yang available di jam itu
@@ -278,6 +332,15 @@ class foms_order(osv.osv):
 							'actual_vehicle_id': order_data.assigned_vehicle_id.id,
 						})
 					super(foms_order, self).write(cr, uid, [order_data.id], update_data, context={})
+			# kalau dibatalin dan ini adalah by_order
+				elif vals['state'] == 'canceled' and order_data.service_type == 'by_order':
+				# kalau kontraknya pakai usage control, maka hapus dari usage log
+					if contract.usage_control_level != 'no_control':
+						usage_log_obj = self.pool.get('foms.contract.quota.usage.log')
+						usage_log_ids = usage_log_obj.search(cr, uid, [('order_id','=',order_data.id)])
+						if len(usage_log_ids) > 0:
+							usage_log_obj.unlink(cr, uid, usage_log_ids, context=context)
+					self.webservice_post(cr, uid, ['pic','driver','booker','approver'], 'update', order_data, context=context)
 				else:
 					self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'update', order_data, context=context)
 			

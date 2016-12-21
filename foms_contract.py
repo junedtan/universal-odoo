@@ -889,6 +889,17 @@ class foms_contract_alloc_unit(osv.osv):
 	}	
 	
 # CONSTRAINTS --------------------------------------------------------------------------------------------------------------
+		
+	def _constraint_booker_approver(self, cr, uid, ids, context=None):
+		for data in self.browse(cr, uid, ids, context):
+			if data.header_id.service_type == 'by_order':
+				if len(data.approver_ids) == 0 or len(data.booker_ids) -- 0:
+					return False
+		return True
+	
+	_constraints = [
+		(_constraint_booker_approver, _('For By-Order service type, every allocation unit must have at least one approver and one booker.'), ['approver_ids','booker_ids'])
+	]
 	
 	_sql_constraints = [
 		('unique_contract_alloc_unit', 'UNIQUE(header_id,name)', _('Please input unique contract allocation unit.')),
@@ -982,6 +993,17 @@ class foms_contract_quota(osv.osv):
 				return []
 		return super(foms_contract_quota, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
 
+# METHODS ------------------------------------------------------------------------------------------------------------------
+
+	def get_current_quota_usage(self, cr, uid, customer_contract_id, allocation_unit_id):
+		current_period = datetime.now().strftime('%m/%Y')
+		ids = self.search(cr, uid, [
+			('customer_contract_id','=',customer_contract_id),
+			('allocation_unit_id','=',allocation_unit_id),
+			('period','=',current_period),
+		])
+		return ids and self.browse(cr, uid, ids[0]) or None
+		
 # CRON ---------------------------------------------------------------------------------------------------------------------
 
 	def cron_fillin_periodic_limit(self, cr, uid, context={}):
@@ -1248,4 +1270,33 @@ class foms_contract_quota_usage_log(osv.osv):
 		'period': fields.char('Period', required=True, readonly=True),
 		'usage_amount': fields.float('Usage Amount', required=True, readonly=True),
 	}
+
+# METHODS ------------------------------------------------------------------------------------------------------------------
+
+# kalau ada pencatatan usage log maka current_usage monthl quota contract ybs juga berubah. maka post outgoing di month quota ybs
+	def _post_monthly_quota_changes(self, cr, uid, change_log_id):
+		change_log_data = self.browse(cr, uid, change_log_id)
+		customer_contract_id = change_log_data.customer_contract_id
+		allocation_unit_id = change_log_data.allocation_unit_id
+		period = change_log_data.period
+		quota_obj = self.pool.get('foms.contract.quota')
+		quota_ids = quota_obj.search(cr, uid, [
+			('customer_contract_id','=',customer_contract_id),
+			('allocation_unit_id','=',allocation_unit_id),
+			('period','=',period),
+		])
+		if len(quota_ids) == 0:
+			for quota_data in quota_obj.browse(cr, uid, quota_ids, context=context):
+				quota_obj.webservice_post(cr, uid, ['approver','pic'], 'update', quota_data, context=context)
+		
+# OVERRIDE -----------------------------------------------------------------------------------------------------------------
+
+	def create(self, cr, uid, vals, context={}):
+		new_id = super(foms_contract_quota_usage_log, self).create(cr, uid, vals, context=context)
+		self._post_monthly_quota_changes(cr, uid, new_id)
+		return new_id
 	
+	def unlink(self, cr, uid, ids, context={}):
+		for id in ids:
+			self._post_monthly_quota_changes(cr, uid, id)
+		return super(foms_contract_quota_usage_log, self).unlink(cr, uid, ids, context=context)

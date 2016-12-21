@@ -14,5 +14,18 @@
 		  <field eval="" name="args" />
 		</record>
 		
+		<record forcecreate="True" id="ir_cron_autofill_by_order_quota" model="ir.cron">
+		  <field name="name">Autofill usage quota for usage-control-enabled By Order contracts</field>
+		  <field eval="True" name="active" />
+		  <field name="user_id" ref="base.user_root" />
+		  <field name="interval_number">6</field>
+		  <field name="interval_type">hours</field>
+		  <field name="numbercall">-1</field>
+		  <field name="active">1</field>
+		  <field eval="'foms.contract.quota'" name="model" />
+		  <field eval="'cron_fillin_periodic_limit'" name="function" />
+		  <field eval="" name="args" />
+		</record>
+		
 	</data>
 </openerp>

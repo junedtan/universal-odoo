@@ -121,37 +121,33 @@
 								</tree>
 							</field>
 						</page>
-						<page string="Allocation Units" attrs="{'invisible': [('service_type','not in',['by_order','shuttle'])]}">
-							<field name="allocation_units">
-								<tree version="7.0" editable="bottom">
-									<field name="name" />
-									<field name="approver_ids" widget="many2many_tags" />
-									<field name="booker_ids" widget="many2many_tags" />
-								</tree>
-							</field>
-						</page>
-						<page string="Usage Control" attrs="{'invisible': [('service_type','not in',['by_order'])]}">
-							<group>
-								<field name="usage_control_level" class="oe_inline" />
-							</group>
-							<group attrs="{'invisible': [('usage_control_level','not in',['warning','approval'])]}">
-								<group>
-									<field name="usage_allocation_maintained_by" />
-									<field name="usage_control_setting" />
-									<field name="global_yellow_limit" attrs="{'invisible': [('usage_control_setting','!=','global')]}" />
-									<field name="global_red_limit" attrs="{'invisible': [('usage_control_setting','!=','global')]}" />
-									<field name="global_balance_credit_per_usage" attrs="{'invisible': [('usage_control_setting','!=','global')]}" />
-								</group>
-							</group>
-							<group attrs="{'invisible': [('usage_control_setting','!=','per_alloc_unit')]}">
-								<field name="allocation_unit_limits" nolabel="1">
+						<page string="Units &amp; Usage Control" attrs="{'invisible': [('service_type','not in',['by_order'])]}">
+							<group string="Allocation Units">
+								<field name="allocation_units" nolabel="1">
 									<tree version="7.0" editable="bottom">
 										<field name="name" />
+										<field name="approver_ids" widget="many2many_tags" />
+										<field name="booker_ids" widget="many2many_tags" />
 										<field name="yellow_limit" />
 										<field name="red_limit" />
 										<field name="balance_credit_per_usage" />
 									</tree>
 								</field>
+							</group>
+							<group colspan="4">
+								<group string="Usage Control">
+									<field name="usage_control_level" class="oe_inline" />
+									<field name="usage_allocation_maintained_by" attrs="{'invisible': [('usage_control_level','not in',['warning','approval'])]}" />
+								</group>
+								<group attrs="{'invisible': [('usage_control_level','not in',['warning','approval'])]}" string="Autofills">
+									<p colspan="4">
+										Use below fields to automatically fill in limits and credit/usage for all allocation units above. 
+										You still can change both for individual allocation units.
+									</p>
+									<field name="global_yellow_limit" on_change="onchange_global_yellow_limit(global_yellow_limit, allocation_units)" />
+									<field name="global_red_limit" on_change="onchange_global_red_limit(global_red_limit, allocation_units)" />
+									<field name="global_balance_credit_per_usage" on_change="onchange_global_credit_per_usage(global_balance_credit_per_usage, allocation_units)" />
+								</group>
 							</group>
 						</page>
 						<page string="Other Info">
@@ -221,6 +217,137 @@
 			</field>
 		</record>
 		
+		<!-- CONTRACT QUOTA MANAGEMENT -->
 		
+		<record model="ir.ui.view" id="foms_contract_quota_form">
+			<field name="name">foms.contract.quota.form</field>	
+			<field name="model">foms.contract.quota</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Monthly Usage Quota" create="false" delete="false">
+					<group>
+						<group>
+							<field name="customer_contract_id" />
+							<field name="allocation_unit_id" />
+							<field name="period" />
+						</group>
+						<group>
+							<field name="current_usage" />
+							<field name="yellow_limit" />
+							<field name="red_limit" />
+							<field name="balance_credit_per_usage" />
+						</group>
+					</group>
+					<div class="oe_chatter">
+						<field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+						<field name="message_ids" widget="mail_thread"/>
+					</div>
+				</form>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="foms_contract_quota_tree">
+			<field name="name">foms.contract.quota.tree</field>	
+			<field name="model">foms.contract.quota</field>
+			<field name="arch" type="xml">
+				<tree version="7.0" string="Monthly Usage Quota" create="false" delete="false">
+					<field name="customer_contract_id" />
+					<field name="allocation_unit_id" />
+					<field name="period" />
+					<field name="current_usage" />
+					<field name="yellow_limit" />
+					<field name="red_limit" />
+					<field name="balance_credit_per_usage" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="foms_contract_quota_search">
+			<field name="name">foms.contract.quota.search</field>	
+			<field name="model">foms.contract.quota</field>
+			<field name="arch" type="xml">
+				<search string="Monthly Quota Search">
+					<field name="customer_contract_id" string="Contract" />
+					<field name="allocation_unit_id" string="Alloc. Unit" />
+					<field name="period" string="Period" />
+					<filter string="Current" name="filter_current" domain="[('period','=',context_today().strftime('%m/%Y'))]" />
+				</search>
+			</field>
+		</record>
+
+		<!-- CONTRACT QUOTA MANAGEMENT -->
+		
+		<record model="ir.ui.view" id="foms_contract_quota_change_log_form">
+			<field name="name">foms.contract.quota.change.log.form</field>	
+			<field name="model">foms.contract.quota.change.log</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Quota Change Log" delete="false">
+					<header>
+						<button string="Approve" name="action_approve" type="object" states="draft" confirm="Are you sure to approve this quota change request?" />
+						<button string="Reject" name="action_reject" type="object" states="draft" />
+						<field name="state" widget="statusbar" readonly="1" />
+					</header>
+					<group>
+						<group>
+							<field name="customer_contract_id" on_change="onchange_quota_data(customer_contract_id, allocation_unit_id, period, True)" />
+							<field name="allocation_unit_id" on_change="onchange_quota_data(customer_contract_id, allocation_unit_id, period, False)" />
+							<field name="period" on_change="onchange_quota_data(customer_contract_id, allocation_unit_id, period, False)" />
+							<field name="request_longevity" />
+							<field name="request_by" readonly="1" />
+							<field name="request_date" readonly="1" />
+						</group>
+						<group>
+							<field name="confirm_by" readonly="1" />
+							<field name="confirm_date" readonly="1" />
+							<field name="reject_reason" />
+						</group>
+					</group>
+					<group col="6">
+						<group string="Yellow Limit">
+							<field name="old_yellow_limit" string="From" />
+							<field name="new_yellow_limit" string="To" />
+						</group>
+						<group string="Red Limit">
+							<field name="old_red_limit" string="From" />
+							<field name="new_red_limit" string="To" />
+						</group>
+						<group string="Credit/Usage">
+							<field name="old_balance_credit_per_usage" string="From" />
+							<field name="new_balance_credit_per_usage" string="To" />
+						</group>
+					</group>
+				</form>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="foms_contract_quota_change_log_tree">
+			<field name="name">foms.contract.quota.change.log.tree</field>	
+			<field name="model">foms.contract.quota.change.log</field>
+			<field name="arch" type="xml">
+				<tree version="7.0" string="Quota Change Log" delete="false">
+					<field name="customer_contract_id" />
+					<field name="allocation_unit_id" />
+					<field name="period" />
+					<field name="request_longevity" />
+					<field name="new_yellow_limit" />
+					<field name="new_red_limit" />
+					<field name="new_balance_credit_per_usage" />
+					<field name="state" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="foms_contract_quota_change_log_search">
+			<field name="name">foms.contract.quota.change.log.search</field>	
+			<field name="model">foms.contract.quota.change.log</field>
+			<field name="arch" type="xml">
+				<search string="Quota Change Log Search">
+					<field name="customer_contract_id" string="Contract" />
+					<field name="allocation_unit_id" string="Alloc. Unit" />
+					<field name="period" string="Period" />
+					<filter string="Current" name="filter_current" domain="[('period','=',context_today().strftime('%m/%Y'))]" />
+				</search>
+			</field>
+		</record>
+
 	</data>
 </openerp>

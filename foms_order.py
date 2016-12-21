@@ -37,7 +37,7 @@ class foms_order(osv.osv):
 			('shuttle','Shuttle')], 'Service Type', required=True),
 		'request_date': fields.datetime('Request Date', required=True),
 		'state': fields.selection(_ORDER_STATE, 'State', required=True, track_visiblity="onchange"),
-		'order_by': fields.many2one('res.users', 'Order By', required=True, ondelete='restrict'),
+		'order_by': fields.many2one('res.users', 'Order By', ondelete='restrict'),
 		'confirm_date': fields.datetime('Confirm Date'),
 		'confirm_by': fields.many2one('res.users', 'Confirm By', ondelete='restrict'),
 		'cancel_reason': fields.many2one('foms.order.cancel.reason', 'Cancel Reason'),

@@ -9,8 +9,13 @@
 			<field name="arch" type="xml">
 				<xpath expr="//field[@name='name']" position="after">
 					<field name="contract_id" />
+					<field name="order_id" />
 					<field name="source" />
-					<field name="proof_of_payment" widget="image" />
+				</xpath>
+				<xpath expr="//page[@string='Accounting']" position="before">
+					<page string="Proof of Payment">
+						<field name="proof_of_payment" widget="image" />
+					</page>
 				</xpath>
 			</field>
 		</record>

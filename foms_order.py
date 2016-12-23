@@ -269,6 +269,9 @@ class foms_order(osv.osv):
 							webservice_context={
 								'notification': 'order_ready_driver',
 							}, context=context)
+				# kalau shuttle, cukup push data order ini ke app driver
+					elif order_data.service_type == 'shuttle':
+						self.webservice_post(cr, uid, ['driver'], 'create', order_data, context=context)
 			# kalau state menjadi rejected dan service_type == by_order, maka post_outgoing + notif ke booker. 
 				elif vals['state'] == 'rejected' and order_data.service_type == 'by_order':
 					self.webservice_post(cr, uid, ['booker'], 'update', order_data, \

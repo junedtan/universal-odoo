@@ -156,8 +156,64 @@ class foms_contract(osv.osv):
 		('const_holiday_allowance', 'CHECK(fee_holiday_allowance >= 0)', _('Fee holiday allowance must be greater than or equal to zero.')),
 	]		
 
+# METHODS ------------------------------------------------------------------------------------------------------------------
+
+	def set_to_planned(self, cr, uid, contract_id, context={}):
+	# ini di-load ulang supaya mendapatkan data schedule terbaru
+		contract_data = self.browse(cr, uid, contract_id)
+	# semua driver harus sudah punya user_id
+		user_obj = self.pool.get('res.users')
+		if contract_data.car_drivers:
+			for fleet in contract_data.car_drivers:
+				if not fleet.driver_id: continue
+				if not fleet.driver_id.user_id.id or not user_obj.has_group(cr, fleet.driver_id.user_id.id, 'universal.group_universal_driver'):
+					raise osv.except_osv(_('Contract Error'),_('Driver %s has not been given user login, or the user login does not belong to Driver group.') % fleet.driver_id.name)
+	# fullday user harus termasuk group fullday-service passenger sudah diset passwordnya
+		if contract_data.service_type in ['full_day']:
+			for fleet in contract_data.car_drivers:
+				if not fleet.fullday_user_id: continue
+				if not user_obj.has_group(cr, fleet.fullday_user_id.id, 'universal.group_universal_passenger'):
+					raise osv.except_osv(_('Contract Error'),_('User %s does not belong to Fullday-service Passenger group.') % fleet.fullday_user_id.name)
+				user_data = user_obj.browse(cr, uid, fleet.fullday_user_id.id)
+				if user_data.password_crypt == '':
+					raise osv.except_osv(_('Contract Error'),_('A password has not been set to user %s. Password (PIN) is needed to confirm start/finish order.') % fleet.fullday_user_id.name)
+	# kalau status sekarang adalah confirmed, ubah menjadi planned
+		if contract_data.state in ['confirmed']:
+		# ...hanya jika semua vehicle dan driver sudah diset
+			all_set = True
+			if contract_data.car_drivers:
+				for fleet in contract_data.car_drivers:
+					if not fleet.fleet_vehicle_id or not fleet.driver_id:
+						all_set = False
+						break
+					if contract_data.service_type in ['full_day']:
+						if not fleet.fullday_user_id:
+							all_set = False
+							break
+			else:
+				all_set = False
+		# khusus untuk shuttle, shuttle schedule juga sudah harus diset
+			if contract_data.service_type == 'shuttle':
+				if not contract_data.shuttle_schedules:
+					all_set = False
+			if all_set:
+				self.write(cr, uid, [contract_id], {
+					'state': 'planned',
+				})
+		
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 
+	def write(self, cr, uid, ids, vals, context={}):
+		result = super(foms_contract, self).write(cr, uid, ids, vals, context=context)
+	# kalau berubah menjadi planned maka kirim dirty outgoing ke semua pihak terkait
+		if vals.get('state', False) == 'planned':
+			for contract in self.browse(cr, uid, ids, context=context):
+			# sync post outgoing ke user-user yang terkait (PIC, driver, PJ Alloc unit) , memberitahukan ada contract baru
+				self.webservice_post(cr, uid, ['pic','driver','fullday_passenger','booker','approver'], 'create', contract, webservice_context={
+					'notification': 'contract_new',
+				}, context=context)
+		return result
+		
 	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
 		context = context and context or {}
 		user_obj = self.pool.get('res.users')
@@ -235,6 +291,35 @@ class foms_contract(osv.osv):
 				return []
 		return super(foms_contract, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
 	
+# SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------
+
+	def webservice_post(self, cr, uid, targets, command, contract_data, webservice_context={}, data_columns=[], context=None):
+		sync_obj = self.pool.get('chjs.webservice.sync.bridge')
+		user_obj = self.pool.get('res.users')
+		if command == 'create':
+			if 'pic' in targets:
+				pic_user_ids = user_obj.search(cr, uid, [('partner_id','=',contract_data.customer_contact_id.id)])
+				if len(pic_user_ids) > 0:
+					sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.contract', command, contract_data.id, data_context=webservice_context)
+			if 'driver' in targets:
+				for car_driver in contract_data.car_drivers:
+					if not car_driver.driver_id: continue
+					sync_obj.post_outgoing(cr, car_driver.driver_id.user_id.id, 'foms.contract', command, contract_data.id, data_context=webservice_context)
+			if 'fullday_passenger' in targets:
+				for car_driver in contract_data.car_drivers:
+					if not car_driver.fullday_user_id: continue
+					sync_obj.post_outgoing(cr, car_driver.fullday_user_id.id, 'foms.contract', command, contract_data.id, data_context=webservice_context)
+			if 'booker' in targets:
+				for alloc_unit in contract_data.allocation_units:
+					cr.execute("SELECT * FROM foms_alloc_unit_bookers WHERE alloc_unit_id = %s" % alloc_unit.id)
+					for row in cr.dictfetchall():
+						sync_obj.post_outgoing(cr, row['booker_id'], 'foms.contract', command, contract_data.id, data_context=webservice_context)
+			if 'approver' in targets:
+				for alloc_unit in contract_data.allocation_units:
+					cr.execute("SELECT * FROM foms_alloc_unit_approvers WHERE alloc_unit_id = %s" % alloc_unit.id)
+					for row in cr.dictfetchall():
+						sync_obj.post_outgoing(cr, row['user_id'], 'foms.contract', command, contract_data.id, data_context=webservice_context)
+
 	def webservice_handle(self, cr, uid, user_id, command, data_id, model_data, context={}):
 		result = super(foms_contract, self).webservice_handle(cr, uid, user_id, command, data_id, model_data, context=context)
 		user_obj = self.pool.get('res.users')
@@ -363,6 +448,9 @@ class foms_contract(osv.osv):
 			if not has_user:
 				raise osv.except_osv(_('Contract Error'),_('Customer PIC has not been given user login, or the user login does not belong to Customer PIC group.'))
 			self._check_approvers_bookers(cr, uid, contract)
+		# untuk service type shuttle, customer harus udah punya locations and routes
+			if contract.service_type == 'shuttle' and (not contract.customer_id.favorite_locations or not contract.customer_id.default_routes):
+				raise osv.except_osv(_('Contract Error'),_('For shuttle contracts, customer locations and customer routes must be defined first.'))
 		# ganti status menjadi Confirmed
 			self.write(cr, uid, [contract.id], {'state': 'confirmed'})
 	
@@ -403,6 +491,41 @@ class foms_contract(osv.osv):
 				'default_start_date': contract.start_date,
 				'default_end_date': contract.end_date,
 				'default_planning_line': vehicle_needs,
+			},
+			'target': 'new',
+		}
+	
+	def action_schedule_shuttle(self, cr, uid, ids, context={}):
+		if isinstance(ids, int): ids = [ids]
+		contract_id = ids[0]
+		contract = self.browse(cr, uid, contract_id, context=context)
+		if contract.service_type != 'shuttle':
+			raise osv.except_osv(_('Contract Error'),_('Shuttle schedules are for Shuttle contracts only. Please make sure service type of this contract is Shuttle.'))
+	# ambil settingan shuttle schedule
+		shuttle_schedules = []
+		for schedule in contract.shuttle_schedules:
+			shuttle_schedules.append({
+				'dayofweek': schedule.dayofweek,
+				'sequence': schedule.sequence,
+				'route_id': schedule.route_id.id,
+				'fleet_vehicle_id': schedule.fleet_vehicle_id.id,
+				'departure_time': schedule.departure_time,
+				'arrival_time': schedule.arrival_time,
+			})
+	# panggil si memory yang buat allocate driver
+		return {
+			'name': _('Shuttle Schedule'),
+			'view_mode': 'form',
+			'view_type': 'form',
+			'res_model': 'foms.contract.shuttle.schedule.memory',
+			'type': 'ir.actions.act_window',
+			'context': {
+				'default_contract_id': contract.id,
+				'default_contract_no': contract.name,
+				'default_customer_id': contract.customer_id.id,
+				'default_start_date': contract.start_date,
+				'default_end_date': contract.end_date,
+				'default_schedule_line': shuttle_schedules,
 			},
 			'target': 'new',
 		}
@@ -620,78 +743,9 @@ class foms_contract_fleet_planning_memory(osv.osv):
 		contract_obj.write(cr, uid, [contract_id], {
 			'car_drivers': new_fleet_data,
 		})
-	# ini di-load ulang supaya mendapatkan data fleet planning yang terbaru
-		contract_data = contract_obj.browse(cr, uid, contract_id)
-	# semua driver harus sudah punya user_id
-		user_obj = self.pool.get('res.users')
-		if contract_data.car_drivers:
-			for fleet in contract_data.car_drivers:
-				if not fleet.driver_id: continue
-				if not fleet.driver_id.user_id.id or not user_obj.has_group(cr, fleet.driver_id.user_id.id, 'universal.group_universal_driver'):
-					raise osv.except_osv(_('Contract Error'),_('Driver %s has not been given user login, or the user login does not belong to Driver group.') % fleet.driver_id.name)
-	# fullday user harus termasuk group fullday-service passenger sudah diset passwordnya
-		if contract_data.service_type in ['full_day']:
-			for fleet in contract_data.car_drivers:
-				if not fleet.fullday_user_id: continue
-				if not user_obj.has_group(cr, fleet.fullday_user_id.id, 'universal.group_universal_passenger'):
-					raise osv.except_osv(_('Contract Error'),_('User %s does not belong to Fullday-service Passenger group.') % fleet.fullday_user_id.name)
-				user_data = user_obj.browse(cr, uid, fleet.fullday_user_id.id)
-				if user_data.password_crypt == '':
-					raise osv.except_osv(_('Contract Error'),_('A password has not been set to user %s. Password (PIN) is needed to confirm start/finish order.') % fleet.fullday_user_id.name)
-	# kalau status sekarang adalah confirmed, ubah menjadi planned
-		if contract_data.state in ['confirmed']:
-		# ...hanya jika semua vehicle dan driver sudah diset
-			all_set = True
-			if contract_data.car_drivers:
-				for fleet in contract_data.car_drivers:
-					if not fleet.fleet_vehicle_id or not fleet.driver_id:
-						all_set = False
-						break
-					if contract_data.service_type in ['full_day']:
-						if not fleet.fullday_user_id:
-							all_set = False
-							break
-			else:
-				all_set = False
-			if all_set:
-				contract_obj.write(cr, uid, [contract_id], {
-					'state': 'planned',
-				})
-			# sync post outgoing ke user-user yang terkait (PIC, driver, PJ Alloc unit) , memberitahukan ada contract baru
-				self.webservice_post(cr, uid, ['pic','driver','fullday_passenger','booker','approver'], 'create', contract_data, webservice_context={
-					'notification': 'contract_new',
-				}, context=context)
+		contract_obj.set_to_planned(cr, uid, contract_id, context=context)
 		return True
 		
-# SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------
-
-	def webservice_post(self, cr, uid, targets, command, contract_data, webservice_context={}, data_columns=[], context=None):
-		sync_obj = self.pool.get('chjs.webservice.sync.bridge')
-		user_obj = self.pool.get('res.users')
-		if command == 'create':
-			if 'pic' in targets:
-				pic_user_ids = user_obj.search(cr, uid, [('partner_id','=',contract_data.customer_contact_id.id)])
-				if len(pic_user_ids) > 0:
-					sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.contract', command, contract_data.id, data_context=webservice_context)
-			if 'driver' in targets:
-				for car_driver in contract_data.car_drivers:
-					if not car_driver.driver_id: continue
-					sync_obj.post_outgoing(cr, car_driver.driver_id.user_id.id, 'foms.contract', command, contract_data.id, data_context=webservice_context)
-			if 'fullday_passenger' in targets:
-				for car_driver in contract_data.car_drivers:
-					if not car_driver.fullday_user_id: continue
-					sync_obj.post_outgoing(cr, car_driver.fullday_user_id.id, 'foms.contract', command, contract_data.id, data_context=webservice_context)
-			if 'booker' in targets:
-				for alloc_unit in contract_data.allocation_units:
-					cr.execute("SELECT * FROM foms_alloc_unit_bookers WHERE alloc_unit_id = %s" % alloc_unit.id)
-					for row in cr.dictfetchall():
-						sync_obj.post_outgoing(cr, row['booker_id'], 'foms.contract', command, contract_data.id, data_context=webservice_context)
-			if 'approver' in targets:
-				for alloc_unit in contract_data.allocation_units:
-					cr.execute("SELECT * FROM foms_alloc_unit_approvers WHERE alloc_unit_id = %s" % alloc_unit.id)
-					for row in cr.dictfetchall():
-						sync_obj.post_outgoing(cr, row['user_id'], 'foms.contract', command, contract_data.id, data_context=webservice_context)
-
 # ==========================================================================================================================
 
 class foms_contract_fleet_planning_line_memory(osv.osv):
@@ -707,6 +761,78 @@ class foms_contract_fleet_planning_line_memory(osv.osv):
 		'fleet_vehicle_id': fields.many2one('fleet.vehicle', 'Vehicle'),
 		'driver_id': fields.many2one('hr.employee', 'Driver'),
 		'fullday_user_id': fields.many2one('res.users', 'Fullday User', ondelete='restrict'),
+	}
+	
+# ==========================================================================================================================
+
+class foms_contract_shuttle_schedule_memory(osv.osv):
+
+	_name = "foms.contract.shuttle.schedule.memory"
+	_description = 'Contract Shuttle Schedule'
+	
+# COLUMNS ------------------------------------------------------------------------------------------------------------------
+
+	_columns = {
+		'contract_id': fields.many2one('foms.contract', 'Contract'),
+		'contract_no': fields.char('Contract No.', readonly=True),
+		'customer_id' : fields.many2one('res.partner', 'Customer', readonly=True),
+		'start_date': fields.date('Start Date', readonly=True),
+		'end_date': fields.date('End Date', readonly=True),
+		'schedule_line': fields.one2many('foms.contract.shuttle.schedule.line.memory', 'header_id', 'Schedule Lines'),
+	}
+	
+	def action_save_schedule(self, cr, uid, ids, context=None):
+		form_data = self.browse(cr, uid, ids[0])
+		contract_id = form_data.contract_id.id
+		contract_obj = self.pool.get('foms.contract')
+		contract_data = contract_obj.browse(cr, uid, contract_id)
+		new_shuttle_schedule = []
+	# hapus yang sudah ada
+		if contract_data.car_drivers:
+			for schedule in contract_data.shuttle_schedules:
+				new_shuttle_schedule.append([2,schedule.id])
+	# masukkan yang baru
+		vehicle_ids = []
+		for schedule in form_data.schedule_line:
+			new_shuttle_schedule.append([0,False,{
+				'dayofweek': schedule.dayofweek,
+				'sequence': schedule.sequence,
+				'route_id': schedule.route_id.id,
+				'fleet_vehicle_id': schedule.fleet_vehicle_id.id,
+				'departure_time': schedule.departure_time,
+				'arrival_time': schedule.arrival_time,	
+			}])
+		contract_obj.write(cr, uid, [contract_id], {
+			'shuttle_schedules': new_shuttle_schedule,
+		})
+		contract_obj.set_to_planned(cr, uid, contract_id, context=context)
+		return True
+		
+# ==========================================================================================================================
+
+class foms_contract_shuttle_schedule_line_memory(osv.osv):
+
+	_name = "foms.contract.shuttle.schedule.line.memory"
+	_description = 'Contract Shuttle Schedule Line'
+	
+# COLUMNS ------------------------------------------------------------------------------------------------------------------
+
+	_columns = {
+		'header_id': fields.many2one('foms.contract.shuttle.schedule.memory', 'Shuttle Schedule'),
+		'dayofweek': fields.selection([
+			('A','Same all week'),
+			('0','Monday'),
+			('1','Tuesday'),
+			('2','Wednesday'),
+			('3','Thursday'),
+			('4','Friday'),
+			('5','Saturday'),
+			('6','Sunday'),], 'Day of Week', required=True),
+		'sequence': fields.integer('Sequence', required=True),
+		'route_id': fields.many2one('res.partner.route', 'Route', ondelete='restrict', required=True),
+		'fleet_vehicle_id': fields.many2one('fleet.vehicle', 'Fleet Vehicle', ondelete='restrict', required=True),
+		'departure_time': fields.float('Departure Time', required=True),	
+		'arrival_time': fields.float('Arrival Time', required=True),	
 	}
 	
 # ==========================================================================================================================
@@ -769,6 +895,7 @@ class foms_contract_shuttle_schedule(osv.osv):
 	_columns = {
 		'header_id': fields.many2one('foms.contract', 'Contract', ondelete='cascade'),
 		'dayofweek': fields.selection([
+			('A','Same all week'),
 			('0','Monday'),
 			('1','Tuesday'),
 			('2','Wednesday'),
@@ -785,13 +912,29 @@ class foms_contract_shuttle_schedule(osv.osv):
 	
 # CONSTRAINTS --------------------------------------------------------------------------------------------------------------
 	
+	def _constraint_vehicle_id(self, cr, uid, ids, context=None):
+	# vehicle terpilih harus ada di bawah contract ybs
+		for data in self.browse(cr, uid, ids, context):
+			found = False
+			for fleet in data.header_id.car_drivers:
+				if data.fleet_vehicle_id.id == fleet.fleet_vehicle_id.id:
+					found = True
+					break
+			if not found:
+				return False
+		return True
+	
+	_constraints = [
+		(_constraint_vehicle_id, _('All vehicles must be under corresponding contract. Please check again your vehicle selection.'), ['fleet_vehicle_id'])
+	]
+	
 	_sql_constraints = [
 		('const_departure_arrival', 'CHECK(arrival_time > departure_time)', _('Arrival time must be greater than departure time.')),
 	]
 	
 # ORDER -------------------------------------------------------------------------------------------------------------------------
 
-	_order = 'header_id, dayofweek, sequence'
+	_order = 'header_id, dayofweek, fleet_vehicle_id, sequence'
 	
 # ==========================================================================================================================
 

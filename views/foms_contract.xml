@@ -10,6 +10,7 @@
 				<form version="7.0" string="Customer Contract">
 					<header>
 						<button string="Plan/Modify Fleet" name="action_plan_fleet" type="object" states="confirmed,planned,active" class="oe_button oe_highlight" />
+						<button string="Schedule Shuttle" name="action_schedule_shuttle" type="object" states="confirmed,planned,active" class="oe_button oe_highlight" />
 						<button string="Confirm" name="action_confirm" type="object" states="proposed" class="oe_button oe_highlight" confirm="This action singnifies that both parties (customer and PT Universal) have agreed on all terms written in the contract, including and especially Fee Calculation Scheme and Fleet Types and number of fleet required. Are you sure to continue? PS: you can still edit all data before system automatically starts the contract at its start date." />
 						<field name="state" widget="statusbar" readonly="1" />
 					</header>
@@ -110,14 +111,14 @@
 							</group>
 						</page>
 						<page string="Shuttle Schedule" attrs="{'invisible': [('service_type','not in',['shuttle'])]}">
-							<field name="shuttle_schedules">
+							<field name="shuttle_schedules" readonly="1">
 								<tree version="7.0" editable="bottom">
 									<field name="dayofweek" />
 									<field name="sequence" />
 									<field name="route_id" />
 									<field name="fleet_vehicle_id" />
-									<field name="departure_time" widget="time" />
-									<field name="arrival_time" widget="time" />
+									<field name="departure_time" widget="float_time" />
+									<field name="arrival_time" widget="float_time" />
 								</tree>
 							</field>
 						</page>
@@ -210,6 +211,45 @@
 					</group>
 					<footer>
 						<button string="Save Planning" name="action_save_planning" type="object" class="oe_highlight" />
+						or
+						<button string="Cancel" special="cancel" />
+					</footer>
+				</form>
+			</field>
+		</record>
+		
+		<!-- SHUTTLE SCHEDULE -->
+		
+		<record model="ir.ui.view" id="foms_contract_shuttle_schedule_form">
+			<field name="name">foms.contract.shuttle.schedule.form</field>	
+			<field name="model">foms.contract.shuttle.schedule.memory</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Contract Shuttle Schedule">
+					<group>
+						<group>
+							<field name="contract_id" invisible="1" />
+							<field name="contract_no" />
+							<field name="customer_id" />
+						</group>
+						<group>
+							<field name="start_date" />
+							<field name="end_date" />
+						</group>
+					</group>
+					<group>
+						<field name="schedule_line" nolabel="1">
+							<tree version="7.0" editable="bottom">
+								<field name="dayofweek" />
+								<field name="sequence" />
+								<field name="route_id" />
+								<field name="fleet_vehicle_id" />
+								<field name="departure_time" widget="float_time" />
+								<field name="arrival_time" widget="float_time" />
+							</tree>
+						</field>
+					</group>
+					<footer>
+						<button string="Save Schedule" name="action_save_schedule" type="object" class="oe_highlight" />
 						or
 						<button string="Cancel" special="cancel" />
 					</footer>

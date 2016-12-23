@@ -173,7 +173,7 @@ class foms_order(osv.osv):
 				'state': 'ready',
 			}, context=context)
 	# untuk order By Order, post notification ke approver yang ada + bookernya untuk konfirmasi order sudah masuk
-		if new_data.service_type == 'by_order':
+		elif new_data.service_type == 'by_order':
 			webservice_context = {
 					'notification': 'order_approve',
 			}
@@ -203,6 +203,10 @@ class foms_order(osv.osv):
 				webservice_context={
 						'notification': 'order_waiting_approve',
 				}, context=context)
+		elif new_data.service_type == 'shuttle':
+			self.write(cr, uid, [new_id], {
+				'state': 'confirmed',
+			}, context=context)
 		return new_id
 	
 	def write(self, cr, uid, ids, vals, context={}):
@@ -264,6 +268,9 @@ class foms_order(osv.osv):
 							webservice_context={
 								'notification': 'order_ready_driver',
 							}, context=context)
+				# kalau shuttle, cukup push data order ini ke app driver
+					elif order_data.service_type == 'shuttle':
+						self.webservice_post(cr, uid, ['driver'], 'create', order_data, context=context)
 			# kalau state menjadi rejected dan service_type == by_order, maka post_outgoing + notif ke booker. 
 				elif vals['state'] == 'rejected' and order_data.service_type == 'by_order':
 					self.webservice_post(cr, uid, ['booker'], 'update', order_data, \

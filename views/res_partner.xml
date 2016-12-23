@@ -44,8 +44,8 @@
 							<field name="default_routes" nolabel="1">
 								<tree version="7.0" editable="bottom">
 									<field name="name" />
-									<field name="start_location" />
-									<field name="end_location" />
+									<field name="start_location" domain="[('header_id','=',parent.id)]" />
+									<field name="end_location" domain="[('header_id','=',parent.id)]" />
 								</tree>
 							</field>
 						</group>

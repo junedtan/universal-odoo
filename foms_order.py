@@ -174,7 +174,7 @@ class foms_order(osv.osv):
 				'state': 'ready',
 			}, context=context)
 	# untuk order By Order, post notification ke approver yang ada + bookernya untuk konfirmasi order sudah masuk
-		if new_data.service_type == 'by_order':
+		elif new_data.service_type == 'by_order':
 			webservice_context = {
 					'notification': 'order_approve',
 			}
@@ -204,6 +204,10 @@ class foms_order(osv.osv):
 				webservice_context={
 						'notification': 'order_waiting_approve',
 				}, context=context)
+		elif new_data.service_type == 'shuttle':
+			self.write(cr, uid, [new_id], {
+				'state': 'confirmed',
+			}, context=context)
 		return new_id
 	
 	def write(self, cr, uid, ids, vals, context={}):
@@ -379,7 +383,7 @@ class foms_order(osv.osv):
 		if vals.get('assigned_vehicle_id', False) and vals.get('assigned_driver_id', False):
 			for order_data in orders:
 			# untuk by_order yang masih new, directly ubah state menjadi ready
-				if order_data.service_type == 'by_order' and order_data.state in ['new','confirmed']:
+				if order_data.service_type in ['by_order','shuttle'] and order_data.state in ['new','confirmed']:
 					self.write(cr, uid, [order_data.id], {
 						'state': 'ready',
 						'pin': self._generate_random_pin(),

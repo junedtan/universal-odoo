@@ -209,7 +209,12 @@ class foms_contract(osv.osv):
 		if vals.get('state', False) == 'planned':
 			for contract in self.browse(cr, uid, ids, context=context):
 			# sync post outgoing ke user-user yang terkait (PIC, driver, PJ Alloc unit) , memberitahukan ada contract baru
-				self.webservice_post(cr, uid, ['pic','driver','fullday_passenger','booker','approver'], 'create', contract, webservice_context={
+				targets = ['pic','driver']
+				if contract.service_type == 'full_day':
+					targets.append('fullday_passenger')
+				elif contract.service_type == 'by_order':
+					targets += ['booker','approver']
+				self.webservice_post(cr, uid, targets, 'create', contract, webservice_context={
 					'notification': 'contract_new',
 				}, context=context)
 		return result

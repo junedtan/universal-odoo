@@ -1344,12 +1344,7 @@ class foms_contract_quota_change_log(osv.osv):
 				quota_obj.write(cr, uid, quota_ids, new_data, context=context)
 			# kalau diinginkan perubahan menjadi permanent maka update juga yang di alloc unit nya
 				if change_data.request_longevity == 'permanent':
-					alloc_unit_ids = alloc_unit_obj.search(cr, uid, [
-						('customer_contract_id', '=',change_data.customer_contract_id.id),
-						('allocation_unit_id','=',change_data.allocation_unit_id.id),
-					])
-					if len(alloc_unit_ids) == 0: continue
-					alloc_unit_obj.write(cr, uid, alloc_unit_ids, new_data, context=context)
+					alloc_unit_obj.write(cr, uid, [change_data.allocation_unit_id.id], new_data, context=context)
 				# karena ketika autofill monthly quota bisa kejadian udah keburu dibikin buat yang bulan depannya,
 				# pastikan yang di bulan depannya juga diganti
 					current_period = datetime.now().strftime('%m/%Y')
@@ -1365,6 +1360,7 @@ class foms_contract_quota_change_log(osv.osv):
 		elif new_state == 'rejected':
 			notif = 'contract_quota_limit_reject'
 	# apapun yang terjadi, broadcast perubahan ke pic dan approver alloc unit ybs
+		print notif
 		for change_data in change_datas:
 			self.webservice_post(cr, uid, ['pic','approver'], 'create', change_data, webservice_context=notif and {
 				'notification': notif,
@@ -1448,10 +1444,10 @@ class foms_contract_quota_usage_log(osv.osv):
 # METHODS ------------------------------------------------------------------------------------------------------------------
 
 # kalau ada pencatatan usage log maka current_usage monthl quota contract ybs juga berubah. maka post outgoing di month quota ybs
-	def _post_monthly_quota_changes(self, cr, uid, change_log_id):
+	def _post_monthly_quota_changes(self, cr, uid, change_log_id, context={}):
 		change_log_data = self.browse(cr, uid, change_log_id)
-		customer_contract_id = change_log_data.customer_contract_id
-		allocation_unit_id = change_log_data.allocation_unit_id
+		customer_contract_id = change_log_data.customer_contract_id.id
+		allocation_unit_id = change_log_data.allocation_unit_id.id
 		period = change_log_data.period
 		quota_obj = self.pool.get('foms.contract.quota')
 		quota_ids = quota_obj.search(cr, uid, [
@@ -1459,7 +1455,7 @@ class foms_contract_quota_usage_log(osv.osv):
 			('allocation_unit_id','=',allocation_unit_id),
 			('period','=',period),
 		])
-		if len(quota_ids) == 0:
+		if len(quota_ids) > 0:
 			for quota_data in quota_obj.browse(cr, uid, quota_ids, context=context):
 				quota_obj.webservice_post(cr, uid, ['approver','pic'], 'update', quota_data, context=context)
 		

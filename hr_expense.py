@@ -61,6 +61,7 @@ class hr_expense_expense(osv.osv):
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
 	def create(self, cr, uid, vals, context={}):
+		# print vals.get('proof_of_payment', False)
 		context = context and context or {}
 	# bila ini dari mobile apps, asumsikan employee_id adalah user_id driver, sehingga harus dicari employee_idnya
 		if context.get('from_webservice') == True:

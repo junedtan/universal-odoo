@@ -114,6 +114,22 @@ class foms_order(osv.osv):
 	
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
+	def determine_over_quota_status(self, cr, uid, customer_contract_id, allocation_unit_id):
+		quota_obj = self.pool.get('foms.contract.quota')
+		current_quota = quota_obj.get_current_quota_usage(cr, uid, customer_contract_id, allocation_unit_id)
+		if not current_quota:
+			raise osv.except_osv(_('Order Error'),_('Quota for this month has not been set. Please contact PT Universal.'))
+		over_quota_status = 'normal'
+		after_usage = current_quota.balance_credit_per_usage + current_quota.current_usage
+		if after_usage >= current_quota.red_limit:
+			if contract_data.usage_control_level == 'warning':
+				over_quota_status = 'warning'
+			elif contract_data.usage_control_level == 'approval':
+				over_quota_status = 'approval'
+		elif after_usage >= current_quota.yellow_limit:
+			over_quota_status = 'yellow'
+		return current_quota.balance_credit_per_usage, over_quota_status
+		
 	def create(self, cr, uid, vals, context={}):
 		contract_obj = self.pool.get('foms.contract')
 		contract_data = contract_obj.browse(cr, uid, vals['customer_contract_id'])
@@ -133,21 +149,9 @@ class foms_order(osv.osv):
 				raise osv.except_osv(_('Order Error'),_('Start date is too close to current time. There must be at least %s hours between now and start date.' % contract_data.by_order_minimum_hours))
 		# kalau usage control diaktifkan, isi over_quota_status
 			if contract_data.usage_control_level != 'no_control':
-				quota_obj = self.pool.get('foms.contract.quota')
-				current_quota = quota_obj.get_current_quota_usage(cr, uid, vals['customer_contract_id'], vals['alloc_unit_id'])
-				if not current_quota:
-					raise osv.except_osv(_('Order Error'),_('Quota for this month has not been set. Please contact PT Universal.'))
-				over_quota_status = 'normal'
-				after_usage = current_quota.balance_credit_per_usage + current_quota.current_usage
-				if after_usage >= current_quota.red_limit:
-					if contract_data.usage_control_level == 'warning':
-						over_quota_status = 'warning'
-					elif contract_data.usage_control_level == 'approval':
-						over_quota_status = 'approval'
-				elif after_usage >= current_quota.yellow_limit:
-					over_quota_status = 'yellow'
+				quota_per_usage, over_quota_status = self.determine_over_quota_status(cr, uid, vals['customer_contract_id'], vals['alloc_unit_id'])
 				vals.update({
-					'alloc_unit_usage': current_quota.balance_credit_per_usage,
+					'alloc_unit_usage': quota_per_usage,
 					'over_quota_status': over_quota_status,
 				})
 	# bikin nomor order dulu
@@ -391,6 +395,13 @@ class foms_order(osv.osv):
 						'state': 'ready',
 						'pin': self._generate_random_pin(),
 					}, context=context)
+	
+	# kalau ada perubahan di over_quota_status, kasih tau ke pic dan approver
+		if vals.get('over_quota_status', False):
+			for order_data in orders:
+				if order_data.service_type == 'by_order':
+					self.webservice_post(cr, uid, ['pic','approver'], 'update', order_data, \
+						data_columns=['over_quota_status','alloc_unit_usage'], context=context)
 					
 		return result
 	

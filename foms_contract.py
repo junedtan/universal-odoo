@@ -643,13 +643,13 @@ class foms_contract(osv.osv):
 
 	def cron_set_contract_start_end(self, cr, uid, context=None):
 	# otomatis ubah status menjadi started atau finished sesuai tanggal kontrak
-		today = (datetime.now() - timedelta(hours=7) + timedelta(hours=24)).strftime('%Y-%m-%d')
+		today = (datetime.now() + timedelta(hours=24)).strftime('%Y-%m-%d')
 	# ubah status menjadi mulai
 		contract_ids = self.search(cr, uid, [('state','in',['planned']),('start_date','<=',today)])
 		if len(contract_ids) > 0:
 			self.write(cr, uid, contract_ids, {'state': 'active'})
 	# ubah status menjadi selesai
-		today = (datetime.now() - timedelta(hours=7)).strftime('%Y-%m-%d')
+		today = (datetime.now()).strftime('%Y-%m-%d')
 		contract_ids = self.search(cr, uid, [('state','in',['active']),('end_date','<=',today)])
 		if len(contract_ids) > 0:
 			self.write(cr, uid, contract_ids, {'state': 'finished'})

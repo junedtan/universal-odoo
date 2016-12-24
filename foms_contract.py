@@ -1326,6 +1326,7 @@ class foms_contract_quota_change_log(osv.osv):
 	def write(self, cr, uid, ids, vals, context={}):
 		quota_obj = self.pool.get('foms.contract.quota')
 		alloc_unit_obj = self.pool.get('foms.contract.alloc.unit')
+		order_obj = self.pool.get('foms.order')
 		result = super(foms_contract_quota_change_log, self).write(cr, uid, ids, vals, context=context)
 	# kalau status berubah jadi approved, maka update contract.quota nya dan alternaively update juga yang di alloc unit 
 	# sesuai permintaan (isi field request_longevity)
@@ -1347,6 +1348,19 @@ class foms_contract_quota_change_log(osv.osv):
 				if change_data.new_balance_credit_per_usage: new_data.update({'balance_credit_per_usage': change_data.new_balance_credit_per_usage})
 				if new_data == {}: continue
 				quota_obj.write(cr, uid, quota_ids, new_data, context=context)
+			# ganti over_quota_status semua order yang lagi pending untuk contract dan allocation unit ini
+				order_ids = order_obj.search(cr, uid, [(
+					('customer_contract_id', '=',change_data.customer_contract_id.id),
+					('alloc_unit_id','=',change_data.allocation_unit_id.id),
+					('service_type','in',['by_order']),
+					('state','in',['new']),
+				)])
+				if len(order_ids) > 0:
+					new_credit_per_usage, new_over_quota_status = order_obj.determine_over_quota_status(change_data.customer_contract_id.id, change_data.allocation_unit_id.id)
+					order_obj.write(cr, uid, order_ids, {
+						'alloc_unit_usage': new_credit_per_usage,
+						'over_quota_status': new_over_quota_status,
+					})
 			# kalau diinginkan perubahan menjadi permanent maka update juga yang di alloc unit nya
 				if change_data.request_longevity == 'permanent':
 					alloc_unit_obj.write(cr, uid, [change_data.allocation_unit_id.id], new_data, context=context)

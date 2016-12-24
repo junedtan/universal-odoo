@@ -613,8 +613,8 @@ class foms_order(osv.osv):
 							'assigned_vehicle_id': fleet.fleet_vehicle_id.id,
 							'assigned_driver_id': fleet.driver_id.id,
 							'pin': fleet.fullday_user_id.pin,
-							'start_planned_date': counter_date + timedelta(hours=working_days[counter_date.weekday()]['start']),
-							'finish_planned_date': counter_date + timedelta(hours=working_days[counter_date.weekday()]['end']),
+							'start_planned_date': counter_date + timedelta(hours=working_days[counter_date.weekday()]['start']) - timedelta(hours=7),
+							'finish_planned_date': counter_date + timedelta(hours=working_days[counter_date.weekday()]['end']) - timedelta(hours=7),
 						}, context=context)
 					last_fullday = counter_date
 					counter_date = counter_date + timedelta(hours=24)
@@ -705,8 +705,8 @@ class foms_order(osv.osv):
 							'request_date': counter_date,
 							'assigned_vehicle_id': schedule['fleet_vehicle_id'],
 							'assigned_driver_id': fleet_drivers[schedule['fleet_vehicle_id']],
-							'start_planned_date': counter_date + timedelta(hours=schedule['departure_time']),
-							'finish_planned_date': counter_date + timedelta(hours=schedule['arrival_time']),
+							'start_planned_date': counter_date + timedelta(hours=schedule['departure_time']) - timedelta(hours=7),
+							'finish_planned_date': counter_date + timedelta(hours=schedule['arrival_time']) - timedelta(hours=7),
 							'route_id': schedule['route_id'],
 						}, context=context)
 					last_fullday = counter_date

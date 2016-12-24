@@ -53,7 +53,7 @@ class foms_order(osv.osv):
 		'cancel_previous_state': fields.selection(_ORDER_STATE, 'Previous State'),
 		'alloc_unit_id': fields.many2one('foms.contract.alloc.unit', 'Alloc Unit', ondelete='restrict'),
 		'alloc_unit_usage': fields.float('Allocation Unit Usage'),
-		'route_id': fields.many2one('res.partner.route', 'Route', ondelete='cascade'),
+		'route_id': fields.many2one('res.partner.route', 'Route', ondelete='set null'),
 		'origin_area_id': fields.many2one('foms.order.area', 'Origin Area', ondelete='set null'),
 		'origin_location': fields.char('Origin Location'),
 		'dest_area_id': fields.many2one('foms.order.area', 'Destination Area', ondelete='set null'),
@@ -356,8 +356,8 @@ class foms_order(osv.osv):
 		if vals.get('start_planned_date'):
 			for order_data in orders:
 			# message_post supaya kedeteksi perubahannya
-				original = (datetime.strptime(original_start_date[order_data.id],'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)).strftime('%d/%m/%Y %H:%M:%S')
-				new = (datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)).strftime('%d/%m/%Y %H:%M:%S')
+				original = (datetime.strptime(original_start_date[order_data.id],'%Y-%m-%d %H:%M:%S')).strftime('%d/%m/%Y %H:%M:%S')
+				new = (datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S')).strftime('%d/%m/%Y %H:%M:%S')
 				if context.get('from_webservice') == True:
 					message_body = _("Planned start date is changed from %s to %s as requested by client.") % (original,new)
 				else:
@@ -534,39 +534,39 @@ class foms_order(osv.osv):
 		
 # CRON ---------------------------------------------------------------------------------------------------------------------
 
+	def _get_contract_workdays(self, contract_data):
+	# return dict of workday dengan key=workday (0,1,2,3,4 - senin selasa rabu, dst) dan value {start, finish}
+		if not contract_data.working_time_id: return {}
+		working_days = {}
+		for working_time in contract_data.working_time_id.attendance_ids:
+			if working_time.working_time_type == 'duration':
+				start = working_time.hour_from
+				end = working_time.hour_to
+			elif working_time.working_time_type == 'max_hour':
+				start = working_time.hour_from
+				end = working_time.hour_from + working_time.max_hour
+			working_days.update({int(working_time.dayofweek): {
+				'start': start,
+				'end': end,
+			}})
+	# nanti dulu
+		holidays = []
+		for holiday in contract_data.working_time_id.leave_ids:
+			date_from = (datetime.strptime(holiday.date_from,"%Y-%m-%d %H:%M:%S")).replace(hour=0,minute=0,second=0)
+			date_to = (datetime.strptime(holiday.date_to,"%Y-%m-%d %H:%M:%S")).replace(hour=23,minute=59,second=59)
+			day = date_from
+			while day < date_to:
+				holidays.append(day)
+				day = day + timedelta(hours=24)
+		return working_days, holidays
+	
+	def _next_workday(self, work_date, working_day_keys, holidays):
+		while work_date in holidays: work_date = work_date + timedelta(hours=24)
+		while work_date.weekday() not in working_day_keys: work_date = work_date + timedelta(hours=24)
+		return work_date
+		
 	def cron_autogenerate_fullday(self, cr, uid, context=None):
 		
-		def get_contract_workdays(contract_data):
-		# return dict of workday dengan key=workday (0,1,2,3,4 - senin selasa rabu, dst) dan value {start, finish}
-			if not contract_data.working_time_id: return {}
-			working_days = {}
-			for working_time in contract_data.working_time_id.attendance_ids:
-				if working_time.working_time_type == 'duration':
-					start = working_time.hour_from
-					end = working_time.hour_to
-				elif working_time.working_time_type == 'max_hour':
-					start = working_time.hour_from
-					end = working_time.hour_from + working_time.max_hour
-				working_days.update({int(working_time.dayofweek): {
-					'start': start,
-					'end': end,
-				}})
-		# nanti dulu
-			holidays = []
-			for holiday in contract_data.working_time_id.leave_ids:
-				date_from = (datetime.strptime(holiday.date_from,"%Y-%m-%d %H:%M:%S") + timedelta(hours=7)).replace(hour=0,minute=0,second=0)
-				date_to = (datetime.strptime(holiday.date_to,"%Y-%m-%d %H:%M:%S") + timedelta(hours=7)).replace(hour=23,minute=59,second=59)
-				day = date_from
-				while day < date_to:
-					holidays.append(day)
-					day = day + timedelta(hours=24)
-			return working_days, holidays
-		
-		def next_workday(work_date, working_day_keys, holidays):
-			while work_date in holidays: work_date = work_date + timedelta(hours=24)
-			while work_date.weekday() not in working_day_keys: work_date = work_date + timedelta(hours=24)
-			return work_date
-			
 		contract_obj = self.pool.get('foms.contract')
 		order_obj = self.pool.get('foms.order')
 	# bikin order fullday untuk n hari ke depan secara berkala
@@ -582,7 +582,7 @@ class foms_order(osv.osv):
 		if len(contract_ids) > 0:
 			for contract in contract_obj.browse(cr, uid, contract_ids):
 			# ambil working days dan holidays
-				working_days, holidays = get_contract_workdays(contract)
+				working_days, holidays = self._get_contract_workdays(contract)
 				working_day_keys = working_days.keys()
 				contract_start_date = datetime.strptime(contract.start_date,"%Y-%m-%d")
 				last_fullday_autogenerate = contract.last_fullday_autogenerate_date and datetime.strptime(contract.last_fullday_autogenerate_date,'%Y-%m-%d') or None
@@ -594,7 +594,7 @@ class foms_order(osv.osv):
 				else:
 					first_order_date = last_order_date + timedelta(hours=24)
 					max_orders = 1 # kalo udah pernah autogenerate maka cukup generate satu hari berikutnya
-				first_order_date = next_workday(first_order_date, working_day_keys, holidays)
+				first_order_date = self._next_workday(first_order_date, working_day_keys, holidays)
 			# kalo last generatenya masih kejauhan (lebih dari 7 hari) maka ngga usah generate dulu, bisi kebanyakan
 				if last_fullday_autogenerate and first_order_date > next7days: 
 					print "No generate order for contract %s -------------------------------------" % contract.name
@@ -613,16 +613,109 @@ class foms_order(osv.osv):
 							'assigned_vehicle_id': fleet.fleet_vehicle_id.id,
 							'assigned_driver_id': fleet.driver_id.id,
 							'pin': fleet.fullday_user_id.pin,
-							'start_planned_date': counter_date + timedelta(hours=working_days[counter_date.weekday()]['start']) - timedelta(hours=7),
-							'finish_planned_date': counter_date + timedelta(hours=working_days[counter_date.weekday()]['end']) - timedelta(hours=7),
+							'start_planned_date': counter_date + timedelta(hours=working_days[counter_date.weekday()]['start']),
+							'finish_planned_date': counter_date + timedelta(hours=working_days[counter_date.weekday()]['end']),
 						}, context=context)
 					last_fullday = counter_date
 					counter_date = counter_date + timedelta(hours=24)
-					counter_date = next_workday(counter_date, working_day_keys, holidays)
+					counter_date = self._next_workday(counter_date, working_day_keys, holidays)
 					day += 1
 			# update last_fullday_autogenerate_date untuk kontrak ini
 				contract_obj.write(cr, uid, [contract.id], {
 					'last_fullday_autogenerate_date': last_fullday
+				})
+
+	def cron_autogenerate_shuttle(self, cr, uid, context=None):
+		
+		print "mulai cron shuttle"
+		
+		contract_obj = self.pool.get('foms.contract')
+		order_obj = self.pool.get('foms.order')
+	# bikin order shuttle untuk n hari ke depan secara berkala
+	# set tanggal2
+		today = (datetime.now()).replace(hour=0, minute=0, second=0, microsecond=0)
+		next_day = today + timedelta(hours=24)
+		next7days = today + timedelta(hours=24*7)
+	# ambil contract yang baru aktif (last_fullday_autogenerate_date kosong)
+		contract_ids = contract_obj.search(cr, uid, [
+			('service_type','=','shuttle'),('state','in',['active','planned']),
+			('start_date','<=',next7days.strftime('%Y-%m-%d'))
+		])		
+		if len(contract_ids) > 0:
+			for contract in contract_obj.browse(cr, uid, contract_ids):
+			# ambil working days dan holidays
+				working_days, holidays = self._get_contract_workdays(contract)
+				working_day_keys = working_days.keys()
+				contract_start_date = datetime.strptime(contract.start_date,"%Y-%m-%d")
+				last_shuttle_autogenerate = contract.last_shuttle_autogenerate_date and datetime.strptime(contract.last_shuttle_autogenerate_date,'%Y-%m-%d') or None
+			# tentukan first order date dan mau berapa banyak bikin ordernya
+				last_order_date = last_shuttle_autogenerate or datetime.strptime('1970-01-01','%Y-%m-%d') + timedelta(hours=24)
+				if not contract.last_shuttle_autogenerate_date:
+					first_order_date = max([contract_start_date, last_order_date, today])
+					max_orders = 3
+				else:
+					first_order_date = last_order_date + timedelta(hours=24)
+					max_orders = 1 # kalo udah pernah autogenerate maka cukup generate satu hari berikutnya
+				first_order_date = self._next_workday(first_order_date, working_day_keys, holidays)
+			# kalo last generatenya masih kejauhan (lebih dari 7 hari) maka ngga usah generate dulu, bisi kebanyakan
+				if last_shuttle_autogenerate and first_order_date > next7days: 
+					print "No generate shuttle order for contract %s -------------------------------------" % contract.name
+					continue
+			# harus bikin buat hari apa aja?
+				schedule_days = {}
+				for schedule in contract.shuttle_schedules:
+					if schedule.dayofweek == 'A':
+						for i in range(0,7):
+							key = str(i)
+							if key not in schedule_days: schedule_days.update({key: []})
+							schedule_days[key].append({
+								'sequence': schedule.sequence,
+								'route_id': schedule.route_id.id,
+								'fleet_vehicle_id': schedule.fleet_vehicle_id.id,
+								'departure_time': schedule.departure_time,	
+								'arrival_time': schedule.arrival_time,	
+							})
+					else:
+						if schedule.dayofweek not in schedule_days: schedule_days.update({schedule.dayofweek: []})
+						schedule_days[schedule.dayofweek].append({
+							'sequence': schedule.sequence,
+							'route_id': schedule.route_id.id,
+							'fleet_vehicle_id': schedule.fleet_vehicle_id.id,
+							'departure_time': schedule.departure_time,	
+							'arrival_time': schedule.arrival_time,	
+						})
+			# ambil pasangan fleet - driver, buat di bawah
+				fleet_drivers = {}
+				for fleet in contract.car_drivers:
+					fleet_drivers.update({fleet.fleet_vehicle_id.id: fleet.driver_id.id})
+			# mulai bikin order satu2
+				day = 1
+				counter_date = first_order_date
+				while day <= max_orders:
+					date_schedule = None
+					for dayofweek in schedule_days.keys():
+						if int(dayofweek) == counter_date.weekday():
+							date_schedule = schedule_days[dayofweek]
+							break
+					if not date_schedule: continue
+					for schedule in date_schedule:
+						new_id = order_obj.create(cr, uid, {
+							'customer_contract_id': contract.id,
+							'service_type': contract.service_type,
+							'request_date': counter_date,
+							'assigned_vehicle_id': schedule['fleet_vehicle_id'],
+							'assigned_driver_id': fleet_drivers[schedule['fleet_vehicle_id']],
+							'start_planned_date': counter_date + timedelta(hours=schedule['departure_time']),
+							'finish_planned_date': counter_date + timedelta(hours=schedule['arrival_time']),
+							'route_id': schedule['route_id'],
+						}, context=context)
+					last_fullday = counter_date
+					counter_date = counter_date + timedelta(hours=24)
+					counter_date = self._next_workday(counter_date, working_day_keys, holidays)
+					day += 1
+			# update last_fullday_autogenerate_date untuk kontrak ini
+				contract_obj.write(cr, uid, [contract.id], {
+					'last_shuttle_autogenerate_date': last_fullday
 				})
 
 # SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------

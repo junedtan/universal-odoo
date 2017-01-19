@@ -389,10 +389,10 @@ class foms_order(osv.osv):
 					elif order_data.service_type == 'by_order':
 						self.webservice_post(cr, uid, ['pic','booker','approver','driver'], 'update', order_data, context=context)
 
-	# kalau ada perubahan data, lakukan proses khusus tergantung data apa yang berubah, dan broadcast perubahannya ke semua 
-	# pihak
+	# kalau ada perubahan data, lakukan proses khusus tergantung data apa yang berubah, dan broadcast perubahannya 
+	# ke semua pihak
 	# ini sengaja dipisahkan dari yang perubahan status, karena yang perubahan status begitu kompleks
-	# memang benar, resikonya bisa ada dua kali broadcase ke user yang sama untuk proses write yang sama
+	# memang benar, konsekuensinya bisa ada dua kali broadcast ke user yang sama untuk proses write yang sama
 		for order_data in order:
 		# reset variabel broadcast
 			broadcast_data_columns = []
@@ -436,7 +436,7 @@ class foms_order(osv.osv):
 			if vals.get('over_quota_status', False):
 				if order_data.service_type == 'by_order':
 					broadcast_data_columns += ['over_quota_status','alloc_unit_usage']
-					
+
 		# finally, broadcast perubahan
 			targets = []
 			if order_data.service_type == 'full_day':

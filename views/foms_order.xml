@@ -54,10 +54,11 @@
 					</header>
 					<group>
 						<group>
-							<field name="name" />
+							<field name="name" readonly="1" />
 							<field name="customer_contract_id" />
 							<field name="service_type" />
 							<field name="order_type_by_order" attrs="{'invisible': [('service_type','!=','by_order')]}" />
+							<field name="fleet_type_id" attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')]}" />
 							<field name="order_by" />
 						</group>
 						<group>

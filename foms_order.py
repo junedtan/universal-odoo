@@ -29,7 +29,7 @@ class foms_order(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'name': fields.char('Order #', required=True),
+		'name': fields.char('Order #'),
 		'customer_contract_id': fields.many2one('foms.contract', 'Customer Contract', required=True, ondelete='restrict'),
 		'service_type': fields.selection([
 			('full_day','Full-day Service'),
@@ -41,6 +41,7 @@ class foms_order(osv.osv):
 			('warning','Over-quota with Warning'),
 			('approval','Over-quota with Approval'),
 		),'Over-Quota Status', required=True),
+		'fleet_type_id': fields.many2one('fleet.vehicle.model', 'Vehicle Type', ondelete='restrict'),
 		'request_date': fields.datetime('Request Date', required=True),
 		'state': fields.selection(_ORDER_STATE, 'State', required=True, track_visibility="onchange"),
 		'order_by': fields.many2one('res.users', 'Order By', ondelete='restrict'),
@@ -114,23 +115,18 @@ class foms_order(osv.osv):
 	
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
-	def determine_over_quota_status(self, cr, uid, customer_contract_id, allocation_unit_id, vehicle_id):
+	def determine_over_quota_status(self, cr, uid, customer_contract_id, allocation_unit_id, fleet_type_id):
 		quota_obj = self.pool.get('foms.contract.quota')
 		contract_obj = self.pool.get('foms.contract')
-		vehicle_obj = self.pool.get('fleet.vehicle')
 	# ambil quota saat ini
 		current_quota = quota_obj.get_current_quota_usage(cr, uid, customer_contract_id, allocation_unit_id)
 		if not current_quota:
 			raise osv.except_osv(_('Order Error'),_('Quota for this month has not been set. Please contact PT Universal.'))
 	# untuk kontrak dan kendaraan jenis ini, berapa sih balance per usage nya?
-		vehicle_data = vehicle_obj.browse(cr, uid, vehicle_id)
-		if not vehicle_data: 
-			raise osv.except_osv(_('Order Error'),_('Assigned vehicle not found.'))
-		vehicle_model_id = vehicle_data.model_id.id
 		contract_data = contract_obj.browse(cr, uid, customer_contract_id)
 		credit_per_usage = -1
 		for usage_per_vehicle in contract_data.vehicle_balance_usage:
-			if usage_per_vehicle.fleet_vehicle_model_id.id == vehicle_model_id:
+			if usage_per_vehicle.fleet_vehicle_model_id.id == fleet_type_id:
 				credit_per_usage = usage_per_vehicle.credit_per_usage
 				break
 		if credit_per_usage == -1:
@@ -166,14 +162,14 @@ class foms_order(osv.osv):
 				raise osv.except_osv(_('Order Error'),_('Start date is too close to current time, or is in the past. There must be at least %s minutes between now and start date.' % contract_data.by_order_minimum_minutes))
 		# kalau usage control diaktifkan, isi over_quota_status
 			if contract_data.usage_control_level != 'no_control':
-				quota_per_usage, over_quota_status = self.determine_over_quota_status(cr, uid, vals['customer_contract_id'], vals['alloc_unit_id'], vals['assigned_vehicle_id'])
+				quota_per_usage, over_quota_status = self.determine_over_quota_status(cr, uid, vals['customer_contract_id'], vals['alloc_unit_id'], vals['fleet_type_id'])
 				vals.update({
 					'alloc_unit_usage': quota_per_usage,
 					'over_quota_status': over_quota_status,
 				})
 	# bikin nomor order dulu
 	# format: (Tanggal)(Bulan)(Tahun)(4DigitPrefixCustomer)(4DigitNomorOrder) Cth: 23032017BNPB0001
-		if 'name' not in vals:
+		if vals.get('name', False):
 			order_date = vals.get('request_date', None)
 			if not order_date: order_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 			order_date = datetime.strptime(order_date, '%Y-%m-%d %H:%M:%S')
@@ -274,6 +270,7 @@ class foms_order(osv.osv):
 	# eksekusi write nya dan ambil ulang data hasil update
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
 		orders = self.browse(cr, uid, ids, context=context)
+
 	# kalau ada perubahan status...
 		if vals.get('state', False):
 			for order_data in orders:
@@ -392,10 +389,74 @@ class foms_order(osv.osv):
 					elif order_data.service_type == 'by_order':
 						self.webservice_post(cr, uid, ['pic','booker','approver','driver'], 'update', order_data, context=context)
 
-	# kalau ada perubahan  
+	# kalau ada perubahan data, lakukan proses khusus tergantung data apa yang berubah, dan broadcast perubahannya ke semua 
+	# pihak
+	# ini sengaja dipisahkan dari yang perubahan status, karena yang perubahan status begitu kompleks
+	# memang benar, resikonya bisa ada dua kali broadcase ke user yang sama untuk proses write yang sama
+		for order_data in order:
+		# reset variabel broadcast
+			broadcast_data_columns = []
+			broadcast_notifications = {
+				'all': [], 'pic': [], 'fullday_passenger': [], 'driver': [], 'booker': [], 'approver': [],
+			}
+
+		# kalau ada perubahan tanggal mulai
+			if vals.get('start_planned_date', False):
+			# message_post supaya kesimpen perubahannya
+				original = (datetime.strptime(original_start_date[order_data.id],'%Y-%m-%d %H:%M:%S')).strftime('%d/%m/%Y %H:%M:%S')
+				new = (datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S')).strftime('%d/%m/%Y %H:%M:%S')
+				if context.get('from_webservice') == True:
+					message_body = _("Planned start date is changed from %s to %s as requested by client.") % (original,new)
+				else:
+					message_body = _("Planned start date is changed from %s to %s.") % (original,new)
+				self.message_post(cr, uid, order_data.id, body=message_body)
+			# broadcast
+				broadcast_data_columns.append('start_planned_date')
+				broadcast_notifications['all'].append('order_change_date')
+
+		# kalau ada perubahan pin, broadcast ke pihak ybs
+		# asumsi: untuk by_order PIN tidak bisa diganti
+			if vals.get('pin', False):
+				broadcast_data_columns.append('pin')
+
+		# kalau ngubah start_date atau finish_date maka broadcast
+			if vals.get('start_date') or vals.get('finish_date'):
+				broadcast_data_columns += ['start_date','finish_date']
+
+		# kalau ada perubahan assigned_vehicle_id dan assigned_driver_id
+			if vals.get('assigned_vehicle_id', False) and vals.get('assigned_driver_id', False):
+			# untuk by_order yang masih new, directly ubah state menjadi ready
+				if order_data.service_type == 'by_order' and order_data.state in ['new','confirmed']:
+					self.write(cr, uid, [order_data.id], {
+						'state': 'ready',
+						'pin': self._generate_random_pin(),
+					}, context=context)
+
+		# kalau ada perubahan di over_quota_status, kasih tau ke pic dan approver
+			if vals.get('over_quota_status', False):
+				if order_data.service_type == 'by_order':
+					broadcast_data_columns += ['over_quota_status','alloc_unit_usage']
+					
+		# finally, broadcast perubahan
+			targets = []
+			if order_data.service_type == 'full_day':
+				targets = ['pic','fullday_passenger','driver']
+			elif order_data.service_type == 'by_order':
+				targets = ['pic','booker','approver','driver']
+			for target in targets:
+				notif = broadcast_notifications[target]
+				if broadcast_notifications['all']: notif += broadcast_notifications['all']
+				self.webservice_post(cr, uid, [target], 'update', order_data, \
+					data_columns=broadcast_data_columns, 
+					webservice_context={
+						'notification': notif,
+					}, context=context)				
+
+	# kalau ada perubahan tanggal mulai
+		"""
 		if vals.get('start_planned_date'):
 			for order_data in orders:
-			# message_post supaya kedeteksi perubahannya
+			# message_post supaya kesimpen perubahannya
 				original = (datetime.strptime(original_start_date[order_data.id],'%Y-%m-%d %H:%M:%S')).strftime('%d/%m/%Y %H:%M:%S')
 				new = (datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S')).strftime('%d/%m/%Y %H:%M:%S')
 				if context.get('from_webservice') == True:
@@ -411,10 +472,11 @@ class foms_order(osv.osv):
 					}, context=context)
 			
 	# kalau ada perubahan pin, broadcast ke pihak ybs
+	# asumsi: untuk by_order PIN tidak bisa diganti
 		if vals.get('pin', False):
 			for order_data in orders:
 				self.webservice_post(cr, uid, ['pic','fullday_passenger','driver'], 'update', order_data, data_columns=['pin'], context=context)
-				
+
 	# kalau ngubah start_date atau finish_date maka post ke mobile app pic, approver, booker
 		if vals.get('start_date') or vals.get('finish_date'):
 			for order_data in orders:
@@ -431,14 +493,14 @@ class foms_order(osv.osv):
 						'state': 'ready',
 						'pin': self._generate_random_pin(),
 					}, context=context)
-	
+
 	# kalau ada perubahan di over_quota_status, kasih tau ke pic dan approver
 		if vals.get('over_quota_status', False):
 			for order_data in orders:
 				if order_data.service_type == 'by_order':
 					self.webservice_post(cr, uid, ['pic','approver'], 'update', order_data, \
 						data_columns=['over_quota_status','alloc_unit_usage'], context=context)
-					
+		"""	
 		return result
 	
 	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
@@ -526,12 +588,13 @@ class foms_order(osv.osv):
 
 # METHODS ------------------------------------------------------------------------------------------------------------------
 
-	def search_first_available_fleet(self, cr, uid, contract_id, order_id, start_planned_date):
+	def search_first_available_fleet(self, cr, uid, contract_id, order_id, fleet_type_id, start_planned_date):
 		area_delay_obj = self.pool.get('foms.order.area.delay')
-	# ambil semua order yang lagi jalan
+	# ambil semua order yang lagi jalan untuk jenis mobil terpilih
 		ongoing_order_ids = self.search(cr, uid, [
 			('customer_contract_id','=',contract_id),
 			('state','in',['ready', 'started', 'start_confirmed', 'paused', 'resumed', 'finished']),
+			('fleet_type_id','=',fleet_type_id),
 			('id','!=',order_id),
 		])
 		vehicle_in_use_ids = []
@@ -547,10 +610,10 @@ class foms_order(osv.osv):
 			if order.assigned_vehicle_id: vehicle_in_use_ids.append(order.assigned_vehicle_id.id)
 			if order.actual_vehicle_id: vehicle_in_use_ids.append(order.actual_vehicle_id.id)
 		vehicle_in_use_ids = list(set(vehicle_in_use_ids))
-	# ambil vehicle pertama yang available
+	# ambil vehicle pertama yang available untuk jenis mobil yang diminta
 		selected_fleet_line = None
 		for fleet in current_order.customer_contract_id.car_drivers:
-			if fleet.fleet_vehicle_id.id in vehicle_in_use_ids: continue
+			if fleet.fleet_vehicle_id.id in vehicle_in_use_ids or fleet.fleet_type_id.id != fleet_type_id: continue
 			selected_fleet_line = fleet
 			break
 		if selected_fleet_line:

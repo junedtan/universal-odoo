@@ -9,7 +9,7 @@
 			<field name="inherit_id" ref="base.view_partner_form" />
 			<field name="arch" type="xml">
 				<xpath expr="//field[@name='category_id']" position="before">
-					<field name="partner_code" required="1" />
+					<field name="partner_code" attrs="{'required': [('is_company','=',True)], 'invisible': [('is_company','!=',True)]}" placeholder="Order Number Prefix" />
 				</xpath>
 				<xpath expr="//page[@name='internal_notes']" position="before">
 					<page string="Usage Units" attrs="{'invisible': [('is_company','=',False)]}">

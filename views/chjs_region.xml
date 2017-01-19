@@ -1,0 +1,18 @@
+<openerp>
+	<data>
+		
+		<!-- REGION/HOMEBASE -->
+		
+		<record model="ir.ui.view" id="chjs_region_form">
+			<field name="name">chjs.region.form</field>
+			<field name="model">chjs.region</field>
+			<field name="inherit_id" ref="chjs_region.chjs_region_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='country_id']" position="after">
+					<field name="emergency_number"  />
+				</xpath>
+			</field>
+		</record>
+		
+	</data>
+</openerp>

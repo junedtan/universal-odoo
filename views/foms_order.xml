@@ -49,7 +49,7 @@
 			<field name="arch" type="xml">
 				<form version="7.0" string="Customer Order">
 					<header>
-						<button name="action_cancel" string="Cancel Order" type="object" states="new,rejected,confirmed,ready" /> 
+						<button name="action_cancel" string="Cancel Order" type="object" states="new,confirmed,ready" /> 
 						<field name="state" widget="statusbar" readonly="1" />
 					</header>
 					<group>

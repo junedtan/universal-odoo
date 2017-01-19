@@ -21,8 +21,8 @@
 							<field name="service_type" />
 							<field name="is_order_replacement_vehicle" />
 							<field name="is_expense_record" />
-							<field name="by_order_minimum_hours" attrs="{'invisible': [('service_type','not in',['by_order'])], 'required': [('service_type','in',['by_order'])]}" />
-							<field name="min_start_minutes" attrs="{'invisible': [('service_type','not in',['by_order'])], 'required': [('service_type','in',['by_order'])]}" />
+							<field name="by_order_minimum_minutes" attrs="{'invisible': [('service_type','not in',['by_order'])], 'required': [('service_type','in',['by_order'])]}" />
+							<field name="min_start_minutes" attrs="{'invisible': [('service_type','not in',['by_order','full_day'])], 'required': [('service_type','in',['by_order','full_day'])]}" />
 						</group>
 						<group>
 							<field name="name" />
@@ -123,31 +123,34 @@
 							</field>
 						</page>
 						<page string="Units &amp; Usage Control" attrs="{'invisible': [('service_type','not in',['by_order'])]}">
-							<group string="Allocation Units">
-								<field name="allocation_units" nolabel="1">
-									<tree version="7.0" editable="bottom">
-										<field name="name" />
-										<field name="approver_ids" widget="many2many_tags" />
-										<field name="booker_ids" widget="many2many_tags" />
-										<field name="yellow_limit" />
-										<field name="red_limit" />
-										<field name="balance_credit_per_usage" />
-									</tree>
-								</field>
-							</group>
-							<group colspan="4">
-								<group string="Usage Control">
-									<field name="usage_control_level" class="oe_inline" />
-									<field name="usage_allocation_maintained_by" attrs="{'invisible': [('usage_control_level','not in',['warning','approval'])]}" />
+							<group>
+								<group string="Units">
+									<field name="allocation_units" nolabel="1">
+										<tree version="7.0" editable="bottom">
+											<field name="name" />
+											<field name="approver_ids" widget="many2many_tags" />
+											<field name="booker_ids" widget="many2many_tags" />
+											<field name="yellow_limit" />
+											<field name="red_limit" />
+										</tree>
+									</field>
 								</group>
-								<group attrs="{'invisible': [('usage_control_level','not in',['warning','approval'])]}" string="Autofills">
-									<p colspan="4">
-										Use below fields to automatically fill in limits and credit/usage for all allocation units above. 
-										You still can change both for individual allocation units.
+								<group>
+									<group colspan="4" string="Usage Control">
+										<field name="usage_control_level" class="oe_inline" />
+										<field name="usage_allocation_maintained_by" attrs="{'invisible': [('usage_control_level','not in',['warning','approval'])]}" />
+									</group>
+									<p colspan="4" attrs="{'invisible': [('usage_control_level','not in',['warning','approval'])]}">
+										Please fill in yellow limit and red limit for every usage unit of this contract.
 									</p>
-									<field name="global_yellow_limit" on_change="onchange_global_yellow_limit(global_yellow_limit, allocation_units)" />
-									<field name="global_red_limit" on_change="onchange_global_red_limit(global_red_limit, allocation_units)" />
-									<field name="global_balance_credit_per_usage" on_change="onchange_global_credit_per_usage(global_balance_credit_per_usage, allocation_units)" />
+									<group colspan="4" string="Amount Credited per Usage" attrs="{'invisible': [('usage_control_level','not in',['warning','approval'])]}">
+										<field name="vehicle_balance_usage" nolabel="1">
+											<tree version="7.0" editable="bottom">
+												<field name="fleet_vehicle_model_id" />
+												<field name="credit_per_usage" />
+											</tree>
+										</field>
+									</group>
 								</group>
 							</group>
 						</page>
@@ -274,7 +277,6 @@
 							<field name="current_usage" />
 							<field name="yellow_limit" />
 							<field name="red_limit" />
-							<field name="balance_credit_per_usage" />
 						</group>
 					</group>
 					<div class="oe_chatter">
@@ -296,7 +298,6 @@
 					<field name="current_usage" />
 					<field name="yellow_limit" />
 					<field name="red_limit" />
-					<field name="balance_credit_per_usage" />
 				</tree>
 			</field>
 		</record>
@@ -350,10 +351,6 @@
 							<field name="old_red_limit" string="From" />
 							<field name="new_red_limit" string="To" />
 						</group>
-						<group string="Credit/Usage">
-							<field name="old_balance_credit_per_usage" string="From" />
-							<field name="new_balance_credit_per_usage" string="To" />
-						</group>
 					</group>
 				</form>
 			</field>
@@ -370,7 +367,6 @@
 					<field name="request_longevity" />
 					<field name="new_yellow_limit" />
 					<field name="new_red_limit" />
-					<field name="new_balance_credit_per_usage" />
 					<field name="state" />
 				</tree>
 			</field>

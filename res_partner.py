@@ -11,12 +11,13 @@ class res_partner(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'partner_code': fields.char('Partner Code'), # disiapkan buat nomor kontrak kalo sampe ada customer code
+		'partner_code': fields.char('Order No. Prefix',
+			help="This prefix will be used for numberinng of orders. Must be exactly four characters, all capital letters."), # disiapkan buat nomor kontrak kalo sampe ada customer code
 		'default_working_time': fields.many2one('resource.calendar', 'Default Working Time', ondelete='set null'),
 		'default_overtime': fields.many2one('hr.overtime', 'Default Overtime', ondelete="set null"),
 		'favorite_locations': fields.one2many('res.partner.location','header_id','Favorite Locations'),
 		'default_routes': fields.one2many('res.partner.route','header_id','Default Routes'),
-		'default_alloc_units': fields.one2many('res.partner.alloc.unit','header_id','Default Allocation Units'),
+		'default_alloc_units': fields.one2many('res.partner.alloc.unit','header_id','Default Usage Units'),
 		'rent_fees': fields.one2many('res.partner.rent.fee','header_id','Rent Fees'),
 		'gapok_fee': fields.one2many('res.partner.gapok.fee','header_id','Gapok Fee'),
 		'order_based_fee': fields.one2many('res.partner.order.based.fee','header_id','Order Based Fee'),
@@ -36,6 +37,17 @@ class res_partner(osv.osv):
 	}
 	
 # CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
+	
+	def _constraint_partner_code(self, cr, uid, ids, context=None):
+		for data in self.browse(cr, uid, ids, context):
+			existing_ids = self.search(cr, uid, [('partner_code','ilike',data.partner_code),('id','!=',data.id)])
+			if len(existing_ids) > 0: return False
+			if len(data.partner_code) != 4: return False
+		return True
+	
+	_constraints = [
+		(_constraint_partner_code, _('Order Number Prefix must be unique and four cahracter long.'), ['partner_code'])
+	]
 	
 	_sql_constraints = [
 		('const_premature1', 'CHECK(default_fee_premature_termination >= 0)', _('Premature termination must be greater than or equal to zero.')),
@@ -111,7 +123,7 @@ class res_partner_alloc_unit(osv.osv):
 # CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
 	
 	_sql_constraints = [
-		('unique_partner_alloc', 'UNIQUE(header_id,name)', _('Please input unique allocation unit name.')),
+		('unique_partner_alloc', 'UNIQUE(header_id,name)', _('Please input unique usage unit name.')),
 	]	
 		
 # ==========================================================================================================================

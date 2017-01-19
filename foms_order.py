@@ -42,7 +42,7 @@ class foms_order(osv.osv):
 			('approval','Over-quota with Approval'),
 		),'Over-Quota Status', required=True),
 		'request_date': fields.datetime('Request Date', required=True),
-		'state': fields.selection(_ORDER_STATE, 'State', required=True, track_visiblity="onchange"),
+		'state': fields.selection(_ORDER_STATE, 'State', required=True, track_visibility="onchange"),
 		'order_by': fields.many2one('res.users', 'Order By', ondelete='restrict'),
 		'confirm_date': fields.datetime('Confirm Date'),
 		'confirm_by': fields.many2one('res.users', 'Confirm By', ondelete='restrict'),
@@ -51,8 +51,8 @@ class foms_order(osv.osv):
 		'cancel_date': fields.datetime('Cancel Date'),
 		'cancel_by': fields.many2one('res.users', 'Cancel By', ondelete='restrict'),
 		'cancel_previous_state': fields.selection(_ORDER_STATE, 'Previous State'),
-		'alloc_unit_id': fields.many2one('foms.contract.alloc.unit', 'Alloc Unit', ondelete='restrict'),
-		'alloc_unit_usage': fields.float('Allocation Unit Usage'),
+		'alloc_unit_id': fields.many2one('foms.contract.alloc.unit', 'Unit', ondelete='restrict'),
+		'alloc_unit_usage': fields.float('Unit Usage'),
 		'route_id': fields.many2one('res.partner.route', 'Route', ondelete='set null'),
 		'origin_area_id': fields.many2one('foms.order.area', 'Origin Area', ondelete='set null'),
 		'origin_location': fields.char('Origin Location'),
@@ -114,13 +114,30 @@ class foms_order(osv.osv):
 	
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
-	def determine_over_quota_status(self, cr, uid, customer_contract_id, allocation_unit_id):
+	def determine_over_quota_status(self, cr, uid, customer_contract_id, allocation_unit_id, vehicle_id):
 		quota_obj = self.pool.get('foms.contract.quota')
+		contract_obj = self.pool.get('foms.contract')
+		vehicle_obj = self.pool.get('fleet.vehicle')
+	# ambil quota saat ini
 		current_quota = quota_obj.get_current_quota_usage(cr, uid, customer_contract_id, allocation_unit_id)
 		if not current_quota:
 			raise osv.except_osv(_('Order Error'),_('Quota for this month has not been set. Please contact PT Universal.'))
+	# untuk kontrak dan kendaraan jenis ini, berapa sih balance per usage nya?
+		vehicle_data = vehicle_obj.browse(cr, uid, vehicle_id)
+		if not vehicle_data: 
+			raise osv.except_osv(_('Order Error'),_('Assigned vehicle not found.'))
+		vehicle_model_id = vehicle_data.model_id.id
+		contract_data = contract_obj.browse(cr, uid, customer_contract_id)
+		credit_per_usage = -1
+		for usage_per_vehicle in contract_data.vehicle_balance_usage:
+			if usage_per_vehicle.fleet_vehicle_model_id.id == vehicle_model_id:
+				credit_per_usage = usage_per_vehicle.credit_per_usage
+				break
+		if credit_per_usage == -1:
+			raise osv.except_osv(_('Order Error'),_('Credit per usage for this type of vehicle has not been set for this contract.'))
+	# tentukan status overquota
 		over_quota_status = 'normal'
-		after_usage = current_quota.balance_credit_per_usage + current_quota.current_usage
+		after_usage = credit_per_usage + current_quota.current_usage
 		if after_usage >= current_quota.red_limit:
 			if contract_data.usage_control_level == 'warning':
 				over_quota_status = 'warning'
@@ -128,7 +145,7 @@ class foms_order(osv.osv):
 				over_quota_status = 'approval'
 		elif after_usage >= current_quota.yellow_limit:
 			over_quota_status = 'yellow'
-		return current_quota.balance_credit_per_usage, over_quota_status
+		return credit_per_usage, over_quota_status
 		
 	def create(self, cr, uid, vals, context={}):
 		contract_obj = self.pool.get('foms.contract')
@@ -144,19 +161,30 @@ class foms_order(osv.osv):
 			start_date = datetime.strptime(vals['start_planned_date'],'%Y-%m-%d %H:%M:%S')
 		# cek start date harus minimal n jam dari sekarang
 			now = datetime.now()
-			delta = float((start_date - now).days * 86400 + (start_date - now).seconds) / 3600
-			if delta < contract_data.by_order_minimum_hours:
-				raise osv.except_osv(_('Order Error'),_('Start date is too close to current time. There must be at least %s hours between now and start date.' % contract_data.by_order_minimum_hours))
+			delta = float((start_date - now).days * 86400 + (start_date - now).seconds) / 60
+			if delta < contract_data.by_order_minimum_minutes:
+				raise osv.except_osv(_('Order Error'),_('Start date is too close to current time, or is in the past. There must be at least %s minutes between now and start date.' % contract_data.by_order_minimum_minutes))
 		# kalau usage control diaktifkan, isi over_quota_status
 			if contract_data.usage_control_level != 'no_control':
-				quota_per_usage, over_quota_status = self.determine_over_quota_status(cr, uid, vals['customer_contract_id'], vals['alloc_unit_id'])
+				quota_per_usage, over_quota_status = self.determine_over_quota_status(cr, uid, vals['customer_contract_id'], vals['alloc_unit_id'], vals['assigned_vehicle_id'])
 				vals.update({
 					'alloc_unit_usage': quota_per_usage,
 					'over_quota_status': over_quota_status,
 				})
 	# bikin nomor order dulu
+	# format: (Tanggal)(Bulan)(Tahun)(4DigitPrefixCustomer)(4DigitNomorOrder) Cth: 23032017BNPB0001
 		if 'name' not in vals:
-			vals.update({'name': 'XXX'}) # later
+			order_date = vals.get('request_date', None)
+			if not order_date: order_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+			order_date = datetime.strptime(order_date, '%Y-%m-%d %H:%M:%S')
+			prefix = "%s%s" % (order_date.strftime('%d%m%Y'), contract_data.customer_id.partner_code.upper())
+			order_ids = self.search(cr, uid, [('name','like',prefix)], order='request_date DESC')
+			if len(order_ids) == 0:
+				last_number = 1
+			else:
+				order_data = self.browse(cr, uid, order_ids[0])
+				last_number = int(order_data.name[-4:])
+			vals.update({'name': "%s%04d" % (prefix,last_number)}) # later
 	# jalankan createnya
 		new_id = super(foms_order, self).create(cr, uid, vals, context=context)
 		new_data = self.browse(cr, uid, new_id, context=context)
@@ -283,6 +311,7 @@ class foms_order(osv.osv):
 						webservice_context={
 								'notification': 'order_reject',
 						}, context=context)
+					self.webservice_post(cr, uid, ['approver'], 'update', order_data, data_columns=['state'], context=context)
 			# kalau order di-confirm (khusus service type By Order)
 				elif vals['state'] == 'confirmed' and order_data.service_type == 'by_order':
 					user_id = context.get('user_id', uid)
@@ -344,6 +373,10 @@ class foms_order(osv.osv):
 							'actual_vehicle_id': order_data.assigned_vehicle_id.id,
 						})
 					super(foms_order, self).write(cr, uid, [order_data.id], update_data, context={})
+					if order_data.service_type == 'full_day':
+						self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'update', order_data, context=context)
+					elif order_data.service_type == 'by_order':
+						self.webservice_post(cr, uid, ['pic','approver','booker'], 'update', order_data, context=context)
 			# kalau dibatalin dan ini adalah by_order
 				elif vals['state'] == 'canceled' and order_data.service_type == 'by_order':
 				# kalau kontraknya pakai usage control, maka hapus dari usage log
@@ -354,9 +387,12 @@ class foms_order(osv.osv):
 							usage_log_obj.unlink(cr, uid, usage_log_ids, context=context)
 					self.webservice_post(cr, uid, ['pic','driver','booker','approver'], 'update', order_data, context=context)
 				else:
-					self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'update', order_data, context=context)
-			
-	# kalau ada perubahan start_planned_date
+					if order_data.service_type == 'full_day':
+						self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'update', order_data, context=context)
+					elif order_data.service_type == 'by_order':
+						self.webservice_post(cr, uid, ['pic','booker','approver','driver'], 'update', order_data, context=context)
+
+	# kalau ada perubahan  
 		if vals.get('start_planned_date'):
 			for order_data in orders:
 			# message_post supaya kedeteksi perubahannya
@@ -872,7 +908,7 @@ class foms_order_mass_input_memory_line(osv.osv_memory):
 
 	_columns = {
 		'order_id': fields.many2one('foms.order', 'Order'),
-		'alloc_unit_id': fields.many2one('foms.contract.alloc.unit', 'Allocation Unit', required=True, ondelete='restrict'),
+		'alloc_unit_id': fields.many2one('foms.contract.alloc.unit', 'Unit', required=True, ondelete='restrict'),
 		'start_date': fields.datetime('Start Date'),
 		'finish_date': fields.datetime('Finish Date'),
 	}		

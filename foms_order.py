@@ -167,9 +167,10 @@ class foms_order(osv.osv):
 					'alloc_unit_usage': quota_per_usage,
 					'over_quota_status': over_quota_status,
 				})
+				print "3"
 	# bikin nomor order dulu
 	# format: (Tanggal)(Bulan)(Tahun)(4DigitPrefixCustomer)(4DigitNomorOrder) Cth: 23032017BNPB0001
-		if vals.get('name', False):
+		if not vals.get('name', False):
 			order_date = vals.get('request_date', None)
 			if not order_date: order_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 			order_date = datetime.strptime(order_date, '%Y-%m-%d %H:%M:%S')
@@ -182,6 +183,7 @@ class foms_order(osv.osv):
 				last_number = int(order_data.name[-4:])
 			vals.update({'name': "%s%04d" % (prefix,last_number)}) # later
 	# jalankan createnya
+		print "selesai generate nomor"
 		new_id = super(foms_order, self).create(cr, uid, vals, context=context)
 		new_data = self.browse(cr, uid, new_id, context=context)
 	# untuk order fullday diasumsikan sudah ready karena vehicle dan drivernya pasti standby kecuali nanti diganti.
@@ -488,7 +490,7 @@ class foms_order(osv.osv):
 		if vals.get('assigned_vehicle_id', False) and vals.get('assigned_driver_id', False):
 			for order_data in orders:
 			# untuk by_order yang masih new, directly ubah state menjadi ready
-				if order_data.service_type == 'by_order' and order_data.state in ['new','confirmed']:
+				if order_data.service_type in ['by_order','shuttle'] and order_data.state in ['new','confirmed']:
 					self.write(cr, uid, [order_data.id], {
 						'state': 'ready',
 						'pin': self._generate_random_pin(),

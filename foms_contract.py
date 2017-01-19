@@ -1034,7 +1034,7 @@ class foms_contract_alloc_unit(osv.osv):
 	def _constraint_booker_approver(self, cr, uid, ids, context=None):
 		for data in self.browse(cr, uid, ids, context):
 			if data.header_id.service_type == 'by_order':
-				if len(data.approver_ids) == 0 or len(data.booker_ids) -- 0:
+				if len(data.approver_ids) == 0 or len(data.booker_ids) == 0:
 					return False
 		return True
 	

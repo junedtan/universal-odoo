@@ -13,6 +13,7 @@ class res_users(osv.osv):
 	}
 	
 	def write(self , cr, uid, ids, vals, context={}):
+		if isinstance(ids, int): ids = [ids]
 		result = super(res_users, self).write(cr, uid, ids, vals, context=context)
 	# bila ada perubahan password, untuk fullday_passenger ubah juga pin nya (idem password), dan broadcast perubahannya
 		if vals.get('password'):

@@ -209,14 +209,21 @@ class foms_contract(osv.osv):
 		if vals.get('state', False) == 'planned':
 			for contract in self.browse(cr, uid, ids, context=context):
 			# sync post outgoing ke user-user yang terkait (PIC, driver, PJ Alloc unit) , memberitahukan ada contract baru
-				targets = ['pic','driver']
 				if contract.service_type == 'full_day':
-					targets.append('fullday_passenger')
+					self.webservice_post(cr, uid, ['pic'], 'create', contract, webservice_context={
+						'notification': 'contract_new',
+					}, context=context)
+					self.webservice_post(cr, uid, ['fullday_passenger','driver'], 'create', contract, context=context)
 				elif contract.service_type == 'by_order':
-					targets += ['booker','approver']
-				self.webservice_post(cr, uid, targets, 'create', contract, webservice_context={
-					'notification': 'contract_new',
-				}, context=context)
+					self.webservice_post(cr, uid, ['pic','approver'], 'create', contract, webservice_context={
+						'notification': 'contract_new',
+					}, context=context)
+					self.webservice_post(cr, uid, ['booker','driver'], 'create', contract, context=context)
+				elif contract.service_type == 'shuttle':
+					self.webservice_post(cr, uid, ['pic'], 'create', contract, webservice_context={
+						'notification': 'contract_new',
+					}, context=context)
+					self.webservice_post(cr, uid, ['driver'], 'create', contract, context=context)
 		return result
 		
 	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
@@ -1041,7 +1048,7 @@ class foms_contract_alloc_unit(osv.osv):
 	def _constraint_booker_approver(self, cr, uid, ids, context=None):
 		for data in self.browse(cr, uid, ids, context):
 			if data.header_id.service_type == 'by_order':
-				if len(data.approver_ids) == 0 or len(data.booker_ids) -- 0:
+				if len(data.approver_ids) == 0 or len(data.booker_ids) == 0:
 					return False
 		return True
 	
@@ -1349,14 +1356,14 @@ class foms_contract_quota_change_log(osv.osv):
 				if new_data == {}: continue
 				quota_obj.write(cr, uid, quota_ids, new_data, context=context)
 			# ganti over_quota_status semua order yang lagi pending untuk contract dan allocation unit ini
-				order_ids = order_obj.search(cr, uid, [(
+				order_ids = order_obj.search(cr, uid, [
 					('customer_contract_id', '=',change_data.customer_contract_id.id),
 					('alloc_unit_id','=',change_data.allocation_unit_id.id),
 					('service_type','in',['by_order']),
 					('state','in',['new']),
-				)])
+				])
 				if len(order_ids) > 0:
-					new_credit_per_usage, new_over_quota_status = order_obj.determine_over_quota_status(change_data.customer_contract_id.id, change_data.allocation_unit_id.id)
+					new_credit_per_usage, new_over_quota_status = order_obj.determine_over_quota_status(cr, uid, change_data.customer_contract_id.id, change_data.allocation_unit_id.id)
 					order_obj.write(cr, uid, order_ids, {
 						'alloc_unit_usage': new_credit_per_usage,
 						'over_quota_status': new_over_quota_status,

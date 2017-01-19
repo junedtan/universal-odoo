@@ -115,6 +115,8 @@ class foms_order(osv.osv):
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
 	def determine_over_quota_status(self, cr, uid, customer_contract_id, allocation_unit_id):
+		contract_obj = self.pool.get('foms.contract')
+		contract_data = contract_obj.browse(cr, uid, customer_contract_id)
 		quota_obj = self.pool.get('foms.contract.quota')
 		current_quota = quota_obj.get_current_quota_usage(cr, uid, customer_contract_id, allocation_unit_id)
 		if not current_quota:

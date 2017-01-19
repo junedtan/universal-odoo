@@ -8,13 +8,15 @@
 			<field name="model">res.partner</field>
 			<field name="inherit_id" ref="base.view_partner_form" />
 			<field name="arch" type="xml">
+				<xpath expr="//field[@name='category_id']" position="before">
+					<field name="partner_code" required="1" />
+				</xpath>
 				<xpath expr="//page[@name='internal_notes']" position="before">
-					<page string="Allocation Units" attrs="{'invisible': [('is_company','=',False)]}">
+					<page string="Usage Units" attrs="{'invisible': [('is_company','=',False)]}">
 						<p colspan="2">
-							Allocation units are used in By-Order service contracts to determine which user requests an order. Furthermore, if the customer 
-							utilizes Usage Control feature, each allocation unit can be given monthly usage quota and each order will substract this quota. 
-							Each allocation unit is given one/more responsibles, who can request for additional quota and monitor his/her allocation 
-							unit's usage.
+							Usage units are used in By-Order service contracts to determine which user requests an order. Furthermore, if the customer 
+							utilizes Usage Control feature, each unit can be given monthly usage quota and each order will substract this quota. 
+							Each unit is given one/more approvers, who can request for additional quota and monitor his/her unit's usage.
 						</p>
 						<field name="default_alloc_units">
 							<tree version="7.0" editable="bottom">

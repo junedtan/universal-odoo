@@ -52,21 +52,21 @@ class foms_contract(osv.osv):
 		'fleet_types': fields.one2many('foms.contract.fleet.type', 'header_id', 'Fleet Types'),
 		'car_drivers': fields.one2many('foms.contract.fleet', 'header_id', 'Car and Drivers'),
 		'shuttle_schedules': fields.one2many('foms.contract.shuttle.schedule', 'header_id', 'Shuttle Schedules'),
-		'allocation_units': fields.one2many('foms.contract.alloc.unit', 'header_id', 'Allocation Units'),
+		'allocation_units': fields.one2many('foms.contract.alloc.unit', 'header_id', 'Units'),
 		'extended_contract_id' : fields.many2one('foms.contract', 'Extended Contract', readonly=True, copy=False,
 			help="If not empty, this contract is an extension of the contract."),
 		'last_fullday_autogenerate_date': fields.date('Last Fullday Autogenerate Date', copy=False),
 		'last_shuttle_autogenerate_date': fields.date('Last Shuttle Autogenerate Date', copy=False),
-		'by_order_minimum_hours': fields.float('Minimum Delay (hours)',
+		'by_order_minimum_minutes': fields.float('Min. Delay (minutes)',
 			help='This is the limit where By Order bookings are still allowed. For example, minumum delay of 2 hours means for 18:30 may still book at 16:30 but not 17:00 or 16:31.'),
-		'min_start_minutes': fields.float('Maximum Start Minutes (minutes)',
+		'min_start_minutes': fields.float('Max. Start (minutes)',
 			help='How long prior to start time do order of this contract are allowed to be started. For example, Maximum Start Minutes of 30 minutes means that order booked for 16:00 can only be started 15:30 onward.'),
 	# FEES
 		'fee_calculation_type': fields.selection([
 			('monthly','Period-based'),
 			('order_based','Order-based')], 'Fee Calculation Type'),
 		'fee_fleet': fields.one2many('foms.contract.fleet.fee', 'header_id', 'Fleet Monthly Fee'),
-		'fee_premature_termination': fields.float('Premature Termination Fee'),
+		'fee_premature_termination': fields.float('Premature Termination Fee (%)'),
 		'fee_structure_id' : fields.many2one('hr.payroll.structure', 'Fee Structure', domain=[('is_customer_contract','=',True)], ondelete='restrict'),
 		'fee_gapok': fields.function(_get_fee_gapok, method=True, type='float', string="Gapok"),
 		'fee_varpok': fields.float('Varpok'),
@@ -95,7 +95,7 @@ class foms_contract(osv.osv):
 			('universal','Universal')], 'Limits Maintained By'),
 		'global_yellow_limit': fields.float('Yellow Limit (Rp)'),	
 		'global_red_limit': fields.float('Red Limit (Rp)'),	
-		'global_balance_credit_per_usage': fields.float('Credit/Usage (Rp)'),	
+		'vehicle_balance_usage': fields.one2many('foms.contract.vehicle.balance.usage','header_id','Credit per Usage'),
 		'is_expense_record': fields.boolean('Include Expense Report'),
 	}
 	
@@ -123,7 +123,6 @@ class foms_contract(osv.osv):
 		'is_expense_record': False,
 		'global_yellow_limit': 0,
 		'global_red_limit': 0,
-		'global_balance_credit_per_usage': 0,
 	}	
 	
 # CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
@@ -421,10 +420,10 @@ class foms_contract(osv.osv):
 	# juga, user groupnya harus booker dan approver
 		if contract.service_type == 'by_order':
 			if len(contract.allocation_units) == 0:
-				raise osv.except_osv(_('Contract Error'),_('For service type of By Order, there must be at least one allocation unit.'))
+				raise osv.except_osv(_('Contract Error'),_('For service type of By Order, there must be at least one unit.'))
 			for alloc_unit in contract.allocation_units:
 				if len(alloc_unit.approver_ids) == 0 or len(alloc_unit.booker_ids) == 0:
-					raise osv.except_osv(_('Contract Error'),_('Please input at least one booker and one approver for each allocation unit.'))
+					raise osv.except_osv(_('Contract Error'),_('Please input at least one booker and one approver for each unit.'))
 				for booker in alloc_unit.booker_ids:
 					if not user_obj.has_group(cr, booker.id, 'universal.group_universal_booker'):
 						raise osv.except_osv(_('Contract Error'),_('Booker %s does not belong to Customer Order Booker group.') % booker.name)
@@ -553,6 +552,7 @@ class foms_contract(osv.osv):
 		if len(customer_data.rent_fees) > 0:
 			fleet_types = []
 			fleet_fees = []
+			vehicle_balance_usage = []
 			for row in customer_data.rent_fees:
 				fleet_types.append({
 					'fleet_type_id': row.fleet_vehicle_model_id.id,
@@ -561,9 +561,14 @@ class foms_contract(osv.osv):
 					'fleet_type_id': row.fleet_vehicle_model_id.id,
 					'monthly_fee': row.monthly_fee,
 				})
+				vehicle_balance_usage.append({
+					'fleet_vehicle_model_id': row.fleet_vehicle_model_id.id,
+					'credit_per_usage': -1,
+				})
 			result['value'].update({
 				'fleet_types': fleet_types,
 				'fee_fleet': fleet_fees,
+				'vehicle_balance_usage': vehicle_balance_usage,
 			})
 	# kasih domain ke field customer_contact_id, supaya memilih hanya yang di bawah perusahaan customer
 		pic_ids = []
@@ -624,24 +629,6 @@ class foms_contract(osv.osv):
 					}])
 			else:
 				allocation_units[idx][2]['red_limit'] = global_red_limit
-				new_alloc_units.append(allocation_units[idx])
-		result['value']['allocation_units'] = new_alloc_units
-		return result
-
-	def onchange_global_credit_per_usage(self, cr, uid, ids, global_balance_credit_per_usage, allocation_units):
-		result = {'value': {}}
-		new_alloc_units = []
-		for idx, value in enumerate(allocation_units):
-			if len(value) < 2 or not value[2]: continue
-			if isinstance(value[2],list): 
-				alloc_unit_obj = self.pool.get('foms.contract.alloc.unit')
-				for existing_id in value[2]:
-					data = alloc_unit_obj.browse(cr, uid, existing_id)
-					new_alloc_units.append([1, existing_id, {
-						'balance_credit_per_usage': global_balance_credit_per_usage,
-					}])
-			else:
-				allocation_units[idx][2]['balance_credit_per_usage'] = balance_credit_per_usage
 				new_alloc_units.append(allocation_units[idx])
 		result['value']['allocation_units'] = new_alloc_units
 		return result
@@ -960,20 +947,19 @@ class foms_contract_alloc_unit(osv.osv):
 
 	_columns = {
 		'header_id': fields.many2one('foms.contract', 'Contract', ondelete='cascade'),
-		'name': fields.char('Name', required=True),
+		'name': fields.char('Unit Name', required=True),
 		'approver_ids': fields.many2many('res.users', 'foms_alloc_unit_approvers', 'alloc_unit_id', 
-			'user_id', string='Responsibles'),
+			'user_id', string='Approvers'),
 		'booker_ids': fields.many2many('res.users', 'foms_alloc_unit_bookers', 'alloc_unit_id', 
 			'booker_id', string='Bookers'),
 		'yellow_limit': fields.float('Yellow Limit'),
 		'red_limit': fields.float('Red Limit'),
-		'balance_credit_per_usage': fields.float('Credit/Usage'),
 	}		
 	
 # CONSTRAINTS --------------------------------------------------------------------------------------------------------------
 	
 	_sql_constraints = [
-		('unique_contract_alloc_unit', 'UNIQUE(header_id,name)', _('Please input unique contract allocation unit.')),
+		('unique_contract_alloc_unit', 'UNIQUE(header_id,name)', _('Please input unique contract usage unit.')),
 		('check_limit', 'CHECK(red_limit >= yellow_limit)', _('Red Limit must be greater than or equal to Yellow Limit.')),
 	]	
 
@@ -1053,13 +1039,26 @@ class foms_contract_alloc_unit(osv.osv):
 		return True
 	
 	_constraints = [
-		(_constraint_booker_approver, _('For By-Order service type, every allocation unit must have at least one approver and one booker.'), ['approver_ids','booker_ids'])
+		(_constraint_booker_approver, _('For By-Order service type, every usage unit must have at least one approver and one booker.'), ['approver_ids','booker_ids'])
 	]
 	
 	_sql_constraints = [
-		('unique_contract_alloc_unit', 'UNIQUE(header_id,name)', _('Please input unique contract allocation unit.')),
+		('unique_contract_alloc_unit', 'UNIQUE(header_id,name)', _('Please input unique contract usage unit.')),
 	]	
 	
+# ==========================================================================================================================
+
+class foms_contract_vehicle_balance_usage(osv.osv):
+
+	_name = 'foms.contract.vehicle.balance.usage'
+	_description = 'Amount deducted/credited from monthly quota for every order, determined by vehicle type'
+
+	_columns = {
+		'header_id': fields.many2one('foms.contract', 'Contract', ondelete='cascade'),
+		'fleet_vehicle_model_id': fields.many2one('fleet.vehicle.model', 'Vehicle Model', ondelete='restrict'),
+		'credit_per_usage': fields.float('Credit per Usage'),
+	}
+
 # ==========================================================================================================================
 
 class foms_contract_quota(osv.osv):
@@ -1093,14 +1092,13 @@ class foms_contract_quota(osv.osv):
 		'period': fields.char('Period', required=True, readonly=True),
 		'yellow_limit': fields.float('Yellow Limit', track_visibility="onchange"),
 		'red_limit': fields.float('Red Limit', track_visibility="onchange"),
-		'balance_credit_per_usage': fields.float('Credit/Usage', track_visibility="onchange"),
 		'current_usage': fields.function(_current_usage, type='float', method=True, string="Current Usage"),
 	}		
 	
 # CONSTRAINTS --------------------------------------------------------------------------------------------------------------
 	
 	_sql_constraints = [
-		('unique_contract_alloc_period', 'UNIQUE(customer_contract_id,allocation_unit_id,period)', _('Please input unique contract, allocation unit, and period.')),
+		('unique_contract_alloc_period', 'UNIQUE(customer_contract_id,allocation_unit_id,period)', _('Please input unique contract, usage unit, and period.')),
 	]	
 
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
@@ -1163,7 +1161,7 @@ class foms_contract_quota(osv.osv):
 
 	def cron_fillin_periodic_limit(self, cr, uid, context={}):
 		print "eh mulai"
-		def search_create(contract_id, alloc_unit_id, period, yellow_limit, red_limit, balance_credit_per_usage):
+		def search_create(contract_id, alloc_unit_id, period, yellow_limit, red_limit):
 			quota_ids = self.search(cr, uid, [
 				('customer_contract_id','=',contract_id),
 				('allocation_unit_id','=',alloc_unit_id),
@@ -1176,7 +1174,6 @@ class foms_contract_quota(osv.osv):
 					'period': period,
 					'yellow_limit': yellow_limit,
 					'red_limit': red_limit,
-					'balance_credit_per_usage': balance_credit_per_usage,
 				})
 			
 	# ambil semua kontrak aktif dengan service_type by Order
@@ -1188,9 +1185,9 @@ class foms_contract_quota(osv.osv):
 		for contract in contract_obj.browse(cr, uid, contract_ids):
 			if len(contract.allocation_units) == 0: continue
 			for alloc_unit in contract.allocation_units:
-				search_create(contract.id, alloc_unit.id, current_period, alloc_unit.yellow_limit, alloc_unit.red_limit, alloc_unit.balance_credit_per_usage)
+				search_create(contract.id, alloc_unit.id, current_period, alloc_unit.yellow_limit, alloc_unit.red_limit)
 				if next_period != current_period:
-					search_create(contract.id, alloc_unit.id, next_period, alloc_unit.yellow_limit, alloc_unit.red_limit, alloc_unit.balance_credit_per_usage)
+					search_create(contract.id, alloc_unit.id, next_period, alloc_unit.yellow_limit, alloc_unit.red_limit)
 	
 # SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------
 
@@ -1244,8 +1241,6 @@ class foms_contract_quota_change_log(osv.osv):
 		'old_red_limit': fields.float('Old Red Limit', readonly=True),
 		'new_yellow_limit': fields.float('New Yellow Limit'),
 		'new_red_limit': fields.float('New Red Limit'),
-		'old_balance_credit_per_usage': fields.float('Old Credit/Usage', readonly=True),
-		'new_balance_credit_per_usage': fields.float('New Credit/Usage'),
 		'confirm_by': fields.many2one('res.users', 'Confirm By', ondelete='restrict'),
 		'confirm_date': fields.datetime('Confirm Date'),
 		'reject_reason': fields.text('Reject Reason'),
@@ -1288,7 +1283,6 @@ class foms_contract_quota_change_log(osv.osv):
 		result['value'].update({
 			'old_yellow_limit': quota_data.yellow_limit,
 			'old_red_limit': quota_data.red_limit,
-			'old_balance_credit_per_usage': quota_data.balance_credit_per_usage,
 		})
 		return result
 	
@@ -1300,7 +1294,6 @@ class foms_contract_quota_change_log(osv.osv):
 		vals.update({
 			'old_yellow_limit': temp_data['value']['old_yellow_limit'],
 			'old_red_limit': temp_data['value']['old_red_limit'],
-			'old_balance_credit_per_usage': temp_data['value']['old_balance_credit_per_usage'],
 		})
 	# create lah
 		new_id = super(foms_contract_quota_change_log, self).create(cr, uid, vals, context=context)
@@ -1352,7 +1345,6 @@ class foms_contract_quota_change_log(osv.osv):
 				new_data = {}
 				if change_data.new_yellow_limit: new_data.update({'yellow_limit': change_data.new_yellow_limit})
 				if change_data.new_red_limit: new_data.update({'red_limit': change_data.new_red_limit})
-				if change_data.new_balance_credit_per_usage: new_data.update({'balance_credit_per_usage': change_data.new_balance_credit_per_usage})
 				if new_data == {}: continue
 				quota_obj.write(cr, uid, quota_ids, new_data, context=context)
 			# ganti over_quota_status semua order yang lagi pending untuk contract dan allocation unit ini
@@ -1363,11 +1355,13 @@ class foms_contract_quota_change_log(osv.osv):
 					('state','in',['new']),
 				])
 				if len(order_ids) > 0:
-					new_credit_per_usage, new_over_quota_status = order_obj.determine_over_quota_status(cr, uid, change_data.customer_contract_id.id, change_data.allocation_unit_id.id)
-					order_obj.write(cr, uid, order_ids, {
-						'alloc_unit_usage': new_credit_per_usage,
-						'over_quota_status': new_over_quota_status,
-					})
+					for order_data in order_obj.browse(cr, uid, order_ids):
+						vehicle_id = order_data.actual_vehicle_id and order_data.actual_vehicle_id.id or order_data.assigned_vehicle_id.id
+						new_credit_per_usage, new_over_quota_status = order_obj.determine_over_quota_status(change_data.customer_contract_id.id, change_data.allocation_unit_id.id, vehicle_id)
+						order_obj.write(cr, uid, [order_data.id], {
+							'alloc_unit_usage': new_credit_per_usage,
+							'over_quota_status': new_over_quota_status,
+						})
 			# kalau diinginkan perubahan menjadi permanent maka update juga yang di alloc unit nya
 				if change_data.request_longevity == 'permanent':
 					alloc_unit_obj.write(cr, uid, [change_data.allocation_unit_id.id], new_data, context=context)

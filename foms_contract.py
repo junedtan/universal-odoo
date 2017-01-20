@@ -352,6 +352,17 @@ class foms_contract(osv.osv):
 				'company_name': partner_data.parent_id.name,
 				'company_id': partner_data.parent_id.id,
 			}]
+	# untuk command ambil list homebase
+		if command == 'homebase':
+			homebase_obj = self.pool.get('chjs.region')
+			homebase_ids = homebase_obj.search(cr, uid, [])
+			result = []
+			for homebase in homebase_obj.browse(cr, uid, homebase_ids):
+				result.append({
+					'name': homebase.name,
+					'code': hombase.code,
+					'emergency_number': homebase.emergency_number,
+					})
 		return result
 
 # ACTION -------------------------------------------------------------------------------------------------------------------

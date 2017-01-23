@@ -206,7 +206,7 @@ class foms_order(osv.osv):
 	# untuk order By Order, post notification ke approver yang ada + bookernya untuk konfirmasi order sudah masuk
 		elif new_data.service_type == 'by_order':
 			webservice_context = {
-					'notification': 'order_approve',
+					'notification': ['order_approve'],
 			}
 		# kalau usage control di-on-kan, ada sedikit perbedaan di notificationnya
 			if new_data.customer_contract_id.usage_control_level != 'no_control':
@@ -223,7 +223,7 @@ class foms_order(osv.osv):
 					else:
 						red_limit = 0
 					webservice_context = {
-						'notification': 'order_over_quota_%s' % new_data.over_quota_status,
+						'notification': ['order_over_quota_%s' % new_data.over_quota_status],
 						'order_usage': new_data.alloc_unit_usage,
 						'red_limit': red_limit,
 					}
@@ -232,7 +232,7 @@ class foms_order(osv.osv):
 		# tetep notif ke booker bahwa ordernya udah masuk
 			self.webservice_post(cr, uid, ['booker'], 'update', new_data, \
 				webservice_context={
-						'notification': 'order_waiting_approve',
+						'notification': ['order_waiting_approve'],
 				}, context=context)
 		elif new_data.service_type == 'shuttle':
 			self.write(cr, uid, [new_id], {
@@ -265,7 +265,7 @@ class foms_order(osv.osv):
 					self.webservice_post(cr, uid, ['approver'], 'update', data, \
 						data_columns=['state'],
 						webservice_context={
-								'notification': 'order_other_approved',
+								'notification': ['order_other_approved'],
 						}, context=context)
 					return True
 	
@@ -290,15 +290,15 @@ class foms_order(osv.osv):
 						self.webservice_post(cr, uid, ['pic'], 'create', order_data, context=context)
 						self.webservice_post(cr, uid, ['booker'], 'update', order_data, 
 							webservice_context={
-								'notification': 'order_ready_booker',
+								'notification': ['order_ready_booker'],
 							}, context=context)
 						self.webservice_post(cr, uid, ['approver'], 'update', order_data, 
 							webservice_context={
-								'notification': 'order_ready_approver',
+								'notification': ['order_ready_approver'],
 							}, context=context)
 						self.webservice_post(cr, uid, ['driver'], 'update', order_data, 
 							webservice_context={
-								'notification': 'order_ready_driver',
+								'notification': ['order_ready_driver'],
 							}, context=context)
 				# kalau shuttle, cukup push data order ini ke app driver
 					elif order_data.service_type == 'shuttle':
@@ -308,7 +308,7 @@ class foms_order(osv.osv):
 					self.webservice_post(cr, uid, ['booker'], 'update', order_data, \
 						data_columns=['state'], 
 						webservice_context={
-								'notification': 'order_reject',
+								'notification': ['order_reject'],
 						}, context=context)
 					self.webservice_post(cr, uid, ['approver'], 'update', order_data, data_columns=['state'], context=context)
 			# kalau order di-confirm (khusus service type By Order)
@@ -351,7 +351,7 @@ class foms_order(osv.osv):
 						else:
 							self.webservice_post(cr, uid, ['booker','approver'], 'update', order_data, 
 								webservice_context={
-										'notification': 'order_fleet_not_ready',
+										'notification': ['order_fleet_not_ready'],
 								}, context=context)
 							for central_user_id in central_user_ids:
 								self.message_post(cr, central_user_id, order_data.id, body=_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order_data.name)
@@ -470,7 +470,7 @@ class foms_order(osv.osv):
 				self.webservice_post(cr, uid, ['pic','fullday_passenger','driver','booker','approver'], 'update', order_data, \
 					data_columns=['start_planned_date'], 
 					webservice_context={
-						'notification': 'order_change_date',
+						'notification': ['order_change_date'],
 					}, context=context)
 			
 	# kalau ada perubahan pin, broadcast ke pihak ybs

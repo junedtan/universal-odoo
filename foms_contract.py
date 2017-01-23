@@ -210,17 +210,17 @@ class foms_contract(osv.osv):
 			# sync post outgoing ke user-user yang terkait (PIC, driver, PJ Alloc unit) , memberitahukan ada contract baru
 				if contract.service_type == 'full_day':
 					self.webservice_post(cr, uid, ['pic'], 'create', contract, webservice_context={
-						'notification': 'contract_new',
+						'notification': ['contract_new'],
 					}, context=context)
 					self.webservice_post(cr, uid, ['fullday_passenger','driver'], 'create', contract, context=context)
 				elif contract.service_type == 'by_order':
 					self.webservice_post(cr, uid, ['pic','approver'], 'create', contract, webservice_context={
-						'notification': 'contract_new',
+						'notification': ['contract_new'],
 					}, context=context)
 					self.webservice_post(cr, uid, ['booker','driver'], 'create', contract, context=context)
 				elif contract.service_type == 'shuttle':
 					self.webservice_post(cr, uid, ['pic'], 'create', contract, webservice_context={
-						'notification': 'contract_new',
+						'notification': ['contract_new'],
 					}, context=context)
 					self.webservice_post(cr, uid, ['driver'], 'create', contract, context=context)
 		return result
@@ -1328,7 +1328,7 @@ class foms_contract_quota_change_log(osv.osv):
 			if context.get('from_webservice', False):
 				new_data = self.browse(cr, uid, new_id, context=context)
 				self.webservice_post(cr, uid, ['pic'], 'create', new_data, webservice_context={
-					'notification': 'contract_quota_limit_request',
+					'notification': ['contract_quota_limit_request'],
 				}, context=context)
 			else:
 			 # cuman boleh dari app, ga boleh langsung input dari Odoo

@@ -123,9 +123,12 @@ class foms_order(osv.osv):
 		if not current_quota:
 			raise osv.except_osv(_('Order Error'),_('Quota for this month has not been set. Please contact PT Universal.'))
 	# untuk kontrak dan kendaraan jenis ini, berapa sih balance per usage nya?
+		print "2,1"
 		contract_data = contract_obj.browse(cr, uid, customer_contract_id)
 		credit_per_usage = -1
+		print "2,2"
 		for usage_per_vehicle in contract_data.vehicle_balance_usage:
+			print "2,3"
 			if usage_per_vehicle.fleet_vehicle_model_id.id == fleet_type_id:
 				credit_per_usage = usage_per_vehicle.credit_per_usage
 				break
@@ -133,6 +136,7 @@ class foms_order(osv.osv):
 			raise osv.except_osv(_('Order Error'),_('Credit per usage for this type of vehicle has not been set for this contract.'))
 	# tentukan status overquota
 		over_quota_status = 'normal'
+		print credit_per_usage
 		after_usage = credit_per_usage + current_quota.current_usage
 		if after_usage >= current_quota.red_limit:
 			if contract_data.usage_control_level == 'warning':
@@ -171,11 +175,15 @@ class foms_order(osv.osv):
 	# bikin nomor order dulu
 	# format: (Tanggal)(Bulan)(Tahun)(4DigitPrefixCustomer)(4DigitNomorOrder) Cth: 23032017BNPB0001
 		if not vals.get('name', False):
+			print "masuk bikin nomor"
 			order_date = vals.get('request_date', None)
+			print "4"
 			if not order_date: order_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 			order_date = datetime.strptime(order_date, '%Y-%m-%d %H:%M:%S')
+			print "5"
 			prefix = "%s%s" % (order_date.strftime('%d%m%Y'), contract_data.customer_id.partner_code.upper())
 			order_ids = self.search(cr, uid, [('name','like',prefix)], order='request_date DESC')
+			print "6"
 			if len(order_ids) == 0:
 				last_number = 1
 			else:
@@ -337,7 +345,7 @@ class foms_order(osv.osv):
 					if order_data.origin_area_id and order_data.dest_area_id and \
 					order_data.origin_area_id.homebase_id.id == order_data.dest_area_id.homebase_id.id:
 					# cari vehicle dan driver yang available di jam itu
-						vehicle_id, driver_id = self.search_first_available_fleet(cr, uid, order_data.customer_contract_id.id, order_data.id, order_data.start_planned_date)
+						vehicle_id, driver_id = self.search_first_available_fleet(cr, uid, order_data.customer_contract_id.id, order_data.id, order_data.start_planned_date, order_data.fleet_type_id.id)
 					# kalo ada, langsung jadi ready
 					# sengaja pake self bukan super supaya kena webservice_post
 						if vehicle_id and driver_id:
@@ -395,7 +403,7 @@ class foms_order(osv.osv):
 	# ke semua pihak
 	# ini sengaja dipisahkan dari yang perubahan status, karena yang perubahan status begitu kompleks
 	# memang benar, konsekuensinya bisa ada dua kali broadcast ke user yang sama untuk proses write yang sama
-		for order_data in order:
+		for order_data in orders:
 		# reset variabel broadcast
 			broadcast_data_columns = []
 			broadcast_notifications = {

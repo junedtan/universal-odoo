@@ -359,8 +359,9 @@ class foms_contract(osv.osv):
 			result = []
 			for homebase in homebase_obj.browse(cr, uid, homebase_ids):
 				result.append({
+					'id': homebase.id,
 					'name': homebase.name,
-					'code': hombase.code,
+					'code': homebase.code,
 					'emergency_number': homebase.emergency_number,
 					})
 		return result

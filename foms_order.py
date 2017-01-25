@@ -128,7 +128,7 @@ class foms_order(osv.osv):
 		credit_per_usage = -1
 		print "2,2"
 		for usage_per_vehicle in contract_data.vehicle_balance_usage:
-			print "2,3"
+			print usage_per_vehicle.fleet_vehicle_model_id.id, fleet_type_id
 			if usage_per_vehicle.fleet_vehicle_model_id.id == fleet_type_id:
 				credit_per_usage = usage_per_vehicle.credit_per_usage
 				break
@@ -178,11 +178,12 @@ class foms_order(osv.osv):
 			print "masuk bikin nomor"
 			order_date = vals.get('request_date', None)
 			print "4"
-			if not order_date: order_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-			order_date = datetime.strptime(order_date, '%Y-%m-%d %H:%M:%S')
+			if not order_date: order_date = datetime.now()
+			if isinstance(order_date, str):
+				order_date = datetime.strptime(order_data, '%Y-%m-%d %H:%M:%S')
 			print "5"
 			prefix = "%s%s" % (order_date.strftime('%d%m%Y'), contract_data.customer_id.partner_code.upper())
-			order_ids = self.search(cr, uid, [('name','like',prefix)], order='request_date DESC')
+			order_ids = self.search(cr, uid, [('name','=like',prefix+'%')], order='request_date DESC')
 			print "6"
 			if len(order_ids) == 0:
 				last_number = 1
@@ -725,7 +726,6 @@ class foms_order(osv.osv):
 				while day <= max_orders:
 					for fleet in contract.car_drivers:
 						new_id = order_obj.create(cr, uid, {
-							'name': 'XXX',
 							'customer_contract_id': contract.id,
 							'service_type': contract.service_type,
 							'request_date': counter_date,

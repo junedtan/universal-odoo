@@ -1172,7 +1172,6 @@ class foms_contract_quota(osv.osv):
 # CRON ---------------------------------------------------------------------------------------------------------------------
 
 	def cron_fillin_periodic_limit(self, cr, uid, context={}):
-		print "eh mulai"
 		def search_create(contract_id, alloc_unit_id, period, yellow_limit, red_limit):
 			quota_ids = self.search(cr, uid, [
 				('customer_contract_id','=',contract_id),

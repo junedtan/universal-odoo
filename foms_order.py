@@ -123,12 +123,9 @@ class foms_order(osv.osv):
 		if not current_quota:
 			raise osv.except_osv(_('Order Error'),_('Quota for this month has not been set. Please contact PT Universal.'))
 	# untuk kontrak dan kendaraan jenis ini, berapa sih balance per usage nya?
-		print "2,1"
 		contract_data = contract_obj.browse(cr, uid, customer_contract_id)
 		credit_per_usage = -1
-		print "2,2"
 		for usage_per_vehicle in contract_data.vehicle_balance_usage:
-			print "2,3"
 			if usage_per_vehicle.fleet_vehicle_model_id.id == fleet_type_id:
 				credit_per_usage = usage_per_vehicle.credit_per_usage
 				break
@@ -725,7 +722,6 @@ class foms_order(osv.osv):
 				while day <= max_orders:
 					for fleet in contract.car_drivers:
 						new_id = order_obj.create(cr, uid, {
-							'name': 'XXX',
 							'customer_contract_id': contract.id,
 							'service_type': contract.service_type,
 							'request_date': counter_date,

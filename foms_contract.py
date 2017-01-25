@@ -1394,7 +1394,7 @@ class foms_contract_quota_change_log(osv.osv):
 		print notif
 		for change_data in change_datas:
 			self.webservice_post(cr, uid, ['pic','approver'], 'create', change_data, webservice_context=notif and {
-				'notification': notif,
+				'notification': [notif],
 			} or {}, context=context)
 		return result
 

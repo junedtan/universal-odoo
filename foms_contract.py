@@ -1368,7 +1368,7 @@ class foms_contract_quota_change_log(osv.osv):
 				])
 				if len(order_ids) > 0:
 					for order_data in order_obj.browse(cr, uid, order_ids):
-						new_credit_per_usage, new_over_quota_status = order_obj.determine_over_quota_status(change_data.customer_contract_id.id, change_data.allocation_unit_id.id, order_data.fleet_type_id.id)
+						new_credit_per_usage, new_over_quota_status = order_obj.determine_over_quota_status(cr, uid, change_data.customer_contract_id.id, change_data.allocation_unit_id.id, order_data.fleet_type_id.id)
 						order_obj.write(cr, uid, [order_data.id], {
 							'alloc_unit_usage': new_credit_per_usage,
 							'over_quota_status': new_over_quota_status,

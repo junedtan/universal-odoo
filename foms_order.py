@@ -175,11 +175,12 @@ class foms_order(osv.osv):
 			print "masuk bikin nomor"
 			order_date = vals.get('request_date', None)
 			print "4"
-			if not order_date: order_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-			order_date = datetime.strptime(order_date, '%Y-%m-%d %H:%M:%S')
+			if not order_date: order_date = datetime.now()
+			if isinstance(order_date, str):
+				order_date = datetime.strptime(order_data, '%Y-%m-%d %H:%M:%S')
 			print "5"
 			prefix = "%s%s" % (order_date.strftime('%d%m%Y'), contract_data.customer_id.partner_code.upper())
-			order_ids = self.search(cr, uid, [('name','like',prefix)], order='request_date DESC')
+			order_ids = self.search(cr, uid, [('name','=like',prefix+'%')], order='request_date DESC')
 			print "6"
 			if len(order_ids) == 0:
 				last_number = 1

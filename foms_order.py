@@ -172,8 +172,8 @@ class foms_order(osv.osv):
 		if not vals.get('name', False):
 			order_date = vals.get('request_date', None)
 			if not order_date: order_date = datetime.now()
-			if isinstance(order_date, str):
-				order_date = datetime.strptime(order_data, '%Y-%m-%d %H:%M:%S')
+			if isinstance(order_date, (str,unicode)):
+				order_date = datetime.strptime(order_date, '%Y-%m-%d %H:%M:%S')
 			prefix = "%s%s" % (order_date.strftime('%d%m%Y'), contract_data.customer_id.partner_code.upper())
 			print prefix + '%'
 			order_ids = self.search(cr, uid, [('name','=like',prefix+'%')], order='request_date DESC')
@@ -339,7 +339,7 @@ class foms_order(osv.osv):
 					if order_data.origin_area_id and order_data.dest_area_id and \
 					order_data.origin_area_id.homebase_id.id == order_data.dest_area_id.homebase_id.id:
 					# cari vehicle dan driver yang available di jam itu
-						vehicle_id, driver_id = self.search_first_available_fleet(cr, uid, order_data.customer_contract_id.id, order_data.id, order_data.start_planned_date, order_data.fleet_type_id.id)
+						vehicle_id, driver_id = self.search_first_available_fleet(cr, uid, order_data.customer_contract_id.id, order_data.id, order_data.fleet_type_id.id, order_data.start_planned_date)
 					# kalo ada, langsung jadi ready
 					# sengaja pake self bukan super supaya kena webservice_post
 						if vehicle_id and driver_id:
@@ -604,13 +604,13 @@ class foms_order(osv.osv):
 		vehicle_in_use_ids = []
 		current_order = self.browse(cr, uid, order_id)
 		for order in self.browse(cr, uid, ongoing_order_ids):
-			if order.finish_planned_date >= start_planned_date: continue # udah jelas ngga available
+			if order.finish_planned_date < start_planned_date: continue # udah jelas available
 		# perhitungkan delay dari satu area ke area lain
 			if order.dest_area_id and current_order.origin_area_id:
 				delay = area_delay_obj.get_delay(cr, uid, order.dest_area_id.id, current_order.origin_area_id.id)
 				finish_date = datetime.strptime(order.finish_planned_date, '%Y-%m-%d %H:%M:%S') + timedelta(minutes=delay)
 				finish_date = finish_date.strftime('%Y-%m-%d %H:%M:%S')
-				if finish_date >= start_planned_date: continue
+				if finish_date < start_planned_date: continue
 			if order.assigned_vehicle_id: vehicle_in_use_ids.append(order.assigned_vehicle_id.id)
 			if order.actual_vehicle_id: vehicle_in_use_ids.append(order.actual_vehicle_id.id)
 		vehicle_in_use_ids = list(set(vehicle_in_use_ids))

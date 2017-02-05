@@ -86,6 +86,7 @@ class foms_order(osv.osv):
 			('mobile','Mobile App'),
 			('central','Central Dispatch'),], 'Finish From'),
 		'pause_count': fields.integer('Pause Count'),
+		'pause_minutes': fields.float('Pause Minutes'),
 		'is_lk_pp': fields.boolean('Luar Kota PP?'),
 		'is_lk_inap': fields.boolean('Luar Kota Menginap?'),
 		'create_source': fields.selection((
@@ -112,37 +113,9 @@ class foms_order(osv.osv):
 	_sql_constraints = [
 		('const_start_end_date','CHECK(finish_planned_date > start_planned_date)',_('Finish data must be after start date.')),
 	]
-	
+
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
-	def determine_over_quota_status(self, cr, uid, customer_contract_id, allocation_unit_id, fleet_type_id):
-		quota_obj = self.pool.get('foms.contract.quota')
-		contract_obj = self.pool.get('foms.contract')
-	# ambil quota saat ini
-		current_quota = quota_obj.get_current_quota_usage(cr, uid, customer_contract_id, allocation_unit_id)
-		if not current_quota:
-			raise osv.except_osv(_('Order Error'),_('Quota for this month has not been set. Please contact PT Universal.'))
-	# untuk kontrak dan kendaraan jenis ini, berapa sih balance per usage nya?
-		contract_data = contract_obj.browse(cr, uid, customer_contract_id)
-		credit_per_usage = -1
-		for usage_per_vehicle in contract_data.vehicle_balance_usage:
-			if usage_per_vehicle.fleet_vehicle_model_id.id == fleet_type_id:
-				credit_per_usage = usage_per_vehicle.credit_per_usage
-				break
-		if credit_per_usage == -1:
-			raise osv.except_osv(_('Order Error'),_('Credit per usage for this type of vehicle has not been set for this contract.'))
-	# tentukan status overquota
-		over_quota_status = 'normal'
-		after_usage = credit_per_usage + current_quota.current_usage
-		if after_usage >= current_quota.red_limit:
-			if contract_data.usage_control_level == 'warning':
-				over_quota_status = 'warning'
-			elif contract_data.usage_control_level == 'approval':
-				over_quota_status = 'approval'
-		elif after_usage >= current_quota.yellow_limit:
-			over_quota_status = 'yellow'
-		return credit_per_usage, over_quota_status
-		
 	def create(self, cr, uid, vals, context={}):
 		contract_obj = self.pool.get('foms.contract')
 		contract_data = contract_obj.browse(cr, uid, vals['customer_contract_id'])
@@ -334,8 +307,7 @@ class foms_order(osv.osv):
 						})
 				# apakah source_area dan dest_area ada di bawah homebase yang sama?
 				# kalo sama, langsung cariin mobil dan supir
-					central_user_ids = user_obj.get_user_ids_by_group(cr, uid, 'universal', 'group_universal_central_dispatch')
-					central_user_ids += [SUPERUSER_ID]
+					central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_central_dispatch')
 					if order_data.origin_area_id and order_data.dest_area_id and \
 					order_data.origin_area_id.homebase_id.id == order_data.dest_area_id.homebase_id.id:
 					# cari vehicle dan driver yang available di jam itu
@@ -355,13 +327,19 @@ class foms_order(osv.osv):
 								webservice_context={
 										'notification': ['order_fleet_not_ready'],
 								}, context=context)
+							partner_ids = []
+							for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
 							for central_user_id in central_user_ids:
-								self.message_post(cr, central_user_id, order_data.id, body=_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order_data.name)
+								self.message_post(cr, central_user_id, order_data.id, body=_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order_data.name,
+								partner_ids=partner_ids)
 							return result
 				# kalo beda homebase, post message 
 					else:
-						for central_user_id in central_user_ids:
-							self.message_post(cr, central_user_id, order_data.id, body=_('New order from %s going to different homebase. Manual vehicle/driver assignment needed.') % order_data.customer_contract_id.customer_id.name)
+						partner_ids = []
+						for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
+						self.message_post(cr, SUPERUSER_ID, order_data.id, 
+							body=_('New order from %s going to different homebase. Manual vehicle/driver assignment needed.') % order_data.customer_contract_id.customer_id.name,
+							partner_ids=partner_ids)
 			# kalau jadi start atau start confirmed dan actual vehicle atau driver masih kosong, maka isikan
 				elif vals['state'] in ['started','start_confirmed','finished','finish_confirmed']:
 					update_data = {}
@@ -592,6 +570,34 @@ class foms_order(osv.osv):
 
 # METHODS ------------------------------------------------------------------------------------------------------------------
 
+	def determine_over_quota_status(self, cr, uid, customer_contract_id, allocation_unit_id, fleet_type_id):
+		quota_obj = self.pool.get('foms.contract.quota')
+		contract_obj = self.pool.get('foms.contract')
+	# ambil quota saat ini
+		current_quota = quota_obj.get_current_quota_usage(cr, uid, customer_contract_id, allocation_unit_id)
+		if not current_quota:
+			raise osv.except_osv(_('Order Error'),_('Quota for this month has not been set. Please contact PT Universal.'))
+	# untuk kontrak dan kendaraan jenis ini, berapa sih balance per usage nya?
+		contract_data = contract_obj.browse(cr, uid, customer_contract_id)
+		credit_per_usage = -1
+		for usage_per_vehicle in contract_data.vehicle_balance_usage:
+			if usage_per_vehicle.fleet_vehicle_model_id.id == fleet_type_id:
+				credit_per_usage = usage_per_vehicle.credit_per_usage
+				break
+		if credit_per_usage == -1:
+			raise osv.except_osv(_('Order Error'),_('Credit per usage for this type of vehicle has not been set for this contract.'))
+	# tentukan status overquota
+		over_quota_status = 'normal'
+		after_usage = credit_per_usage + current_quota.current_usage
+		if after_usage >= current_quota.red_limit:
+			if contract_data.usage_control_level == 'warning':
+				over_quota_status = 'warning'
+			elif contract_data.usage_control_level == 'approval':
+				over_quota_status = 'approval'
+		elif after_usage >= current_quota.yellow_limit:
+			over_quota_status = 'yellow'
+		return credit_per_usage, over_quota_status
+		
 	def search_first_available_fleet(self, cr, uid, contract_id, order_id, fleet_type_id, start_planned_date):
 		area_delay_obj = self.pool.get('foms.order.area.delay')
 	# ambil semua order yang lagi jalan untuk jenis mobil terpilih
@@ -629,6 +635,13 @@ class foms_order(osv.osv):
 		return (''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(8))).replace('0','1')
 		
 # ACTION -------------------------------------------------------------------------------------------------------------------
+	
+	def action_confirm(self, cr, uid, ids, context=None):
+		return self.write(cr, uid, ids, {
+			'state': 'confirmed',
+			'confirm_by': uid,
+			'confirm_date': datetime.now(),
+			})
 
 	def action_cancel(self, cr, uid, ids, context=None):
 		order = self.browse(cr, uid, ids[0])
@@ -830,6 +843,56 @@ class foms_order(osv.osv):
 				contract_obj.write(cr, uid, [contract.id], {
 					'last_shuttle_autogenerate_date': last_fullday
 				})
+
+# ONCHANGE -----------------------------------------------------------------------------------------------------------------
+
+	def onchange_customer_contract_id(self, cr, uid, ids, customer_contract_id, context=None):
+		if not customer_contract_id: return {}
+		contract_obj = self.pool.get('foms.contract')
+		contract_data = contract_obj.browse(cr, uid, customer_contract_id)
+		if not contract_data: return {}
+	# filter pilihan fleet type
+		fleet_type_ids = []
+		for fleet in contract_data.fleet_types:
+			fleet_type_ids.append(fleet.fleet_type_id.id)
+	# filter piliha order origin area
+		area_obj = self.pool.get('foms.order.area')
+		area_ids = area_obj.search(cr, uid, [('homebase_id','=',contract_data.homebase_id.id)])
+	# filter pilihan allocation unit
+		allocation_unit_ids = []
+		for alloc in contract_data.allocation_units:
+			allocation_unit_ids.append(alloc.id)
+		return {
+			'value': {
+				'service_type': contract_data.service_type,
+			},
+			'domain': {
+				'fleet_type_id': [('id','in',fleet_type_ids)],
+				'origin_area_id': [('id','in',area_ids)],
+				'alloc_unit_id': [('id','in',allocation_unit_ids)],
+			}
+		}
+
+	def onchange_assigned_vehicle(self, cr, uid, ids, customer_contract_id, assigned_vehicle_id):
+		if not assigned_vehicle_id: return {}
+		contract_obj = self.pool.get('foms.contract')
+		contract_data = contract_obj.browse(cr, uid, customer_contract_id)
+		if not contract_data: return {}
+	# kalau vehicle ada di bawah kontrak ybs, maka otomatis isi supir "pasangan" nya
+		assigned_driver_id = None
+		for vehicle in contract_data.car_drivers:
+			if vehicle.fleet_vehicle_id.id == assigned_vehicle_id and vehicle.driver_id:
+				assigned_driver_id = vehicle.driver_id.id
+				break
+		if assigned_driver_id:
+			return {
+				'value': {
+					'assigned_driver_id': assigned_driver_id,
+				}
+			}
+		else:
+			return {}
+
 
 # SYNCRONIZER MOBILE APP ---------------------------------------------------------------------------------------------------
 

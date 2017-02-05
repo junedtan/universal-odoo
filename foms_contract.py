@@ -204,25 +204,24 @@ class foms_contract(osv.osv):
 
 	def write(self, cr, uid, ids, vals, context={}):
 		result = super(foms_contract, self).write(cr, uid, ids, vals, context=context)
-	# kalau berubah menjadi planned maka kirim dirty outgoing ke semua pihak terkait
-		if vals.get('state', False) == 'planned':
-			for contract in self.browse(cr, uid, ids, context=context):
-			# sync post outgoing ke user-user yang terkait (PIC, driver, PJ Alloc unit) , memberitahukan ada contract baru
-				if contract.service_type == 'full_day':
-					self.webservice_post(cr, uid, ['pic'], 'create', contract, webservice_context={
-						'notification': ['contract_new'],
-					}, context=context)
-					self.webservice_post(cr, uid, ['fullday_passenger','driver'], 'create', contract, context=context)
-				elif contract.service_type == 'by_order':
-					self.webservice_post(cr, uid, ['pic','approver'], 'create', contract, webservice_context={
-						'notification': ['contract_new'],
-					}, context=context)
-					self.webservice_post(cr, uid, ['booker','driver'], 'create', contract, context=context)
-				elif contract.service_type == 'shuttle':
-					self.webservice_post(cr, uid, ['pic'], 'create', contract, webservice_context={
-						'notification': ['contract_new'],
-					}, context=context)
-					self.webservice_post(cr, uid, ['driver'], 'create', contract, context=context)
+	# kirim dirty outgoing ke semua pihak terkait
+		for contract in self.browse(cr, uid, ids, context=context):
+		# sync post outgoing ke user-user yang terkait (PIC, driver, PJ Alloc unit) , memberitahukan ada contract baru
+			if contract.service_type == 'full_day':
+				self.webservice_post(cr, uid, ['pic'], 'update', contract, webservice_context={
+					'notification': ['contract_new'],
+				}, context=context)
+				self.webservice_post(cr, uid, ['fullday_passenger','driver'], 'update', contract, context=context)
+			elif contract.service_type == 'by_order':
+				self.webservice_post(cr, uid, ['pic','approver'], 'update', contract, webservice_context={
+					'notification': ['contract_new'],
+				}, context=context)
+				self.webservice_post(cr, uid, ['booker','driver'], 'update', contract, context=context)
+			elif contract.service_type == 'shuttle':
+				self.webservice_post(cr, uid, ['pic'], 'update', contract, webservice_context={
+					'notification': ['contract_new'],
+				}, context=context)
+				self.webservice_post(cr, uid, ['driver'], 'update', contract, context=context)
 		return result
 		
 	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):

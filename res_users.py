@@ -44,3 +44,16 @@ class res_users(osv.osv):
 		for row in cr.dictfetchall():
 			result.append(row['uid'])
 		return result
+
+	def get_partner_ids_by_group(self, cr, uid, module_name, usergroup_id):
+		if isinstance(usergroup_id, (str)):
+			model_obj = self.pool.get('ir.model.data')
+			model, usergroup_id = model_obj.get_object_reference(cr, uid, module_name, usergroup_id)
+		cr.execute("SELECT * FROM res_groups_users_rel WHERE gid=%s" % usergroup_id)
+		user_ids = []
+		for row in cr.dictfetchall():
+			user_ids.append(row['uid'])
+		partner_ids = []
+		for user in self.browse(cr, uid, user_ids):
+			partner_ids.append(user.partner_id.id)
+		return partner_ids

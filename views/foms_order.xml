@@ -59,13 +59,13 @@
 							<field name="customer_contract_id" options="{'no_create': 1}" on_change="onchange_customer_contract_id(customer_contract_id)" />
 							<field name="service_type" />
 							<field name="order_type_by_order" attrs="{'invisible': [('service_type','!=','by_order')]}" />
-							<field name="fleet_type_id" attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')]}" widget="selection" />
+							<field name="fleet_type_id" attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')]}" widget="selection" on_change="onchange_fleet_type(customer_contract_id, fleet_type_id)" />
 							<field name="order_by" options="{'no_create': 1}" />
 						</group>
 						<group>
 							<field name="request_date" />
-							<field name="actual_vehicle_id" string="Vehicle" options="{'no_create': 1}" />
-							<field name="actual_driver_id" string="Driver" options="{'no_create': 1}" />
+							<field name="actual_vehicle_id" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['started','start_confirmed','finished','finish_confirmed'])]}" />
+							<field name="actual_driver_id" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['started','start_confirmed','finished','finish_confirmed'])]}" />
 							<field name="pin" attrs="{'invisible': [('service_type','!=','by_order')]}" />
 						</group>
 					</group>

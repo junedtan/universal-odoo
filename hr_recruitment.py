@@ -311,7 +311,6 @@ class hr_applicant(osv.osv):
 		applicant_data = self.browse(cr, uid, ids[0], context)
 		data_obj = self.pool.get('ir.model.data')
 		action_id = data_obj.get_object(cr, uid, 'universal', 'universal_action_interview_schedule').id
-		print action_id
 		action_obj = self.pool.get('ir.actions.act_window')
 		action_data = action_obj.read(cr, uid, action_id)
 		action_data.update({

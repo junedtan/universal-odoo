@@ -142,7 +142,6 @@ class foms_order(osv.osv):
 				})
 	# bikin nomor order dulu
 	# format: (Tanggal)(Bulan)(Tahun)(4DigitPrefixCustomer)(4DigitNomorOrder) Cth: 23032017BNPB0001
-		#if not vals.get('name', False):
 		order_date = vals.get('request_date', None)
 		if not order_date: order_date = datetime.now()
 		if isinstance(order_date, (str,unicode)):
@@ -158,7 +157,6 @@ class foms_order(osv.osv):
 			last_number = int(order_data.name[-4:]) + 1
 		vals.update({'name': "%s%04d" % (prefix,last_number)}) # later
 	# jalankan createnya
-		print "selesai generate nomor"
 		new_id = super(foms_order, self).create(cr, uid, vals, context=context)
 		new_data = self.browse(cr, uid, new_id, context=context)
 	# untuk order fullday diasumsikan sudah ready karena vehicle dan drivernya pasti standby kecuali nanti diganti.
@@ -178,36 +176,53 @@ class foms_order(osv.osv):
 			self.write(cr, uid, [new_id], {
 				'state': 'ready',
 			}, context=context)
-	# untuk order By Order, post notification ke approver yang ada + bookernya untuk konfirmasi order sudah masuk
+	# untuk order By Order
 		elif new_data.service_type == 'by_order':
-			webservice_context = {
-					'notification': ['order_approve'],
-			}
-		# kalau usage control di-on-kan, ada sedikit perbedaan di notificationnya
-			if new_data.customer_contract_id.usage_control_level != 'no_control':
-				if new_data.over_quota_status in ['warning','approval']:
-					quota_obj = self.pool.get('foms.contract.quota')
-					quota_ids = quota_obj.search(cr, uid, [
-						('customer_contract_id','=',new_data.customer_contract_id.id),
-						('allocation_unit_id','=',new_data.alloc_unit_id.id),
-						('period','=',datetime.strptime(new_data.request_date,'%Y-%m-%d %H:%M:%S').strftime('%m/%Y')),
-					])
-					if len(quota_ids) > 0:
-						quota_data = quota_obj.browse(cr, uid, quota_ids[0])
-						red_limit = quota_data.red_limit
-					else:
-						red_limit = 0
-					webservice_context = {
-						'notification': ['order_over_quota_%s' % new_data.over_quota_status],
-						'order_usage': new_data.alloc_unit_usage,
-						'red_limit': red_limit,
-					}
-			self.webservice_post(cr, uid, ['approver'], 'create', new_data, \
-				webservice_context=webservice_context, context=context)
-		# tetep notif ke booker bahwa ordernya udah masuk
-			self.webservice_post(cr, uid, ['booker'], 'update', new_data, \
-				webservice_context={
-						'notification': ['order_waiting_approve'],
+		# cek apakah unit ini punya approver? 
+			alloc_unit_id = new_data.alloc_unit_id.id
+			has_approver = False
+			if alloc_unit_id:
+				for alloc_unit in new_data.customer_contract_id.allocation_units:
+					if alloc_unit.id == alloc_unit_id and len(alloc_unit.approver_ids) > 0:
+						has_approver = True
+						break
+		# kalau allocation unit punya approver
+			if has_approver:
+			# post notification ke approver yang ada + bookernya untuk konfirmasi order sudah masuk
+				webservice_context = {
+						'notification': ['order_approve'],
+				}
+			# kalau usage control di-on-kan, ada sedikit perbedaan di notificationnya
+				if new_data.customer_contract_id.usage_control_level != 'no_control':
+					if new_data.over_quota_status in ['warning','approval']:
+						quota_obj = self.pool.get('foms.contract.quota')
+						quota_ids = quota_obj.search(cr, uid, [
+							('customer_contract_id','=',new_data.customer_contract_id.id),
+							('allocation_unit_id','=',new_data.alloc_unit_id.id),
+							('period','=',datetime.strptime(new_data.request_date,'%Y-%m-%d %H:%M:%S').strftime('%m/%Y')),
+						])
+						if len(quota_ids) > 0:
+							quota_data = quota_obj.browse(cr, uid, quota_ids[0])
+							red_limit = quota_data.red_limit
+						else:
+							red_limit = 0
+						webservice_context = {
+							'notification': ['order_over_quota_%s' % new_data.over_quota_status],
+							'order_usage': new_data.alloc_unit_usage,
+							'red_limit': red_limit,
+						}
+				self.webservice_post(cr, uid, ['approver'], 'create', new_data, \
+					webservice_context=webservice_context, context=context)
+			# tetep notif ke booker bahwa ordernya udah masuk
+				self.webservice_post(cr, uid, ['booker'], 'update', new_data, \
+					webservice_context={
+							'notification': ['order_waiting_approve'],
+					}, context=context)
+		# kalau allocation unit tidak punya approver
+			else:
+			# langsung confirm order ini
+				self.write(cr, uid, [new_id], {
+					'state': 'confirmed',
 				}, context=context)
 		elif new_data.service_type == 'shuttle':
 			self.write(cr, uid, [new_id], {
@@ -243,7 +258,17 @@ class foms_order(osv.osv):
 								'notification': ['order_other_approved'],
 						}, context=context)
 					return True
-	
+
+	# kalau order dicancel karena delay excceded, maka isi alasannya sbg delay exceeded
+		if vals.get('state', False) == 'canceled' and context.get('delay_exceeded') == True:
+		# ambil id untuk alasan pembatalan "Delay time exceeded"
+			model_obj = self.pool.get('ir.model.data')
+			model, reason_id = model_obj.get_object_reference(cr, uid, 'universal', 'foms_cancel_reason_delay_exceeded')
+		# tambahkan cancel reason
+			vals.update({
+				'cancel_reason': reason_id,
+				})
+
 	# eksekusi write nya dan ambil ulang data hasil update
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
 		orders = self.browse(cr, uid, ids, context=context)
@@ -364,7 +389,10 @@ class foms_order(osv.osv):
 						usage_log_ids = usage_log_obj.search(cr, uid, [('order_id','=',order_data.id)])
 						if len(usage_log_ids) > 0:
 							usage_log_obj.unlink(cr, uid, usage_log_ids, context=context)
-					self.webservice_post(cr, uid, ['pic','driver','booker','approver'], 'update', order_data, context=context)
+					self.webservice_post(cr, uid, ['pic','driver','booker','approver'], 'update', order_data, 
+						webservice_context={
+							'notification': ['order_canceled'],
+						}, context=context)
 				else:
 					if order_data.service_type == 'full_day':
 						self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'update', order_data, context=context)
@@ -553,7 +581,7 @@ class foms_order(osv.osv):
 				'cancel_by': user_id,
 			})
 			cancel_memory_obj = self.pool.get('foms.order.cancel.memory')
-			result = cancel_memory_obj.action_execute_cancel(cr, uid, [], model_data)
+			result = cancel_memory_obj.action_execute_cancel(cr, uid, [], model_data, context=context)
 			if result == True: result = 'ok'
 	# list order area
 		elif command == 'order_areas':
@@ -632,7 +660,7 @@ class foms_order(osv.osv):
 			return None, None
 	
 	def _generate_random_pin(self):
-		return (''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(8))).replace('0','1')
+		return (''.join(random.choice(string.digits) for _ in range(6))).replace('0','1')
 		
 # ACTION -------------------------------------------------------------------------------------------------------------------
 	
@@ -691,7 +719,27 @@ class foms_order(osv.osv):
 		while work_date in holidays: work_date = work_date + timedelta(hours=24)
 		while work_date.weekday() not in working_day_keys: work_date = work_date + timedelta(hours=24)
 		return work_date
-		
+	
+	def cron_autocancel_byorder_orders(self, cr, uid, context=None):
+	# ambil semua order yang by_order dan belum start (new, confirmed, ready)
+		order_ids = self.search(cr, uid, [
+			('service_type','=','by_order'),('state','in',['new','confirmed','ready'])
+		])
+		if len(order_ids) == 0: return
+	# untuk setiap order itu
+		for order in self.browse(cr, uid, order_ids):
+		# apakah di kontrak ybs setting max_delay_minutes diisi? bila tidak ya sudah ngga usah cancel2an
+			if order.customer_contract_id.max_delay_minutes <= 0: continue
+		# kalau waktu sekarang sudah melewati batas delay, maka cancel si order
+			start = datetime.strptime(order.start_planned_date,'%Y-%m-%d %H:%M:%S')
+			if start + timedelta(minutes=order.customer_contract_id.max_delay_minutes) < datetime.now():
+				self.write(cr, uid, [order.id], {
+					'state': 'canceled',
+					'cancel_date': datetime.now(),
+					'cancel_by': SUPERUSER_ID,
+					'cancel_previous_state': order.state,
+					}, context={'delay_exceeded': True})
+
 	def cron_autogenerate_fullday(self, cr, uid, context=None):
 		
 		contract_obj = self.pool.get('foms.contract')
@@ -799,7 +847,7 @@ class foms_order(osv.osv):
 								'route_id': schedule.route_id.id,
 								'fleet_vehicle_id': schedule.fleet_vehicle_id.id,
 								'departure_time': schedule.departure_time,	
-								'arrival_time': schedule.arrival_time,	
+								# 'arrival_time': schedule.arrival_time,	
 							})
 					else:
 						if schedule.dayofweek not in schedule_days: schedule_days.update({schedule.dayofweek: []})
@@ -808,7 +856,7 @@ class foms_order(osv.osv):
 							'route_id': schedule.route_id.id,
 							'fleet_vehicle_id': schedule.fleet_vehicle_id.id,
 							'departure_time': schedule.departure_time,	
-							'arrival_time': schedule.arrival_time,	
+							# 'arrival_time': schedule.arrival_time,	
 						})
 			# ambil pasangan fleet - driver, buat di bawah
 				fleet_drivers = {}
@@ -832,7 +880,7 @@ class foms_order(osv.osv):
 							'assigned_vehicle_id': schedule['fleet_vehicle_id'],
 							'assigned_driver_id': fleet_drivers[schedule['fleet_vehicle_id']],
 							'start_planned_date': counter_date + timedelta(hours=schedule['departure_time']) - timedelta(hours=7),
-							'finish_planned_date': counter_date + timedelta(hours=schedule['arrival_time']) - timedelta(hours=7),
+							# 'finish_planned_date': counter_date + timedelta(hours=schedule['arrival_time']) - timedelta(hours=7),
 							'route_id': schedule['route_id'],
 						}, context=context)
 					last_fullday = counter_date
@@ -872,6 +920,35 @@ class foms_order(osv.osv):
 				'alloc_unit_id': [('id','in',allocation_unit_ids)],
 			}
 		}
+
+	def onchange_fleet_type(self, cr, uid, ids, customer_contract_id, fleet_type_id):
+		print "masuk ke onnchange fleet type"
+		print fleet_type_id
+		if not fleet_type_id: return {}
+	# filter kendaraan yang dipilih
+		contract_obj = self.pool.get('foms.contract')
+		contract_data = contract_obj.browse(cr, uid, customer_contract_id)
+		fleet_ids = []
+	# cuman yang di bawah kontrak ini, 
+		for vehicle in contract_data.car_drivers:
+			if vehicle.fleet_type_id.id == fleet_type_id:
+				fleet_ids.append(vehicle.fleet_vehicle_id.id)
+		print fleet_ids
+	#... plus semua yang tidak sedang ada di bawah kontrak aktif
+		vehicle_obj = self.pool.get('fleet.vehicle')
+		vehicle_ids = vehicle_obj.search(cr, uid, [])
+		for vehicle in vehicle_obj.browse(cr, uid, vehicle_ids):
+			if vehicle.model_id.id != fleet_type_id: continue
+			print vehicle.current_contract_id
+			if vehicle.current_contract_id == None or vehicle.current_contract_id.state not in ['active','planned']:
+				fleet_ids.append(vehicle.id)
+		print fleet_ids
+		return {
+			'domain': {
+				'assigned_vehicle_id': [('id','in',fleet_ids)]
+			}
+		}
+
 
 	def onchange_assigned_vehicle(self, cr, uid, ids, customer_contract_id, assigned_vehicle_id):
 		if not assigned_vehicle_id: return {}
@@ -1089,6 +1166,6 @@ class foms_order_cancel_memory(osv.osv_memory):
 			'cancel_date': datetime.now(),
 			'cancel_by': cancel_by,
 			'cancel_previous_state': order_data.state,
-		})
+		}, context=context)
 	
 	

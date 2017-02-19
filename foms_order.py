@@ -26,6 +26,21 @@ class foms_order(osv.osv):
 	
 	_inherit = ['mail.thread','chjs.base.webservice']
 
+# FIELD FUNCTION METHOD ----------------------------------------------------------------------------------------------------
+
+	def _driver_mobile(self, cr, uid, ids, field_name, arg, context):
+		result = {}
+		for row in self.browse(cr, uid, ids, context):
+			phones = []
+			if row.actual_driver_id:
+				if row.actual_driver_id.phone: phones.append(row.actual_driver_id.phone)
+				if row.actual_driver_id.mobile_phone2: phones.append(row.actual_driver_id.mobile_phone2)
+			elif row.assigned_driver_id:
+				if row.assigned_driver_id.phone: phones.append(row.assigned_driver_id.phone)
+				if row.assigned_driver_id.mobile_phone2: phones.append(row.assigned_driver_id.mobile_phone2)
+			result[row.id] = ",".join(phones)
+		return result
+
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
@@ -70,6 +85,7 @@ class foms_order(osv.osv):
 		'assigned_driver_id': fields.many2one('hr.employee', 'Assigned Driver', ondelete='restrict'),
 		'actual_vehicle_id': fields.many2one('fleet.vehicle', 'Actual Vehicle', ondelete='restrict'),
 		'actual_driver_id': fields.many2one('hr.employee', 'Actual Driver', ondelete='restrict'),
+		'driver_mobile': fields.function(_driver_mobile, type="char", method=True, string="Driver Phone"),
 		'pin': fields.char('PIN'),
 		'start_planned_date': fields.datetime('Start Planned Date'),
 		'finish_planned_date': fields.datetime('Finish Planned Date'),

@@ -142,21 +142,21 @@ class foms_order(osv.osv):
 				})
 	# bikin nomor order dulu
 	# format: (Tanggal)(Bulan)(Tahun)(4DigitPrefixCustomer)(4DigitNomorOrder) Cth: 23032017BNPB0001
-		if not vals.get('name', False):
-			order_date = vals.get('request_date', None)
-			if not order_date: order_date = datetime.now()
-			if isinstance(order_date, (str,unicode)):
-				order_date = datetime.strptime(order_date, '%Y-%m-%d %H:%M:%S')
-			prefix = "%s%s" % (order_date.strftime('%d%m%Y'), contract_data.customer_id.partner_code.upper())
-			print prefix + '%'
-			order_ids = self.search(cr, uid, [('name','=like',prefix+'%')], order='request_date DESC')
-			print order_ids
-			if len(order_ids) == 0:
-				last_number = 1
-			else:
-				order_data = self.browse(cr, uid, order_ids[0])
-				last_number = int(order_data.name[-4:]) + 1
-			vals.update({'name': "%s%04d" % (prefix,last_number)}) # later
+		#if not vals.get('name', False):
+		order_date = vals.get('request_date', None)
+		if not order_date: order_date = datetime.now()
+		if isinstance(order_date, (str,unicode)):
+			order_date = datetime.strptime(order_date, '%Y-%m-%d %H:%M:%S')
+		prefix = "%s%s" % (order_date.strftime('%d%m%Y'), contract_data.customer_id.partner_code.upper())
+		print prefix + '%'
+		order_ids = self.search(cr, uid, [('name','=like',prefix+'%')], order='request_date DESC')
+		print order_ids
+		if len(order_ids) == 0:
+			last_number = 1
+		else:
+			order_data = self.browse(cr, uid, order_ids[0])
+			last_number = int(order_data.name[-4:]) + 1
+		vals.update({'name': "%s%04d" % (prefix,last_number)}) # later
 	# jalankan createnya
 		print "selesai generate nomor"
 		new_id = super(foms_order, self).create(cr, uid, vals, context=context)

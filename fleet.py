@@ -20,12 +20,14 @@ class fleet_vehicle(osv.osv):
 				WHERE 
 					fleet.header_id = contract.id and 
 					fleet.fleet_vehicle_id = %s and 
-					contract.state = 'active'
+					contract.state in ('active','planned')
 			""" % id)
 			rows = cr.dictfetchall()
-			if not rows: return None
+			if not rows: 
+				res[id] = None
+			else:
 		# update deh
-			res[id] = rows[0]['contract_id']	
+				res[id] = rows[0]['contract_id']	
 		return res
 	
 # COLUMNS ------------------------------------------------------------------------------------------------------------------

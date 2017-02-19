@@ -21,6 +21,7 @@ class res_partner(osv.osv):
 		'rent_fees': fields.one2many('res.partner.rent.fee','header_id','Rent Fees'),
 		'gapok_fee': fields.one2many('res.partner.gapok.fee','header_id','Gapok Fee'),
 		'order_based_fee': fields.one2many('res.partner.order.based.fee','header_id','Order Based Fee'),
+		'default_order_hours': fields.one2many('res.partner.order.hours','header_id','Order Hours'),
 		'default_fee_premature_termination': fields.float('Premature Termination Fee (%)'),
 		'default_fee_makan': fields.float('Makan/hari'),
 		'default_fee_pulsa': fields.float('Pulsa'),
@@ -193,4 +194,33 @@ class res_partner_order_based_fee(osv.osv):
 		('check_by_day_fee', 'CHECK(fee_by_day >= 0)', _('Fee per Day must be greater than or equal to 0.')),
 	]	
 	
+# ==========================================================================================================================
+
+class res_partner_order_hours(osv.osv):
+
+	_name = "res.partner.order.hours"
+	_description = 'Partner Default Order Hours (for By Order orders)'
+	
+# COLUMNS ------------------------------------------------------------------------------------------------------------------
+
+	_columns = {
+		'header_id': fields.many2one('res.partner', 'Partner', ondelete='cascade'),
+		'dayofweek': fields.selection([
+			('0','Monday'),
+			('1','Tuesday'),
+			('2','Wednesday'),
+			('3','Thursday'),
+			('4','Friday'),
+			('5','Saturday'),
+			('6','Sunday'),], 'Day of Week', required=True),
+		'time_from': fields.float('From Hour', required=True),	
+		'time_to': fields.float('To Hour', required=True),
+	}		
+
+	_sql_constraints = [
+		('unique_order_hour', 'UNIQUE(header_id,dayofweek)', _('There can be no more than one day setting for each partner.')),
+		('check_time_from_to', 'CHECK(time_to > time_from)', _('To hour must be after from hour.')),
+		('check_time_from', 'CHECK(time_from >= 0)', _('From hour must be after 00:00.')),
+		('check_time_from', 'CHECK(time_to <= 23.5)', _('From hour must be before 23:30.')),
+	]
 	

@@ -57,10 +57,13 @@ class foms_contract(osv.osv):
 			help="If not empty, this contract is an extension of the contract."),
 		'last_fullday_autogenerate_date': fields.date('Last Fullday Autogenerate Date', copy=False),
 		'last_shuttle_autogenerate_date': fields.date('Last Shuttle Autogenerate Date', copy=False),
-		'by_order_minimum_minutes': fields.float('Min. Delay (minutes)',
-			help='This is the limit where By Order bookings are still allowed. For example, minumum delay of 2 hours means for 18:30 may still book at 16:30 but not 17:00 or 16:31.'),
-		'min_start_minutes': fields.float('Max. Start (minutes)',
-			help='How long prior to start time do order of this contract are allowed to be started. For example, Maximum Start Minutes of 30 minutes means that order booked for 16:00 can only be started 15:30 onward.'),
+		'by_order_minimum_minutes': fields.float('Max. Order Time (minutes)',
+			help='This is the limit where By Order bookings are still allowed. For example, Maximum Order Time of 2 hours means for 18:30 booker may still book at 16:30 but not 17:00 or 16:31.'),
+		'min_start_minutes': fields.float('Min. Start (minutes)',
+			help='How long prior to start time, orders of this contract are allowed to be started. For example, Minimum Start Minutes of 30 minutes means that order booked for 16:00 can only be started 15:30 onward.'),
+		'max_delay_minutes': fields.float('Max. Delay (minutes)',
+			help='How long after planned start time, orders of this contract are automatically canceled. For example, Maximum Delay of 30 minutes means that order booked for 16:00 is automatically canceled at 16:30.'),
+		'order_hours': fields.one2many('foms.contract.order.hours', 'header_id', 'Order Hours'),
 	# FEES
 		'fee_calculation_type': fields.selection([
 			('monthly','Period-based'),
@@ -89,7 +92,7 @@ class foms_contract(osv.osv):
 		'usage_control_level': fields.selection([
 			('no_control','No Control'),
 			('warning','Limit with Warning'),
-			('approval','Limit with Approval')], 'Usage Control Level'),
+			('approval','Overquota Not Allowed')], 'Usage Control Level'),
 		'usage_allocation_maintained_by': fields.selection([
 			('customer','Customer'),
 			('universal','Universal')], 'Limits Maintained By'),
@@ -426,15 +429,18 @@ class foms_contract(osv.osv):
 	
 	def _check_approvers_bookers(self, cr, uid, contract):
 		user_obj = self.pool.get('res.users')
-	# untuk service type by order, harus ada minimal 1 allocation unit, dan semua allocation unit ada booker serta approver
+	# untuk service type by order, harus ada minimal 1 allocation unit, dan semua allocation unit ada booker
 	# selain itu, booker dan approver (partner nya) harus berada di bawah perusahaan yang sama
-	# juga, user groupnya harus booker dan approver
+	# juga, user groupnya harus booker
+	# approver boleh tidak ada, tapi hanya bila usage control level adalah no control
 		if contract.service_type == 'by_order':
 			if len(contract.allocation_units) == 0:
 				raise osv.except_osv(_('Contract Error'),_('For service type of By Order, there must be at least one unit.'))
 			for alloc_unit in contract.allocation_units:
-				if len(alloc_unit.approver_ids) == 0 or len(alloc_unit.booker_ids) == 0:
-					raise osv.except_osv(_('Contract Error'),_('Please input at least one booker and one approver for each unit.'))
+				if len(alloc_unit.booker_ids) == 0:
+					raise osv.except_osv(_('Contract Error'),_('Please input at least one booker for each unit.'))
+				if contract.usage_control_level != 'no_control' and len(alloc_unit.approver_ids) == 0:
+					raise osv.except_osv(_('Contract Error'),_('This contract uses usage control. Please input at least one approver for each unit.'))
 				for booker in alloc_unit.booker_ids:
 					if not user_obj.has_group(cr, booker.id, 'universal.group_universal_booker'):
 						raise osv.except_osv(_('Contract Error'),_('Booker %s does not belong to Customer Order Booker group.') % booker.name)
@@ -532,7 +538,7 @@ class foms_contract(osv.osv):
 				'route_id': schedule.route_id.id,
 				'fleet_vehicle_id': schedule.fleet_vehicle_id.id,
 				'departure_time': schedule.departure_time,
-				'arrival_time': schedule.arrival_time,
+				#'arrival_time': schedule.arrival_time,
 			})
 	# panggil si memory yang buat allocate driver
 		return {
@@ -604,6 +610,18 @@ class foms_contract(osv.osv):
 				})
 		result['value'].update({
 			'allocation_units': alloc_units,
+		})
+	# isi default order hours
+		order_hours = []
+		if len(customer_data.default_order_hours):
+			for order_hour in customer_data.default_order_hours:
+				order_hours.append({
+					'dayofweek': order_hour.dayofweek,
+					'time_from': order_hour.time_from,
+					'time_to': order_hour.time_to,
+				})
+		result['value'].update({
+			'order_hours': order_hours,
 		})
 	# sudah selesai
 		return result
@@ -810,7 +828,7 @@ class foms_contract_shuttle_schedule_memory(osv.osv):
 				'route_id': schedule.route_id.id,
 				'fleet_vehicle_id': schedule.fleet_vehicle_id.id,
 				'departure_time': schedule.departure_time,
-				'arrival_time': schedule.arrival_time,	
+				#'arrival_time': schedule.arrival_time,	
 			}])
 		contract_obj.write(cr, uid, [contract_id], {
 			'shuttle_schedules': new_shuttle_schedule,
@@ -842,7 +860,7 @@ class foms_contract_shuttle_schedule_line_memory(osv.osv):
 		'route_id': fields.many2one('res.partner.route', 'Route', ondelete='restrict', required=True),
 		'fleet_vehicle_id': fields.many2one('fleet.vehicle', 'Fleet Vehicle', ondelete='restrict', required=True),
 		'departure_time': fields.float('Departure Time', required=True),	
-		'arrival_time': fields.float('Arrival Time', required=True),	
+		#'arrival_time': fields.float('Arrival Time', required=True),	
 	}
 	
 # ==========================================================================================================================
@@ -917,7 +935,7 @@ class foms_contract_shuttle_schedule(osv.osv):
 		'route_id': fields.many2one('res.partner.route', 'Route', ondelete='restrict'),
 		'fleet_vehicle_id': fields.many2one('fleet.vehicle', 'Fleet Vehicle', ondelete='restrict'),
 		'departure_time': fields.float('Departure Time'),	
-		'arrival_time': fields.float('Arrival Time'),	
+		# 'arrival_time': fields.float('Arrival Time'),	20170218 planning shuttle cuman berangkat aja
 	}		
 	
 # CONSTRAINTS --------------------------------------------------------------------------------------------------------------
@@ -939,12 +957,42 @@ class foms_contract_shuttle_schedule(osv.osv):
 	]
 	
 	_sql_constraints = [
-		('const_departure_arrival', 'CHECK(arrival_time > departure_time)', _('Arrival time must be greater than departure time.')),
+		# ('const_departure_arrival', 'CHECK(arrival_time > departure_time)', _('Arrival time must be greater than departure time.')),
 	]
 	
 # ORDER -------------------------------------------------------------------------------------------------------------------------
 
 	_order = 'header_id, dayofweek, fleet_vehicle_id, sequence'
+	
+# ==========================================================================================================================
+
+class foms_contract_order_hours(osv.osv):
+
+	_name = "foms.contract.order.hours"
+	_description = 'Contract Order Hours'
+	
+# COLUMNS ------------------------------------------------------------------------------------------------------------------
+
+	_columns = {
+		'header_id': fields.many2one('foms.contract', 'Contract', ondelete='cascade'),
+		'dayofweek': fields.selection([
+			('0','Monday'),
+			('1','Tuesday'),
+			('2','Wednesday'),
+			('3','Thursday'),
+			('4','Friday'),
+			('5','Saturday'),
+			('6','Sunday'),], 'Day of Week', required=True),
+		'time_from': fields.float('From Hour', required=True),	
+		'time_to': fields.float('To Hour', required=True),
+	}		
+
+	_sql_constraints = [
+		('unique_order_hour', 'UNIQUE(header_id,dayofweek)', _('There can be no more than one day setting for each contract.')),
+		('check_time_from_to', 'CHECK(time_to > time_from)', _('To hour must be after from hour.')),
+		('check_time_from', 'CHECK(time_from >= 0)', _('From hour must be after 00:00.')),
+		('check_time_from', 'CHECK(time_to <= 23.5)', _('From hour must be before 23:30.')),
+	]
 	
 # ==========================================================================================================================
 

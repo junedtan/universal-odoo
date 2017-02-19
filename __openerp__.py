@@ -27,6 +27,7 @@
 		'data/hr_contract.xml',
 		'data/fleet.xml',
 		'data/hr_expense.xml',
+		'data/foms_order.xml',
 		'views/universal.xml',
 		'views/chjs_region.xml',
 		'views/hr_recruitment.xml',

@@ -53,6 +53,15 @@
 						</group>
 					</page>
 					<page string="Contract Defaults" attrs="{'invisible': [('is_company','=',False)]}">
+						<group string="Order Hours">
+							<field name="default_order_hours" nolabel="1">
+								<tree version="7.0" editable="bottom">
+									<field name="dayofweek" />
+									<field name="time_from" widget="float_time" />
+									<field name="time_to" widget="float_time" />
+								</tree>
+							</field>
+						</group>
 						<group>
 							<group string="Contract Settings">
 								<field name="default_working_time" />

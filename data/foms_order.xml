@@ -1,0 +1,12 @@
+<openerp>
+	<data>
+		
+		<!-- Expense types -->
+		
+		<record model="foms.order.cancel.reason" id="foms_cancel_reason_delay_exceeded">
+			<field name="name">Delay time exceeded</field>
+		</record>
+		
+	</data>
+	
+</openerp>

@@ -163,9 +163,7 @@ class foms_order(osv.osv):
 		if isinstance(order_date, (str,unicode)):
 			order_date = datetime.strptime(order_date, '%Y-%m-%d %H:%M:%S')
 		prefix = "%s%s" % (order_date.strftime('%d%m%Y'), contract_data.customer_id.partner_code.upper())
-		print prefix + '%'
 		order_ids = self.search(cr, uid, [('name','=like',prefix+'%')], order='request_date DESC')
-		print order_ids
 		if len(order_ids) == 0:
 			last_number = 1
 		else:
@@ -397,15 +395,19 @@ class foms_order(osv.osv):
 						self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'update', order_data, context=context)
 					elif order_data.service_type == 'by_order':
 						self.webservice_post(cr, uid, ['pic','approver','booker'], 'update', order_data, context=context)
-			# kalau dibatalin dan ini adalah by_order
-				elif vals['state'] == 'canceled' and order_data.service_type == 'by_order':
+			# kalau dibatalin
+				elif vals['state'] == 'canceled':
 				# kalau kontraknya pakai usage control, maka hapus dari usage log
-					if contract.usage_control_level != 'no_control':
+					if order_data.service_type == 'by_order' and contract.usage_control_level != 'no_control':
 						usage_log_obj = self.pool.get('foms.contract.quota.usage.log')
 						usage_log_ids = usage_log_obj.search(cr, uid, [('order_id','=',order_data.id)])
 						if len(usage_log_ids) > 0:
 							usage_log_obj.unlink(cr, uid, usage_log_ids, context=context)
-					self.webservice_post(cr, uid, ['pic','driver','booker','approver'], 'update', order_data, 
+					if order_data.service_type == 'full_day':
+						targets = ['pic','driver','fullday_passenger']
+					elif order_data.service_type == 'by_order':
+						targets = ['pic','driver','booker','approver']
+					self.webservice_post(cr, uid, targets, 'update', order_data, 
 						webservice_context={
 							'notification': ['order_canceled'],
 						}, context=context)
@@ -579,6 +581,7 @@ class foms_order(osv.osv):
 		return super(foms_order, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
 
 	def webservice_handle(self, cr, uid, user_id, command, data_id, model_data, context={}):
+		if context == None: context = {}
 		result = super(foms_order, self).webservice_handle(cr, uid, user_id, command, data_id, model_data, context=context)
 	# ambil master cancel reason
 		if command == 'cancel_reasons':
@@ -596,8 +599,10 @@ class foms_order(osv.osv):
 				'order_id': data_id,
 				'cancel_by': user_id,
 			})
+			if context.get('delay_exceeded'):
+				model_data.update({'delay_exceeded': context['delay_exceeded']})
 			cancel_memory_obj = self.pool.get('foms.order.cancel.memory')
-			result = cancel_memory_obj.action_execute_cancel(cr, uid, [], model_data, context=context)
+			result = cancel_memory_obj.action_execute_cancel(cr, uid, [], model_data)
 			if result == True: result = 'ok'
 	# list order area
 		elif command == 'order_areas':
@@ -938,8 +943,6 @@ class foms_order(osv.osv):
 		}
 
 	def onchange_fleet_type(self, cr, uid, ids, customer_contract_id, fleet_type_id):
-		print "masuk ke onnchange fleet type"
-		print fleet_type_id
 		if not fleet_type_id: return {}
 	# filter kendaraan yang dipilih
 		contract_obj = self.pool.get('foms.contract')
@@ -949,7 +952,6 @@ class foms_order(osv.osv):
 		for vehicle in contract_data.car_drivers:
 			if vehicle.fleet_type_id.id == fleet_type_id:
 				fleet_ids.append(vehicle.fleet_vehicle_id.id)
-		print fleet_ids
 	#... plus semua yang tidak sedang ada di bawah kontrak aktif
 		vehicle_obj = self.pool.get('fleet.vehicle')
 		vehicle_ids = vehicle_obj.search(cr, uid, [])
@@ -958,7 +960,6 @@ class foms_order(osv.osv):
 			print vehicle.current_contract_id
 			if vehicle.current_contract_id == None or vehicle.current_contract_id.state not in ['active','planned']:
 				fleet_ids.append(vehicle.id)
-		print fleet_ids
 		return {
 			'domain': {
 				'assigned_vehicle_id': [('id','in',fleet_ids)]

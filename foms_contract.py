@@ -209,6 +209,7 @@ class foms_contract(osv.osv):
 		result = super(foms_contract, self).write(cr, uid, ids, vals, context=context)
 	# kirim dirty outgoing ke semua pihak terkait
 		for contract in self.browse(cr, uid, ids, context=context):
+			if contract.state in ['proposed','confirmed']: continue
 		# sync post outgoing ke user-user yang terkait (PIC, driver, PJ Alloc unit) , memberitahukan ada contract baru
 			if contract.service_type == 'full_day':
 				self.webservice_post(cr, uid, ['pic'], 'update', contract, webservice_context={
@@ -309,29 +310,28 @@ class foms_contract(osv.osv):
 	def webservice_post(self, cr, uid, targets, command, contract_data, webservice_context={}, data_columns=[], context=None):
 		sync_obj = self.pool.get('chjs.webservice.sync.bridge')
 		user_obj = self.pool.get('res.users')
-		if command == 'create':
-			if 'pic' in targets:
-				pic_user_ids = user_obj.search(cr, uid, [('partner_id','=',contract_data.customer_contact_id.id)])
-				if len(pic_user_ids) > 0:
-					sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.contract', command, contract_data.id, data_context=webservice_context)
-			if 'driver' in targets:
-				for car_driver in contract_data.car_drivers:
-					if not car_driver.driver_id: continue
-					sync_obj.post_outgoing(cr, car_driver.driver_id.user_id.id, 'foms.contract', command, contract_data.id, data_context=webservice_context)
-			if 'fullday_passenger' in targets:
-				for car_driver in contract_data.car_drivers:
-					if not car_driver.fullday_user_id: continue
-					sync_obj.post_outgoing(cr, car_driver.fullday_user_id.id, 'foms.contract', command, contract_data.id, data_context=webservice_context)
-			if 'booker' in targets:
-				for alloc_unit in contract_data.allocation_units:
-					cr.execute("SELECT * FROM foms_alloc_unit_bookers WHERE alloc_unit_id = %s" % alloc_unit.id)
-					for row in cr.dictfetchall():
-						sync_obj.post_outgoing(cr, row['booker_id'], 'foms.contract', command, contract_data.id, data_context=webservice_context)
-			if 'approver' in targets:
-				for alloc_unit in contract_data.allocation_units:
-					cr.execute("SELECT * FROM foms_alloc_unit_approvers WHERE alloc_unit_id = %s" % alloc_unit.id)
-					for row in cr.dictfetchall():
-						sync_obj.post_outgoing(cr, row['user_id'], 'foms.contract', command, contract_data.id, data_context=webservice_context)
+		if 'pic' in targets:
+			pic_user_ids = user_obj.search(cr, uid, [('partner_id','=',contract_data.customer_contact_id.id)])
+			if len(pic_user_ids) > 0:
+				sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.contract', command, contract_data.id, data_context=webservice_context)
+		if 'driver' in targets:
+			for car_driver in contract_data.car_drivers:
+				if not car_driver.driver_id: continue
+				sync_obj.post_outgoing(cr, car_driver.driver_id.user_id.id, 'foms.contract', command, contract_data.id, data_context=webservice_context)
+		if 'fullday_passenger' in targets:
+			for car_driver in contract_data.car_drivers:
+				if not car_driver.fullday_user_id: continue
+				sync_obj.post_outgoing(cr, car_driver.fullday_user_id.id, 'foms.contract', command, contract_data.id, data_context=webservice_context)
+		if 'booker' in targets:
+			for alloc_unit in contract_data.allocation_units:
+				cr.execute("SELECT * FROM foms_alloc_unit_bookers WHERE alloc_unit_id = %s" % alloc_unit.id)
+				for row in cr.dictfetchall():
+					sync_obj.post_outgoing(cr, row['booker_id'], 'foms.contract', command, contract_data.id, data_context=webservice_context)
+		if 'approver' in targets:
+			for alloc_unit in contract_data.allocation_units:
+				cr.execute("SELECT * FROM foms_alloc_unit_approvers WHERE alloc_unit_id = %s" % alloc_unit.id)
+				for row in cr.dictfetchall():
+					sync_obj.post_outgoing(cr, row['user_id'], 'foms.contract', command, contract_data.id, data_context=webservice_context)
 
 	def webservice_handle(self, cr, uid, user_id, command, data_id, model_data, context={}):
 		result = super(foms_contract, self).webservice_handle(cr, uid, user_id, command, data_id, model_data, context=context)
@@ -1093,7 +1093,7 @@ class foms_contract_alloc_unit(osv.osv):
 	def _constraint_booker_approver(self, cr, uid, ids, context=None):
 		for data in self.browse(cr, uid, ids, context):
 			if data.header_id.service_type == 'by_order':
-				if len(data.approver_ids) == 0 or len(data.booker_ids) == 0:
+				if len(data.booker_ids) == 0:
 					return False
 		return True
 	

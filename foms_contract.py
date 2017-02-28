@@ -26,7 +26,7 @@ class foms_contract(osv.osv):
 
 	_columns = {
 	# BASIC INFORMATION
-		'name': fields.char('Contract No.', required=True, copy=False),
+		'name': fields.char('Empire No.', required=True, copy=False),
 		'contract_date': fields.date('Contract Date'),
 		'homebase_id' : fields.many2one('chjs.region', 'Homebase'),
 		'customer_id' : fields.many2one('res.partner', 'Customer', required=True, domain=[('customer','=',True),('is_company','=',True)], ondelete='restrict'),
@@ -503,6 +503,7 @@ class foms_contract(osv.osv):
 					vehicle_needs[idx].update({
 						'fleet_vehicle_id': allocation.fleet_vehicle_id and allocation.fleet_vehicle_id.id or None,
 						'driver_id': allocation.driver_id and allocation.driver_id.id or None,
+						'fullday_user_id': allocation.fullday_user_id and allocation.fullday_user_id.id or None,
 					})
 					break
 	# panggil si memory yang buat allocate driver

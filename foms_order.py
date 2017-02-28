@@ -41,11 +41,18 @@ class foms_order(osv.osv):
 			result[row.id] = ",".join(phones)
 		return result
 
+	def _customer_name(self, cr, uid, ids, field_name, arg, context):
+		result = {}
+		for row in self.browse(cr, uid, ids, context):
+			result[row.id] = row.customer_contract_id.customer_id.name
+		return result
+
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
 		'name': fields.char('Order #'),
 		'customer_contract_id': fields.many2one('foms.contract', 'Customer Contract', required=True, ondelete='restrict'),
+		'customer_name': fields.function(_customer_name, type="char", string="Customer"),
 		'service_type': fields.selection([
 			('full_day','Full-day Service'),
 			('by_order','By Order'),
@@ -1039,6 +1046,12 @@ class foms_order_area(osv.osv):
 		'name': fields.char('Area Name', required=True),
 	}		
 	
+# CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
+
+	_sql_constraints = [
+		('unique_name','UNIQUE(homebase,name)',_('Name must be unique for each homebase.')),
+	]
+	
 # ==========================================================================================================================
 
 class foms_order_area_delay(osv.osv):
@@ -1104,6 +1117,12 @@ class foms_order_cancel_reason(osv.osv):
 	_columns = {
 		'name': fields.char('Name'),
 	}		
+	
+# CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
+
+	_sql_constraints = [
+		('unique_name','UNIQUE(name)',_('Name must be unique.')),
+	]
 	
 # ==========================================================================================================================
 

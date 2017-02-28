@@ -36,7 +36,7 @@
 				<tree version="7.0" string="Order Area Delay" editable="bottom">
 					<field name="area_from_id" />
 					<field name="area_to_id" />
-					<field name="delay" />
+					<field name="delay" type="char" />
 				</tree>
 			</field>
 		</record>
@@ -163,17 +163,24 @@
 			<field name="arch" type="xml">
 				<tree version="7.0" string="Customer Orders">
 					<field name="name" />
-					<field name="customer_contract_id" />
-					<field name="service_type" />
-					<field name="actual_vehicle_id" string="Vehicle" />
-					<field name="actual_driver_id" string="Driver" />
-					<field name="state" />
-					<field name="start_date" />
-					<field name="finish_date" />
+					<field name="customer_name" />
+					<field name="order_by" />
+					<field name="assigned_vehicle_id" invisible="context.get('hide_assigned', False)" />
+					<field name="assigned_driver_id" invisible="context.get('hide_assigned', False)" />
+					<field name="actual_vehicle_id" invisible="context.get('hide_actual', False)" />
+					<field name="actual_driver_id" invisible="context.get('hide_actual', False)" />
+					<field name="start_planned_date" invisible="context.get('hide_planned_time', False)" />
+					<field name="finish_planned_date" invisible="context.get('hide_planned_time', False)" />
+					<field name="start_date" invisible="context.get('hide_actual_time', False)" />
+					<field name="finish_date" invisible="context.get('hide_actual_time', False)" />
+					<field name="cancel_reason" invisible="context.get('hide_cancel', False)" />
+					<field name="cancel_reason_other" invisible="context.get('hide_cancel', False)" />
+					<field name="cancel_by" invisible="context.get('hide_cancel', False)" />
+					<field name="state" invisible="not context.get('all', False)" />
 				</tree>
 			</field>
 		</record>		
-		
+
 		<!-- ORDER CANCELLATION -->
 		
 		<record model="ir.ui.view" id="foms_order_cancel_memory_form">
@@ -189,7 +196,7 @@
 						<field name="cancel_reason_other" />
 					</group>
 					<footer>
-						<button string="Save Planning" name="action_execute_cancel" type="object" class="oe_highlight" />
+						<button string="Submit Cancellation" name="action_execute_cancel" type="object" class="oe_highlight" />
 						or
 						<button string="Cancel" special="cancel" />
 					</footer>

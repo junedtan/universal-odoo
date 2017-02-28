@@ -11163,7 +11163,7 @@ msgstr "Country state"
 #: field:hr.applicant,driver_area:0
 #: field:hr.employee,driver_area:0
 msgid "Coverage Area"
-msgstr "Cakupan Area"
+msgstr "Penguasaan Area"
 
 #. module: base
 #: view:ir.actions.server:base.view_server_action_form
@@ -22504,7 +22504,7 @@ msgstr "Referensi"
 #. module: hr_recruitment
 #: field:hr.applicant,reference:0
 msgid "Referred By"
-msgstr "Dengan mengacu"
+msgstr "Pemberi Referensi"
 
 #. module: hr_payroll
 #: view:hr.payslip:hr_payroll.view_hr_payslip_form

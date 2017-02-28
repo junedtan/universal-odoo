@@ -70,7 +70,7 @@ class hr_employee(osv.osv):
 		job_id = vals.get('job_id')
 		if job_id:
 			job_obj = self.pool.get('hr.job')
-			if job_obj.is_driver(cr, uid, job_id):
+			if not vals.get('driver_type') and job_obj.is_driver(cr, uid, job_id):
 				vals.update({'driver_type': 'active'})
 	# siapkan data untuk employee code
 		if not vals.get('emp_no',False):

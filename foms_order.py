@@ -41,11 +41,18 @@ class foms_order(osv.osv):
 			result[row.id] = ",".join(phones)
 		return result
 
+	def _customer_name(self, cr, uid, ids, field_name, arg, context):
+		result = {}
+		for row in self.browse(cr, uid, ids, context):
+			result[row.id] = row.customer_contract_id.customer_id.name
+		return result
+
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
 		'name': fields.char('Order #'),
 		'customer_contract_id': fields.many2one('foms.contract', 'Customer Contract', required=True, ondelete='restrict'),
+		'customer_name': fields.function(_customer_name, type="char", string="Customer"),
 		'service_type': fields.selection([
 			('full_day','Full-day Service'),
 			('by_order','By Order'),
@@ -396,15 +403,19 @@ class foms_order(osv.osv):
 						self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'update', order_data, context=context)
 					elif order_data.service_type == 'by_order':
 						self.webservice_post(cr, uid, ['pic','approver','booker'], 'update', order_data, context=context)
-			# kalau dibatalin dan ini adalah by_order
-				elif vals['state'] == 'canceled' and order_data.service_type == 'by_order':
+			# kalau dibatalin
+				elif vals['state'] == 'canceled':
 				# kalau kontraknya pakai usage control, maka hapus dari usage log
-					if contract.usage_control_level != 'no_control':
+					if order_data.service_type == 'by_order' and contract.usage_control_level != 'no_control':
 						usage_log_obj = self.pool.get('foms.contract.quota.usage.log')
 						usage_log_ids = usage_log_obj.search(cr, uid, [('order_id','=',order_data.id)])
 						if len(usage_log_ids) > 0:
 							usage_log_obj.unlink(cr, uid, usage_log_ids, context=context)
-					self.webservice_post(cr, uid, ['pic','driver','booker','approver'], 'update', order_data, 
+					if order_data.service_type == 'full_day':
+						targets = ['pic','driver','fullday_passenger']
+					elif order_data.service_type == 'by_order':
+						targets = ['pic','driver','booker','approver']
+					self.webservice_post(cr, uid, targets, 'update', order_data, 
 						webservice_context={
 							'notification': ['order_canceled'],
 						}, context=context)
@@ -1037,6 +1048,12 @@ class foms_order_area(osv.osv):
 		'name': fields.char('Area Name', required=True),
 	}		
 	
+# CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
+
+	_sql_constraints = [
+		('unique_name','UNIQUE(homebase,name)',_('Name must be unique for each homebase.')),
+	]
+	
 # ==========================================================================================================================
 
 class foms_order_area_delay(osv.osv):
@@ -1102,6 +1119,12 @@ class foms_order_cancel_reason(osv.osv):
 	_columns = {
 		'name': fields.char('Name'),
 	}		
+	
+# CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
+
+	_sql_constraints = [
+		('unique_name','UNIQUE(name)',_('Name must be unique.')),
+	]
 	
 # ==========================================================================================================================
 

@@ -122,7 +122,7 @@
 								</tree>
 							</field>
 						</page>
-						<page string="Order Hours" attrs="{'invisible': [('service_type','not in',['by_order'])]}">
+						<page string="Order Hours" attrs="{'invisible': [('service_type','not in',['by_order','full_day'])]}">
 							<p>
 								PLEASE NOTE: omitting one or more days from this list means that at that (those) day(s) 
 								customers CANNOT book vehicles.

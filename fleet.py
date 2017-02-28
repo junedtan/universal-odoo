@@ -33,7 +33,7 @@ class fleet_vehicle(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'bpkb': fields.char('BPKB', required=True),
+		'bpkb': fields.char('BPKB'),
 		'current_contract_id': fields.function(_get_current_contract, method=True, type='many2one', obj='foms.contract', string="Current Contract"),
 		'contract_ids': fields.one2many('foms.contract.fleet', 'fleet_vehicle_id', 'Contract Fleet'),
 		'state_change_ids': fields.one2many('fleet.vehicle.state.change.log', 'header_id', 'State Change Log'),

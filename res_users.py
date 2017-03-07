@@ -1,6 +1,7 @@
 from openerp.osv import osv, fields
 from openerp.tools.translate import _
 from datetime import datetime, date
+from openerp import SUPERUSER_ID
 
 # ==========================================================================================================================
 
@@ -8,8 +9,33 @@ class res_users(osv.osv):
 	
 	_inherit = 'res.users'
 	
+	def _is_hr(self, cr, uid, ids, field_name, arg, context={}):
+		result = {}
+		model_obj = self.pool.get('ir.model.data')
+		groups = [
+			['universal','group_universal_staff_adm_drv_1'],
+			['universal','group_universal_spv_hrd_staff'],
+			['universal','group_universal_spv_hrd_driver'],
+		]
+		group_ids = []
+		for group_xml_id in groups:
+			model, group_id = model_obj.get_object_reference(cr, SUPERUSER_ID, group_xml_id[0], group_xml_id[1])
+			if not group_id: continue
+			group_ids.append(str(group_id))
+		user_ids = []
+		if len(group_ids) > 0:
+			cr.execute("SELECT uid FROM res_groups_users_rel WHERE gid IN (%s)" % ",".join(group_ids))
+			for row in cr.dictfetchall():
+				user_ids.append(row['uid'])
+		if len(user_ids) == 0: user_ids = [-1]
+		for row in self.browse(cr, uid, ids, context=context):
+			result[row.id] = row.id in user_ids
+		return result
+
+
 	_columns = {
 		'pin': fields.char('PIN', size=64, copy=False),
+		'is_hr': fields.function(_is_hr, type="boolean", method=True, store=True, string='Is HR?'),
 	}
 	
 	def write(self , cr, uid, ids, vals, context={}):

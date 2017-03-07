@@ -70,9 +70,9 @@ EMP_APP_DICT = {
 EMPLOYEE_FIELD = {
 	'partner_name': "Applicant's Name",
 	'job_id': 'Applied Job',
-	'department_id': 'Department',
 	'partner_mobile': 'Work Mobile',
 	'gender': 'Gender',
+	'partner_mobile': 'Phone',
 	'place_of_birth': 'Place of Birth',
 	'date_of_birth': 'Date of Birth',
 	'residential_address': 'Residential Address',

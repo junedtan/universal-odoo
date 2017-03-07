@@ -28,7 +28,7 @@ class foms_order(osv.osv):
 
 # FIELD FUNCTION METHOD ----------------------------------------------------------------------------------------------------
 
-	def _driver_mobile(self, cr, uid, ids, field_name, arg, context):
+	def _driver_mobile(self, cr, uid, ids, field_name, arg, context={}):
 		result = {}
 		for row in self.browse(cr, uid, ids, context):
 			phones = []
@@ -1049,7 +1049,7 @@ class foms_order_area(osv.osv):
 # CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
 
 	_sql_constraints = [
-		('unique_name','UNIQUE(homebase,name)',_('Name must be unique for each homebase.')),
+		('unique_name','UNIQUE(homebase_id,name)',_('Name must be unique for each homebase.')),
 	]
 	
 # ==========================================================================================================================

@@ -150,7 +150,7 @@
 								<group>
 									<field name="survey" invisible="1"/>
 									<field name="response_id" invisible="1"/>
-									<field name="job_id" on_change="onchange_job(job_id)" required="1"/>
+									<field name="job_id" on_change="onchange_job1(job_id, 1)" required="1" />
 									<field name="department_id" on_change="onchange_department_id(department_id, stage_id)" />
 									<field name="company_id" widget="selection" invisible="1" />
 									<field name="user_id" context="{'default_groups_ref': ['base.group_user', 'base.group_partner_manager', 'base.group_hr_manager']}"/>
@@ -254,7 +254,7 @@
 										<field name="is_mandatory" />
 										<field name="stage_id" /> 
 										<field name="date_checked" />
-										<field name="checked_by" />
+										<field name="checked_by" domain="[('is_hr','=',True)]" />
 										<field name="notes" />
 									</tree>
 								</field>
@@ -268,7 +268,7 @@
 										<field name="is_mandatory" />
 										<field name="stage_id" /> 
 										<field name="date_performed" />
-										<field name="checked_by" />
+										<field name="checked_by" domain="[('is_hr','=',True)]" />
 										<field name="results" />
 									</tree>
 								</field>

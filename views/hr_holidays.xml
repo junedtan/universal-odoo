@@ -42,6 +42,19 @@
 			</field>
 		</record>
 		
+		<record id="resource_calendar_company_holiday_list" model="ir.ui.view">
+			<field name="name">resource.calendar.company.holiday.list</field>
+			<field name="model">resource.calendar.company.holiday</field>
+			<field name="arch" type="xml">
+				<tree string="National/Company Holidays" editable="bottom">
+					<field name="name" />
+					<field name="date_from" />
+					<field name="date_to" />
+					<field name="holiday_type" />
+				</tree>
+			</field>
+		</record>
+		
 		<record id="universal_special_permit_form" model="ir.ui.view">
 			<field name="name">universal.special.permit.form</field>
 			<field name="model">universal.special.permit</field>

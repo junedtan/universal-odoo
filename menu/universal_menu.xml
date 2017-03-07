@@ -127,6 +127,13 @@
 			<field name="view_mode">tree,form</field>
 		</record>
 
+		<record id="universal_action_company_holiday" model="ir.actions.act_window">
+			<field name="name">National/Company Holidays</field>	
+			<field name="res_model">resource.calendar.company.holiday</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree</field>
+		</record>
+
 		<record id="universal_action_foms_contract" model="ir.actions.act_window">
 			<field name="name">Customer Contracts</field>	
 			<field name="res_model">foms.contract</field>
@@ -134,11 +141,6 @@
 			<field name="view_mode">tree,form</field>
 		</record>
 
-hide_assigned
-hide_actual
-hide_planned_time
-hide_actual_time
-hide_cancel
 		<record id="universal_action_foms_pending_order" model="ir.actions.act_window">
 			<field name="name">Pending Orders</field>	
 			<field name="res_model">foms.order</field>
@@ -185,7 +187,7 @@ hide_cancel
 		</record>
 
 		<record id="universal_action_foms_order_history" model="ir.actions.act_window">
-			<field name="name">Order History</field>	
+			<field name="name">Finished Orders</field>	
 			<field name="res_model">foms.order</field>
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
@@ -272,6 +274,7 @@ hide_cancel
 			groups="universal.group_universal_staff_adm_drv_1,universal.group_universal_spv_admin_drv"/>
 		<menuitem parent="hr.menu_open_view_attendance_reason_new_config" sequence="4" id="universal_menu_leave_rule" action="universal_action_leave_rule" 
 			groups="universal.group_universal_staff_adm_drv_1"/>
+		<menuitem parent="hr.menu_open_view_attendance_reason_new_config" sequence="5" id="universal_menu_company_holiday" action="universal_action_company_holiday" />
 		
 		<menuitem parent="hr_recruitment.menu_hr_recruitment_recruitment" sequence="1" id="hr_recruitment_requirement.hr_recruitment_requirement_menu_requirement" action="hr_recruitment_requirement.hr_recruitment_requirement_action_requirement"  />
 		<menuitem parent="hr_recruitment.menu_hr_recruitment_recruitment" sequence="2" id="hr_recruitment.menu_hr_recruitment_stage" action="hr_recruitment.hr_recruitment_stage_act" 

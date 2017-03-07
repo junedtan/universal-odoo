@@ -125,7 +125,7 @@ class resource_calendar_company_holiday(osv.osv):
 		calendar_obj = self.pool.get('resource.calendar')
 		calendar_ids = calendar_obj.search(cr, uid, [])
 		for calendar in calendar_obj.browse(cr, uid, calendar_ids):
-			vals = {
+			new_vals = {
 				'leave_ids': [(0, False, {
 					'name': vals['name'],
 					'date_from': datetime.strptime(vals['date_from'],'%Y-%m-%d').strftime("%Y-%m-%d 00:00:00"),
@@ -133,8 +133,22 @@ class resource_calendar_company_holiday(osv.osv):
 					'company_holiday_id': new_id,
 				})]
 			}
-			calendar_obj.write(cr, uid, [calendar.id], vals, context)
+			calendar_obj.write(cr, uid, [calendar.id], new_vals, context)
 		return new_id
+
+	def write(self, cr, uid, ids, vals, context={}):
+		result = super(resource_calendar_company_holiday, self).write(cr, uid, ids, vals, context=context)
+		calendar_leave_obj = self.pool.get('resource.calendar.leaves')
+		for holiday in self.browse(cr, uid, ids, context=context):
+			calendar_leave_ids = calendar_leave_obj.search(cr, uid, [('company_holiday_id','=',holiday.id)])
+			if len(calendar_leave_ids) == 0: continue
+			calendar_leave_obj.write(cr, uid, calendar_leave_ids, {
+				'name': holiday.name,
+				'date_from': datetime.strptime(holiday.date_from,'%Y-%m-%d').strftime("%Y-%m-%d 00:00:00"),
+				'date_to': datetime.strptime(holiday.date_to,'%Y-%m-%d').strftime("%Y-%m-%d 23:59:59"),
+			})
+		return result
+
 
 # ==========================================================================================================================
 

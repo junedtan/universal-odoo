@@ -28,7 +28,7 @@ class foms_order(osv.osv):
 
 # FIELD FUNCTION METHOD ----------------------------------------------------------------------------------------------------
 
-	def _driver_mobile(self, cr, uid, ids, field_name, arg, context):
+	def _driver_mobile(self, cr, uid, ids, field_name, arg, context={}):
 		result = {}
 		for row in self.browse(cr, uid, ids, context):
 			phones = []
@@ -948,8 +948,6 @@ class foms_order(osv.osv):
 		}
 
 	def onchange_fleet_type(self, cr, uid, ids, customer_contract_id, fleet_type_id):
-		print "masuk ke onnchange fleet type"
-		print fleet_type_id
 		if not fleet_type_id: return {}
 	# filter kendaraan yang dipilih
 		contract_obj = self.pool.get('foms.contract')
@@ -959,7 +957,6 @@ class foms_order(osv.osv):
 		for vehicle in contract_data.car_drivers:
 			if vehicle.fleet_type_id.id == fleet_type_id:
 				fleet_ids.append(vehicle.fleet_vehicle_id.id)
-		print fleet_ids
 	#... plus semua yang tidak sedang ada di bawah kontrak aktif
 		vehicle_obj = self.pool.get('fleet.vehicle')
 		vehicle_ids = vehicle_obj.search(cr, uid, [])
@@ -968,7 +965,6 @@ class foms_order(osv.osv):
 			print vehicle.current_contract_id
 			if vehicle.current_contract_id == None or vehicle.current_contract_id.state not in ['active','planned']:
 				fleet_ids.append(vehicle.id)
-		print fleet_ids
 		return {
 			'domain': {
 				'assigned_vehicle_id': [('id','in',fleet_ids)]
@@ -1051,7 +1047,7 @@ class foms_order_area(osv.osv):
 # CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
 
 	_sql_constraints = [
-		('unique_name','UNIQUE(homebase,name)',_('Name must be unique for each homebase.')),
+		('unique_name','UNIQUE(homebase_id,name)',_('Name must be unique for each homebase.')),
 	]
 	
 # ==========================================================================================================================

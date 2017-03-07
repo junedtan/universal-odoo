@@ -47,7 +47,7 @@ class hr_employee(osv.osv):
 		'residential_address': fields.text('Residential Address'),
 		'residential_phone': fields.char('Residential Phone', size=32),
 		'address': fields.text('Current Address'),
-		'phone': fields.char('Phone', size=32),
+		'phone': fields.char('Phone', size=32, required=True),
 		'start_working': fields.date('Start Working', required=True),
 		'work_year': fields.float('Work Year(s)'),
 		'driver_company_id': fields.many2one('res.partner','Current Client', domain=[('customer','=',True)]),

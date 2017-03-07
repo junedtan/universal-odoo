@@ -109,6 +109,7 @@ class hr_applicant(osv.osv):
 		'residential_address': fields.text('Residential Address'),
 		'residential_phone': fields.char('Residential Phone', size=32),
 		'partner_address': fields.text('Current Address'),
+		'partner_mobile': fields.char('Mobile', size=32, required=True),
 		'partner_mobile2': fields.char('Mobile 2', size=32),
 		'partner_mobile3': fields.char('Mobile 3', size=32),
 		'overtime_ready': fields.boolean('Ready for Overtime?'),
@@ -184,7 +185,6 @@ class hr_applicant(osv.osv):
 				if count_param == 1:
 				# kalau parameternya date ubah dulu formatnya dari %d/%m/%Y ke %Y-%m-%d
 					if param_name == 'date_of_birth':
-						print "old %s" % vals['date_of_birth']
 						vals['date_of_birth'] = datetime.strptime(vals['date_of_birth'], '%d/%m/%Y').strftime('%Y-%m-%d')
 					dupli_emp_ids = employee_obj.search(cr, uid, [(param_name,domain_check,vals[param_name])], context={'active_test': False})
 				else:
@@ -267,6 +267,7 @@ class hr_applicant(osv.osv):
 				'is_pending': True,
 			})
 		return super(hr_applicant, self).create(cr, uid, vals, context)
+
 		
 	def write(self, cr, uid, ids, vals, context={}):
 	# buat dipake di bawah

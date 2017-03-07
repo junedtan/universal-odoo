@@ -1,6 +1,6 @@
 from openerp.osv import osv, fields
 from openerp.tools.translate import _
-import datetime
+from datetime import datetime, date, timedelta
 from openerp import tools
 import math
 import time
@@ -29,7 +29,7 @@ class hr_holidays(osv.osv):
 		if not holiday_status_id: return False
 		holiday_status_data = self.pool.get('hr.holidays.status').browse(cr, uid, holiday_status_id)
 		if date_from and holiday_status_data.leave_duration > 0:
-			date_to_with_delta = datetime.datetime.strptime(date_from, tools.DEFAULT_SERVER_DATETIME_FORMAT) + datetime.timedelta(days=holiday_status_data.leave_duration)
+			date_to_with_delta = datetime.strptime(date_from, tools.DEFAULT_SERVER_DATETIME_FORMAT) + timedelta(days=holiday_status_data.leave_duration)
 			result['value']['date_to'] = str(date_to_with_delta)
 		result['value']['number_of_days_temp'] = holiday_status_data.leave_duration 
 		return result
@@ -66,7 +66,7 @@ class hr_holidays(osv.osv):
 		param_obj = self.pool.get('ir.config_parameter')
 		model, db_year = model_obj.get_object_reference(cr, uid, 'universal', 'database_year_ongoing')
 		param_year = param_obj.browse(cr, uid, db_year)
-		this_year = datetime.datetime.today().strftime('%Y')
+		this_year = datetime.today().strftime('%Y')
 	# cek apakah taunnya sama dengan taun ini 
 		if int(param_year.value) < int(this_year):
 			emp_obj = self.pool.get('hr.employee')
@@ -96,8 +96,56 @@ class hr_holidays(osv.osv):
 			# otomatis approve
 			holiday_obj.holidays_validate(cr, uid, reset_ids)
 			param_obj.write(cr, uid, db_year, {'value': int(this_year)+1})
-	
-		
+
+# ==========================================================================================================================
+
+class resource_calendar_company_holiday(osv.osv):
+
+	_name = 'resource.calendar.company.holiday'
+	_description = 'General purpose company/national holiday'
+
+	_columns = {
+		'name': fields.char('Description', required=True),
+		'date_from': fields.date('Date From', required=True),
+		'date_to': fields.date('Date To', required=True),
+		'holiday_type': fields.selection((
+			('company','Company'),
+			('national','National'),
+		), 'Type'),
+	}
+
+	_defaults = {
+		'holiday_type': 'national',
+	}
+
+	def create(self, cr, uid, vals, context={}):
+		new_id = super(resource_calendar_company_holiday, self).create(cr, uid, vals, context=context)
+	# untuk setiap working time yang ada, set hari libur nya (asumsi per holiday diset di masing2 working 
+	# time belum ada holiday). kasih m2o dari holiday di working time ke model ini
+		calendar_obj = self.pool.get('resource.calendar')
+		calendar_ids = calendar_obj.search(cr, uid, [])
+		for calendar in calendar_obj.browse(cr, uid, calendar_ids):
+			vals = {
+				'leave_ids': [(0, False, {
+					'name': vals['name'],
+					'date_from': datetime.strptime(vals['date_from'],'%Y-%m-%d').strftime("%Y-%m-%d 00:00:00"),
+					'date_to': datetime.strptime(vals['date_to'],'%Y-%m-%d').strftime("%Y-%m-%d 23:59:59"),
+					'company_holiday_id': new_id,
+				})]
+			}
+			calendar_obj.write(cr, uid, [calendar.id], vals, context)
+		return new_id
+
+# ==========================================================================================================================
+
+class resource_calendar_leaves(osv.osv):
+
+	_inherit = 'resource.calendar.leaves'
+
+	_columns = {
+		'company_holiday_id': fields.many2one('resource.calendar.company.holiday', 'National/Company Holiday', ondelete="cascade"),
+	}
+
 # ==========================================================================================================================
 
 class hr_holidays_status(osv.osv):
@@ -185,8 +233,8 @@ class hr_holidays_change_duration_memory(osv.osv_memory):
 		"""Returns a float equals to the timedelta between two dates given as string."""
 
 		DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-		from_dt = datetime.datetime.strptime(date_from, DATETIME_FORMAT)
-		to_dt = datetime.datetime.strptime(date_to, DATETIME_FORMAT)
+		from_dt = datetime.strptime(date_from, DATETIME_FORMAT)
+		to_dt = datetime.strptime(date_to, DATETIME_FORMAT)
 		timedelta = to_dt - from_dt
 		diff_day = timedelta.days + float(timedelta.seconds) / 86400
 		return diff_day
@@ -207,7 +255,7 @@ class hr_holidays_change_duration_memory(osv.osv_memory):
 
 		# No date_to set so far: automatically compute one 8 hours later
 		if date_from and not date_to:
-				date_to_with_delta = datetime.datetime.strptime(date_from, tools.DEFAULT_SERVER_DATETIME_FORMAT) + datetime.timedelta(hours=8)
+				date_to_with_delta = datetime.strptime(date_from, tools.DEFAULT_SERVER_DATETIME_FORMAT) + timedelta(hours=8)
 				result['value']['date_to_new'] = str(date_to_with_delta)
 
 		# Compute and update the number of days

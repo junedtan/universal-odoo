@@ -1,0 +1,18 @@
+<openerp>
+	<data>
+
+		<record id="hr_expense.t2" model="workflow.transition">
+			<field name="group_id" ref="universal.group_universal_admin_finance"/>
+		</record>
+
+		<record id="hr_expense.t4" model="workflow.transition">
+			<field name="group_id" ref="universal.group_universal_admin_finance"/>
+		</record>
+
+		<record id="hr_expense.t6" model="workflow.transition">
+			<field name="group_id" ref="universal.group_universal_admin_finance"/>
+		</record>
+
+
+	</data>
+</openerp>

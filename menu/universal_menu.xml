@@ -274,7 +274,7 @@
 			groups="universal.group_universal_staff_adm_drv_1,universal.group_universal_spv_admin_drv"/>
 		<menuitem parent="hr.menu_open_view_attendance_reason_new_config" sequence="4" id="universal_menu_leave_rule" action="universal_action_leave_rule" 
 			groups="universal.group_universal_staff_adm_drv_1"/>
-		<menuitem parent="hr.menu_open_view_attendance_reason_new_config" sequence="5" id="universal_menu_company_holiday" action="universal_action_company_holiday" />
+		<menuitem parent="hr.menu_open_view_attendance_reason_new_config" sequence="5" id="universal_menu_company_holiday" action="universal_action_company_holiday" groups="universal.group_universal_spv_hrd_staff" />
 		
 		<menuitem parent="hr_recruitment.menu_hr_recruitment_recruitment" sequence="1" id="hr_recruitment_requirement.hr_recruitment_requirement_menu_requirement" action="hr_recruitment_requirement.hr_recruitment_requirement_action_requirement"  />
 		<menuitem parent="hr_recruitment.menu_hr_recruitment_recruitment" sequence="2" id="hr_recruitment.menu_hr_recruitment_stage" action="hr_recruitment.hr_recruitment_stage_act" 
@@ -295,35 +295,35 @@
 		<menuitem sequence="20" name="FOMS" id="universal_menu_foms" />
 		
 		<menuitem sequence="1" parent="universal_menu_foms" name="Contract" id="universal_menu_foms_contract" />
-			<menuitem sequence="1" parent="universal_menu_foms_contract" action="universal_action_foms_contract" id="universal_menu_foms_contract1" />
+			<menuitem sequence="1" parent="universal_menu_foms_contract" action="universal_action_foms_contract" id="universal_menu_foms_contract1" groups="universal.group_universal_staff_marketing,universal.group_universal_staff_opr_kend,universal.group_universal_staff_opr_driv,universal.group_universal_dispatcher" />
 
 		<menuitem sequence="2" parent="universal_menu_foms" name="Customer Orders" id="universal_menu_foms_order" />
-			<menuitem sequence="1" parent="universal_menu_foms_order" action="universal_action_foms_pending_order" id="universal_menu_foms_pending_order" />
-			<menuitem sequence="2" parent="universal_menu_foms_order" action="universal_action_foms_ready_order" id="universal_menu_foms_ready_order" />
-			<menuitem sequence="3" parent="universal_menu_foms_order" action="universal_action_foms_running_order" id="universal_menu_foms_running_order" />
-			<menuitem sequence="4" parent="universal_menu_foms_order" action="universal_action_foms_reject_order" id="universal_menu_foms_reject_order" />
-			<menuitem sequence="5" parent="universal_menu_foms_order" action="universal_action_foms_shuttle_order" id="universal_menu_foms_shuttle_order" />
-			<menuitem sequence="6" parent="universal_menu_foms_order" action="universal_action_foms_order_history" id="universal_menu_foms_order_history" />
-			<menuitem sequence="7" parent="universal_menu_foms_order" action="universal_action_foms_order_all" id="universal_menu_foms_order_all" />
+			<menuitem sequence="1" parent="universal_menu_foms_order" action="universal_action_foms_pending_order" id="universal_menu_foms_pending_order" groups="universal.group_universal_dispatcher" />
+			<menuitem sequence="2" parent="universal_menu_foms_order" action="universal_action_foms_ready_order" id="universal_menu_foms_ready_order" groups="universal.group_universal_dispatcher" />
+			<menuitem sequence="3" parent="universal_menu_foms_order" action="universal_action_foms_running_order" id="universal_menu_foms_running_order" groups="universal.group_universal_dispatcher" />
+			<menuitem sequence="4" parent="universal_menu_foms_order" action="universal_action_foms_reject_order" id="universal_menu_foms_reject_order" groups="universal.group_universal_dispatcher" />
+			<menuitem sequence="5" parent="universal_menu_foms_order" action="universal_action_foms_shuttle_order" id="universal_menu_foms_shuttle_order" groups="universal.group_universal_dispatcher" />
+			<menuitem sequence="6" parent="universal_menu_foms_order" action="universal_action_foms_order_history" id="universal_menu_foms_order_history" groups="universal.group_universal_dispatcher" />
+			<menuitem sequence="7" parent="universal_menu_foms_order" action="universal_action_foms_order_all" id="universal_menu_foms_order_all" groups="universal.group_universal_dispatcher" />
 
 		<menuitem sequence="3" parent="universal_menu_foms" name="Usage Control" id="universal_menu_usage_control" />
-			<menuitem sequence="1" parent="universal_menu_usage_control" action="universal_action_foms_contract_quota" id="universal_menu_foms_contract_quota" />
-			<menuitem sequence="2" parent="universal_menu_usage_control" action="universal_action_foms_contract_quota_change_log" id="universal_menu_foms_contract_quota_change_log" />
+			<menuitem sequence="1" parent="universal_menu_usage_control" action="universal_action_foms_contract_quota" id="universal_menu_foms_contract_quota" groups="universal.group_universal_staff_marketing,universal.group_universal_admin_fleet" />
+			<menuitem sequence="2" parent="universal_menu_usage_control" action="universal_action_foms_contract_quota_change_log" id="universal_menu_foms_contract_quota_change_log" groups="universal.group_universal_staff_marketing,universal.group_universal_admin_fleet" />
 
 		<menuitem sequence="4" parent="universal_menu_foms" name="Expenses" id="universal_menu_expense_parent" />
-			<menuitem action="universal_action_trip_expenses" id="universal_menu_expense" parent="universal_menu_expense_parent"/>
+			<menuitem action="universal_action_trip_expenses" id="universal_menu_expense" parent="universal_menu_expense_parent" groups="universal.group_universal_dispatcher,universal.group_universal_admin_finance" />
 
 		<menuitem sequence="5" parent="universal_menu_foms" name="Configuration" id="menu_universal_foms_config"/>
-			<menuitem parent="menu_universal_foms_config" sequence="1" id="universal_menu_config_customer" action="base.action_partner_customer_form" />
+			<menuitem parent="menu_universal_foms_config" sequence="1" id="universal_menu_config_customer" action="base.action_partner_customer_form" groups="universal.group_universal_staff_marketing" />
 			<menuitem parent="menu_universal_foms_config" sequence="2" id="universal_menu_homebase" action="universal_action_homebase" 
-				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
-			<menuitem parent="menu_universal_foms_config" sequence="3" id="universal_menu_order_area" action="universal_action_order_area" />
-			<menuitem parent="menu_universal_foms_config" sequence="4" id="universal_menu_order_area_delay" action="universal_action_order_area_delay" />
+				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_marketing,universal.group_universal_admin_fleet"/>
+			<menuitem parent="menu_universal_foms_config" sequence="3" id="universal_menu_order_area" action="universal_action_order_area" groups="universal.group_universal_dispatcher" />
+			<menuitem parent="menu_universal_foms_config" sequence="4" id="universal_menu_order_area_delay" action="universal_action_order_area_delay" groups="universal.group_universal_dispatcher" />
 			<menuitem parent="menu_universal_foms_config" sequence="5" id="universal_menu_resource_calendar" action="resource.action_resource_calendar_form"
-				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_marketing,universal.group_universal_admin_fleet" />
 			<menuitem parent="menu_universal_foms_config" sequence="6" id="hr_overtime.hr_menu_overtime" action="hr_overtime.hr_action_overtime" 
-				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
-			<menuitem parent="menu_universal_foms_config" sequence="7" id="universal_menu_order_cancel_reason" action="universal_action_order_cancel_reason" />
+				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_marketing"/>
+			<menuitem parent="menu_universal_foms_config" sequence="7" id="universal_menu_order_cancel_reason" action="universal_action_order_cancel_reason" groups="universal.group_universal_dispatcher" />
 
 		
 <!-- INHERIT -->
@@ -386,6 +386,12 @@
 			
 		<menuitem parent="hr_recruitment.menu_hr_recruitment_recruitment" sequence="10" id="hr_recruitment.menu_hr_recruitment_source" action="hr_recruitment.hr_recruitment_source_action"
 			groups="base.group_no_one,universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
+
+		<menuitem action="fleet.fleet_vehicle_act" parent="fleet.fleet_vehicles" id="fleet.fleet_vehicle_menu" groups="universal.group_universal_staff_opr_kend" />
+
+		<menuitem action="fleet.fleet_vehicle_model_act" parent="fleet.fleet_configuration" id="fleet.fleet_vehicle_model_menu" groups="universal.group_universal_staff_opr_kend" />
+
+		<menuitem action="fleet.fleet_vehicle_model_brand_act" parent="fleet.fleet_configuration" id="fleet.fleet_vehicle_model_brand_menu" groups="universal.group_universal_staff_opr_kend" />
 
 	</data>
 </openerp>

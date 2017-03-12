@@ -353,7 +353,7 @@ class foms_order(osv.osv):
 						})
 				# apakah source_area dan dest_area ada di bawah homebase yang sama?
 				# kalo sama, langsung cariin mobil dan supir
-					central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_central_dispatch')
+					central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_dispatcher')
 					if order_data.origin_area_id and order_data.dest_area_id and \
 					order_data.origin_area_id.homebase_id.id == order_data.dest_area_id.homebase_id.id:
 					# cari vehicle dan driver yang available di jam itu
@@ -375,8 +375,8 @@ class foms_order(osv.osv):
 								}, context=context)
 							partner_ids = []
 							for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
-							for central_user_id in central_user_ids:
-								self.message_post(cr, central_user_id, order_data.id, body=_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order_data.name,
+							self.message_post(cr, SUPERUSER_ID, order_data.id, 
+								body=_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order_data.name,
 								partner_ids=partner_ids)
 							return result
 				# kalo beda homebase, post message 
@@ -771,7 +771,6 @@ class foms_order(osv.osv):
 	def cron_autogenerate_fullday(self, cr, uid, context=None):
 		
 		contract_obj = self.pool.get('foms.contract')
-		order_obj = self.pool.get('foms.order')
 	# bikin order fullday untuk n hari ke depan secara berkala
 	# set tanggal2
 		today = (datetime.now()).replace(hour=0, minute=0, second=0, microsecond=0)
@@ -807,7 +806,7 @@ class foms_order(osv.osv):
 				counter_date = first_order_date
 				while day <= max_orders:
 					for fleet in contract.car_drivers:
-						new_id = order_obj.create(cr, uid, {
+						new_id = self.create(cr, uid, {
 							'customer_contract_id': contract.id,
 							'service_type': contract.service_type,
 							'request_date': counter_date,
@@ -832,7 +831,6 @@ class foms_order(osv.osv):
 		print "mulai cron shuttle"
 		
 		contract_obj = self.pool.get('foms.contract')
-		order_obj = self.pool.get('foms.order')
 	# bikin order shuttle untuk n hari ke depan secara berkala
 	# set tanggal2
 		today = (datetime.now()).replace(hour=0, minute=0, second=0, microsecond=0)
@@ -901,7 +899,7 @@ class foms_order(osv.osv):
 							break
 					if not date_schedule: continue
 					for schedule in date_schedule:
-						new_id = order_obj.create(cr, uid, {
+						new_id = self.create(cr, uid, {
 							'customer_contract_id': contract.id,
 							'service_type': contract.service_type,
 							'request_date': counter_date,

@@ -9,13 +9,13 @@
 			<field name="arch" type="xml">
 				<form version="7.0" string="Customer Contract">
 					<header>
-						<button string="Plan/Modify Fleet" name="action_plan_fleet" type="object" states="confirmed,planned,active" class="oe_button oe_highlight" />
-						<button string="Schedule Shuttle" name="action_schedule_shuttle" type="object" states="confirmed,planned,active" class="oe_button oe_highlight" />
-						<button string="Confirm" name="action_confirm" type="object" states="proposed" class="oe_button oe_highlight" confirm="This action singnifies that both parties (customer and PT Universal) have agreed on all terms written in the contract, including and especially Fee Calculation Scheme and Fleet Types and number of fleet required. Are you sure to continue? PS: you can still edit all data before system automatically starts the contract at its start date." />
+						<button string="Plan/Modify Fleet" name="action_plan_fleet" type="object" states="confirmed,planned,active" class="oe_button oe_highlight" groups="universal.group_universal_staff_opr_kend,universal.group_universal_staff_opr_driv,universal.group_universal_dispatcher" />
+						<button string="Schedule Shuttle" name="action_schedule_shuttle" type="object" states="confirmed,planned,active" class="oe_button oe_highlight" groups="universal.group_universal_staff_opr_kend,universal.group_universal_dispatcher" />
+						<button string="Confirm" name="action_confirm" type="object" states="proposed" class="oe_button oe_highlight" confirm="This action singnifies that both parties (customer and PT Universal) have agreed on all terms written in the contract, including and especially Fee Calculation Scheme and Fleet Types and number of fleet required. Are you sure to continue? PS: you can still edit all data before system automatically starts the contract at its start date." groups="universal.group_universal_staff_marketing" />
 						<field name="state" widget="statusbar" readonly="1" />
 					</header>
 					<group>
-						<group>
+						<group groups="universal.group_universal_staff_marketing">
 							<field name="customer_id" on_change="onchange_customer(customer_id)" />
 							<field name="customer_contact_id" />
 							<field name="service_type" />
@@ -25,7 +25,7 @@
 							<field name="min_start_minutes" attrs="{'invisible': [('service_type','not in',['by_order','full_day'])], 'required': [('service_type','in',['by_order','full_day'])]}" />
 							<field name="max_delay_minutes" attrs="{'invisible': [('service_type','not in',['by_order'])], 'required': [('service_type','in',['by_order'])]}" />
 						</group>
-						<group>
+						<group groups="universal.group_universal_staff_marketing">
 							<field name="name" />
 							<field name="contract_date" />
 							<field name="start_date" />
@@ -53,7 +53,7 @@
 								</group>
 							</group>
 						</page>
-						<page string="Fee Calculation">
+						<page string="Fee Calculation" groups="universal.group_universal_staff_marketing">
 							<div class="oe_right oe_edit_only">
 								<button name="action_load_customer_defaults" string="Load Customer Defaults" type="object" confirm="This action will reset previous and current fee calculation settings. Are you sure to continue?" />
 							</div>
@@ -135,7 +135,7 @@
 								</tree>
 							</field>
 						</page>
-						<page string="Units &amp; Usage Control" attrs="{'invisible': [('service_type','not in',['by_order'])]}">
+						<page string="Units &amp; Usage Control" attrs="{'invisible': [('service_type','not in',['by_order'])]}" groups="universal.group_universal_staff_marketing,universal.group_universal_dispatcher">
 							<group>
 								<group string="Units">
 									<field name="allocation_units" nolabel="1">
@@ -167,12 +167,12 @@
 								</group>
 							</group>
 						</page>
-						<page string="Other Info">
+						<page string="Other Info" groups="universal.group_universal_staff_marketing,universal.group_universal_dispatcher">
 							<group>
 								<field name="termination_reason" attrs="{'invisible': [('state','not in',['terminated'])]}" />
 								<field name="extended_contract_id" />
-								<field name="last_fullday_autogenerate_date" />
-								<field name="last_shuttle_autogenerate_date" />
+								<field name="last_fullday_autogenerate_date" groups="base.group_system" />
+								<field name="last_shuttle_autogenerate_date" groups="base.group_system" />
 							</group>
 						</page>
 					</notebook>
@@ -183,7 +183,7 @@
 				</form>
 			</field>
 		</record>
-		
+
 		<record model="ir.ui.view" id="foms_contract_tree">
 			<field name="name">foms.contract.tree</field>	
 			<field name="model">foms.contract</field>
@@ -281,7 +281,7 @@
 			<field name="name">foms.contract.quota.form</field>	
 			<field name="model">foms.contract.quota</field>
 			<field name="arch" type="xml">
-				<form version="7.0" string="Monthly Usage Quota" create="false" delete="false">
+				<form version="7.0" string="Monthly Usage Quota" create="false" edit="false" delete="false">
 					<group>
 						<group>
 							<field name="customer_contract_id" />
@@ -306,7 +306,7 @@
 			<field name="name">foms.contract.quota.tree</field>	
 			<field name="model">foms.contract.quota</field>
 			<field name="arch" type="xml">
-				<tree version="7.0" string="Monthly Usage Quota" create="false" delete="false">
+				<tree version="7.0" string="Monthly Usage Quota" create="false" edit="false" delete="false">
 					<field name="customer_contract_id" />
 					<field name="allocation_unit_id" />
 					<field name="period" />

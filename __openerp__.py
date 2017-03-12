@@ -20,6 +20,8 @@
 	'data': [
 		'security/universal_security.xml',
 		'security/ir.model.access.csv',
+		'security/ir_rule.xml',
+		'security/workflow.xml',
 		'data/hr.department.csv',
 		'data/hr.job.csv',
 		'data/hr_recruitment.xml',

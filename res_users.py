@@ -19,8 +19,8 @@ class res_users(osv.osv):
 		]
 		group_ids = []
 		for group_xml_id in groups:
-			model, group_id = model_obj.get_object_reference(cr, SUPERUSER_ID, group_xml_id[0], group_xml_id[1])
-			if not group_id: continue
+			# model, group_id = model_obj.get_object_reference(cr, SUPERUSER_ID, group_xml_id[0], group_xml_id[1])
+			# if not group_id: continue
 			group_ids.append(str(group_id))
 		user_ids = []
 		if len(group_ids) > 0:

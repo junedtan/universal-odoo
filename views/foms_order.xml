@@ -46,8 +46,9 @@
 		<record model="ir.ui.view" id="foms_order_form">
 			<field name="name">foms.order.form</field>	
 			<field name="model">foms.order</field>
+			<field name="context">{'source':'form'}</field>
 			<field name="arch" type="xml">
-				<form version="7.0" string="Customer Order">
+				<form version="7.0" string="Customer Order" >
 					<header>
 						<button name="action_cancel" string="Cancel Order" type="object" states="new,confirmed,ready" groups="universal.group_universal_dispatcher" /> 
 						<button name="action_confirm" string="Confirm" type="object" states="new" confirm="Are you sure to confirm this order?" groups="universal.group_universal_dispatcher" /> 

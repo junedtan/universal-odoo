@@ -467,6 +467,17 @@ class foms_order(osv.osv):
 						'state': 'ready',
 						'pin': self._generate_random_pin(),
 					}, context=context)
+			#untuk full_day, pin memakai pin fullday_user_id si fleet
+				elif order_data.service_type == 'full_day' and order_data.state in ['new','confirmed']:
+					for fleet in order_data.customer_contract_id.car_drivers:
+						if fleet.fullday_user_id.id == order_data.order_by.id:
+							fleet_data = fleet
+							break
+					if fleet_data:
+						self.write(cr, uid, [order_data.id], {
+							'state': 'ready',
+							'pin': fleet_data.fullday_user_id.pin,
+						}, context=context)
 
 		# kalau ada perubahan di over_quota_status, kasih tau ke pic dan approver
 			if vals.get('over_quota_status', False):

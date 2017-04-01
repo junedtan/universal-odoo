@@ -230,9 +230,11 @@ class foms_order(osv.osv):
 						'assigned_vehicle_id': fleet_data.fleet_vehicle_id.id,
 						'pin': fleet_data.fullday_user_id.pin,
 					})
-					self.write(cr, uid, [new_id], {
-						'state': 'ready',
-					}, context=context)
+					vals = {'state': 'ready'}
+				# Kalau belum ada driver dan vehiclenya, statenya jangan sampai ready
+					if not fleet_data.driver_id.id and not fleet_data.fleet_vehicle_id.id:
+						vals['state'] = 'new'
+					self.write(cr, uid, [new_id], vals, context=context)
 	# untuk order By Order
 		elif new_data.service_type == 'by_order':
 		# cek apakah unit ini punya approver? 

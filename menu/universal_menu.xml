@@ -247,6 +247,15 @@
 			<field name="view_mode">tree</field>
 		</record>
 
+		<record id="universal_action_change_driver_phone" model="ir.actions.act_window">
+			<field name="name">Change Driver Phone</field>
+			<field name="res_model">hr.employee</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree</field>
+			<!--<field name="domain" eval="[('job_id','=',%(universal.hr_job_driver)d)]"/>-->
+			<field name="view_id" ref="foms_change_driver_phone_tree"/>
+		</record>
+
 		<menuitem parent="hr.menu_hr_configuration" sequence="3" id="universal_menu_job_position" action="universal_action_job_position"
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="3" id="hr_recruitment.menu_crm_case_categ0_act_job" action="hr_recruitment.crm_case_categ0_act_job" 
@@ -257,7 +266,7 @@
 			groups="universal.group_universal_staff_marketing"/>
 		<menuitem parent="hr.menu_hr_main" sequence="4" id="hr_contract.hr_menu_contract" name="Employee Contracts" action="hr_contract.action_hr_contract" 
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1,universal.group_universal_spv_admin_drv" />
-    <menuitem parent="hr.menu_hr_main" sequence="5" id="universal_menu_verbal_warning" action="universal_action_verbal_warning" 
+    <menuitem parent="hr.menu_hr_main" sequence="5" id="universal_menu_verbal_warning" action="universal_action_verbal_warning"
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_adm_drv_1" /> 
 		
 		<menuitem parent="hr_holidays.menu_open_ask_holidays" sequence="20" id="universal_menu_special_permit" action="universal_action_special_permit" 
@@ -324,6 +333,7 @@
 			<menuitem parent="menu_universal_foms_config" sequence="6" id="hr_overtime.hr_menu_overtime" action="hr_overtime.hr_action_overtime" 
 				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_marketing"/>
 			<menuitem parent="menu_universal_foms_config" sequence="7" id="universal_menu_order_cancel_reason" action="universal_action_order_cancel_reason" groups="universal.group_universal_dispatcher" />
+			<menuitem parent="menu_universal_foms_config" sequence="8" id="universal_menu_change_driver_phone" action="universal_action_change_driver_phone" groups="universal.group_universal_dispatcher" />
 
 		
 <!-- INHERIT -->

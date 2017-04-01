@@ -378,6 +378,7 @@
 				<tree version="7.0" string="Quota Change Log" delete="false">
 					<field name="customer_contract_id" />
 					<field name="allocation_unit_id" />
+					<field name="request_by" />
 					<field name="period" />
 					<field name="request_longevity" />
 					<field name="new_yellow_limit" />

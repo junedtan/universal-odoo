@@ -142,6 +142,7 @@ class foms_order(osv.osv):
 	def create(self, cr, uid, vals, context={}):
 		contract_obj = self.pool.get('foms.contract')
 		contract_data = contract_obj.browse(cr, uid, vals['customer_contract_id'])
+		user_obj = self.pool.get('res.users')
 	# tanggal order tidak boleh lebih dari tanggal selesai 
 		if contract_data.state in ['prolonged','terminated','finished']:
 			raise osv.except_osv(_('Order Error'),_('Contract has already been inactive. You cannot place order under this contract anymore. Please choose another contract or contact your PIC.'))
@@ -154,8 +155,8 @@ class foms_order(osv.osv):
 		# cek start date harus minimal n jam dari sekarang
 			now = datetime.now()
 			delta = float((start_date - now).days * 86400 + (start_date - now).seconds) / 60
-			if delta < contract_data.by_order_minimum_minutes:
-				raise osv.except_osv(_('Order Error'),_('Start date is too close to current time, or is in the past. There must be at least %s minutes between now and start date.' % contract_data.by_order_minimum_minutes))
+			#if delta < contract_data.by_order_minimum_minutes:
+				#raise osv.except_osv(_('Order Error'),_('Start date is too close to current time, or is in the past. There must be at least %s minutes between now and start date.' % contract_data.by_order_minimum_minutes))
 		# kalau usage control diaktifkan, isi over_quota_status
 			if contract_data.usage_control_level != 'no_control':
 				quota_per_usage, over_quota_status = self.determine_over_quota_status(cr, uid, vals['customer_contract_id'], vals['alloc_unit_id'], vals['fleet_type_id'])
@@ -163,6 +164,13 @@ class foms_order(osv.osv):
 					'alloc_unit_usage': quota_per_usage,
 					'over_quota_status': over_quota_status,
 				})
+	# dicek dahulu apakah waktu order tidak berada di hari libur yang sudah ditentukan di kontrak sebelumnya
+		for holiday in contract_data.working_time_id.leave_ids:
+			date_from_holiday = datetime.strftime((datetime.strptime(holiday.date_from,"%Y-%m-%d %H:%M:%S")).replace(hour=0,minute=0,second=0),"%Y-%m-%d %H:%M:%S")
+			date_to_holiday =  datetime.strftime((datetime.strptime(holiday.date_to,"%Y-%m-%d %H:%M:%S")).replace(hour=23,minute=59,second=59),"%Y-%m-%d %H:%M:%S")
+			if vals.get('start_planned_date', False) and vals['start_planned_date'] >= date_from_holiday and vals['start_planned_date'] <= date_to_holiday:
+				raise osv.except_osv(_('Order Error'),_('Cannot create order because today is not in working time.'))
+			
 	# bikin nomor order dulu
 	# format: (Tanggal)(Bulan)(Tahun)(4DigitPrefixCustomer)(4DigitNomorOrder) Cth: 23032017BNPB0001
 		if not vals.get('name', False):
@@ -178,6 +186,24 @@ class foms_order(osv.osv):
 				order_data = self.browse(cr, uid, order_ids[0])
 				last_number = int(order_data.name[-4:]) + 1
 			vals.update({'name': "%s%04d" % (prefix,last_number)}) # later
+		
+	#cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
+		if vals.get('service_type', False) in ['full_day', 'by_order'] and vals.get('assigned_vehicle_id', False):
+			order_ids = self.search(cr, uid, [
+				('state','=', 'start_confirmed'),
+			])
+			if len(order_ids) > 0:
+				order_data = self.browse(cr, uid, order_ids)
+				central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_dispatcher')
+				for order in order_data:
+					start_confirm_date = datetime.strptime(order.start_confirm_date,"%Y-%m-%d %H:%M:%S")
+					delta = float((start_confirm_date - now).days * 86400 + (start_confirm_date - now).seconds) / 60
+					partner_ids = []
+					if delta < 60:
+						for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
+						self.message_post(cr, SUPERUSER_ID, order.id,
+							body=_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order.name,
+							partner_ids=partner_ids)
 	# jalankan createnya
 		new_id = super(foms_order, self).create(cr, uid, vals, context=context)
 		new_data = self.browse(cr, uid, new_id, context=context)
@@ -253,7 +279,8 @@ class foms_order(osv.osv):
 			else:
 			# langsung confirm order ini
 				self.write(cr, uid, [new_id], {
-					'state': 'confirmed',
+					'state': 'start_confirmed',
+					'start_confirm_date': (datetime.strftime(now,"%Y-%m-%d %H:%M:%S")),
 				}, context=context)
 		elif new_data.service_type == 'shuttle':
 			self.write(cr, uid, [new_id], {

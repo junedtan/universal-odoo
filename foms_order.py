@@ -190,14 +190,23 @@ class foms_order(osv.osv):
 					fleet_data = fleet
 					break
 			if fleet_data:
-				self.write(cr, uid, [new_id], {
-					'assigned_driver_id': fleet_data.driver_id.id,
-					'assigned_vehicle_id': fleet_data.fleet_vehicle_id.id,
-					'pin': fleet_data.fullday_user_id.pin,
-				}) # sengaja ngga pake konteks supaya baik dari autogenerate order maupun manual via app tidak akan broadcast
-			self.write(cr, uid, [new_id], {
-				'state': 'ready',
-			}, context=context)
+			#kalau dibuat manual dari form, jangan assign driver dan vehicle
+				if context.get('source', False) and context['source']=='form':
+					self.write(cr, uid, [new_id], {
+						'pin': fleet_data.fullday_user_id.pin,
+					})
+					self.write(cr, uid, [new_id], {
+						'state': 'new',
+					}, context=context)
+				else:
+					self.write(cr, uid, [new_id], {
+						'assigned_driver_id': fleet_data.driver_id.id,
+						'assigned_vehicle_id': fleet_data.fleet_vehicle_id.id,
+						'pin': fleet_data.fullday_user_id.pin,
+					})
+					self.write(cr, uid, [new_id], {
+						'state': 'ready',
+					}, context=context)
 	# untuk order By Order
 		elif new_data.service_type == 'by_order':
 		# cek apakah unit ini punya approver? 
@@ -466,6 +475,10 @@ class foms_order(osv.osv):
 					self.write(cr, uid, [order_data.id], {
 						'state': 'ready',
 						'pin': self._generate_random_pin(),
+					}, context=context)
+				elif order_data.service_type == 'full_day' and order_data.state in ['new','confirmed']:
+					self.write(cr, uid, [order_data.id], {
+						'state': 'ready',
 					}, context=context)
 
 		# kalau ada perubahan di over_quota_status, kasih tau ke pic dan approver
@@ -773,7 +786,7 @@ class foms_order(osv.osv):
 	# set tanggal2
 		today = (datetime.now()).replace(hour=0, minute=0, second=0, microsecond=0)
 		next_day = today + timedelta(hours=24)
-		next7days = today + timedelta(hours=24*7)
+		next7days = today + timedelta(hours=24*1)
 	# ambil contract yang baru aktif (last_fullday_autogenerate_date kosong)
 		contract_ids = contract_obj.search(cr, uid, [
 			('service_type','=','full_day'),('state','in',['active','planned']),

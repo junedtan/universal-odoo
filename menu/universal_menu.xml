@@ -147,7 +147,7 @@
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
 			<field name="domain">[('service_type','!=','shuttle'),('state','in',['new','confirmed'])]</field>
-			<field name="context">{'hide_cancel': 1, 'hide_actual': 1, 'hide_actual_time': 1}</field>
+			<field name="context">{'hide_cancel': 1, 'hide_actual': 1, 'hide_actual_time': 1, 'source': 'form'}</field>
 		</record>
 
 		<record id="universal_action_foms_ready_order" model="ir.actions.act_window">
@@ -156,7 +156,7 @@
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
 			<field name="domain">[('service_type','!=','shuttle'),('state','in',['ready'])]</field>
-			<field name="context">{'hide_cancel': 1, 'hide_actual': 1, 'hide_actual_time': 1}</field>
+			<field name="context">{'hide_cancel': 1, 'hide_actual': 1, 'hide_actual_time': 1, 'source': 'form'}</field>
 		</record>
 
 		<record id="universal_action_foms_running_order" model="ir.actions.act_window">
@@ -165,7 +165,7 @@
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
 			<field name="domain">[('service_type','!=','shuttle'),('state','in',['started','start_confirmed','paused','resumed','finished'])]</field>
-			<field name="context">{'hide_cancel': 1, 'hide_assigned': 1, 'hide_planned_time': 1}</field>
+			<field name="context">{'hide_cancel': 1, 'hide_assigned': 1, 'hide_planned_time': 1, 'source': 'form'}</field>
 		</record>
 
 		<record id="universal_action_foms_reject_order" model="ir.actions.act_window">
@@ -174,7 +174,7 @@
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
 			<field name="domain">[('service_type','!=','shuttle'),('state','in',['rejected','canceled'])]</field>
-			<field name="context">{'hide_assigned': 1, 'hide_actual_time': 1, 'hide_actual': 1}</field>
+			<field name="context">{'hide_assigned': 1, 'hide_actual_time': 1, 'hide_actual': 1, 'source': 'form'}</field>
 		</record>
 
 		<record id="universal_action_foms_shuttle_order" model="ir.actions.act_window">
@@ -183,7 +183,7 @@
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
 			<field name="domain">[('service_type','=','shuttle')]</field>
-			<field name="context">{'hide_cancel': 1, 'hide_actual_time': 1, 'hide_actual': 1}</field>
+			<field name="context">{'hide_cancel': 1, 'hide_actual_time': 1, 'hide_actual': 1, 'source': 'form'}</field>
 		</record>
 
 		<record id="universal_action_foms_order_history" model="ir.actions.act_window">

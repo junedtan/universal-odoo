@@ -1242,5 +1242,35 @@ class foms_order_cancel_memory(osv.osv_memory):
 			'cancel_by': cancel_by,
 			'cancel_previous_state': order_data.state,
 		}, context=context)
+
+# ==========================================================================================================================
+
+class foms_order_replace_vehicle(osv.osv):
+
+	_name = "foms.order.replace.vehicle"
+	_description = 'Order Replace Vehicle'
+
+# COLUMNS ------------------------------------------------------------------------------------------------------------------
+
+	_columns = {
+		'replaced_vehicle_id': fields.many2one('fleet.vehicle', 'Replaced Vehicle'),
+		'replacement_vehicle_id': fields.many2one('fleet.vehicle', 'Replacement Vehicle'),
+		'replacement_date': fields.datetime('Replacement Date'),
+		'replacement_reason': fields.text('foms.order.cancel.reason', 'Replacement Reason'),
+	}
+
+# ==========================================================================================================================
+
+class foms_order_replace_driver(osv.osv):
 	
+	_name = "foms.order.replace.driver"
+	_description = 'Order Replace Driver'
 	
+	# COLUMNS ------------------------------------------------------------------------------------------------------------------
+	
+	_columns = {
+		'replaced_driver_id': fields.many2one('hr.employee', 'Replaced Driver'),
+		'replacement_driver_id': fields.many2one('hr.employee', 'Replacement Driver'),
+		'replacement_date': fields.datetime('Replacement Date'),
+		'replacement_reason': fields.text('foms.order.cancel.reason', 'Replacement Reason'),
+	}

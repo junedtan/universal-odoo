@@ -270,7 +270,6 @@ class foms_order(osv.osv):
 				'state': 'confirmed',
 			}, context=context)
 		
-		
 		#cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
 		if vals.get('service_type', False) in ['full_day', 'by_order'] and vals.get('assigned_vehicle_id', False):
 			order_ids = self.search(cr, uid, [

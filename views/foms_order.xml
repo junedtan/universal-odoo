@@ -206,18 +206,69 @@
 			</field>
 		</record>
 
-		<!--Change Driver Phone-->
+		<!--Replace Vehicle-->
 
-		<record model="ir.ui.view" id="foms_change_driver_phone_tree">
-			<field name="name">foms.change.driver.phone.tree</field>
-			<field name="model">hr.employee</field>
+		<record model="ir.ui.view" id="foms_order_replace_vehicle_tree">
+			<field name="name">foms.order.replace.vehicle.tree</field>
+			<field name="model">foms.order.replace.vehicle</field>
 			<field name="arch" type="xml">
-				<tree version="7.0" string="Order Area Delay" editable="bottom" create="false" delete="false">
-					<field name="name" />
-					<field name="phone" />
-					<field name="mobile_phone2" />
-					<field name="mobile_phone3" />
+				<tree version="7.0" string="Order Replace Vehicle">
+					<field name="replacement_date" />
+					<field name="replaced_vehicle_id" />
+					<field name="replacement_vehicle_id" />
 				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="foms_order_replace_vehicle_form">
+			<field name="name">foms.order.replace.vehicle.form</field>
+			<field name="model">foms.order.replace.vehicle</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Order Replace Vehicle">
+					<group>
+						<field name="replaced_vehicle_id"/>
+						<field name="replacement_vehicle_id"/>
+						<field name="replacement_date"/>
+					</group>
+					<notebook>
+						<page string="Reason">
+							<field name="replacement_reason" nolabel="1"/>
+						</page>
+					</notebook>
+				</form>
+			</field>
+		</record>
+		
+		<!--Replace Driver-->
+
+		<record model="ir.ui.view" id="foms_order_replace_driver_tree">
+			<field name="name">foms.order.replace.driver.tree</field>
+			<field name="model">foms.order.replace.driver</field>
+			<field name="arch" type="xml">
+				<tree version="7.0" string="Order Replace Driver">
+					<field name="replacement_date" />
+					<field name="replaced_driver_id" />
+					<field name="replacement_driver_id" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="foms_order_replace_driver_form">
+			<field name="name">foms.order.replace.driver.form</field>
+			<field name="model">foms.order.replace.driver</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Order Replace Driver">
+					<group>
+						<field name="replaced_driver_id" />
+						<field name="replacement_driver_id" />
+						<field name="replacement_date" />
+					</group>
+					<notebook>
+						<page string="Reason">
+							<field name="replacement_reason" nolabel="1"/>
+						</page>
+					</notebook>
+				</form>
 			</field>
 		</record>
 				

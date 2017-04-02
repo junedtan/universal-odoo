@@ -248,11 +248,11 @@
 		</record>
 
 		<record id="universal_action_change_driver_phone" model="ir.actions.act_window">
-			<field name="name">Change Driver Phone</field>
+			<field name="name">Driver Phones</field>
 			<field name="res_model">hr.employee</field>
 			<field name="view_type">form</field>
 			<field name="view_mode">tree</field>
-			<!--<field name="domain" eval="[('job_id','=',%(universal.hr_job_driver)d)]"/>-->
+			<field name="domain" eval="[('job_id', '=', ref('universal.hr_job_driver'))]"/>
 			<field name="view_id" ref="foms_change_driver_phone_tree"/>
 		</record>
 

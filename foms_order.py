@@ -348,8 +348,7 @@ class foms_order(osv.osv):
 			vals.update({
 				'cancel_reason': reason_id,
 			})
-
-		# eksekusi write nya dan ambil ulang data hasil update
+	# eksekusi write nya dan ambil ulang data hasil update
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
 		orders = self.browse(cr, uid, ids, context=context)
 

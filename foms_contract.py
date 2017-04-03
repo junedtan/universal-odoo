@@ -823,14 +823,26 @@ class foms_contract_shuttle_schedule_memory(osv.osv):
 	# masukkan yang baru
 		vehicle_ids = []
 		for schedule in form_data.schedule_line:
-			new_shuttle_schedule.append([0,False,{
-				'dayofweek': schedule.dayofweek,
-				'sequence': schedule.sequence,
-				'route_id': schedule.route_id.id,
-				'fleet_vehicle_id': schedule.fleet_vehicle_id.id,
-				'departure_time': schedule.departure_time,
-				#'arrival_time': schedule.arrival_time,	
-			}])
+			clash = False
+			for correct_schedule in new_shuttle_schedule:
+				if correct_schedule[0] == 0:
+					if (correct_schedule[2]['dayofweek'] == 'A' or schedule.dayofweek == 'A' or
+								correct_schedule[2]['dayofweek'] == schedule.dayofweek) \
+							and correct_schedule[2]['fleet_vehicle_id'] == schedule.fleet_vehicle_id.id \
+							and correct_schedule[2]['departure_time'] == schedule.departure_time:
+						clash = True
+						break
+			if clash:
+				raise osv.except_osv(_('Shuttle Schedule Error'),_('Schedule cannot have two lines with same day of week, vehicle and departure time'))
+			else:
+				new_shuttle_schedule.append([0,False,{
+					'dayofweek': schedule.dayofweek,
+					'sequence': schedule.sequence,
+					'route_id': schedule.route_id.id,
+					'fleet_vehicle_id': schedule.fleet_vehicle_id.id,
+					'departure_time': schedule.departure_time,
+					#'arrival_time': schedule.arrival_time,
+				}])
 		contract_obj.write(cr, uid, [contract_id], {
 			'shuttle_schedules': new_shuttle_schedule,
 		})

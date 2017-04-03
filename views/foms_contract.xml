@@ -378,6 +378,7 @@
 				<tree version="7.0" string="Quota Change Log" delete="false">
 					<field name="customer_contract_id" />
 					<field name="allocation_unit_id" />
+					<field name="request_by" />
 					<field name="period" />
 					<field name="request_longevity" />
 					<field name="new_yellow_limit" />
@@ -397,6 +398,21 @@
 					<field name="period" string="Period" />
 					<filter string="Current" name="filter_current" domain="[('period','=',context_today().strftime('%m/%Y'))]" />
 				</search>
+			</field>
+		</record>
+
+		<!--Change Driver Phone-->
+
+		<record model="ir.ui.view" id="foms_contract_change_driver_phone_tree">
+			<field name="name">foms.contract.change.driver.phone.tree</field>
+			<field name="model">hr.employee</field>
+			<field name="arch" type="xml">
+				<tree version="7.0" string="Driver Phone" editable="bottom" create="false" delete="false">
+					<field name="name" />
+					<field name="phone" />
+					<field name="mobile_phone2" />
+					<field name="mobile_phone3" />
+				</tree>
 			</field>
 		</record>
 

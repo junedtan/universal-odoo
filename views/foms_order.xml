@@ -64,6 +64,7 @@
 							<field name="order_type_by_order" attrs="{'invisible': [('service_type','!=','by_order')]}"/>
 							<field name="fleet_type_id" attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')]}" widget="selection" on_change="onchange_fleet_type(customer_contract_id, fleet_type_id)" />
 							<field name="order_by" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
+							<field name="over_quota_status" options="{'no_create': 1}" />
 						</group>
 						<group>
 							<field name="request_date" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
@@ -201,6 +202,72 @@
 						or
 						<button string="Cancel" special="cancel" />
 					</footer>
+				</form>
+			</field>
+		</record>
+
+		<!--Replace Vehicle-->
+
+		<record model="ir.ui.view" id="foms_order_replace_vehicle_tree">
+			<field name="name">foms.order.replace.vehicle.tree</field>
+			<field name="model">foms.order.replace.vehicle</field>
+			<field name="arch" type="xml">
+				<tree version="7.0" string="Order Replace Vehicle">
+					<field name="replacement_date" />
+					<field name="replaced_vehicle_id" />
+					<field name="replacement_vehicle_id" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="foms_order_replace_vehicle_form">
+			<field name="name">foms.order.replace.vehicle.form</field>
+			<field name="model">foms.order.replace.vehicle</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Order Replace Vehicle">
+					<group>
+						<field name="replaced_vehicle_id"/>
+						<field name="replacement_vehicle_id"/>
+						<field name="replacement_date"/>
+					</group>
+					<notebook>
+						<page string="Reason">
+							<field name="replacement_reason" nolabel="1"/>
+						</page>
+					</notebook>
+				</form>
+			</field>
+		</record>
+		
+		<!--Replace Driver-->
+
+		<record model="ir.ui.view" id="foms_order_replace_driver_tree">
+			<field name="name">foms.order.replace.driver.tree</field>
+			<field name="model">foms.order.replace.driver</field>
+			<field name="arch" type="xml">
+				<tree version="7.0" string="Order Replace Driver">
+					<field name="replacement_date" />
+					<field name="replaced_driver_id" />
+					<field name="replacement_driver_id" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="foms_order_replace_driver_form">
+			<field name="name">foms.order.replace.driver.form</field>
+			<field name="model">foms.order.replace.driver</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Order Replace Driver">
+					<group>
+						<field name="replaced_driver_id" />
+						<field name="replacement_driver_id" />
+						<field name="replacement_date" />
+					</group>
+					<notebook>
+						<page string="Reason">
+							<field name="replacement_reason" nolabel="1"/>
+						</page>
+					</notebook>
 				</form>
 			</field>
 		</record>

@@ -1258,6 +1258,52 @@ class foms_order_replace_vehicle(osv.osv):
 		'replacement_date': fields.datetime('Replacement Date'),
 		'replacement_reason': fields.text('Replacement Reason'),
 	}
+	
+# OVERRIDES ---------------------------------------------------------------------------------------------------------------
+	
+	def create(self, cr, uid, vals, context={}):
+		new_replace_vehicle_id = super(foms_order_replace_vehicle, self).create(cr, uid, vals, context=context)
+		self._replace_on_orders(cr, uid, [new_replace_vehicle_id])
+		self._replace_on_contracts(cr, uid, [new_replace_vehicle_id])
+		return new_replace_vehicle_id
+	
+# METHODS -----------------------------------------------------------------------------------------------------------------
+	
+	def _replace_on_orders(self, cr, uid, replace_vehicle_ids):
+		order_obj = self.pool.get('foms.order')
+		replace_vehicles = self.browse(cr, uid, replace_vehicle_ids)
+		for replace_vehicle in replace_vehicles:
+		# Ambil order yang statenya berikut ini
+			args = [ 
+				('state', 'in', ['new', 'confirmed', 'ready']),
+				('start_planned_date', '>=', replace_vehicle.replacement_date),
+			]
+			order_ids = order_obj.search(cr, uid, args)
+			orders = order_obj.browse(cr, uid, order_ids)
+			for order in orders:
+			# Update data vehicle di order
+				order_obj.write(cr, uid, order_ids, {
+					'assigned_vehicle_id': replace_vehicle.replacement_vehicle_id.id,
+				})
+	
+	def _replace_on_contracts(self, cr, uid, replace_vehicle_ids):
+		contract_fleet_obj = self.pool.get('foms.contract.fleet')
+		replace_vehicles = self.browse(cr, uid, replace_vehicle_ids)
+		for replace_vehicle in replace_vehicles:
+		# Ambil order yang statenya berikut ini
+			args = [ 
+				('header_id.state', 'not in', ['terimnated', 'finished']),
+				('header_id.start_date', '<=', replace_vehicle.replacement_date),
+				('header_id.end_date', '>=', replace_vehicle.replacement_date),
+			]
+			contract_fleet_ids = contract_fleet_obj.search(cr, uid, args)
+			contract_fleets = contract_fleet_obj.browse(cr, uid, contract_fleet_ids)
+			for contract_fleet in contract_fleets:
+			# Update data vehicle di order
+				contract_fleet_obj.write(cr, uid, contract_fleet_ids, {
+					'vehicle_id': replace_vehicle.replacement_vehicle_id.id,
+				})
+		
 
 # ==========================================================================================================================
 

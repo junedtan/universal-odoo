@@ -332,7 +332,6 @@ class foms_order(osv.osv):
 	# eksekusi write nya dan ambil ulang data hasil update
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
 		orders = self.browse(cr, uid, ids, context=context)
-
 	# kalau ada perubahan status...
 		if vals.get('state', False):
 			for order_data in orders:
@@ -395,27 +394,50 @@ class foms_order(osv.osv):
 					central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_dispatcher')
 					if order_data.origin_area_id and order_data.dest_area_id and \
 					order_data.origin_area_id.homebase_id.id == order_data.dest_area_id.homebase_id.id:
-					# cari vehicle dan driver yang available di jam itu
-						vehicle_id, driver_id = self.search_first_available_fleet(cr, uid, order_data.customer_contract_id.id, order_data.id, order_data.start_planned_date, order_data.fleet_type_id.id)
-					# kalo ada, langsung jadi ready
-					# sengaja pake self bukan super supaya kena webservice_post
-						if vehicle_id and driver_id:
-							self.write(cr, uid, [order_data.id], {
-								'assigned_vehicle_id': vehicle_id,
-								'assigned_driver_id': driver_id,
-								'state': 'ready',
-								'pin': self._generate_random_pin(),
-							}, context=context)
-					# kalau tidak ada, kirim message ke central dispatch dan notif ke booker dan approver
+						#DEBUG_MODE
+						autoplot = False
+						if vals.get('request_date', False):
+							date = datetime.strptime(vals['request_date'],"%Y-%m-%d %H:%M:%S").weekday()
+							time = datetime.strptime(vals['request_date'],"%Y-%m-%d %H:%M:%S").time();
 						else:
-							self.webservice_post(cr, uid, ['booker','approver'], 'update', order_data,
-								webservice_context={
-										'notification': ['order_fleet_not_ready'],
+							date = datetime.strptime(order_data.request_date,"%Y-%m-%d %H:%M:%S").weekday()
+							time = datetime.strptime(order_data.request_date,"%Y-%m-%d %H:%M:%S").time();
+						for order_hours in order_data.customer_contract_id.order_hours:
+							if date == order_hours.dayofweek and (time >= order_hours.time_from and time <= order_hours.time_to):
+								autoplot = True
+								break
+						
+					# jika order di dalam hari kerja, maka autoplot
+						if autoplot:
+						# cari vehicle dan driver yang available di jam itu
+							vehicle_id, driver_id = self.search_first_available_fleet(cr, uid, order_data.customer_contract_id.id, order_data.id, order_data.fleet_type_id.id, order_data.start_planned_date)
+						# kalo ada, langsung jadi ready
+						# sengaja pake self bukan super supaya kena webservice_post
+							if vehicle_id and driver_id:
+								self.write(cr, uid, [order_data.id], {
+									'assigned_vehicle_id': vehicle_id,
+									'assigned_driver_id': driver_id,
+									'state': 'ready',
+									'pin': self._generate_random_pin(),
 								}, context=context)
+						# kalau tidak ada, kirim message ke central dispatch dan notif ke booker dan approver
+							else:
+								self.webservice_post(cr, uid, ['booker','approver'], 'update', order_data,
+									webservice_context={
+											'notification': ['order_fleet_not_ready'],
+									}, context=context)
+								partner_ids = []
+								for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
+								self.message_post(cr, SUPERUSER_ID, order_data.id,
+									body=_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order_data.name,
+									partner_ids=partner_ids)
+								return result
+					# jika order di luar hari kerja, jangan autoplot, kirim notif ke dispatcher untuk mengingatkan agar manual assign
+						else:
 							partner_ids = []
 							for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
 							self.message_post(cr, SUPERUSER_ID, order_data.id,
-								body=_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order_data.name,
+								body=_('Order %s were ordered outside order hours. Please assign the vehicle and the driver manually.') % order_data.name,
 								partner_ids=partner_ids)
 							return result
 				# kalo beda homebase, post message

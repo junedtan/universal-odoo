@@ -311,8 +311,9 @@ class foms_order(osv.osv):
 		if vals.get('customer_contract_id', False):
 			self._cek_contract_is_active(cr,uid, [vals['customer_contract_id']], context)
 
-	#cek dahulu apakah ada perubahan start_planned_date, kalau tidak ada cek apakah order lama ada start_planned_date'
-		if not vals.get('start_planned_date', False):
+	#cek dahulu apakah ada perubahan start_planned_date, kalau ada cek apakah kosong
+		if 'start_planned_date' in vals:
+			if vals.get('start_planned_date', False):
 				raise osv.except_osv(_('Order Error'),_('Please input start date.'))
 		
 	# kalau ada perubahan start_planned_date, ambil dulu planned start date aslinya

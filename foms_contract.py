@@ -165,11 +165,11 @@ class foms_contract(osv.osv):
 		contract_data = self.browse(cr, uid, contract_id)
 	# semua driver harus sudah punya user_id
 		user_obj = self.pool.get('res.users')
-		if contract_data.car_drivers:
-			for fleet in contract_data.car_drivers:
-				if not fleet.driver_id: continue
-				if not fleet.driver_id.user_id.id or not user_obj.has_group(cr, fleet.driver_id.user_id.id, 'universal.group_universal_driver'):
-					raise osv.except_osv(_('Contract Error'),_('Driver %s has not been given user login, or the user login does not belong to Driver group.') % fleet.driver_id.name)
+		# if contract_data.car_drivers:
+		# 	for fleet in contract_data.car_drivers:
+		# 		if not fleet.driver_id: continue
+		# 		if not fleet.driver_id.user_id.id or not user_obj.has_group(cr, fleet.driver_id.user_id.id, 'universal.group_universal_driver'):
+		# 			raise osv.except_osv(_('Contract Error'),_('Driver %s has not been given user login, or the user login does not belong to Driver group.') % fleet.driver_id.name)
 	# fullday user harus termasuk group fullday-service passenger sudah diset passwordnya
 		if contract_data.service_type in ['full_day']:
 			for fleet in contract_data.car_drivers:
@@ -823,14 +823,26 @@ class foms_contract_shuttle_schedule_memory(osv.osv):
 	# masukkan yang baru
 		vehicle_ids = []
 		for schedule in form_data.schedule_line:
-			new_shuttle_schedule.append([0,False,{
-				'dayofweek': schedule.dayofweek,
-				'sequence': schedule.sequence,
-				'route_id': schedule.route_id.id,
-				'fleet_vehicle_id': schedule.fleet_vehicle_id.id,
-				'departure_time': schedule.departure_time,
-				#'arrival_time': schedule.arrival_time,	
-			}])
+			clash = False
+			for correct_schedule in new_shuttle_schedule:
+				if correct_schedule[0] == 0:
+					if (correct_schedule[2]['dayofweek'] == 'A' or schedule.dayofweek == 'A' or
+								correct_schedule[2]['dayofweek'] == schedule.dayofweek) \
+							and correct_schedule[2]['fleet_vehicle_id'] == schedule.fleet_vehicle_id.id \
+							and correct_schedule[2]['departure_time'] == schedule.departure_time:
+						clash = True
+						break
+			if clash:
+				raise osv.except_osv(_('Shuttle Schedule Error'),_('Schedule cannot have two lines with same day of week, vehicle and departure time'))
+			else:
+				new_shuttle_schedule.append([0,False,{
+					'dayofweek': schedule.dayofweek,
+					'sequence': schedule.sequence,
+					'route_id': schedule.route_id.id,
+					'fleet_vehicle_id': schedule.fleet_vehicle_id.id,
+					'departure_time': schedule.departure_time,
+					#'arrival_time': schedule.arrival_time,
+				}])
 		contract_obj.write(cr, uid, [contract_id], {
 			'shuttle_schedules': new_shuttle_schedule,
 		})

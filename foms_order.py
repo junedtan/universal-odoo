@@ -261,12 +261,12 @@ class foms_order(osv.osv):
 							'red_limit': red_limit,
 						}
 				self.webservice_post(cr, uid, ['approver'], 'create', new_data, \
-									 webservice_context=webservice_context, context=context)
+						webservice_context=webservice_context, context=context)
 			# tetep notif ke booker bahwa ordernya udah masuk
 				self.webservice_post(cr, uid, ['booker'], 'update', new_data, \
-									 webservice_context={
-										 'notification': ['order_waiting_approve'],
-									 }, context=context)
+						webservice_context={
+							'notification': ['order_waiting_approve'],
+						}, context=context)
 		# kalau allocation unit tidak punya approver
 			else:
 			# langsung confirm order ini
@@ -295,8 +295,8 @@ class foms_order(osv.osv):
 					if delta < 60:
 						for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
 						self.message_post(cr, SUPERUSER_ID, new_id,
-										  body=_('Order %s still not finish but this vehicle assigned to order in title.') % vals.get('name', False) ,
-										  partner_ids=partner_ids)
+								body=_('Order %s still not finish but this vehicle assigned to order in title.') % vals.get('name', False) ,
+								partner_ids=partner_ids)
 		return new_id
 
 	def write(self, cr, uid, ids, vals, context={}):
@@ -334,10 +334,10 @@ class foms_order(osv.osv):
 						'target_user_id': context.get('user_id', uid),
 					})
 					self.webservice_post(cr, uid, ['approver'], 'update', data, \
-										 data_columns=['state'],
-										 webservice_context={
-											 'notification': ['order_other_approved'],
-										 }, context=context)
+						data_columns=['state'],
+						webservice_context={
+							'notification': ['order_other_approved'],
+						}, context=context)
 					return True
 
 	# kalau order dicancel karena delay excceded, maka isi alasannya sbg delay exceeded
@@ -368,27 +368,27 @@ class foms_order(osv.osv):
 					elif order_data.service_type == 'by_order':
 						self.webservice_post(cr, uid, ['pic'], 'create', order_data, context=context)
 						self.webservice_post(cr, uid, ['booker'], 'update', order_data,
-											 webservice_context={
-												 'notification': ['order_ready_booker'],
-											 }, context=context)
+							webservice_context={
+								'notification': ['order_ready_booker'],
+							}, context=context)
 						self.webservice_post(cr, uid, ['approver'], 'update', order_data,
-											 webservice_context={
-												 'notification': ['order_ready_approver'],
-											 }, context=context)
+							webservice_context={
+								'notification': ['order_ready_approver'],
+							}, context=context)
 						self.webservice_post(cr, uid, ['driver'], 'update', order_data,
-											 webservice_context={
-												 'notification': ['order_ready_driver'],
-											 }, context=context)
+							webservice_context={
+								'notification': ['order_ready_driver'],
+							}, context=context)
 				# kalau shuttle, cukup push data order ini ke app driver
 					elif order_data.service_type == 'shuttle':
 						self.webservice_post(cr, uid, ['driver'], 'create', order_data, context=context)
 			# kalau state menjadi rejected dan service_type == by_order, maka post_outgoing + notif ke booker.
 				elif vals['state'] == 'rejected' and order_data.service_type == 'by_order':
 					self.webservice_post(cr, uid, ['booker'], 'update', order_data, \
-										 data_columns=['state'],
-										 webservice_context={
-											 'notification': ['order_reject'],
-										 }, context=context)
+						data_columns=['state'],
+						webservice_context={
+								'notification': ['order_reject'],
+						}, context=context)
 					self.webservice_post(cr, uid, ['approver'], 'update', order_data, data_columns=['state'], context=context)
 			# kalau order di-confirm (khusus service type By Order)
 				elif vals['state'] == 'confirmed' and order_data.service_type == 'by_order':
@@ -464,8 +464,8 @@ class foms_order(osv.osv):
 						partner_ids = []
 						for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
 						self.message_post(cr, SUPERUSER_ID, order_data.id,
-										  body=_('New order from %s going to different homebase. Manual vehicle/driver assignment needed.') % order_data.customer_contract_id.customer_id.name,
-										  partner_ids=partner_ids)
+							body=_('New order from %s going to different homebase. Manual vehicle/driver assignment needed.') % order_data.customer_contract_id.customer_id.name,
+							partner_ids=partner_ids)
 			# kalau jadi start atau start confirmed dan actual vehicle atau driver masih kosong, maka isikan
 				elif vals['state'] in ['started','start_confirmed','finished','finish_confirmed']:
 					update_data = {}
@@ -495,9 +495,9 @@ class foms_order(osv.osv):
 					elif order_data.service_type == 'by_order':
 						targets = ['pic','driver','booker','approver']
 					self.webservice_post(cr, uid, targets, 'update', order_data,
-										 webservice_context={
-											 'notification': ['order_canceled'],
-										 }, context=context)
+							webservice_context={
+								'notification': ['order_canceled'],
+							}, context=context)
 				else:
 					if order_data.service_type == 'full_day':
 						self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'update', order_data, context=context)
@@ -566,10 +566,10 @@ class foms_order(osv.osv):
 				notif = broadcast_notifications[target]
 				if broadcast_notifications['all']: notif += broadcast_notifications['all']
 				self.webservice_post(cr, uid, [target], 'update', order_data, \
-									 data_columns=broadcast_data_columns,
-									 webservice_context={
-										 'notification': notif,
-									 }, context=context)
+					data_columns=broadcast_data_columns,
+					webservice_context={
+						'notification': notif,
+					}, context=context)
 
 	# kalau ada perubahan tanggal mulai
 		"""

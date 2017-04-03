@@ -394,7 +394,6 @@ class foms_order(osv.osv):
 					central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_dispatcher')
 					if order_data.origin_area_id and order_data.dest_area_id and \
 					order_data.origin_area_id.homebase_id.id == order_data.dest_area_id.homebase_id.id:
-						#DEBUG_MODE
 						autoplot = False
 						if vals.get('request_date', False):
 							date = datetime.strptime(vals['request_date'],"%Y-%m-%d %H:%M:%S").weekday()

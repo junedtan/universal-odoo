@@ -312,8 +312,8 @@ class foms_order(osv.osv):
 			self._cek_contract_is_active(cr,uid, [vals['customer_contract_id']], context)
 
 	#cek dahulu apakah ada perubahan start_planned_date, kalau tidak ada cek apakah order lama ada start_planned_date'
-		if not vals.get('start_planned_date', False):
-				raise osv.except_osv(_('Order Error'),_('Please input start date.'))
+		# if not vals.get('start_planned_date', False):
+		# 		raise osv.except_osv(_('Order Error'),_('Please input start date.'))
 		
 	# kalau ada perubahan start_planned_date, ambil dulu planned start date aslinya
 		original_start_date = {}
@@ -414,14 +414,15 @@ class foms_order(osv.osv):
 					if order_data.origin_area_id and order_data.dest_area_id and \
 					order_data.origin_area_id.homebase_id.id == order_data.dest_area_id.homebase_id.id:
 						autoplot = False
-						if vals.get('request_date', False):
-							date = datetime.strptime(vals['request_date'],"%Y-%m-%d %H:%M:%S").weekday()
-							time = datetime.strptime(vals['request_date'],"%Y-%m-%d %H:%M:%S").time();
+						if vals.get('start_planned_date', False):
+							date = datetime.strptime(vals['start_planned_date'],"%Y-%m-%d %H:%M:%S").weekday()
+							time = datetime.strptime(vals['start_planned_date'],"%Y-%m-%d %H:%M:%S").time();
 						else:
-							date = datetime.strptime(order_data.request_date,"%Y-%m-%d %H:%M:%S").weekday()
-							time = datetime.strptime(order_data.request_date,"%Y-%m-%d %H:%M:%S").time();
+							date = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S").weekday()
+							time_str = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S").time();
+							time = time_str.hour + (time_str.minute/60.0)
 						for order_hours in order_data.customer_contract_id.order_hours:
-							if date == order_hours.dayofweek and (time >= order_hours.time_from and time <= order_hours.time_to):
+							if date == int(order_hours.dayofweek) and (time >= order_hours.time_from and time <= order_hours.time_to):
 								autoplot = True
 								break
 						

@@ -226,8 +226,8 @@
 			<field name="arch" type="xml">
 				<form version="7.0" string="Order Replace Vehicle">
 					<group>
-						<field name="replaced_vehicle_id"/>
-						<field name="replacement_vehicle_id"/>
+						<field name="replaced_vehicle_id" options="{'no_create': 1}" />
+						<field name="replacement_vehicle_id" options="{'no_create': 1}" />
 						<field name="replacement_date"/>
 					</group>
 					<notebook>
@@ -259,8 +259,8 @@
 			<field name="arch" type="xml">
 				<form version="7.0" string="Order Replace Driver">
 					<group>
-						<field name="replaced_driver_id" />
-						<field name="replacement_driver_id" />
+						<field name="replaced_driver_id" options="{'no_create': 1}"/>
+						<field name="replacement_driver_id" options="{'no_create': 1}"/>
 						<field name="replacement_date" />
 					</group>
 					<notebook>

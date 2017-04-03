@@ -1256,7 +1256,7 @@ class foms_order_replace_vehicle(osv.osv):
 		'replaced_vehicle_id': fields.many2one('fleet.vehicle', 'Replaced Vehicle'),
 		'replacement_vehicle_id': fields.many2one('fleet.vehicle', 'Replacement Vehicle'),
 		'replacement_date': fields.datetime('Replacement Date'),
-		'replacement_reason': fields.text('foms.order.cancel.reason', 'Replacement Reason'),
+		'replacement_reason': fields.text('Replacement Reason'),
 	}
 
 # ==========================================================================================================================
@@ -1269,8 +1269,54 @@ class foms_order_replace_driver(osv.osv):
 	# COLUMNS ------------------------------------------------------------------------------------------------------------------
 	
 	_columns = {
-		'replaced_driver_id': fields.many2one('hr.employee', 'Replaced Driver'),
-		'replacement_driver_id': fields.many2one('hr.employee', 'Replacement Driver'),
-		'replacement_date': fields.datetime('Replacement Date'),
-		'replacement_reason': fields.text('foms.order.cancel.reason', 'Replacement Reason'),
+		'replaced_driver_id': fields.many2one('hr.employee', 'Replaced Driver', required=True),
+		'replacement_driver_id': fields.many2one('hr.employee', 'Replacement Driver', required=True),
+		'replacement_date': fields.datetime('Replacement Date', required=True),
+		'replacement_reason': fields.text('Replacement Reason'),
 	}
+	
+# OVERRIDES ---------------------------------------------------------------------------------------------------------------
+	
+	def create(self, cr, uid, vals, context={}):
+		new_replace_driver_id = super(foms_order_replace_driver, self).create(cr, uid, vals, context=context)
+		self._replace_on_orders(cr, uid, [new_replace_driver_id])
+		self._replace_on_contracts(cr, uid, [new_replace_driver_id])
+		return new_replace_driver_id
+	
+# METHODS -----------------------------------------------------------------------------------------------------------------
+	
+	def _replace_on_orders(self, cr, uid, replace_driver_ids):
+		order_obj = self.pool.get('foms.order')
+		replace_drivers = self.browse(cr, uid, replace_driver_ids)
+		for replace_driver in replace_drivers:
+		# Ambil order yang statenya berikut ini
+			args = [ 
+				('state', 'in', ['new', 'confirmed', 'ready']),
+				('start_planned_date', '>=', replace_driver.replacement_date),
+			]
+			order_ids = order_obj.search(cr, uid, args)
+			orders = order_obj.browse(cr, uid, order_ids)
+			for order in orders:
+			# Update data driver di order
+				order_obj.write(cr, uid, order_ids, {
+					'assigned_driver_id': replace_driver.replacement_driver_id.id,
+				})
+	
+	def _replace_on_contracts(self, cr, uid, replace_driver_ids):
+		contract_fleet_obj = self.pool.get('foms.contract.fleet')
+		replace_drivers = self.browse(cr, uid, replace_driver_ids)
+		for replace_driver in replace_drivers:
+		# Ambil order yang statenya berikut ini
+			args = [ 
+				('header_id.state', 'not in', ['terimnated', 'finished']),
+				('header_id.start_date', '<=', replace_driver.replacement_date),
+				('header_id.end_date', '>=', replace_driver.replacement_date),
+			]
+			contract_fleet_ids = contract_fleet_obj.search(cr, uid, args)
+			contract_fleets = contract_fleet_obj.browse(cr, uid, contract_fleet_ids)
+			for contract_fleet in contract_fleets:
+			# Update data driver di order
+				contract_fleet_obj.write(cr, uid, contract_fleet_ids, {
+					'driver_id': replace_driver.replacement_driver_id.id,
+				})
+		

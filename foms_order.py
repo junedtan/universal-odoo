@@ -290,12 +290,12 @@ class foms_order(osv.osv):
 				for order in order_data:
 					start_planned_date_another_order = datetime.strptime(order.start_planned_date,"%Y-%m-%d %H:%M:%S")
 					start_planned_date_self_order    = datetime.strptime(vals['start_planned_date'],"%Y-%m-%d %H:%M:%S")
-					delta = float((start_planned_date_self_order - start_planned_date_another_order).days * 86400 + (start_planned_date_self_order - start_planned_date_another_order).seconds) / 60
+					delta = float((abs(start_planned_date_self_order - start_planned_date_another_order)).days * 86400 + abs((start_planned_date_self_order - start_planned_date_another_order)).seconds) / 60
 					partner_ids = []
 					if delta < 60:
 						for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
-						self.message_post(cr, SUPERUSER_ID, order.id,
-										  body=_('Order %s still not finish and vehicle assigned to this order.') % vals.get('name', False) ,
+						self.message_post(cr, SUPERUSER_ID, new_id,
+										  body=_('Order %s still not finish but this vehicle assigned to order in title.') % vals.get('name', False) ,
 										  partner_ids=partner_ids)
 		return new_id
 

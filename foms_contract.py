@@ -1360,6 +1360,7 @@ class foms_contract_quota_change_log(osv.osv):
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 
 	def create(self, cr, uid, vals, context={}):
+		order_obj = self.pool.get('foms.order')
 	# ambil ulang old2nya soalnya di formnya readonly
 		temp_data = self.onchange_quota_data(cr, uid, [], vals['customer_contract_id'], vals['allocation_unit_id'], vals['period'], False)
 		vals.update({
@@ -1381,6 +1382,21 @@ class foms_contract_quota_change_log(osv.osv):
 				'confirm_by': uid,
 				'confirm_date': datetime.now(),
 			}, context=context)
+			# ganti over_quota_status semua order yang lagi pending untuk contract dan allocation unit ini
+			order_ids = order_obj.search(cr, uid, [
+				('customer_contract_id', '=', vals['customer_contract_id']),
+				('alloc_unit_id', '=', vals['allocation_unit_id']),
+				('service_type', 'in', ['by_order']),
+				('state', 'in', ['new']),
+			])
+			if len(order_ids) > 0:
+				for order_data in order_obj.browse(cr, uid, order_ids):
+					new_credit_per_usage, new_over_quota_status = order_obj.determine_over_quota_status(cr, uid,
+						vals['customer_contract_id'], vals['allocation_unit_id'], order_data.fleet_type_id.id)
+					order_obj.write(cr, uid, [order_data.id], {
+						'alloc_unit_usage': new_credit_per_usage,
+						'over_quota_status': new_over_quota_status,
+					})
 	# kalau di-manage sama customer, asumsinya approver yang minta perubahan quota, ditujukan kepada pic
 	# maka push data ke pic sambil menampilkan notif
 		elif managed_by == 'customer':

@@ -46,8 +46,9 @@
 		<record model="ir.ui.view" id="foms_order_form">
 			<field name="name">foms.order.form</field>	
 			<field name="model">foms.order</field>
+			<field name="context">{'source':'form'}</field>
 			<field name="arch" type="xml">
-				<form version="7.0" string="Customer Order">
+				<form version="7.0" string="Customer Order" >
 					<header>
 						<button name="action_cancel" string="Cancel Order" type="object" states="new,confirmed,ready" groups="universal.group_universal_dispatcher" /> 
 						<button name="action_confirm" string="Confirm" type="object" states="new" confirm="Are you sure to confirm this order?" groups="universal.group_universal_dispatcher" /> 
@@ -56,25 +57,29 @@
 					<group>
 						<group>
 							<field name="name" readonly="1" />
-							<field name="customer_contract_id" options="{'no_create': 1}" on_change="onchange_customer_contract_id(customer_contract_id)" />
-							<field name="service_type" />
-							<field name="order_type_by_order" attrs="{'invisible': [('service_type','!=','by_order')]}" />
+							<field name="customer_contract_id" options="{'no_create': 1}" on_change="onchange_customer_contract_id(customer_contract_id)"
+									attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
+							<field name="service_type"
+									attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
+							<field name="order_type_by_order" attrs="{'invisible': [('service_type','!=','by_order')]}"/>
 							<field name="fleet_type_id" attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')]}" widget="selection" on_change="onchange_fleet_type(customer_contract_id, fleet_type_id)" />
-							<field name="order_by" options="{'no_create': 1}" />
+							<field name="order_by" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
+							<field name="over_quota_status" options="{'no_create': 1}" />
 						</group>
 						<group>
-							<field name="request_date" />
+							<field name="request_date" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
 							<field name="actual_vehicle_id" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['started','start_confirmed','finished','finish_confirmed'])]}" />
 							<field name="actual_driver_id" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['started','start_confirmed','finished','finish_confirmed'])]}" />
 							<field name="pin" attrs="{'invisible': [('service_type','!=','by_order')]}" />
+							<field name="driver_mobile" invisible="True"/>
 						</group>
 					</group>
 					<notebook>
 						<page string="Planning">
 							<group>
 								<group string="Dates and Places">
-									<field name="start_planned_date" />
-									<field name="finish_planned_date" />
+									<field name="start_planned_date" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
+									<field name="finish_planned_date" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
 									<field name="origin_location" attrs="{'invisible': [('service_type','!=','by_order')]}" />
 									<field name="origin_area_id" options="{'no_create': 1}" attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')]}" />
 									<field name="dest_location" attrs="{'invisible': [('service_type','!=','by_order')]}" />
@@ -84,16 +89,17 @@
 								<group string="Assignments">
 									<field name="alloc_unit_id" options="{'no_create': 1}" attrs="{'invisible': [('service_type','!=','by_order')]}" />
 									<field name="alloc_unit_usage" attrs="{'invisible': [('service_type','!=','by_order')]}" />
-									<field name="assigned_vehicle_id" options="{'no_create': 1}" on_change="onchange_assigned_vehicle(customer_contract_id, assigned_vehicle_id)" />
-									<field name="assigned_driver_id" options="{'no_create': 1}" />
+									<field name="assigned_vehicle_id" options="{'no_create': 1}" on_change="onchange_assigned_vehicle(customer_contract_id, assigned_vehicle_id)"
+											attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready','started'])]}"/>
+									<field name="assigned_driver_id" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready','started'])]}"/>
 								</group>
 							</group>
 						</page>
 						<page string="Passengers">
 							<group>
-								<field name="passenger_count" />
+								<field name="passenger_count" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready','started'])]}"/>
 							</group>
-							<field name="passengers">
+							<field name="passengers" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready','started'])]}">
 								<tree version="7.0" editable="bottom">
 									<field name="name" />
 									<field name="phone_no" />
@@ -104,47 +110,43 @@
 						<page string="Execution">
 							<group>
 								<group>
-									<field name="confirm_date" />
-									<field name="confirm_by" options="{'no_create': 1}" />
-								</group>
-								<group>
-									
+									<field name="confirm_date" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
+									<field name="confirm_by" options="{'no_create': 1}" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
 								</group>
 							</group>
 							<group>
 								<group>
-									<field name="start_date" />
-									<field name="start_confirm_date" />
-									<field name="start_confirm_by" options="{'no_create': 1}" />
-									<field name="start_from" />
+									<field name="start_date" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
+									<field name="start_confirm_date" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
+									<field name="start_confirm_by" options="{'no_create': 1}" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
+									<field name="start_from" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
 								</group>
 								<group>
-									<field name="finish_date" />
-									<field name="finish_confirm_date" />
-									<field name="finish_confirm_by" options="{'no_create': 1}" />
-									<field name="finish_from" />
+									<field name="finish_date" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
+									<field name="finish_confirm_date" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
+									<field name="finish_confirm_by" options="{'no_create': 1}" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
+									<field name="finish_from" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
 								</group>
 							</group>
 							<group>
 								<group>
-									<field name="pause_count" />
-									<field name="pause_minutes" widget="float_time" />
-									<field name="is_lk_pp" />
-									<field name="is_lk_inap" />
+									<field name="pause_count" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
+									<field name="pause_minutes" widget="float_time" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
+									<field name="is_lk_pp" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
+									<field name="is_lk_inap" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
 								</group>
-								<group></group>
 							</group>
 						</page>
 						<page string="Cancellation">
 							<group>
 								<group>
-									<field name="cancel_date" />
-									<field name="cancel_by" options="{'no_create': 1}" />
-									<field name="cancel_previous_state" />
+									<field name="cancel_date" attrs="{'readonly': 1}"/>
+									<field name="cancel_by" options="{'no_create': 1}" attrs="{'readonly': 1}"/>
+									<field name="cancel_previous_state" attrs="{'readonly': 1}"/>
 								</group>
 								<group>
-									<field name="cancel_reason" options="{'no_create': 1}" />
-									<field name="cancel_reason_other" string="Other Reason" />
+									<field name="cancel_reason" options="{'no_create': 1}" attrs="{'readonly': 1}"/>
+									<field name="cancel_reason_other" string="Other Reason" attrs="{'readonly': 1}"/>
 								</group>
 							</group>
 						</page>
@@ -200,6 +202,72 @@
 						or
 						<button string="Cancel" special="cancel" />
 					</footer>
+				</form>
+			</field>
+		</record>
+
+		<!--Replace Vehicle-->
+
+		<record model="ir.ui.view" id="foms_order_replace_vehicle_tree">
+			<field name="name">foms.order.replace.vehicle.tree</field>
+			<field name="model">foms.order.replace.vehicle</field>
+			<field name="arch" type="xml">
+				<tree version="7.0" string="Order Replace Vehicle">
+					<field name="replacement_date" />
+					<field name="replaced_vehicle_id" />
+					<field name="replacement_vehicle_id" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="foms_order_replace_vehicle_form">
+			<field name="name">foms.order.replace.vehicle.form</field>
+			<field name="model">foms.order.replace.vehicle</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Order Replace Vehicle">
+					<group>
+						<field name="replaced_vehicle_id"/>
+						<field name="replacement_vehicle_id"/>
+						<field name="replacement_date"/>
+					</group>
+					<notebook>
+						<page string="Reason">
+							<field name="replacement_reason" nolabel="1"/>
+						</page>
+					</notebook>
+				</form>
+			</field>
+		</record>
+		
+		<!--Replace Driver-->
+
+		<record model="ir.ui.view" id="foms_order_replace_driver_tree">
+			<field name="name">foms.order.replace.driver.tree</field>
+			<field name="model">foms.order.replace.driver</field>
+			<field name="arch" type="xml">
+				<tree version="7.0" string="Order Replace Driver">
+					<field name="replacement_date" />
+					<field name="replaced_driver_id" />
+					<field name="replacement_driver_id" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="foms_order_replace_driver_form">
+			<field name="name">foms.order.replace.driver.form</field>
+			<field name="model">foms.order.replace.driver</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Order Replace Driver">
+					<group>
+						<field name="replaced_driver_id" />
+						<field name="replacement_driver_id" />
+						<field name="replacement_date" />
+					</group>
+					<notebook>
+						<page string="Reason">
+							<field name="replacement_reason" nolabel="1"/>
+						</page>
+					</notebook>
 				</form>
 			</field>
 		</record>

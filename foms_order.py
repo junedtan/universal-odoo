@@ -156,7 +156,6 @@ class foms_order(osv.osv):
 	def create(self, cr, uid, vals, context={}):
 		contract_obj = self.pool.get('foms.contract')
 		contract_data = contract_obj.browse(cr, uid, vals['customer_contract_id'])
-		user_obj = self.pool.get('res.users')
 		
 	#cek dahulu apakah contractnya masih active
 		if vals.get('customer_contract_id', False):
@@ -169,7 +168,7 @@ class foms_order(osv.osv):
 				raise osv.except_osv(_('Order Error'),_('Please input start date.'))
 		# cek start date harus minimal n jam dari sekarang
 			start_date = datetime.strptime(vals['start_planned_date'],'%Y-%m-%d %H:%M:%S')
-			self._cek_min_hour_for_by_order(cr, uid, start_date, contract_data.by_order_minimum_minutes, context)
+			self._cek_min_hour_for_type_by_order(cr, uid, start_date, contract_data.by_order_minimum_minutes, context)
 
 		# kalau usage control diaktifkan, isi over_quota_status
 			if contract_data.usage_control_level != 'no_control':
@@ -279,25 +278,9 @@ class foms_order(osv.osv):
 			}, context=context)
 
 	#cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
-		if vals.get('service_type', False) in ['full_day', 'by_order'] and vals.get('assigned_vehicle_id', False):
-			order_ids = self.search(cr, uid, [
-				('state','not in', ['finish_confirmed', 'canceled', 'new', 'rejected', 'confirmed']),
-				('assigned_vehicle_id','=', vals.get('assigned_vehicle_id', False)),
-			])
-			if len(order_ids) > 0:
-				order_data = self.browse(cr, uid, order_ids)
-				central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_dispatcher')
-				for order in order_data:
-					start_planned_date_another_order = datetime.strptime(order.start_planned_date,"%Y-%m-%d %H:%M:%S")
-					start_planned_date_self_order    = datetime.strptime(vals['start_planned_date'],"%Y-%m-%d %H:%M:%S")
-					delta = float((abs(start_planned_date_self_order - start_planned_date_another_order)).days * 86400 + abs((start_planned_date_self_order - start_planned_date_another_order)).seconds) / 60
-					partner_ids = []
-					if delta < 60:
-						for partner_id in central_partner_ids:
-							partner_ids.append((4,partner_id))
-						self.message_post(cr, SUPERUSER_ID, new_id,
-								body=_('Order %s still not finish but this vehicle assigned to this order.') % order.name ,
-								partner_ids=partner_ids)
+		if vals.get('assigned_vehicle_id', False):
+			self._cek_order_assigning_vehicle(cr, uid, vals['assigned_vehicle_id'], vals['start_planned_date'], new_id, context)
+		
 		return new_id
 
 	def write(self, cr, uid, ids, vals, context={}):
@@ -314,7 +297,7 @@ class foms_order(osv.osv):
 		
 	#cek dahulu apakah ada perubahan start_planned_date, kalau ada cek apakah kosong
 		if 'start_planned_date' in vals:
-			if vals.get('start_planned_date', False):
+			if not vals.get('start_planned_date', False):
 				raise osv.except_osv(_('Order Error'),_('Please input start date.'))
 		
 	# kalau ada perubahan start_planned_date, ambil dulu planned start date aslinya
@@ -323,8 +306,23 @@ class foms_order(osv.osv):
 			start_date = datetime.strptime(vals['start_planned_date'],'%Y-%m-%d %H:%M:%S')
 			for data in orders:
 			# cek start date harus minimal n jam dari sekarang
-				self._cek_min_hour_for_by_order(cr, uid, start_date, data.customer_contract_id.by_order_minimum_minutes, context)
+				self._cek_min_hour_for_type_by_order(cr, uid, start_date, data.customer_contract_id.by_order_minimum_minutes, context)
 				original_start_date.update({data.id: data.start_planned_date})
+			
+	# cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
+	# ini dilakukan apabila terjadi perubahan assigned_vehicle_id atau start_planned_date
+		if vals.get('assigned_vehicle_id', False) or vals.get('start_planned_date', False):
+		# ambil nilai lama dahulu apabila ternyata hanya terjadi 1 perubahan
+			assigned_vehicle = orders.assigned_vehicle_id
+			start_planned_date = orders.start_planned_date
+		# apabila ada perubahan, gunakan nilai yang baru
+			if vals.get('assigned_vehicle_id', False):
+				assigned_vehicle = vals.get('assigned_vehicle_id', False)
+			if vals.get('start_planned_date', False):
+				start_planned_date = vals.get('assigned_vehicle_id', False)
+		#cek assigned_vehicle apabila tidak false valuenya
+			if assigned_vehicle:
+				self._cek_order_assigning_vehicle(cr, uid, assigned_vehicle, start_planned_date, orders.id, context)
 
 	# kalau order diconfirm dari mobile app, cek dulu apakah sudah diconfirm sebelumnya
 	# ini untuk mengantisipasi kalau satu alloc unit ada beberapa approver dan pada balapan meng-approve
@@ -779,12 +777,31 @@ class foms_order(osv.osv):
 			if contract_id.state in ['prolonged', 'terminated', 'finished']:
 				raise osv.except_osv(_('Order Error'),_('Contract has already been inactive. You cannot place order under this contract anymore. Please choose another contract or contact your PIC.'))
 
-	def _cek_min_hour_for_by_order(self, cr, uid, start_date, order_minimum_minutes , context=None):
+	def _cek_min_hour_for_type_by_order(self, cr, uid, start_date, order_minimum_minutes , context=None):
 		now = datetime.now()
 		delta = float((start_date - now).days * 86400 + (start_date - now).seconds) / 60
 		if delta < order_minimum_minutes:
 			raise osv.except_osv(_('Order Error'),_('Start date is too close to current time, or is in the past. There must be at least %s minutes between now and start date.' % order_minimum_minutes))
-
+	
+	def _cek_order_assigning_vehicle(self, cr, uid, assigned_vehicle_id, start_planned_date, order_id, context=None):
+		# cari waktu
+			temp_date = datetime.strptime(start_planned_date, "%Y-%m-%d %H:%M:%S") - timedelta(minutes = 60)
+			order_ids = self.search(cr, uid, [
+				('start_date','<',  datetime.strftime(temp_date, "%Y-%m-%d %H:%M:%S")),
+				('finish_confirm_date','=', False),
+				('actual_vehicle_id','=', assigned_vehicle_id),
+			])
+			if len(order_ids) > 0:
+				order_data = self.browse(cr, uid, order_ids)
+				user_obj = self.pool.get('res.users')
+				central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_dispatcher')
+				partner_ids = []
+				for order in order_data:
+					for partner_id in central_partner_ids:
+						partner_ids.append((4,partner_id))
+					self.message_post(cr, SUPERUSER_ID, order_id,
+						body=_('Order %s still not finish but same vehicle assigned to this order.') % order.name ,
+						partner_ids=partner_ids)
 # ACTION -------------------------------------------------------------------------------------------------------------------
 
 	def action_confirm(self, cr, uid, ids, context=None):

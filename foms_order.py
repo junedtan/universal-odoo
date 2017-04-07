@@ -1384,6 +1384,20 @@ class foms_order_replace_vehicle(osv.osv):
 		'replacement_reason': fields.text('Replacement Reason'),
 	}
 	
+# CONSTRAINT ---------------------------------------------------------------------------------------------------------------
+	
+	def _constraint_vehicle_same_type(self, cr, uid, ids, context=None):
+		# Cek apakah vehiclenya yang direplace setipe
+		for replace_vehicles in self.browse(cr, uid, ids, context):
+			for replace_vehicle in replace_vehicles:
+				if replace_vehicle.replaced_vehicle_id.model_id != replace_vehicle.replacement_vehicle_id.model_id:
+					return False
+		return True
+	
+	_constraints = [
+		(_constraint_vehicle_same_type, _('Vehicles must be in the same type.'), ['replaced_vehicle_id', 'replacement_vehicle_id']),
+	]
+	
 # OVERRIDES ---------------------------------------------------------------------------------------------------------------
 	
 	def create(self, cr, uid, vals, context={}):
@@ -1407,7 +1421,7 @@ class foms_order_replace_vehicle(osv.osv):
 			orders = order_obj.browse(cr, uid, order_ids)
 			for order in orders:
 			# Update data vehicle di order
-				order_obj.write(cr, uid, order_ids, {
+				order_obj.write(cr, uid, order.id, {
 					'assigned_vehicle_id': replace_vehicle.replacement_vehicle_id.id,
 				})
 	
@@ -1428,21 +1442,7 @@ class foms_order_replace_vehicle(osv.osv):
 				contract_fleet_obj.write(cr, uid, contract_fleet_ids, {
 					'vehicle_id': replace_vehicle.replacement_vehicle_id.id,
 				})
-
-# CONSTRAINT ---------------------------------------------------------------------------------------------------------------
-	
-	def _constraint_vehicle_same_type(self, cr, uid, ids, context=None):
-	# Cek apakah vehiclenya yang direplace setipe
-		for replace_vehicles in self.browse(cr, uid, ids, context):
-			for replace_vehicle in replace_vehicles:
-				if replace_vehicle.replaced_vehicle_id.model_id != replace_vehicle.replacement_vehicle_id.model_id:
-					return False
-		return True
-	
-	_constraints = [
-		(_constraint_vehicle_same_type, _('Vehicles must be in the same type.'), ['replaced_vehicle_id, replacement_vehicle_id']),
-	]
-
+				
 # ==========================================================================================================================
 
 class foms_order_replace_driver(osv.osv):

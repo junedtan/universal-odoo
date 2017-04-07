@@ -1380,9 +1380,9 @@ class foms_order_replace_vehicle(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'replaced_vehicle_id': fields.many2one('fleet.vehicle', 'Replaced Vehicle'),
-		'replacement_vehicle_id': fields.many2one('fleet.vehicle', 'Replacement Vehicle'),
-		'replacement_date': fields.datetime('Replacement Date'),
+		'replaced_vehicle_id': fields.many2one('fleet.vehicle', 'Replaced Vehicle', required=True),
+		'replacement_vehicle_id': fields.many2one('fleet.vehicle', 'Replacement Vehicle', required=True),
+		'replacement_date': fields.datetime('Replacement Date', required=True),
 		'replacement_reason': fields.text('Replacement Reason'),
 	}
 	
@@ -1430,7 +1430,20 @@ class foms_order_replace_vehicle(osv.osv):
 				contract_fleet_obj.write(cr, uid, contract_fleet_ids, {
 					'vehicle_id': replace_vehicle.replacement_vehicle_id.id,
 				})
-		
+
+# CONSTRAINT ---------------------------------------------------------------------------------------------------------------
+	
+	def _constraint_vehicle_same_type(self, cr, uid, ids, context=None):
+	# Cek apakah vehiclenya yang direplace setipe
+		for replace_vehicles in self.browse(cr, uid, ids, context):
+			for replace_vehicle in replace_vehicles:
+				if replace_vehicle.replaced_vehicle_id.model_id != replace_vehicle.replacement_vehicle_id.model_id:
+					return False
+		return True
+	
+	_constraints = [
+		(_constraint_vehicle_same_type, _('Vehicles must be in the same type.'), ['replaced_vehicle_id, replacement_vehicle_id']),
+	]
 
 # ==========================================================================================================================
 

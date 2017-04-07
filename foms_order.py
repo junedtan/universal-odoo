@@ -193,7 +193,13 @@ class foms_order(osv.osv):
 				order_data = self.browse(cr, uid, order_ids[0])
 				last_number = int(order_data.name[-4:]) + 1
 			vals.update({'name': "%s%04d" % (prefix,last_number)}) # later
-	# jalankan createnya
+		
+		if vals.get('assigned_vehicle_id', False):
+			#cek apakah ada vehicle bentrok dengan start dan finish planned date order lain
+			if context.get('source', False) and context['source']=='form':
+				self._cek_vehicle_clash(cr, uid, vals['assigned_vehicle_id'], vals['start_planned_date'], vals['finish_planned_date'], 0, context)
+			
+			# jalankan createnya
 		new_id = super(foms_order, self).create(cr, uid, vals, context=context)
 		new_data = self.browse(cr, uid, new_id, context=context)
 	# untuk order fullday diasumsikan sudah ready karena vehicle dan drivernya pasti standby kecuali nanti diganti.
@@ -277,10 +283,10 @@ class foms_order(osv.osv):
 				'state': 'confirmed',
 			}, context=context)
 
-	#cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
 		if vals.get('assigned_vehicle_id', False):
+		#cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
 			self._cek_order_assigning_vehicle(cr, uid, vals['assigned_vehicle_id'], vals['start_planned_date'], new_id, context)
-		
+			
 		return new_id
 
 	def write(self, cr, uid, ids, vals, context={}):
@@ -308,23 +314,29 @@ class foms_order(osv.osv):
 			# cek start date harus minimal n jam dari sekarang
 				self._cek_min_hour_for_type_by_order(cr, uid, start_date, data.customer_contract_id.by_order_minimum_minutes, context)
 				original_start_date.update({data.id: data.start_planned_date})
-			
-	# cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
+		
+			# cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
 	# ini dilakukan apabila terjadi perubahan assigned_vehicle_id atau start_planned_date
 		if vals.get('assigned_vehicle_id', False) or vals.get('start_planned_date', False):
 		# ambil nilai lama dahulu apabila ternyata hanya terjadi 1 perubahan
-			assigned_vehicle = orders.assigned_vehicle_id
+			assigned_vehicle = orders.assigned_vehicle_id.id
 			start_planned_date = orders.start_planned_date
+			finish_planned_date = orders.finish_planned_date
 		# apabila ada perubahan, gunakan nilai yang baru
 			if vals.get('assigned_vehicle_id', False):
 				assigned_vehicle = vals.get('assigned_vehicle_id', False)
 			if vals.get('start_planned_date', False):
-				start_planned_date = vals.get('assigned_vehicle_id', False)
+				start_planned_date = vals.get('start_planned_date', False)
+			if vals.get('finish_planned_date', False):
+				finish_planned_date = vals.get('finish_planned_date', False)
 		#cek assigned_vehicle apabila tidak false valuenya
 			if assigned_vehicle:
 				self._cek_order_assigning_vehicle(cr, uid, assigned_vehicle, start_planned_date, orders.id, context)
-
-	# kalau order diconfirm dari mobile app, cek dulu apakah sudah diconfirm sebelumnya
+		# cek ada yang beririsan ga
+			if context.get('source', False) and context['source']=='form':
+				self._cek_vehicle_clash(cr, uid, assigned_vehicle, start_planned_date, finish_planned_date, ids[0], context)
+		
+		# kalau order diconfirm dari mobile app, cek dulu apakah sudah diconfirm sebelumnya
 	# ini untuk mengantisipasi kalau satu alloc unit ada beberapa approver dan pada balapan meng-approve
 		if vals.get('state', False) == 'confirmed' and context.get('from_webservice') == True:
 			for data in orders:
@@ -784,24 +796,68 @@ class foms_order(osv.osv):
 			raise osv.except_osv(_('Order Error'),_('Start date is too close to current time, or is in the past. There must be at least %s minutes between now and start date.' % order_minimum_minutes))
 	
 	def _cek_order_assigning_vehicle(self, cr, uid, assigned_vehicle_id, start_planned_date, order_id, context=None):
-		# cari waktu
-			temp_date = datetime.strptime(start_planned_date, "%Y-%m-%d %H:%M:%S") - timedelta(minutes = 60)
-			order_ids = self.search(cr, uid, [
-				('start_date','<',  datetime.strftime(temp_date, "%Y-%m-%d %H:%M:%S")),
-				('finish_confirm_date','=', False),
-				('actual_vehicle_id','=', assigned_vehicle_id),
-			])
-			if len(order_ids) > 0:
-				order_data = self.browse(cr, uid, order_ids)
-				user_obj = self.pool.get('res.users')
-				central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_dispatcher')
-				partner_ids = []
-				for order in order_data:
-					for partner_id in central_partner_ids:
-						partner_ids.append((4,partner_id))
+	# cari waktu
+		temp_date = datetime.strptime(start_planned_date, "%Y-%m-%d %H:%M:%S") - timedelta(minutes = 60)
+		order_ids = self.search(cr, uid, [
+			('start_date','<',  datetime.strftime(temp_date, "%Y-%m-%d %H:%M:%S")),
+			('finish_confirm_date','=', False),
+			('actual_vehicle_id','=', assigned_vehicle_id),
+		])
+		if len(order_ids) > 0:
+			order_data = self.browse(cr, uid, order_ids)
+			user_obj = self.pool.get('res.users')
+			central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_dispatcher')
+			partner_ids = []
+			for order in order_data:
+				for partner_id in central_partner_ids:
+					partner_ids.append((4,partner_id))
 					self.message_post(cr, SUPERUSER_ID, order_id,
 						body=_('Order %s still not finish but same vehicle assigned to this order.') % order.name ,
 						partner_ids=partner_ids)
+
+	def _cek_vehicle_clash(self, cr, uid, assigned_vehicle_id, start_planned_date, finish_planned_date, new_id, context=None):
+		# Cek Order ga boleh bentrok sama order laen yg vehicle nya sama
+		# 	'id' === new_id
+		# AND
+		# (
+		# 	('actual_vehicle_id' == assigned_vehicle_id)
+		# OR
+		# 	('actual_vehicle_id' == None AND 'assigned_vehicle_id' == assigned_vehicle_id)
+		# )
+		# AND
+		# 	state NOT IN ['finish_confirmed', 'canceled', 'finished', 'rejected']
+		# AND (
+		# 		('start_planned_date' <= start_planned_date AND 'finish_planned_date' >= start_planned_date)
+		# 	OR
+		# 		('start_planned_date' <= finish_planned_date AND 'finish_planned_date' >= finish_planned_date)
+		# )
+		
+		if finish_planned_date:
+			order_ids = self.search(cr, uid, [
+				'&',('id', '!=', new_id),
+				'&','|',('actual_vehicle_id', '=', assigned_vehicle_id),
+					'&',('actual_vehicle_id', '=', None),
+						('assigned_vehicle_id', '=', assigned_vehicle_id),
+				'&',('state', 'not in', ['finish_confirmed', 'canceled', 'finished', 'rejected']),
+					'|','&',('start_planned_date', '<=', start_planned_date),
+						('finish_planned_date', '>=', start_planned_date),
+						'&',('start_planned_date', '<=', finish_planned_date),
+						('finish_planned_date', '>=', finish_planned_date)
+			])
+		else:[
+			'&',('id', '!=', new_id),
+			'&','|',('actual_vehicle_id', '=', assigned_vehicle_id),
+				'&',('actual_vehicle_id', '=', None),
+					('assigned_vehicle_id', '=', assigned_vehicle_id),
+			'&',('state', 'not in', ['finish_confirmed', 'canceled', 'finished', 'rejected']),
+				'&',('start_planned_date', '<=', start_planned_date),
+				('finish_planned_date', '>=', start_planned_date)
+		]
+		if len(order_ids) > 0:
+			order_data = self.browse(cr, uid, order_ids)
+			raise osv.except_osv(_('Order Error'),_('Assigned vehicle clash with order %s with start planned date %s and finish planned date. %s'
+					% (order_data[0].name, datetime.strptime(order_data[0].start_planned_date,"%Y-%m-%d %H:%M:%S"), datetime.strptime(order_data[0].finish_planned_date,"%Y-%m-%d %H:%M:%S"))))
+			
 # ACTION -------------------------------------------------------------------------------------------------------------------
 
 	def action_confirm(self, cr, uid, ids, context=None):

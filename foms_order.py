@@ -196,7 +196,7 @@ class foms_order(osv.osv):
 		
 		if vals.get('assigned_vehicle_id', False):
 			#cek apakah ada vehicle bentrok dengan start dan finish planned date order lain
-			if context.get('source', False) and context['source']=='form':
+			if context.get('source', False) or context['source']!='cron':
 				self._cek_vehicle_clash(cr, uid, vals['assigned_vehicle_id'], vals['start_planned_date'], vals['finish_planned_date'], 0, context)
 			
 			# jalankan createnya
@@ -331,7 +331,7 @@ class foms_order(osv.osv):
 			if assigned_vehicle:
 				self._cek_order_assigning_vehicle(cr, uid, assigned_vehicle, start_planned_date, orders.id, context)
 		# cek ada yang beririsan ga
-			if context.get('source', False) and context['source']=='form':
+			if context.get('source', False) or context['source']!='cron':
 				self._cek_vehicle_clash(cr, uid, assigned_vehicle, start_planned_date, finish_planned_date, ids[0], context)
 		
 		# kalau order diconfirm dari mobile app, cek dulu apakah sudah diconfirm sebelumnya
@@ -972,6 +972,7 @@ class foms_order(osv.osv):
 				counter_date = first_order_date
 				while day <= max_orders:
 					for fleet in contract.car_drivers:
+						context.update({'source': 'cron'})
 						new_id = self.create(cr, uid, {
 							'customer_contract_id': contract.id,
 							'service_type': contract.service_type,

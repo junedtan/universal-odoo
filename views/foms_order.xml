@@ -259,8 +259,8 @@
 			<field name="arch" type="xml">
 				<form version="7.0" string="Order Replace Driver">
 					<group>
-						<field name="replaced_driver_id" options="{'no_create': 1}"/>
-						<field name="replacement_driver_id" options="{'no_create': 1}"/>
+						<field name="replaced_driver_id" options="{'no_create': 1}" domain="[('job_id', '=', %(hr_job_driver)d)]"/>
+						<field name="replacement_driver_id" options="{'no_create': 1}" domain="[('job_id', '=', %(hr_job_driver)d)]"/>
 						<field name="replacement_date" />
 					</group>
 					<notebook>

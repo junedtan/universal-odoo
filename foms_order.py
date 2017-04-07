@@ -215,8 +215,6 @@ class foms_order(osv.osv):
 				if context.get('source', False) and context['source']=='form':
 					self.write(cr, uid, [new_id], {
 						'pin': fleet_data.fullday_user_id.pin,
-					})
-					self.write(cr, uid, [new_id], {
 						'state': 'new',
 					}, context=context)
 				else:

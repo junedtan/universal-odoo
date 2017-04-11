@@ -110,30 +110,30 @@
 						<page string="Execution">
 							<group>
 								<group>
-									<field name="confirm_date" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
-									<field name="confirm_by" options="{'no_create': 1}" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
+									<field name="confirm_date" attrs="{'readonly': 1}"/>
+									<field name="confirm_by" options="{'no_create': 1}" attrs="{'readonly': 1}"/>
 								</group>
 							</group>
 							<group>
 								<group>
-									<field name="start_date" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
-									<field name="start_confirm_date" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
-									<field name="start_confirm_by" options="{'no_create': 1}" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
-									<field name="start_from" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
+									<field name="start_date" attrs="{'readonly': 1}"/>
+									<field name="start_confirm_date" attrs="{'readonly': 1}"/>
+									<field name="start_confirm_by" options="{'no_create': 1}" attrs="{'readonly': 1}"/>
+									<field name="start_from" attrs="{'readonly': 1}"/>
 								</group>
 								<group>
-									<field name="finish_date" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
-									<field name="finish_confirm_date" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
-									<field name="finish_confirm_by" options="{'no_create': 1}" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
-									<field name="finish_from" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
+									<field name="finish_date" attrs="{'readonly': 1}"/>
+									<field name="finish_confirm_date" attrs="{'readonly': 1}"/>
+									<field name="finish_confirm_by" options="{'no_create': 1}" attrs="{'readonly': 1}"/>
+									<field name="finish_from" attrs="{'readonly': 1}"/>
 								</group>
 							</group>
 							<group>
 								<group>
-									<field name="pause_count" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
-									<field name="pause_minutes" widget="float_time" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
-									<field name="is_lk_pp" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
-									<field name="is_lk_inap" attrs="{'readonly': [('state','in',['finish_confirmed','canceled'])]}"/>
+									<field name="pause_count" attrs="{'readonly': 1}"/>
+									<field name="pause_minutes" widget="float_time" attrs="{'readonly': 1}"/>
+									<field name="is_lk_pp" attrs="{'readonly': 1}"/>
+									<field name="is_lk_inap" attrs="{'readonly': 1}"/>
 								</group>
 							</group>
 						</page>

@@ -694,12 +694,14 @@ class foms_order(osv.osv):
 				})
 	# eksekusi cancel order
 		elif command == 'cancel_order':
+			context = {}
 			model_data.update({
 				'order_id': data_id,
 				'cancel_by': user_id,
 			})
+			context.update(model_data)
 			cancel_memory_obj = self.pool.get('foms.order.cancel.memory')
-			result = cancel_memory_obj.action_execute_cancel(cr, uid, [], model_data, context=context)
+			result = cancel_memory_obj.action_execute_cancel(cr, uid, [], context)
 			if result == True: result = 'ok'
 	# list order area
 		elif command == 'order_areas':

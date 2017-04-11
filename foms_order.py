@@ -936,6 +936,25 @@ class foms_order(osv.osv):
 					'cancel_by': SUPERUSER_ID,
 					'cancel_previous_state': order.state,
 				}, context={'delay_exceeded': True})
+	
+	def cron_autocancel_fullday_orders(self, cr, uid, context=None):
+		# ambil semua order yang by_order dan belum start (new, confirmed, ready)
+		order_ids = self.search(cr, uid, [
+			('service_type','=','full_day'),('state','in',['new','confirmed','ready'])
+		])
+		if len(order_ids) == 0: return
+		# untuk setiap order itu
+		for order in self.browse(cr, uid, order_ids):
+			# kalau waktu sekarang sudah melewati batas delay, maka cancel si order
+			start = datetime.strptime(order.start_planned_date,'%Y-%m-%d %H:%M:%S').replace(hour=0, minute=0, second=0, microsecond=0)
+			now = datetime.strptime(datetime.strftime(datetime.now(),'%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S').replace(hour=0, minute=0, second=0, microsecond=0)
+			if now > start :
+				self.write(cr, uid, [order.id], {
+					'state': 'canceled',
+					'cancel_date': datetime.now(),
+					'cancel_by': SUPERUSER_ID,
+					'cancel_previous_state': order.state,
+				}, context={'delay_exceeded': True})
 
 	def cron_autogenerate_fullday(self, cr, uid, context=None):
 

@@ -141,12 +141,21 @@
 			<field name="view_mode">tree,form</field>
 		</record>
 
+		<record id="universal_action_foms_full_day_order" model="ir.actions.act_window">
+			<field name="name">Full-day Orders</field>
+			<field name="res_model">foms.order</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="domain">[('service_type','=','full_day')]</field>
+			<field name="context">{'all': 1, 'hide_cancel': 1, 'hide_actual': 1, 'hide_actual_time': 1, 'source': 'form'}</field>
+		</record>
+
 		<record id="universal_action_foms_pending_order" model="ir.actions.act_window">
 			<field name="name">Pending Orders</field>	
 			<field name="res_model">foms.order</field>
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
-			<field name="domain">[('service_type','!=','shuttle'),('state','in',['new','confirmed'])]</field>
+			<field name="domain">[('service_type', '=', 'by_order'),('state','in',['new','confirmed'])]</field>
 			<field name="context">{'hide_cancel': 1, 'hide_actual': 1, 'hide_actual_time': 1, 'source': 'form'}</field>
 		</record>
 
@@ -155,7 +164,7 @@
 			<field name="res_model">foms.order</field>
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
-			<field name="domain">[('service_type','!=','shuttle'),('state','in',['ready'])]</field>
+			<field name="domain">[('service_type', '=', 'by_order'),('state','in',['ready'])]</field>
 			<field name="context">{'hide_cancel': 1, 'hide_actual': 1, 'hide_actual_time': 1, 'source': 'form'}</field>
 		</record>
 
@@ -164,7 +173,7 @@
 			<field name="res_model">foms.order</field>
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
-			<field name="domain">[('service_type','!=','shuttle'),('state','in',['started','start_confirmed','paused','resumed','finished'])]</field>
+			<field name="domain">[('service_type', '=', 'by_order'),('state','in',['started','start_confirmed','paused','resumed','finished'])]</field>
 			<field name="context">{'hide_cancel': 1, 'hide_assigned': 1, 'hide_planned_time': 1, 'source': 'form'}</field>
 		</record>
 
@@ -321,13 +330,14 @@
 			<menuitem sequence="1" parent="universal_menu_foms_contract" action="universal_action_foms_contract" id="universal_menu_foms_contract1" groups="universal.group_universal_staff_marketing,universal.group_universal_staff_opr_kend,universal.group_universal_staff_opr_driv,universal.group_universal_dispatcher" />
 
 		<menuitem sequence="2" parent="universal_menu_foms" name="Customer Orders" id="universal_menu_foms_order" />
-			<menuitem sequence="1" parent="universal_menu_foms_order" action="universal_action_foms_pending_order" id="universal_menu_foms_pending_order" groups="universal.group_universal_dispatcher" />
-			<menuitem sequence="2" parent="universal_menu_foms_order" action="universal_action_foms_ready_order" id="universal_menu_foms_ready_order" groups="universal.group_universal_dispatcher" />
-			<menuitem sequence="3" parent="universal_menu_foms_order" action="universal_action_foms_running_order" id="universal_menu_foms_running_order" groups="universal.group_universal_dispatcher" />
-			<menuitem sequence="4" parent="universal_menu_foms_order" action="universal_action_foms_reject_order" id="universal_menu_foms_reject_order" groups="universal.group_universal_dispatcher" />
-			<menuitem sequence="5" parent="universal_menu_foms_order" action="universal_action_foms_shuttle_order" id="universal_menu_foms_shuttle_order" groups="universal.group_universal_dispatcher" />
-			<menuitem sequence="6" parent="universal_menu_foms_order" action="universal_action_foms_order_history" id="universal_menu_foms_order_history" groups="universal.group_universal_dispatcher" />
-			<menuitem sequence="7" parent="universal_menu_foms_order" action="universal_action_foms_order_all" id="universal_menu_foms_order_all" groups="universal.group_universal_dispatcher" />
+			<menuitem sequence="1" parent="universal_menu_foms_order" action="universal_action_foms_full_day_order" id="universal_menu_foms_full_day_order" groups="universal.group_universal_dispatcher" />
+			<menuitem sequence="2" parent="universal_menu_foms_order" action="universal_action_foms_pending_order" id="universal_menu_foms_pending_order" groups="universal.group_universal_dispatcher" />
+			<menuitem sequence="3" parent="universal_menu_foms_order" action="universal_action_foms_ready_order" id="universal_menu_foms_ready_order" groups="universal.group_universal_dispatcher" />
+			<menuitem sequence="4" parent="universal_menu_foms_order" action="universal_action_foms_running_order" id="universal_menu_foms_running_order" groups="universal.group_universal_dispatcher" />
+			<menuitem sequence="5" parent="universal_menu_foms_order" action="universal_action_foms_reject_order" id="universal_menu_foms_reject_order" groups="universal.group_universal_dispatcher" />
+			<menuitem sequence="6" parent="universal_menu_foms_order" action="universal_action_foms_shuttle_order" id="universal_menu_foms_shuttle_order" groups="universal.group_universal_dispatcher" />
+			<menuitem sequence="7" parent="universal_menu_foms_order" action="universal_action_foms_order_history" id="universal_menu_foms_order_history" groups="universal.group_universal_dispatcher" />
+			<menuitem sequence="8" parent="universal_menu_foms_order" action="universal_action_foms_order_all" id="universal_menu_foms_order_all" groups="universal.group_universal_dispatcher" />
 
 		<menuitem sequence="3" parent="universal_menu_foms" name="Usage Control" id="universal_menu_usage_control" />
 			<menuitem sequence="1" parent="universal_menu_usage_control" action="universal_action_foms_contract_quota" id="universal_menu_foms_contract_quota" groups="universal.group_universal_staff_marketing,universal.group_universal_admin_fleet" />

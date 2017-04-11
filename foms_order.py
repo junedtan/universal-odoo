@@ -844,15 +844,16 @@ class foms_order(osv.osv):
 						'&',('start_planned_date', '<=', finish_planned_date),
 						('finish_planned_date', '>=', finish_planned_date)
 			])
-		else:[
-			'&',('id', '!=', new_id),
-			'&','|',('actual_vehicle_id', '=', assigned_vehicle_id),
-				'&',('actual_vehicle_id', '=', None),
-					('assigned_vehicle_id', '=', assigned_vehicle_id),
-			'&',('state', 'not in', ['finish_confirmed', 'canceled', 'finished', 'rejected']),
-				'&',('start_planned_date', '<=', start_planned_date),
-				('finish_planned_date', '>=', start_planned_date)
-		]
+		else:
+			order_ids = self.search(cr, uid, [
+				'&',('id', '!=', new_id),
+				'&','|',('actual_vehicle_id', '=', assigned_vehicle_id),
+					'&',('actual_vehicle_id', '=', None),
+						('assigned_vehicle_id', '=', assigned_vehicle_id),
+				'&',('state', 'not in', ['finish_confirmed', 'canceled', 'finished', 'rejected']),
+					'&',('start_planned_date', '<=', start_planned_date),
+					('finish_planned_date', '>=', start_planned_date)
+			])
 		if len(order_ids) > 0:
 			order_data = self.browse(cr, uid, order_ids)
 			raise osv.except_osv(_('Order Error'),_('Assigned vehicle clash with order %s with start planned date %s and finish planned date. %s'
@@ -1116,7 +1117,7 @@ class foms_order(osv.osv):
 			}
 		}
 
-	def onchange_fleet_type(self, cr, uid, ids, customer_contract_id, fleet_type_id):
+	def onchange_fleet_type(self, cr, uid, ids, customer_contract_id, fleet_type_id, service_type):
 		if not fleet_type_id: return {}
 	# filter kendaraan yang dipilih
 		contract_obj = self.pool.get('foms.contract')
@@ -1126,14 +1127,14 @@ class foms_order(osv.osv):
 		for vehicle in contract_data.car_drivers:
 			if vehicle.fleet_type_id.id == fleet_type_id:
 				fleet_ids.append(vehicle.fleet_vehicle_id.id)
-	#... plus semua yang tidak sedang ada di bawah kontrak aktif
-		vehicle_obj = self.pool.get('fleet.vehicle')
-		vehicle_ids = vehicle_obj.search(cr, uid, [])
-		for vehicle in vehicle_obj.browse(cr, uid, vehicle_ids):
-			if vehicle.model_id.id != fleet_type_id: continue
-			print vehicle.current_contract_id
-			if vehicle.current_contract_id == None or vehicle.current_contract_id.state not in ['active','planned']:
-				fleet_ids.append(vehicle.id)
+	#... plus semua yang tidak sedang ada di bawah kontrak aktif bila ordernya bukan by-order
+		if service_type != 'by_order':
+			vehicle_obj = self.pool.get('fleet.vehicle')
+			vehicle_ids = vehicle_obj.search(cr, uid, [])
+			for vehicle in vehicle_obj.browse(cr, uid, vehicle_ids):
+				if vehicle.model_id.id != fleet_type_id: continue
+				if vehicle.current_contract_id == None or vehicle.current_contract_id.state not in ['active','planned']:
+					fleet_ids.append(vehicle.id)
 		return {
 			'domain': {
 				'assigned_vehicle_id': [('id','in',fleet_ids)]

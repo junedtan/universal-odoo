@@ -60,9 +60,9 @@
 							<field name="customer_contract_id" options="{'no_create': 1}" on_change="onchange_customer_contract_id(customer_contract_id)"
 									attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
 							<field name="service_type"
-									attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
+									attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" on_change="onchange_fleet_type(customer_contract_id, fleet_type_id, service_type)"/>
 							<field name="order_type_by_order" attrs="{'invisible': [('service_type','!=','by_order')]}"/>
-							<field name="fleet_type_id" attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')]}" widget="selection" on_change="onchange_fleet_type(customer_contract_id, fleet_type_id)" />
+							<field name="fleet_type_id" attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')]}" widget="selection" on_change="onchange_fleet_type(customer_contract_id, fleet_type_id, service_type)" />
 							<field name="order_by" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
 							<field name="over_quota_status" options="{'no_create': 1}" />
 						</group>

@@ -1117,17 +1117,22 @@ class foms_order(osv.osv):
 			}
 		}
 
-	def onchange_fleet_type(self, cr, uid, ids, customer_contract_id, fleet_type_id, service_type):
+	def onchange_service_type(self, cr, uid, ids, customer_contract_id, fleet_type_id, service_type):
+		result = {'domain': {}}
+		result['domain'].update(self._domain_filter_vehicle(cr, uid, ids, customer_contract_id, fleet_type_id, service_type))
+		return result
+		
+	def _domain_filter_vehicle(self, cr, uid, ids, customer_contract_id, fleet_type_id, service_type):
 		if not fleet_type_id: return {}
-	# filter kendaraan yang dipilih
+		# filter kendaraan yang dipilih
 		contract_obj = self.pool.get('foms.contract')
 		contract_data = contract_obj.browse(cr, uid, customer_contract_id)
 		fleet_ids = []
-	# cuman yang di bawah kontrak ini,
+		# cuman yang di bawah kontrak ini,
 		for vehicle in contract_data.car_drivers:
 			if vehicle.fleet_type_id.id == fleet_type_id:
 				fleet_ids.append(vehicle.fleet_vehicle_id.id)
-	#... plus semua yang tidak sedang ada di bawah kontrak aktif bila ordernya bukan by-order
+			#... plus semua yang tidak sedang ada di bawah kontrak aktif bila ordernya bukan by-order
 		if service_type != 'by_order':
 			vehicle_obj = self.pool.get('fleet.vehicle')
 			vehicle_ids = vehicle_obj.search(cr, uid, [])
@@ -1136,11 +1141,13 @@ class foms_order(osv.osv):
 				if vehicle.current_contract_id == None or vehicle.current_contract_id.state not in ['active','planned']:
 					fleet_ids.append(vehicle.id)
 		return {
-			'domain': {
-				'assigned_vehicle_id': [('id','in',fleet_ids)]
-			}
+			'assigned_vehicle_id': [('id','in',fleet_ids)]
 		}
-
+	
+	def onchange_fleet_type(self, cr, uid, ids, customer_contract_id, fleet_type_id, service_type):
+		result = {'domain': {}}
+		result['domain'].update(self._domain_filter_vehicle(cr, uid, ids, customer_contract_id, fleet_type_id, service_type))
+		return result
 
 	def onchange_assigned_vehicle(self, cr, uid, ids, customer_contract_id, assigned_vehicle_id):
 		if not assigned_vehicle_id: return {}

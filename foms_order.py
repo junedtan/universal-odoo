@@ -1159,6 +1159,7 @@ class foms_order(osv.osv):
 			result['value'].update({'is_order_not_in_working_time': True,})
 		else:
 			result['value'].update({'is_order_not_in_working_time': False,})
+		return result
 	
 	def onchange_request_by(self, cr, uid, ids, service_type, customer_contract_id, order_by_id, start_planned_date, context=None):
 		if service_type == 'full_day' and self.this_order_not_in_working_time(cr, uid, customer_contract_id, start_planned_date):

@@ -116,6 +116,7 @@ class foms_order(osv.osv):
 			('app', 'Mobile App'),
 			('central', 'Central'),
 		), 'Create Source', readonly=True),
+		'is_order_not_in_working_time': fields.boolean(string="Is order not in working time", store=False),
 	}
 
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------
@@ -1143,13 +1144,20 @@ class foms_order(osv.osv):
 			}
 		}
 
-	def onchange_service_type(self, cr, uid, ids, customer_contract_id, fleet_type_id, service_type):
-		result = {'domain': {}}
+	def onchange_service_type(self, cr, uid, ids, customer_contract_id, fleet_type_id, service_type, start_planned_date):
+		result = {'domain': {}, 'value': {}}
 		result['domain'].update(self._domain_filter_vehicle(cr, uid, ids, customer_contract_id, fleet_type_id, service_type))
+		if service_type == 'full_day' and self.this_order_not_in_working_time(cr, uid, customer_contract_id, start_planned_date):
+			result['value'].update({'is_order_not_in_working_time': True,})
 		return result
 	
-	def onchange_request_by(self, cr, uid, ids, service_type, customer_contract_id, order_by_id, context=None):
-		if service_type == 'full_day':
+	def onchange_start_planned_date(self, cr, uid, ids, service_type, customer_contract_id, start_planned_date):
+		if service_type == 'full_day' and self.this_order_not_in_working_time(cr, uid, customer_contract_id, start_planned_date):
+			result = {'domain': {}, 'value': {}}
+			result['value'].update({'is_order_not_in_working_time': True,})
+	
+	def onchange_request_by(self, cr, uid, ids, service_type, customer_contract_id, order_by_id, start_planned_date, context=None):
+		if service_type == 'full_day' and self.this_order_not_in_working_time(cr, uid, customer_contract_id, start_planned_date):
 			contract_obj = self.pool('foms.contract')
 			customer_contract = contract_obj.browse(cr, uid, customer_contract_id)
 			car_drivers = customer_contract.car_drivers
@@ -1158,14 +1166,32 @@ class foms_order(osv.osv):
 				if fleet.fullday_user_id.id == order_by_id:
 					fleet_data = fleet
 					break
-			if fleet_data:
-				#kalau dibuat manual dari form, jangan assign driver dan vehicle
-				if context.get('source', False) and context['source'] == 'form':
-					return { 'value': {
-						'assigned_driver_id': fleet_data.driver_id.id,
-						'assigned_vehicle_id': fleet_data.fleet_vehicle_id.id,
-						'pin': fleet_data.fullday_user_id.pin,
-					}}
+			if fleet_data and context.get('source', False) and context['source'] == 'form':
+				return { 'value': {
+					'assigned_driver_id': fleet_data.driver_id.id,
+					'assigned_vehicle_id': fleet_data.fleet_vehicle_id.id,
+					'pin': fleet_data.fullday_user_id.pin,
+					'is_order_not_in_working_time': True,
+				}}
+			else:
+				return { 'value': {
+					'is_order_not_in_working_time': True,
+				}}
+		else:
+			return { 'value': {
+				'is_order_not_in_working_time': False,
+			}}
+	
+	def this_order_not_in_working_time(self, cr, uid, customer_contract_id, start_planned_date):
+		contract_obj = self.pool('foms.contract')
+		customer_contracts = contract_obj.browse(cr, uid, customer_contract_id)
+		for customer_contract in customer_contracts:
+			for holiday in customer_contract.working_time_id.leave_ids:
+				date_from_holiday = datetime.strftime((datetime.strptime(holiday.date_from,"%Y-%m-%d %H:%M:%S")).replace(hour=0,minute=0,second=0),"%Y-%m-%d %H:%M:%S")
+				date_to_holiday =  datetime.strftime((datetime.strptime(holiday.date_to,"%Y-%m-%d %H:%M:%S")).replace(hour=23,minute=59,second=59),"%Y-%m-%d %H:%M:%S")
+				if start_planned_date >= date_from_holiday and start_planned_date <= date_to_holiday:
+					return True
+		return False
 		
 	def _domain_filter_vehicle(self, cr, uid, ids, customer_contract_id, fleet_type_id, service_type):
 		if not fleet_type_id: return {}

@@ -1344,6 +1344,11 @@ class foms_order_cancel_memory(osv.osv_memory):
 			cancel_reason = context.get('cancel_reason')
 			cancel_reason_other = context.get('cancel_reason_other')
 			cancel_by = context.get('cancel_by')
+		#kalau dari mobile app dan cancel reason nya kosong, maka itu berarti order dicancel karena delay exceeded
+			if not cancel_reason and not cancel_reason_other:
+				model_obj = self.pool.get('ir.model.data')
+				model, reason_id = model_obj.get_object_reference(cr, uid, 'universal', 'foms_cancel_reason_delay_exceeded')
+				cancel_reason = reason_id
 	# kalo ada ids nya maka dari memory form Odoo
 		else:
 			form_data = self.browse(cr, uid, ids[0])

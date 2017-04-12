@@ -56,6 +56,7 @@
 					</header>
 					<group>
 						<group>
+							<field name="id" invisible="1" />
 							<field name="name" readonly="1" />
 							<field name="customer_contract_id" options="{'no_create': 1}" on_change="onchange_customer_contract_id(customer_contract_id)"
 									attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
@@ -63,7 +64,9 @@
 									attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" on_change="onchange_fleet_type(customer_contract_id, fleet_type_id, service_type)"/>
 							<field name="order_type_by_order" attrs="{'invisible': [('service_type','!=','by_order')]}"/>
 							<field name="fleet_type_id" attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')]}" widget="selection" on_change="onchange_fleet_type(customer_contract_id, fleet_type_id, service_type)" />
-							<field name="order_by" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
+							<field name="order_by" on_change="onchange_request_by(service_type, customer_contract_id, order_by)"
+									options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
+									<!--on_change="onchange_request_by(service_type, customer_contract_id, order_by)"-->
 							<field name="over_quota_status" options="{'no_create': 1}" />
 						</group>
 						<group>
@@ -90,8 +93,11 @@
 									<field name="alloc_unit_id" options="{'no_create': 1}" attrs="{'invisible': [('service_type','!=','by_order')]}" />
 									<field name="alloc_unit_usage" attrs="{'invisible': [('service_type','!=','by_order')]}" />
 									<field name="assigned_vehicle_id" options="{'no_create': 1}" on_change="onchange_assigned_vehicle(customer_contract_id, assigned_vehicle_id)"
-											attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready','started'])]}"/>
-									<field name="assigned_driver_id" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready','started'])]}"/>
+											attrs="{'readonly': ['|',('state','not in',['new','rejected','confirmed','ready','started']),
+											'&amp;',('service_type','=','full_day'),('id','=',False)]}"/>
+									<field name="assigned_driver_id" options="{'no_create': 1}"
+											attrs="{'readonly': ['|',('state','not in',['new','rejected','confirmed','ready','started']),
+											'&amp;',('service_type','=','full_day'),('id','=',False)]}"/>
 								</group>
 							</group>
 						</page>

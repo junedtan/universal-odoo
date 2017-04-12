@@ -1147,6 +1147,25 @@ class foms_order(osv.osv):
 		result = {'domain': {}}
 		result['domain'].update(self._domain_filter_vehicle(cr, uid, ids, customer_contract_id, fleet_type_id, service_type))
 		return result
+	
+	def onchange_request_by(self, cr, uid, ids, service_type, customer_contract_id, order_by_id, context=None):
+		if service_type == 'full_day':
+			contract_obj = self.pool('foms.contract')
+			customer_contract = contract_obj.browse(cr, uid, customer_contract_id)
+			car_drivers = customer_contract.car_drivers
+			fleet_data = None
+			for fleet in car_drivers:
+				if fleet.fullday_user_id.id == order_by_id:
+					fleet_data = fleet
+					break
+			if fleet_data:
+				#kalau dibuat manual dari form, jangan assign driver dan vehicle
+				if context.get('source', False) and context['source'] == 'form':
+					return { 'value': {
+						'assigned_driver_id': fleet_data.driver_id.id,
+						'assigned_vehicle_id': fleet_data.fleet_vehicle_id.id,
+						'pin': fleet_data.fullday_user_id.pin,
+					}}
 		
 	def _domain_filter_vehicle(self, cr, uid, ids, customer_contract_id, fleet_type_id, service_type):
 		if not fleet_type_id: return {}

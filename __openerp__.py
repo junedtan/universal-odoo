@@ -19,7 +19,7 @@
 	'sequence': 150,
 	'data': [
 		'security/universal_security.xml',
-		'security/ir.model.access.csv',
+		# 'security/ir.model.access.csv',
 		'security/ir_rule.xml',
 		'security/workflow.xml',
 		'data/hr.department.csv',

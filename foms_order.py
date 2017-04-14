@@ -35,9 +35,11 @@ class foms_order(osv.osv):
 			if row.actual_driver_id:
 				if row.actual_driver_id.phone: phones.append(row.actual_driver_id.phone)
 				if row.actual_driver_id.mobile_phone2: phones.append(row.actual_driver_id.mobile_phone2)
+				if row.actual_driver_id.mobile_phone3: phones.append(row.actual_driver_id.mobile_phone3)
 			elif row.assigned_driver_id:
 				if row.assigned_driver_id.phone: phones.append(row.assigned_driver_id.phone)
 				if row.assigned_driver_id.mobile_phone2: phones.append(row.assigned_driver_id.mobile_phone2)
+				if row.assigned_driver_id.mobile_phone3: phones.append(row.assigned_driver_id.mobile_phone3)
 			result[row.id] = ",".join(phones)
 		return result
 

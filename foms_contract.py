@@ -1297,12 +1297,12 @@ class foms_contract_quota_change_log(osv.osv):
 
 	_columns = {
 		'customer_contract_id': fields.many2one('foms.contract', 'Contract', required=True, ondelete='cascade', domain=[('state','=','active')]),
+		'customer_id': fields.related('customer_contract_id', 'customer_id', type='many2one', string='Customer', relation="res.partner"),
 		'allocation_unit_id': fields.many2one('foms.contract.alloc.unit', 'Alloc. Unit', required=True, ondelete='cascade'),
 		'state': fields.selection([
 			('draft','Draft'),
 			('approved','Approved'),
 			('rejected','Rejected'),], 'State'),
-		'request_by': fields.many2one('res.users', 'Request By', ondelete='restrict'),
 		'request_date': fields.datetime('Request Date', required=True),
 		'period': fields.char('Period', required=True),
 		'request_longevity': fields.selection([

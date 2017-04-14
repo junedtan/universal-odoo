@@ -348,7 +348,6 @@
 							<field name="allocation_unit_id" on_change="onchange_quota_data(customer_contract_id, allocation_unit_id, period, False)" />
 							<field name="period" on_change="onchange_quota_data(customer_contract_id, allocation_unit_id, period, False)" />
 							<field name="request_longevity" />
-							<field name="request_by" readonly="1" />
 							<field name="request_date" readonly="1" />
 						</group>
 						<group>
@@ -377,8 +376,8 @@
 			<field name="arch" type="xml">
 				<tree version="7.0" string="Quota Change Log" delete="false">
 					<field name="customer_contract_id" />
+					<field name="customer_id" />
 					<field name="allocation_unit_id" />
-					<field name="request_by" />
 					<field name="period" />
 					<field name="request_longevity" />
 					<field name="new_yellow_limit" />

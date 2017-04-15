@@ -159,6 +159,7 @@ class foms_order(osv.osv):
 	def create(self, cr, uid, vals, context={}):
 		contract_obj = self.pool.get('foms.contract')
 		contract_data = contract_obj.browse(cr, uid, vals['customer_contract_id'])
+		user_obj = self.pool.get('res.users')
 		
 	#cek dahulu apakah contractnya masih active
 		if vals.get('customer_contract_id', False):
@@ -248,6 +249,7 @@ class foms_order(osv.osv):
 					'notification': ['order_approve'],
 				}
 			# kalau usage control di-on-kan, ada sedikit perbedaan di notificationnya
+				is_over_quota = False
 				if new_data.customer_contract_id.usage_control_level != 'no_control':
 					if new_data.over_quota_status in ['warning','approval']:
 						quota_obj = self.pool.get('foms.contract.quota')
@@ -266,6 +268,7 @@ class foms_order(osv.osv):
 							'order_usage': new_data.alloc_unit_usage,
 							'red_limit': red_limit,
 						}
+						is_over_quota = True
 				self.webservice_post(cr, uid, ['approver'], 'create', new_data, \
 						webservice_context=webservice_context, context=context)
 			# tetep notif ke booker bahwa ordernya udah masuk
@@ -273,6 +276,12 @@ class foms_order(osv.osv):
 						webservice_context={
 							'notification': ['order_waiting_approve'],
 						}, context=context)
+			
+				is_approver = user_obj.has_group(cr, new_data.order_by.id, 'universal.group_universal_approver')
+				if not is_over_quota and is_approver:
+					self.write(cr, uid, [new_id], {
+						'state': 'confirmed',
+					}, context=context)
 		# kalau allocation unit tidak punya approver
 			else:
 			# langsung confirm order ini

@@ -851,8 +851,10 @@ class foms_order(osv.osv):
 				'&',('state', 'not in', ['finish_confirmed', 'canceled', 'finished', 'rejected']),
 					'|','&',('start_planned_date', '<=', start_planned_date),
 						('finish_planned_date', '>=', start_planned_date),
-						'&',('start_planned_date', '<=', finish_planned_date),
-						('finish_planned_date', '>=', finish_planned_date)
+					'|','&',('start_planned_date', '<=', finish_planned_date),
+						('finish_planned_date', '>=', finish_planned_date),
+						'&',('start_planned_date', '>=', start_planned_date),
+						('finish_planned_date', '<=', finish_planned_date),
 			])
 		else:
 			order_ids = self.search(cr, uid, [

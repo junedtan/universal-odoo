@@ -189,7 +189,7 @@ class foms_order(osv.osv):
 			if isinstance(order_date, (str,unicode)):
 				order_date = datetime.strptime(order_date, '%Y-%m-%d %H:%M:%S')
 			prefix = "%s%s" % (order_date.strftime('%d%m%Y'), contract_data.customer_id.partner_code.upper())
-			order_ids = self.search(cr, uid, [('name','=like',prefix+'%')], order='request_date DESC, name DESC')
+			order_ids = self.search(cr, uid, [('name','=like',prefix+'%')], order='request_date DESC')
 			if len(order_ids) == 0:
 				last_number = 1
 			else:

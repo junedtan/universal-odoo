@@ -823,9 +823,6 @@ class foms_contract_shuttle_schedule_memory(osv.osv):
 	# masukkan yang baru
 		vehicle_ids = []
 		for schedule in form_data.schedule_line:
-		# JUNED: tentang pengecekan clash udah hmpir bener, seharusnya bukan cuman ngecek 
-		# apakah departure time sama, tapi apakah departure time ada di antara dua departure time untuk hari 
-		# dan fleet yang sama
 			clash = False
 			for correct_schedule in new_shuttle_schedule:
 				if correct_schedule[0] == 0:

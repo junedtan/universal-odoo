@@ -37,9 +37,11 @@ class foms_order(osv.osv):
 			if row.actual_driver_id:
 				if row.actual_driver_id.phone: phones.append(row.actual_driver_id.phone)
 				if row.actual_driver_id.mobile_phone2: phones.append(row.actual_driver_id.mobile_phone2)
+				if row.actual_driver_id.mobile_phone3: phones.append(row.actual_driver_id.mobile_phone3)
 			elif row.assigned_driver_id:
 				if row.assigned_driver_id.phone: phones.append(row.assigned_driver_id.phone)
 				if row.assigned_driver_id.mobile_phone2: phones.append(row.assigned_driver_id.mobile_phone2)
+				if row.assigned_driver_id.mobile_phone3: phones.append(row.assigned_driver_id.mobile_phone3)
 			result[row.id] = ",".join(phones)
 		return result
 
@@ -118,7 +120,6 @@ class foms_order(osv.osv):
 			('app', 'Mobile App'),
 			('central', 'Central'),
 		), 'Create Source', readonly=True),
-		'is_order_not_in_working_time': fields.boolean(string="Is order not in working time", store=False),
 	}
 
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------
@@ -192,8 +193,10 @@ class foms_order(osv.osv):
 		
 	# kalau udah di-assign mobil, cek apakah ada vehicle bentrok dengan start dan finish planned date 
 	# order lain
-		if vals.get('assigned_vehicle_id', False) and context.get('source', False) != 'cron':
-			self._cek_vehicle_clash(cr, uid, vals['assigned_vehicle_id'], vals['start_planned_date'], vals['finish_planned_date'], 0, context)
+		if vals.get('assigned_vehicle_id', False):
+		# cek apakah ada vehicle bentrok dengan start dan finish planned date order lain
+			if not context.get('source', False) or context.get('source', False) == 'form':
+				self._cek_vehicle_clash(cr, uid, vals['assigned_vehicle_id'], vals['start_planned_date'], vals['finish_planned_date'], 0, context)
 			
 	# jalankan createnya
 		new_id = super(foms_order, self).create(cr, uid, vals, context=context)
@@ -208,23 +211,12 @@ class foms_order(osv.osv):
 					fleet_data = fleet
 					break
 			if fleet_data:
-			# kalau dibuat manual dari form, jangan assign driver dan vehicle
-				if context.get('source', False) == 'form':
-					self.write(cr, uid, [new_id], {
-						'pin': fleet_data.fullday_user_id.pin,
-						'state': 'new',
-					}, context=context)
-				else:
-					self.write(cr, uid, [new_id], {
-						'assigned_driver_id': fleet_data.driver_id.id,
-						'assigned_vehicle_id': fleet_data.fleet_vehicle_id.id,
-						'pin': fleet_data.fullday_user_id.pin,
-					})
-					vals = {'state': 'ready'}
-				# Kalau belum ada driver dan vehiclenya, statenya jangan sampai ready
-					if not fleet_data.driver_id.id and not fleet_data.fleet_vehicle_id.id:
-						vals['state'] = 'new'
-					self.write(cr, uid, [new_id], vals, context=context)
+				self.write(cr, uid, [new_id], {
+					'assigned_driver_id': fleet_data.driver_id.id,
+					'assigned_vehicle_id': fleet_data.fleet_vehicle_id.id,
+					'pin': fleet_data.fullday_user_id.pin,
+					'state': 'ready',
+				})
 	# untuk order By Order
 		elif service_type == 'by_order':
 		# cek apakah unit ini punya approver?
@@ -858,7 +850,9 @@ class foms_order(osv.osv):
 		if not contract_data.working_time_id:
 			raise osv.except_osv(_('Order Error'),_('Working time for this order\'s contract is not set. Please contact PT. Universal.'))
 		book_in_holiday = False
+		print request_date
 		for holiday in contract_data.working_time_id.leave_ids:
+			print holiday.date_from, holiday.date_to
 			if request_date >= holiday.date_from and request_date <= holiday.date_to:
 				book_in_holiday = True
 				break
@@ -912,8 +906,10 @@ class foms_order(osv.osv):
 				'&',('state', 'not in', ['finish_confirmed', 'canceled', 'finished', 'rejected']),
 					'|','&',('start_planned_date', '<=', start_planned_date),
 						('finish_planned_date', '>=', start_planned_date),
-						'&',('start_planned_date', '<=', finish_planned_date),
-						('finish_planned_date', '>=', finish_planned_date)
+					'|','&',('start_planned_date', '<=', finish_planned_date),
+						('finish_planned_date', '>=', finish_planned_date),
+						'&',('start_planned_date', '>=', start_planned_date),
+						('finish_planned_date', '<=', finish_planned_date),
 			])
 		else:
 			order_ids = self.search(cr, uid, [
@@ -1225,44 +1221,23 @@ class foms_order(osv.osv):
 	def onchange_service_type(self, cr, uid, ids, customer_contract_id, fleet_type_id, service_type, start_planned_date):
 		result = {'domain': {}, 'value': {}}
 		result['domain'].update(self._domain_filter_vehicle(cr, uid, ids, customer_contract_id, fleet_type_id, service_type))
-		if service_type == 'full_day' and self.this_order_not_in_working_time(cr, uid, customer_contract_id, start_planned_date):
-			result['value'].update({'is_order_not_in_working_time': True,})
-		else:
-			result['value'].update({'is_order_not_in_working_time': False,})
-		return result
-	
-	def onchange_start_planned_date(self, cr, uid, ids, service_type, customer_contract_id, start_planned_date):
-		result = {'value': {}}
-		if service_type == 'full_day' and self.this_order_not_in_working_time(cr, uid, customer_contract_id, start_planned_date):
-			result['value'].update({'is_order_not_in_working_time': True,})
-		else:
-			result['value'].update({'is_order_not_in_working_time': False,})
 		return result
 	
 	def onchange_request_by(self, cr, uid, ids, service_type, customer_contract_id, order_by_id, start_planned_date, context=None):
-		if service_type == 'full_day' and self.this_order_not_in_working_time(cr, uid, customer_contract_id, start_planned_date):
-			contract_obj = self.pool('foms.contract')
-			customer_contract = contract_obj.browse(cr, uid, customer_contract_id)
-			car_drivers = customer_contract.car_drivers
-			fleet_data = None
-			for fleet in car_drivers:
-				if fleet.fullday_user_id.id == order_by_id:
-					fleet_data = fleet
-					break
-			if fleet_data and context.get('source', False) == 'form':
-				return { 'value': {
-					'assigned_driver_id': fleet_data.driver_id.id,
-					'assigned_vehicle_id': fleet_data.fleet_vehicle_id.id,
-					'pin': fleet_data.fullday_user_id.pin,
-					'is_order_not_in_working_time': True,
-				}}
-			else:
-				return { 'value': {
-					'is_order_not_in_working_time': True,
-				}}
-		else:
+		if service_type not in ['full_day']: return {}
+		contract_obj = self.pool('foms.contract')
+		customer_contract = contract_obj.browse(cr, uid, customer_contract_id)
+		car_drivers = customer_contract.car_drivers
+		fleet_data = None
+		for fleet in car_drivers:
+			if fleet.fullday_user_id.id == order_by_id:
+				fleet_data = fleet
+				break
+		if fleet_data and context.get('source', False) == 'form':
 			return { 'value': {
-				'is_order_not_in_working_time': False,
+				'assigned_driver_id': fleet_data.driver_id.id,
+				'assigned_vehicle_id': fleet_data.fleet_vehicle_id.id,
+				'pin': fleet_data.fullday_user_id.pin,
 			}}
 	
 	def this_order_not_in_working_time(self, cr, uid, customer_contract_id, start_planned_date):
@@ -1550,7 +1525,7 @@ class foms_order_replace_vehicle(osv.osv):
 	_columns = {
 		'replaced_vehicle_id': fields.many2one('fleet.vehicle', 'Vehicle to be Replaced', required=True),
 		'replacement_vehicle_id': fields.many2one('fleet.vehicle', 'Replacement Vehicle', required=True),
-		'replacement_date': fields.datetime('Replace from Time', required=True),
+		'replacement_date': fields.datetime('Effective Since', required=True),
 		'replacement_reason': fields.text('Replacement Reason'),
 	}
 	
@@ -1581,38 +1556,34 @@ class foms_order_replace_vehicle(osv.osv):
 	
 	def _replace_on_orders(self, cr, uid, replace_vehicle_ids):
 		order_obj = self.pool.get('foms.order')
-		replace_vehicles = self.browse(cr, uid, replace_vehicle_ids)
-		for replace_vehicle in replace_vehicles:
+		for replace_vehicle in self.browse(cr, uid, replace_vehicle_ids):
 		# Ambil order yang statenya berikut ini
 			args = [ 
-				('state', 'in', ['new', 'confirmed', 'ready']),
-				('start_planned_date', '>=', replace_vehicle.replacement_date),
+				('state', 'in', ['new','confirmed','ready']),
+				('start_planned_date','>=',replace_vehicle.replacement_date),
+				('assigned_vehicle_id','=',replace_vehicle.replaced_vehicle_id.id),
 			]
+		# Update data vehicle di order
 			order_ids = order_obj.search(cr, uid, args)
-			orders = order_obj.browse(cr, uid, order_ids)
-			for order in orders:
-			# Update data vehicle di order
-				order_obj.write(cr, uid, order.id, {
-					'assigned_vehicle_id': replace_vehicle.replacement_vehicle_id.id,
-				})
+			order_obj.write(cr, uid, order_ids, {
+				'assigned_vehicle_id': replace_vehicle.replacement_vehicle_id.id,
+			})
 	
 	def _replace_on_contracts(self, cr, uid, replace_vehicle_ids):
 		contract_fleet_obj = self.pool.get('foms.contract.fleet')
-		replace_vehicles = self.browse(cr, uid, replace_vehicle_ids)
-		for replace_vehicle in replace_vehicles:
+		for replace_vehicle in self.browse(cr, uid, replace_vehicle_ids):
 		# Ambil order yang statenya berikut ini
 			args = [ 
 				('header_id.state', 'not in', ['terminated', 'finished']),
 				('header_id.start_date', '<=', replace_vehicle.replacement_date),
 				('header_id.end_date', '>=', replace_vehicle.replacement_date),
+				('fleet_vehicle_id','=',replace_vehicle.replaced_vehicle_id.id),
 			]
+		# Update data vehicle fleet planning si contract
 			contract_fleet_ids = contract_fleet_obj.search(cr, uid, args)
-			contract_fleets = contract_fleet_obj.browse(cr, uid, contract_fleet_ids)
-			for contract_fleet in contract_fleets:
-			# Update data vehicle di order
-				contract_fleet_obj.write(cr, uid, contract_fleet_ids, {
-					'vehicle_id': replace_vehicle.replacement_vehicle_id.id,
-				})
+			contract_fleet_obj.write(cr, uid, contract_fleet_ids, {
+				'fleet_vehicle_id': replace_vehicle.replacement_vehicle_id.id,
+			})
 				
 # ==========================================================================================================================
 
@@ -1624,9 +1595,9 @@ class foms_order_replace_driver(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'replaced_driver_id': fields.many2one('hr.employee', 'Replaced Driver', required=True),
+		'replaced_driver_id': fields.many2one('hr.employee', 'Driver to be Replaced', required=True),
 		'replacement_driver_id': fields.many2one('hr.employee', 'Replacement Driver', required=True),
-		'replacement_date': fields.datetime('Replacement Date', required=True),
+		'replacement_date': fields.datetime('Effective Since', required=True),
 		'replacement_reason': fields.text('Replacement Reason'),
 	}
 
@@ -1644,36 +1615,30 @@ class foms_order_replace_driver(osv.osv):
 	
 	def _replace_on_orders(self, cr, uid, replace_driver_ids):
 		order_obj = self.pool.get('foms.order')
-		replace_drivers = self.browse(cr, uid, replace_driver_ids)
-		for replace_driver in replace_drivers:
+		for replace_driver in self.browse(cr, uid, replace_driver_ids):
 		# Ambil order yang statenya berikut ini
 			args = [ 
 				('state', 'in', ['new', 'confirmed', 'ready']),
 				('start_planned_date', '>=', replace_driver.replacement_date),
+				('assigned_driver_id','=',replace_vehicle.replaced_driver_id.id),
 			]
 			order_ids = order_obj.search(cr, uid, args)
-			orders = order_obj.browse(cr, uid, order_ids)
-			for order in orders:
-			# Update data driver di order
-				order_obj.write(cr, uid, order_ids, {
-					'assigned_driver_id': replace_driver.replacement_driver_id.id,
-				})
+			order_obj.write(cr, uid, order_ids, {
+				'assigned_driver_id': replace_driver.replacement_driver_id.id,
+			})
 	
 	def _replace_on_contracts(self, cr, uid, replace_driver_ids):
 		contract_fleet_obj = self.pool.get('foms.contract.fleet')
-		replace_drivers = self.browse(cr, uid, replace_driver_ids)
-		for replace_driver in replace_drivers:
+		for replace_driver in self.browse(cr, uid, replace_driver_ids):
 		# Ambil order yang statenya berikut ini
 			args = [ 
 				('header_id.state', 'not in', ['terimnated', 'finished']),
 				('header_id.start_date', '<=', replace_driver.replacement_date),
 				('header_id.end_date', '>=', replace_driver.replacement_date),
+				('driver_id','=',replace_vehicle.replaced_driver_id.id),
 			]
 			contract_fleet_ids = contract_fleet_obj.search(cr, uid, args)
-			contract_fleets = contract_fleet_obj.browse(cr, uid, contract_fleet_ids)
-			for contract_fleet in contract_fleets:
-			# Update data driver di order
-				contract_fleet_obj.write(cr, uid, contract_fleet_ids, {
-					'driver_id': replace_driver.replacement_driver_id.id,
-				})
+			contract_fleet_obj.write(cr, uid, contract_fleet_ids, {
+				'driver_id': replace_driver.replacement_driver_id.id,
+			})
 		

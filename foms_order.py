@@ -975,7 +975,7 @@ class foms_order(osv.osv):
 	# set tanggal2
 		today = (datetime.now()).replace(hour=0, minute=0, second=0, microsecond=0)
 		next_day = today + timedelta(hours=24)
-		next7days = today + timedelta(hours=24*1)
+		next7days = today + timedelta(hours=24*7)
 	# ambil contract yang baru aktif (last_fullday_autogenerate_date kosong)
 		contract_ids = contract_obj.search(cr, uid, [
 			('service_type','=','full_day'),('state','in',['active','planned']),

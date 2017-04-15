@@ -269,6 +269,13 @@ class foms_order(osv.osv):
 							'red_limit': red_limit,
 						}
 						is_over_quota = True
+					
+			#kalau yang memesan adalah approver dan tidak over quota, maka state menjadi confirmed
+				is_approver = user_obj.has_group(cr, new_data.order_by.id, 'universal.group_universal_approver')
+				if not is_over_quota and is_approver:
+					self.write(cr, uid, [new_id], {
+						'state': 'confirmed',
+					}, context=context)
 				self.webservice_post(cr, uid, ['approver'], 'create', new_data, \
 						webservice_context=webservice_context, context=context)
 			# tetep notif ke booker bahwa ordernya udah masuk
@@ -276,12 +283,6 @@ class foms_order(osv.osv):
 						webservice_context={
 							'notification': ['order_waiting_approve'],
 						}, context=context)
-			
-				is_approver = user_obj.has_group(cr, new_data.order_by.id, 'universal.group_universal_approver')
-				if not is_over_quota and is_approver:
-					self.write(cr, uid, [new_id], {
-						'state': 'confirmed',
-					}, context=context)
 		# kalau allocation unit tidak punya approver
 			else:
 			# langsung confirm order ini

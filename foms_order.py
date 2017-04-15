@@ -334,7 +334,7 @@ class foms_order(osv.osv):
 			if assigned_vehicle:
 				self._cek_order_assigning_vehicle(cr, uid, assigned_vehicle, start_planned_date, orders.id, context)
 		# cek ada yang beririsan ga
-			if assigned_vehicle and  context.get('source', False) and context['source']!='cron':
+			if assigned_vehicle and not context.get('source', False) or context.get('source', False) == 'form':
 				self._cek_vehicle_clash(cr, uid, assigned_vehicle, start_planned_date, finish_planned_date, ids[0], context)
 		
 		# kalau order diconfirm dari mobile app, cek dulu apakah sudah diconfirm sebelumnya

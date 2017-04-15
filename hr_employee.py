@@ -40,7 +40,8 @@ class hr_employee(osv.osv):
 				# Kalau actual_driver_id adalah supir ini, tambahin di yang nanti update
 				# Kalau bukan, cek kalau assigned_driver_id adalah supir ini, kalau ya tambahin di yang nanti update
 				# Ini mencegah kalau2 dia cuman assigned driver tapi bukan actual
-					if order.actual_driver_id.id == id or order.assigned_driver_id.id == id:
+					if order.actual_driver_id.id == id \
+						or (order.actual_driver_id is False and order.assigned_driver_id.id == id):
 						data_columns = {
 							'driver_mobile': order.driver_mobile
 						}

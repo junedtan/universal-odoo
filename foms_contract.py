@@ -156,6 +156,7 @@ class foms_contract(osv.osv):
 		('const_lk_pp', 'CHECK(fee_lk_pp >= 0)', _('Fee Luar Kota PP must be greater than or equal to zero.')),
 		('const_lk_inap', 'CHECK(fee_lk_inap >= 0)', _('Fee Luar Kota Menginap must be greater than or equal to zero.')),
 		('const_holiday_allowance', 'CHECK(fee_holiday_allowance >= 0)', _('Fee holiday allowance must be greater than or equal to zero.')),
+		('const_holiday_allowance', 'CHECK(fee_holiday_allowance >= 0)', _('Fee holiday allowance must be greater than or equal to zero.')),
 	]		
 
 # METHODS ------------------------------------------------------------------------------------------------------------------
@@ -728,6 +729,7 @@ class foms_contract_fleet(osv.osv):
 	_sql_constraints = [
 		('unique_fleet_type', 'UNIQUE(header_id,fleet_vehicle_id)', _('You cannot assign the same vehicle more than once under one contract.')),
 		('unique_driver_id', 'UNIQUE(header_id,driver_id)', _('You cannot assign the same driver more than once under one contract.')),
+		('unique_fullday_user_id', 'UNIQUE(header_id,fullday_user_id)', _('You cannot assign the same full daya user more than once under one contract.')),
 	]	
 	
 # ==========================================================================================================================

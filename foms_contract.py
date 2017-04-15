@@ -823,6 +823,9 @@ class foms_contract_shuttle_schedule_memory(osv.osv):
 	# masukkan yang baru
 		vehicle_ids = []
 		for schedule in form_data.schedule_line:
+		# JUNED: tentang pengecekan clash udah hmpir bener, seharusnya bukan cuman ngecek 
+		# apakah departure time sama, tapi apakah departure time ada di antara dua departure time untuk hari 
+		# dan fleet yang sama
 			clash = False
 			for correct_schedule in new_shuttle_schedule:
 				if correct_schedule[0] == 0:
@@ -1160,6 +1163,7 @@ class foms_contract_quota(osv.osv):
 
 	_columns = {
 		'customer_contract_id': fields.many2one('foms.contract', 'Contract', required=True, readonly=True, ondelete='cascade'),
+		'customer_id': fields.related('customer_contract_id', 'customer_id', type='many2one', string='Customer', relation="res.partner"),
 		'allocation_unit_id': fields.many2one('foms.contract.alloc.unit', 'Alloc. Unit', required=True, readonly=True, ondelete='cascade'),
 		'period': fields.char('Period', required=True, readonly=True),
 		'yellow_limit': fields.float('Yellow Limit', track_visibility="onchange"),

@@ -308,6 +308,7 @@
 			<field name="arch" type="xml">
 				<tree version="7.0" string="Monthly Usage Quota" create="false" edit="false" delete="false">
 					<field name="customer_contract_id" />
+					<field name="customer_id" />
 					<field name="allocation_unit_id" />
 					<field name="period" />
 					<field name="current_usage" />

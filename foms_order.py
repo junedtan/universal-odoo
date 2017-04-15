@@ -190,10 +190,10 @@ class foms_order(osv.osv):
 				last_number = int(order_data.name[-4:]) + 1
 			vals.update({'name': "%s%04d" % (prefix,last_number)}) # later
 		
-		if vals.get('assigned_vehicle_id', False):
-			#cek apakah ada vehicle bentrok dengan start dan finish planned date order lain
-			if context.get('source', False) != 'cron':
-				self._cek_vehicle_clash(cr, uid, vals['assigned_vehicle_id'], vals['start_planned_date'], vals['finish_planned_date'], 0, context)
+	# kalau udah di-assign mobil, cek apakah ada vehicle bentrok dengan start dan finish planned date 
+	# order lain
+		if vals.get('assigned_vehicle_id', False) and context.get('source', False) != 'cron':
+			self._cek_vehicle_clash(cr, uid, vals['assigned_vehicle_id'], vals['start_planned_date'], vals['finish_planned_date'], 0, context)
 			
 	# jalankan createnya
 		new_id = super(foms_order, self).create(cr, uid, vals, context=context)
@@ -280,6 +280,7 @@ class foms_order(osv.osv):
 
 		if vals.get('assigned_vehicle_id', False):
 		#cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
+		# ini seharusnya manggil _cek_vehicle_clash kan (udah di atas)?
 			self._cek_order_assigning_vehicle(cr, uid, vals['assigned_vehicle_id'], vals['start_planned_date'], new_id, context)
 			
 		return new_id
@@ -297,7 +298,7 @@ class foms_order(osv.osv):
 			self._cek_contract_is_active(cr,uid, [vals['customer_contract_id']], context)
 		
 	#cek dahulu apakah ada perubahan start_planned_date, kalau ada cek apakah kosong
-		if 'start_planned_date' in vals:
+		if vals.get('start_planned_date', False):
 			if not vals.get('start_planned_date', False):
 				raise osv.except_osv(_('Order Error'),_('Please input start date.'))
 		
@@ -312,6 +313,9 @@ class foms_order(osv.osv):
 		
 	# cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
 	# ini dilakukan apabila terjadi perubahan assigned_vehicle_id atau start_planned_date
+	# JUNED: salah tangkap. cek yang 1 jam sebelumnya itu seharusnya cron bukan setiap kali ada 
+	# perubahan mobil atau start planned date. Yang bener seharusnya manggil _cek_vehicle_clash saja
+	# nampaknya, kalau saya baca algo dan juga nama methodnya
 		if vals.get('assigned_vehicle_id', False) or vals.get('start_planned_date', False):
 		# ambil nilai lama dahulu apabila ternyata hanya terjadi 1 perubahan
 			assigned_vehicle = orders.assigned_vehicle_id.id
@@ -324,11 +328,11 @@ class foms_order(osv.osv):
 				start_planned_date = vals.get('start_planned_date', False)
 			if vals.get('finish_planned_date', False):
 				finish_planned_date = vals.get('finish_planned_date', False)
-		#cek assigned_vehicle apabila tidak false valuenya
+		# cek assigned_vehicle apabila tidak false valuenya
 			if assigned_vehicle:
 				self._cek_order_assigning_vehicle(cr, uid, assigned_vehicle, start_planned_date, orders.id, context)
 		# cek ada yang beririsan ga
-			if context.get('source', False) and context['source']!='cron':
+			if context.get('source', False) != 'cron':
 				self._cek_vehicle_clash(cr, uid, assigned_vehicle, start_planned_date, finish_planned_date, ids[0], context)
 		
 	# kalau order diconfirm dari mobile app, cek dulu apakah sudah diconfirm sebelumnya
@@ -355,9 +359,11 @@ class foms_order(osv.osv):
 			vals.update({
 				'cancel_reason': reason_id,
 			})
+
 	# eksekusi write nya dan ambil ulang data hasil update
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
 		orders = self.browse(cr, uid, ids, context=context)
+
 	# kalau ada perubahan status...
 		if vals.get('state', False):
 			for order_data in orders:
@@ -428,8 +434,13 @@ class foms_order(osv.osv):
 						central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_dispatcher')
 						if order_data.origin_area_id and order_data.dest_area_id and \
 						order_data.origin_area_id.homebase_id.id == order_data.dest_area_id.homebase_id.id:
-							"""
+						# sebelum cariin mobil dan supir, cek dulu di luar jam kerja ngga ini order
+						# kalau iya, jangan autoplot
 							autoplot = False
+							"""
+							JUNED: tidak usah pakai if vals.get lagi karena di atas udah keburu dipanggil write()
+							dan order_data diisi dengan data terbaru hasil write
+							jadi udah pasti isinya sama
 							if vals.get('start_planned_date', False):
 								date = datetime.strptime(vals['start_planned_date'],"%Y-%m-%d %H:%M:%S").weekday()
 								time = datetime.strptime(vals['start_planned_date'],"%Y-%m-%d %H:%M:%S").time()
@@ -437,12 +448,32 @@ class foms_order(osv.osv):
 								date = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S").weekday()
 								time_str = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S").time()
 								time = time_str.hour + (time_str.minute/60.0)
+							"""
+							"""
+							JUNED: salah algoritma. seharusnya yang dicek bukan order hours tapi working time
+							date = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S").weekday()
+							time_str = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S").time()
+							time = time_str.hour + (time_str.minute / 60.0)
 							for order_hours in order_data.customer_contract_id.order_hours:
 								if date == int(order_hours.dayofweek) and (time >= order_hours.time_from and time <= order_hours.time_to):
 									autoplot = True
 									break
+							See below for the correct one
+							PS: ada yang penting banget yaitu SERVER_TIMEZONE. kenapa penting?
+							di working time ditulis jam 08:00 s/d 17:00. itu adalah WIB (GMT+7)
+							sever menyimpan semua datetime dalam GMT, jadi misal start_planned_date 
+							09:30 WIB itu teh disimpen di database jadi jam 02:30. jadi kalau 08:00 tidak 
+							dikurangi timezone (7) maka itu udah dianggap di luar jam kerja lho padahal mah ngga
 							"""
-							autoplot = True
+							start_planned_date = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S")
+							weekday = start_planned_date.weekday()
+							order_time = start_planned_date.time()
+							order_time = order_time.hour + (order_time.minute / 60.0)
+							for working_day in order_data.customer_contract_id.working_time_id.attendance_ids:
+								if weekday == int(working_day.dayofweek) and \
+								(order_time >= working_day.hour_from - SERVER_TIMEZONE and order_time <= working_day.hour_to - SERVER_TIMEZONE):
+									autoplot = True
+									break
 						# jika order di dalam hari kerja, maka autoplot
 							if autoplot:
 							# cari vehicle dan driver yang available di jam itu
@@ -473,7 +504,7 @@ class foms_order(osv.osv):
 								partner_ids = []
 								for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
 								self.message_post(cr, SUPERUSER_ID, order_data.id,
-									body=_('Order %s were ordered outside order hours. Please assign the vehicle and the driver manually.') % order_data.name,
+									body=_('Order %s were booked outside working day. Please assign the vehicle and the driver manually.') % order_data.name,
 									partner_ids=partner_ids)
 					# kalo beda homebase, post message
 						else:
@@ -789,6 +820,19 @@ class foms_order(osv.osv):
 		else:
 			return None, None
 
+	_central_dispatch_partners = []
+# JUNED: saya sudah membuat method ini untuk mempermudah messaging dispatcher
+# contoh pemanggilan ada di _cek_order_assigning_vehicle. tolong update kode supaya 
+# setiap message ke dispatcher memanggil method ini
+	def _message_dispacther(self, cr, uid, data_id, message):
+		if not self._central_dispatch_partners:
+			user_obj = self.pool.get('res.users')
+			self._central_partner_ids = user_obj.get_partner_ids_by_group(cr, SUPERUSER_ID, 'universal', 'group_universal_dispatcher')
+		partner_ids = []
+		for partner_id in self._central_partner_ids:
+			partner_ids.append((4,partner_id))
+		self.message_post(cr, SUPERUSER_ID, data_id, message, partner_ids=partner_ids)
+
 	def _generate_random_pin(self):
 		return (''.join(random.choice(string.digits) for _ in range(6))).replace('0','1')
 
@@ -827,25 +871,20 @@ class foms_order(osv.osv):
 		if delta < order_minimum_minutes:
 			raise osv.except_osv(_('Order Error'),_('Start date is too close to current time, or is in the past. There must be at least %s minutes between now and start date.' % order_minimum_minutes))
 	
+# untuk assigned_vehicle_id yang diminta, tentukan apakah bentrok dengan order yang lagi jalan
+# ini untuk kasus di mana ada perubahan/setting ulang/pengisian assigned vehicle id di sebuah 
+# order
 	def _cek_order_assigning_vehicle(self, cr, uid, assigned_vehicle_id, start_planned_date, order_id, context=None):
-	# cari waktu
-		temp_date = datetime.strptime(start_planned_date, "%Y-%m-%d %H:%M:%S") - timedelta(minutes = 60)
+		temp_date = datetime.strptime(start_planned_date, "%Y-%m-%d %H:%M:%S")
 		order_ids = self.search(cr, uid, [
 			('start_date','<',  datetime.strftime(temp_date, "%Y-%m-%d %H:%M:%S")),
 			('finish_confirm_date','=', False),
 			('actual_vehicle_id','=', assigned_vehicle_id),
 		])
 		if len(order_ids) > 0:
-			order_data = self.browse(cr, uid, order_ids)
-			user_obj = self.pool.get('res.users')
-			central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_dispatcher')
-			partner_ids = []
-			for order in order_data:
-				for partner_id in central_partner_ids:
-					partner_ids.append((4,partner_id))
-					self.message_post(cr, SUPERUSER_ID, order_id,
-						body=_('Order %s still not finish but same vehicle assigned to this order.') % order.name ,
-						partner_ids=partner_ids)
+			for order in self.browse(cr, uid, order_ids):
+				self._message_dispacther(cr, uid, order.id, 
+					_('Order %s still not finish but same vehicle assigned to this order.') % order.name )
 
 	def _cek_vehicle_clash(self, cr, uid, assigned_vehicle_id, start_planned_date, finish_planned_date, new_id, context=None):
 		# Cek Order ga boleh bentrok sama order laen yg vehicle nya sama
@@ -1058,7 +1097,7 @@ class foms_order(osv.osv):
 	# set tanggal2
 		today = (datetime.now()).replace(hour=0, minute=0, second=0, microsecond=0)
 		next_day = today + timedelta(hours=24)
-		next7days = today + timedelta(hours=24*7)
+		next7days = today + timedelta(hours=24*1)
 	# ambil contract yang baru aktif (last_fullday_autogenerate_date kosong)
 		contract_ids = contract_obj.search(cr, uid, [
 			('service_type','=','shuttle'),('state','in',['active','planned']),
@@ -1210,7 +1249,7 @@ class foms_order(osv.osv):
 				if fleet.fullday_user_id.id == order_by_id:
 					fleet_data = fleet
 					break
-			if fleet_data and context.get('source', False) and context['source'] == 'form':
+			if fleet_data and context.get('source', False) == 'form':
 				return { 'value': {
 					'assigned_driver_id': fleet_data.driver_id.id,
 					'assigned_vehicle_id': fleet_data.fleet_vehicle_id.id,
@@ -1509,22 +1548,23 @@ class foms_order_replace_vehicle(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'replaced_vehicle_id': fields.many2one('fleet.vehicle', 'Replaced Vehicle', required=True),
+		'replaced_vehicle_id': fields.many2one('fleet.vehicle', 'Vehicle to be Replaced', required=True),
 		'replacement_vehicle_id': fields.many2one('fleet.vehicle', 'Replacement Vehicle', required=True),
-		'replacement_date': fields.datetime('Replacement Date', required=True),
+		'replacement_date': fields.datetime('Replace from Time', required=True),
 		'replacement_reason': fields.text('Replacement Reason'),
 	}
 	
 # CONSTRAINT ---------------------------------------------------------------------------------------------------------------
 	
 	def _constraint_vehicle_same_type(self, cr, uid, ids, context=None):
-		# Cek apakah vehiclenya yang direplace setipe
+	# Cek apakah vehiclenya yang direplace setipe
 		for replace_vehicles in self.browse(cr, uid, ids, context):
 			for replace_vehicle in replace_vehicles:
-				if replace_vehicle.replaced_vehicle_id.model_id != replace_vehicle.replacement_vehicle_id.model_id:
+				if replace_vehicle.replaced_vehicle_id.model_id.id != replace_vehicle.replacement_vehicle_id.model_id.id:
 					return False
 		return True
-	
+
+# JUNED: tambahkan constraint di mana replacement vehicle tidak boleh sedang dipakai di kontrak aktif lainnya
 	_constraints = [
 		(_constraint_vehicle_same_type, _('Vehicles must be in the same type.'), ['replaced_vehicle_id', 'replacement_vehicle_id']),
 	]
@@ -1562,7 +1602,7 @@ class foms_order_replace_vehicle(osv.osv):
 		for replace_vehicle in replace_vehicles:
 		# Ambil order yang statenya berikut ini
 			args = [ 
-				('header_id.state', 'not in', ['terimnated', 'finished']),
+				('header_id.state', 'not in', ['terminated', 'finished']),
 				('header_id.start_date', '<=', replace_vehicle.replacement_date),
 				('header_id.end_date', '>=', replace_vehicle.replacement_date),
 			]
@@ -1589,7 +1629,9 @@ class foms_order_replace_driver(osv.osv):
 		'replacement_date': fields.datetime('Replacement Date', required=True),
 		'replacement_reason': fields.text('Replacement Reason'),
 	}
-	
+
+# JUNED: tambahkan constraint di mana driver tidak boleh sedang bertugas di kontrak aktif lainnya
+
 # OVERRIDES ---------------------------------------------------------------------------------------------------------------
 	
 	def create(self, cr, uid, vals, context={}):

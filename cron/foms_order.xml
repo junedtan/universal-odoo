@@ -52,6 +52,19 @@
 			<field eval="'cron_autocancel_fullday_orders'" name="function" />
 			<field eval="" name="args" />
 		</record>
+
+		<record forcecreate="True" id="ir_cron_cek_order_still_running_at_one_hour_before_other_order_start" model="ir.cron">
+			<field name="name">Message dispacth if any other same vehicle still running 1 hour before other order start</field>
+			<field eval="True" name="active" />
+			<field name="user_id" ref="base.user_root" />
+			<field name="interval_number">5</field>
+			<field name="interval_type">minutes</field>
+			<field name="numbercall">-1</field>
+			<field name="active">1</field>
+			<field eval="'foms.order'" name="model" />
+			<field eval="'cron_cek_order_still_running_at_one_hour_before_other_order_start'" name="function" />
+			<field eval="" name="args" />
+		</record>
 		
 	</data>
 </openerp>

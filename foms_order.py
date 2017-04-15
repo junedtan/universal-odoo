@@ -294,10 +294,6 @@ class foms_order(osv.osv):
 				'state': 'confirmed',
 			}, context=context)
 
-		if vals.get('assigned_vehicle_id', False):
-		#cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
-			self._cek_order_assigning_vehicle(cr, uid, vals['assigned_vehicle_id'], vals['start_planned_date'], new_id, context)
-			
 		return new_id
 
 	def write(self, cr, uid, ids, vals, context={}):
@@ -326,7 +322,6 @@ class foms_order(osv.osv):
 				self._cek_min_hour_for_type_by_order(cr, uid, start_date, data.customer_contract_id.by_order_minimum_minutes, context)
 				original_start_date.update({data.id: data.start_planned_date})
 		
-			# cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
 	# ini dilakukan apabila terjadi perubahan assigned_vehicle_id atau start_planned_date
 		if vals.get('assigned_vehicle_id', False) or vals.get('start_planned_date', False):
 		# ambil nilai lama dahulu apabila ternyata hanya terjadi 1 perubahan
@@ -340,9 +335,6 @@ class foms_order(osv.osv):
 				start_planned_date = vals.get('start_planned_date', False)
 			if vals.get('finish_planned_date', False):
 				finish_planned_date = vals.get('finish_planned_date', False)
-		#cek assigned_vehicle apabila tidak false valuenya
-			if assigned_vehicle:
-				self._cek_order_assigning_vehicle(cr, uid, assigned_vehicle, start_planned_date, orders.id, context)
 		# cek ada yang beririsan ga
 			if assigned_vehicle and not context.get('source', False) or context.get('source', False) == 'form':
 				self._cek_vehicle_clash(cr, uid, assigned_vehicle, start_planned_date, finish_planned_date, ids[0], context)
@@ -815,26 +807,6 @@ class foms_order(osv.osv):
 		if delta < order_minimum_minutes:
 			raise osv.except_osv(_('Order Error'),_('Start date is too close to current time, or is in the past. There must be at least %s minutes between now and start date.' % order_minimum_minutes))
 	
-	def _cek_order_assigning_vehicle(self, cr, uid, assigned_vehicle_id, start_planned_date, order_id, context=None):
-	# cari waktu
-		temp_date = datetime.strptime(start_planned_date, "%Y-%m-%d %H:%M:%S") - timedelta(minutes = 60)
-		order_ids = self.search(cr, uid, [
-			('start_date','<',  datetime.strftime(temp_date, "%Y-%m-%d %H:%M:%S")),
-			('finish_confirm_date','=', False),
-			('actual_vehicle_id','=', assigned_vehicle_id),
-		])
-		if len(order_ids) > 0:
-			order_data = self.browse(cr, uid, order_ids)
-			user_obj = self.pool.get('res.users')
-			central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_dispatcher')
-			partner_ids = []
-			for order in order_data:
-				for partner_id in central_partner_ids:
-					partner_ids.append((4,partner_id))
-					self.message_post(cr, SUPERUSER_ID, order_id,
-						body=_('Order %s still not finish but same vehicle assigned to this order.') % order.name ,
-						partner_ids=partner_ids)
-
 	def _cek_vehicle_clash(self, cr, uid, assigned_vehicle_id, start_planned_date, finish_planned_date, new_id, context=None):
 		# Cek Order ga boleh bentrok sama order laen yg vehicle nya sama
 		# 	'id' === new_id
@@ -938,6 +910,35 @@ class foms_order(osv.osv):
 		while work_date in holidays: work_date = work_date + timedelta(hours=24)
 		while work_date.weekday() not in working_day_keys: work_date = work_date + timedelta(hours=24)
 		return work_date
+	
+	def cron_cek_order_still_running_at_one_hour_before_other_order_start(self, cr, uid, context=None):
+	#cron untuk cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
+		now = datetime.now()
+		temp_date = datetime.strftime(now + timedelta(minutes = 60),'%Y-%m-%d %H:%M:%S')
+		order_ids_ready = self.search(cr, uid, [
+			('state','=',  "ready"),
+			('start_planned_date','<=', temp_date),
+		])
+	# untuk semua order statenya masih ready, cari order yang masih running dengan actual_vehicle_id yang sama
+	# dan order yang masih running tersebut masih running dengan jeda 1 jam sebelum start planned order yang ready
+		
+		for order_ready in self.browse(cr, uid, order_ids_ready):
+			order_ids_running = self.search(cr, uid, [
+				('start_confirm_date', '!=', False),
+				('finish_confirm_date','=', False),
+				('actual_vehicle_id','=', order_ready.assigned_vehicle_id.id),
+			])
+			if len(order_ids_running) > 0:
+				user_obj = self.pool.get('res.users')
+				central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_dispatcher')
+				partner_ids = []
+				for order in self.browse(cr, uid, order_ids_running):
+				# kalau ternyata order tersebut belum selesai dengan beda waktu 60 sblm order ready start_planned_date, meesage ke dispatcher
+					for partner_id in central_partner_ids:
+						partner_ids.append((4,partner_id))
+						self.message_post(cr, SUPERUSER_ID, order_ready.id,
+							body=_('Order %s still not finish but same vehicle assigned to this order.') % order.name ,
+							partner_ids=partner_ids)
 
 	def cron_autocancel_byorder_orders(self, cr, uid, context=None):
 	# ambil semua order yang by_order dan belum start (new, confirmed, ready)

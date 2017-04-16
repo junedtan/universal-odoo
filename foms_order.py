@@ -146,6 +146,8 @@ class foms_order(osv.osv):
 		contract_data = contract_obj.browse(cr, uid, vals['customer_contract_id'])
 
 		service_type = vals.get('service_type', contract_data.service_type or False)
+
+		user_obj = self.pool.get('res.users')
 		
 	# cek dahulu apakah contractnya masih active
 		if vals.get('customer_contract_id', False):
@@ -183,7 +185,7 @@ class foms_order(osv.osv):
 			if isinstance(order_date, (str,unicode)):
 				order_date = datetime.strptime(order_date, '%Y-%m-%d %H:%M:%S')
 			prefix = "%s%s" % (order_date.strftime('%d%m%Y'), contract_data.customer_id.partner_code.upper())
-			order_ids = self.search(cr, uid, [('name','=like',prefix+'%')], order='request_date DESC')
+			order_ids = self.search(cr, uid, [('name','=like',prefix+'%')], order='request_date DESC, name DESC')
 			if len(order_ids) == 0:
 				last_number = 1
 			else:
@@ -234,6 +236,7 @@ class foms_order(osv.osv):
 					'notification': ['order_approve'],
 				}
 			# kalau usage control di-on-kan, ada sedikit perbedaan di notificationnya
+				is_over_quota = False
 				if new_data.customer_contract_id.usage_control_level != 'no_control':
 					if new_data.over_quota_status in ['warning','approval']:
 						quota_obj = self.pool.get('foms.contract.quota')
@@ -252,6 +255,14 @@ class foms_order(osv.osv):
 							'order_usage': new_data.alloc_unit_usage,
 							'red_limit': red_limit,
 						}
+						is_over_quota = True
+					
+			#kalau yang memesan adalah approver dan tidak over quota, maka state menjadi confirmed
+				is_approver = user_obj.has_group(cr, new_data.order_by.id, 'universal.group_universal_approver')
+				if not is_over_quota and is_approver:
+					self.write(cr, uid, [new_id], {
+						'state': 'confirmed',
+					}, context=context)
 				self.webservice_post(cr, uid, ['approver'], 'create', new_data, \
 						webservice_context=webservice_context, context=context)
 			# tetep notif ke booker bahwa ordernya udah masuk
@@ -270,16 +281,12 @@ class foms_order(osv.osv):
 				'state': 'confirmed',
 			}, context=context)
 
-		if vals.get('assigned_vehicle_id', False):
-		#cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
-		# ini seharusnya manggil _cek_vehicle_clash kan (udah di atas)?
-			self._cek_order_assigning_vehicle(cr, uid, vals['assigned_vehicle_id'], vals['start_planned_date'], new_id, context)
-			
 		return new_id
 
 	def write(self, cr, uid, ids, vals, context={}):
 
 		context = context and context or {}
+		source = context.get('source', False)
 
 		orders = self.browse(cr, uid, ids)
 
@@ -303,11 +310,7 @@ class foms_order(osv.osv):
 				self._cek_min_hour_for_type_by_order(cr, uid, start_date, data.customer_contract_id.by_order_minimum_minutes, context)
 				original_start_date.update({data.id: data.start_planned_date})
 		
-	# cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
-	# ini dilakukan apabila terjadi perubahan assigned_vehicle_id atau start_planned_date
-	# JUNED: salah tangkap. cek yang 1 jam sebelumnya itu seharusnya cron bukan setiap kali ada 
-	# perubahan mobil atau start planned date. Yang bener seharusnya manggil _cek_vehicle_clash saja
-	# nampaknya, kalau saya baca algo dan juga nama methodnya
+	# cek apakah bentrok waktu sama order lain
 		if vals.get('assigned_vehicle_id', False) or vals.get('start_planned_date', False):
 		# ambil nilai lama dahulu apabila ternyata hanya terjadi 1 perubahan
 			assigned_vehicle = orders.assigned_vehicle_id.id
@@ -320,11 +323,8 @@ class foms_order(osv.osv):
 				start_planned_date = vals.get('start_planned_date', False)
 			if vals.get('finish_planned_date', False):
 				finish_planned_date = vals.get('finish_planned_date', False)
-		# cek assigned_vehicle apabila tidak false valuenya
-			if assigned_vehicle:
-				self._cek_order_assigning_vehicle(cr, uid, assigned_vehicle, start_planned_date, orders.id, context)
 		# cek ada yang beririsan ga
-			if context.get('source', False) != 'cron':
+			if assigned_vehicle and (not source or source == 'form'):
 				self._cek_vehicle_clash(cr, uid, assigned_vehicle, start_planned_date, finish_planned_date, ids[0], context)
 		
 	# kalau order diconfirm dari mobile app, cek dulu apakah sudah diconfirm sebelumnya
@@ -868,6 +868,9 @@ class foms_order(osv.osv):
 # untuk assigned_vehicle_id yang diminta, tentukan apakah bentrok dengan order yang lagi jalan
 # ini untuk kasus di mana ada perubahan/setting ulang/pengisian assigned vehicle id di sebuah 
 # order
+	"""
+	JUNED: ini seharusnya udah ngga ada. dipertahankan supaya kalian dapet contoh pemanggilan _message_dispacther
+	kalau caranya udah ketangkep, hapus aja bagian ini
 	def _cek_order_assigning_vehicle(self, cr, uid, assigned_vehicle_id, start_planned_date, order_id, context=None):
 		temp_date = datetime.strptime(start_planned_date, "%Y-%m-%d %H:%M:%S")
 		order_ids = self.search(cr, uid, [
@@ -879,6 +882,7 @@ class foms_order(osv.osv):
 			for order in self.browse(cr, uid, order_ids):
 				self._message_dispacther(cr, uid, order.id, 
 					_('Order %s still not finish but same vehicle assigned to this order.') % order.name )
+	"""
 
 	def _cek_vehicle_clash(self, cr, uid, assigned_vehicle_id, start_planned_date, finish_planned_date, new_id, context=None):
 		# Cek Order ga boleh bentrok sama order laen yg vehicle nya sama
@@ -983,6 +987,33 @@ class foms_order(osv.osv):
 		while work_date in holidays: work_date = work_date + timedelta(hours=24)
 		while work_date.weekday() not in working_day_keys: work_date = work_date + timedelta(hours=24)
 		return work_date
+	
+# ini akan menjadi legacy Anton di kode Universal: nama method paling panjang!
+# :D :D :D
+# JUNED: jangan dihapus, this is so hilarious!
+	def cron_cek_order_still_running_at_1_hour_before_other_order_start(self, cr, uid, context=None):
+	# cron untuk cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
+		now = datetime.now()
+	# kenapa 65 (menit) bukan 60? mengantisipasi cronnya jalan cukup lambat sehingga setelah 5 menit 
+	# masih belum beres
+		temp_date = datetime.strftime(now + timedelta(minutes=65), '%Y-%m-%d %H:%M:%S')
+		order_ids_ready = self.search(cr, uid, [
+			('state','=',"ready"),
+			('start_planned_date','<=',temp_date),
+		])
+	# untuk semua order statenya masih ready, cari order yang masih running dengan actual_vehicle_id yang sama
+	# dan order yang masih running tersebut masih running dengan jeda 1 jam sebelum start planned order yang ready		
+		for order_ready in self.browse(cr, uid, order_ids_ready):
+			order_ids_running = self.search(cr, uid, [
+				('start_confirm_date','!=',False),
+				('finish_confirm_date','=',False),
+				('actual_vehicle_id','=',order_ready.assigned_vehicle_id.id),
+			])
+		# kalau ternyata order tersebut belum selesai dengan beda waktu 60 sblm order ready start_planned_date, meesage ke dispatcher
+			if len(order_ids_running) > 0:
+				for order in self.browse(cr, uid, order_ids_running):
+					self._message_dispacther(cr, uid, order.id, 
+						_('Order %s still is still running but in one hour another order should have been started.') % order.name)
 
 	def cron_autocancel_byorder_orders(self, cr, uid, context=None):
 	# ambil semua order yang by_order dan belum start (new, confirmed, ready)

@@ -38,9 +38,38 @@ class res_users(osv.osv):
 		'is_hr': fields.function(_is_hr, type="boolean", method=True, store=True, string='Is HR?'),
 	}
 	
+	# OVERRIDES -------------------------------------------------------------------------------------------------------------
+	
+	def create(self, cr, uid, vals, context=None):
+		new_hr_id = super(res_users, self).create(cr, uid, vals, context=context)
+		
+	# if is_pic or is_approver or is_booker or is_fullday_passenger or is_webservice_sync
+	# then delete user group employee, because it shouldn't be that way
+		if self.has_group(cr, new_hr_id, 'universal.group_universal_customer_pic') or \
+				self.has_group(cr, new_hr_id, 'universal.group_universal_approver') or \
+				self.has_group(cr, new_hr_id, 'universal.group_universal_booker') or \
+				self.has_group(cr, new_hr_id, 'universal.group_universal_passenger') or \
+				self.has_group(cr, new_hr_id, 'universal.group_universal_webservice_sync'):
+			cr.execute("DELETE FROM res_groups_users_rel WHERE uid=%s AND gid in (" % new_hr_id +
+						"SELECT id FROM res_groups WHERE name='Employee' AND category_id in (" +
+						"SELECT id FROM ir_module_category WHERE name='Human Resources' ))")
+		return new_hr_id
+	
 	def write(self , cr, uid, ids, vals, context={}):
 		if isinstance(ids, int): ids = [ids]
 		result = super(res_users, self).write(cr, uid, ids, vals, context=context)
+	# if is_pic or is_approver or is_booker or is_fullday_passenger or is_webservice_sync
+	# then delete user group employee, because it shouldn't be that way
+		for id in ids:
+			if self.has_group(cr, id, 'universal.group_universal_customer_pic') or \
+					self.has_group(cr, id, 'universal.group_universal_approver') or \
+					self.has_group(cr, id, 'universal.group_universal_booker') or \
+					self.has_group(cr, id, 'universal.group_universal_passenger') or \
+					self.has_group(cr, id, 'universal.group_universal_webservice_sync'):
+				cr.execute("DELETE FROM res_groups_users_rel WHERE uid=%s AND gid in (" % id +
+						   "SELECT id FROM res_groups WHERE name='Employee' AND category_id in (" +
+						   "SELECT id FROM ir_module_category WHERE name='Human Resources' ))")
+		
 	# bila ada perubahan password, untuk fullday_passenger ubah juga pin nya (idem password), dan broadcast perubahannya
 		if vals.get('password'):
 			user_id = ids[0]

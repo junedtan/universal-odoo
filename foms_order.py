@@ -847,23 +847,27 @@ class foms_order(osv.osv):
 			('fleet_type_id','=',fleet_type_id),
 			('id','!=',order_id),
 		])
-		vehicle_in_use_ids = []
+		vehicle_in_use_ids = []	# ongoing vehicle that can't be used
 		current_order = self.browse(cr, uid, order_id)
 		for order in self.browse(cr, uid, ongoing_order_ids):
-			if order.finish_planned_date >= start_planned_date: continue # udah jelas ngga available
+			if order.finish_planned_date >= start_planned_date: # udah jelas ngga available
+				if order.assigned_vehicle_id: vehicle_in_use_ids.append(order.assigned_vehicle_id.id)
+				if order.actual_vehicle_id: vehicle_in_use_ids.append(order.actual_vehicle_id.id)
 		# perhitungkan delay dari satu area ke area lain
 			if order.dest_area_id and current_order.origin_area_id:
 				delay = area_delay_obj.get_delay(cr, uid, order.dest_area_id.id, current_order.origin_area_id.id)
 				finish_date = datetime.strptime(order.finish_planned_date, '%Y-%m-%d %H:%M:%S') + timedelta(minutes=delay)
 				finish_date = finish_date.strftime('%Y-%m-%d %H:%M:%S')
-				if finish_date >= start_planned_date: continue
-			if order.assigned_vehicle_id: vehicle_in_use_ids.append(order.assigned_vehicle_id.id)
-			if order.actual_vehicle_id: vehicle_in_use_ids.append(order.actual_vehicle_id.id)
+				if finish_date >= start_planned_date:
+					if order.assigned_vehicle_id: vehicle_in_use_ids.append(order.assigned_vehicle_id.id)
+					if order.actual_vehicle_id: vehicle_in_use_ids.append(order.actual_vehicle_id.id)
 		vehicle_in_use_ids = list(set(vehicle_in_use_ids))
 	# ambil vehicle pertama yang available untuk jenis mobil yang diminta
 		selected_fleet_line = None
 		for fleet in current_order.customer_contract_id.car_drivers:
 			if fleet.fleet_vehicle_id.id in vehicle_in_use_ids or fleet.fleet_type_id.id != fleet_type_id: continue
+		# jika ada vehicle di contract tsb dengan type id yg sama
+		# dan tidak sedang digunakan, maka assign ke selected_fleet_line
 			selected_fleet_line = fleet
 			break
 		if selected_fleet_line:

@@ -529,19 +529,26 @@ class foms_contract(osv.osv):
 		if isinstance(ids, int): ids = [ids]
 		contract_id = ids[0]
 		contract = self.browse(cr, uid, contract_id, context=context)
+		contract_fleet_planning_memory_obj = self.pool.get('foms.contract.fleet.planning.memory')
+	# hasil yang didapat seharusnya cuman 1 id, karena bersifat unique untuk setiap contract dengan fleet_planningnya
+		id_fleet_planning = contract_fleet_planning_memory_obj.search(cr, uid, [('contract_id','=',contract.id)])
+		fleet_planning = contract_fleet_planning_memory_obj.browse(cr, uid, id_fleet_planning, context=context)
 		if contract.service_type != 'shuttle':
 			raise osv.except_osv(_('Contract Error'),_('Shuttle schedules are for Shuttle contracts only. Please make sure service type of this contract is Shuttle.'))
+		if len(fleet_planning.planning_line) == 0:
+			raise osv.except_osv(_('Contract Error'),_('Dont have any vehicle, please fill fleet planning vehicle first.'))
 	# ambil settingan shuttle schedule
 		shuttle_schedules = []
 		for schedule in contract.shuttle_schedules:
-			shuttle_schedules.append({
-				'dayofweek': schedule.dayofweek,
-				'sequence': schedule.sequence,
-				'route_id': schedule.route_id.id,
-				'fleet_vehicle_id': schedule.fleet_vehicle_id.id,
-				'departure_time': schedule.departure_time,
-				#'arrival_time': schedule.arrival_time,
-			})
+			if schedule.fleet_vehicle_id.id in fleet_planning.planning_line.ids:
+				shuttle_schedules.append({
+					'dayofweek': schedule.dayofweek,
+					'sequence': schedule.sequence,
+					'route_id': schedule.route_id.id,
+					'fleet_vehicle_id': schedule.fleet_vehicle_id.id,
+					'departure_time': schedule.departure_time,
+					#'arrival_time': schedule.arrival_time,
+				})
 	# panggil si memory yang buat allocate driver
 		return {
 			'name': _('Shuttle Schedule'),

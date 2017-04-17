@@ -529,26 +529,21 @@ class foms_contract(osv.osv):
 		if isinstance(ids, int): ids = [ids]
 		contract_id = ids[0]
 		contract = self.browse(cr, uid, contract_id, context=context)
-		contract_fleet_planning_memory_obj = self.pool.get('foms.contract.fleet.planning.memory')
-	# hasil yang didapat seharusnya cuman 1 id, karena bersifat unique untuk setiap contract dengan fleet_planningnya
-		id_fleet_planning = contract_fleet_planning_memory_obj.search(cr, uid, [('contract_id','=',contract.id)])
-		fleet_planning = contract_fleet_planning_memory_obj.browse(cr, uid, id_fleet_planning, context=context)
 		if contract.service_type != 'shuttle':
 			raise osv.except_osv(_('Contract Error'),_('Shuttle schedules are for Shuttle contracts only. Please make sure service type of this contract is Shuttle.'))
-		if len(fleet_planning.planning_line) == 0:
+		if len(contract.car_drivers) == 0:
 			raise osv.except_osv(_('Contract Error'),_('Dont have any vehicle, please fill fleet planning vehicle first.'))
 	# ambil settingan shuttle schedule
 		shuttle_schedules = []
 		for schedule in contract.shuttle_schedules:
-			if schedule.fleet_vehicle_id.id in fleet_planning.planning_line.ids:
-				shuttle_schedules.append({
-					'dayofweek': schedule.dayofweek,
-					'sequence': schedule.sequence,
-					'route_id': schedule.route_id.id,
-					'fleet_vehicle_id': schedule.fleet_vehicle_id.id,
-					'departure_time': schedule.departure_time,
-					#'arrival_time': schedule.arrival_time,
-				})
+			shuttle_schedules.append({
+				'dayofweek': schedule.dayofweek,
+				'sequence': schedule.sequence,
+				'route_id': schedule.route_id.id,
+				'fleet_vehicle_id': schedule.fleet_vehicle_id.id,
+				'departure_time': schedule.departure_time,
+				#'arrival_time': schedule.arrival_time,
+			})
 	# panggil si memory yang buat allocate driver
 		return {
 			'name': _('Shuttle Schedule'),
@@ -865,6 +860,20 @@ class foms_contract_shuttle_schedule_line_memory(osv.osv):
 	_name = "foms.contract.shuttle.schedule.line.memory"
 	_description = 'Contract Shuttle Schedule Line'
 	
+	def _contract_car_drivers_fleet_vehicle(self, cr, uid, ids, context=None):
+		# filter vehicle berdasarkan hasil fleet planning contract
+		shuttle_schedule_obj = self.pool.get('foms.contract.shuttle.schedule.memory')
+		contract_obj = self.pool.get('foms.contract')
+		result = {}
+		for shuttle_schedule_line in self.browse(cr, uid, ids, context):
+			shuttle_schedule = shuttle_schedule_obj.browse(cr, uid, shuttle_schedule_line.header_id.id, context)
+			contract = contract_obj.browse(cr, uid, shuttle_schedule.contract_id.id, context)
+			fleet_vehicle_id = []
+			for car_driver in contract.car_drivers:
+				fleet_vehicle_id.append(car_driver.fleet_vehicle_id)
+			result[shuttle_schedule.id] = fleet_vehicle_id
+		return result
+		
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
@@ -880,9 +889,11 @@ class foms_contract_shuttle_schedule_line_memory(osv.osv):
 			('6','Sunday'),], 'Day of Week', required=True),
 		'sequence': fields.integer('Sequence', required=True),
 		'route_id': fields.many2one('res.partner.route', 'Route', ondelete='restrict', required=True),
-		'fleet_vehicle_id': fields.many2one('fleet.vehicle', 'Fleet Vehicle', ondelete='restrict', required=True),
+		'fleet_vehicle_id': fields.many2one('fleet.vehicle', 'Fleet Vehicle', ondelete='restrict', required=True,
+			domain="[('id', 'in', contract_car_drivers_fleet_vehicle.ids)]"),
 		'departure_time': fields.float('Departure Time', required=True),	
-		#'arrival_time': fields.float('Arrival Time', required=True),	
+		#'arrival_time': fields.float('Arrival Time', required=True),
+		'contract_car_drivers_fleet_vehicle': fields.function(_contract_car_drivers_fleet_vehicle, method=True, type='one2many'),
 	}
 	
 # ==========================================================================================================================

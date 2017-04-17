@@ -31,16 +31,36 @@ class res_users(osv.osv):
 		for row in self.browse(cr, uid, ids, context=context):
 			result[row.id] = row.id in user_ids
 		return result
-
-
+	
 	_columns = {
 		'pin': fields.char('PIN', size=64, copy=False),
 		'is_hr': fields.function(_is_hr, type="boolean", method=True, store=True, string='Is HR?'),
 	}
 	
-	def write(self , cr, uid, ids, vals, context={}):
+# OVERRIDES -------------------------------------------------------------------------------------------------------------
+	
+	def create(self, cr, uid, vals, context=None):
+		new_hr_id = super(res_users, self).create(cr, uid, vals, context=context)
+		
+	# if is_pic or is_approver or is_booker or is_fullday_passenger or is_webservice_sync
+	# then delete user group employee, because it shouldn't be that way
+		if self._should_hr_off(cr, uid, new_hr_id):
+			cr.execute("DELETE FROM res_groups_users_rel WHERE uid=%s AND gid in (" % new_hr_id +
+						"SELECT id FROM res_groups WHERE category_id in (" +
+						"SELECT id FROM ir_module_category WHERE name='Human Resources' ))")
+		return new_hr_id
+	
+	def write(self, cr, uid, ids, vals, context={}):
 		if isinstance(ids, int): ids = [ids]
 		result = super(res_users, self).write(cr, uid, ids, vals, context=context)
+	# if is_pic or is_approver or is_booker or is_fullday_passenger or is_webservice_sync
+	# then delete user group employee, because it shouldn't be that way
+		for id in ids:
+			if self._should_hr_off(cr, uid, id):
+				cr.execute("DELETE FROM res_groups_users_rel WHERE uid=%s AND gid in (" % id +
+						   "SELECT id FROM res_groups WHERE category_id in (" +
+						   "SELECT id FROM ir_module_category WHERE name='Human Resources' ))")
+		
 	# bila ada perubahan password, untuk fullday_passenger ubah juga pin nya (idem password), dan broadcast perubahannya
 		if vals.get('password'):
 			user_id = ids[0]
@@ -60,7 +80,9 @@ class res_users(osv.osv):
 						'pin': vals.get('password'),
 					}, context=context)
 		return result
-
+	
+# METHODS -----------------------------------------------------------------------------------------------------------------
+	
 	def get_user_ids_by_group(self, cr, uid, module_name, usergroup_id):
 		if isinstance(usergroup_id, (str)):
 			model_obj = self.pool.get('ir.model.data')
@@ -83,3 +105,23 @@ class res_users(osv.osv):
 		for user in self.browse(cr, uid, user_ids):
 			partner_ids.append(user.partner_id.id)
 		return partner_ids
+	
+	def _should_hr_off(self, cr, uid, id):
+		"""
+		Check whether user can't have both his universal group and HR group.
+		:param cr:
+		:param uid:
+		:param id: user_id
+		:return: true if the user_id
+		"""
+		groups = ['universal.group_universal_customer_pic',
+			'universal.group_universal_approver',
+			'universal.group_universal_booker',
+			'universal.group_universal_passenger',
+			'universal.group_universal_webservice_sync', ]
+		isHROff = False
+		for group in groups:
+			if self.has_group(cr, id, group):
+				isHROff = True
+				break
+		return isHROff

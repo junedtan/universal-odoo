@@ -160,6 +160,10 @@ class foms_order(osv.osv):
 	#cek dahulu apakah contractnya masih active
 		if vals.get('customer_contract_id', False):
 			self._cek_contract_is_active(cr,uid, [vals['customer_contract_id']], context)
+		
+	#cek apakah ada order by
+		if not vals.get('order_by', False):
+			raise osv.except_osv(_('Order Error'),_('Please input order by.'))
 
 	# untuk order by order, harus dicek dulu bahwa order harus dalam maksimal jam sebelumnya
 		if vals.get('service_type', False) == 'by_order':
@@ -228,6 +232,8 @@ class foms_order(osv.osv):
 					if not fleet_data.driver_id.id and not fleet_data.fleet_vehicle_id.id:
 						vals['state'] = 'new'
 					self.write(cr, uid, [new_id], vals, context=context)
+			self.webservice_post(cr, uid, ['fullday_passenger'], 'create', new_data, \
+				webservice_context={}, context=context)
 	# untuk order By Order
 		elif new_data.service_type == 'by_order':
 		# cek apakah unit ini punya approver?
@@ -1102,10 +1108,13 @@ class foms_order(osv.osv):
 		allocation_unit_ids = []
 		for alloc in contract_data.allocation_units:
 			allocation_unit_ids.append(alloc.id)
+		value = {}
+		value['service_type'] = contract_data.service_type
+	# bila fullday maka harus dipilih Order by (yaitu penumpang fullday), jangan default=uid
+		if contract_data.service_type == 'full_day':
+			value['order_by'] = ''
 		return {
-			'value': {
-				'service_type': contract_data.service_type,
-			},
+			'value': value,
 			'domain': {
 				'fleet_type_id': [('id','in',fleet_type_ids)],
 				'origin_area_id': [('id','in',area_ids)],

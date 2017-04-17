@@ -293,7 +293,7 @@ class foms_order(osv.osv):
 		user_obj = self.pool.get('res.users')
 		
 		# DEBUG_MODE
-		# vals['state'] = 'finish_confirmed'
+		vals['state'] = 'finish_confirmed'
 		
 	#apabila ada perubahan contract cek dahulu apakah contractnya masih active
 		if vals.get('customer_contract_id', False):
@@ -499,10 +499,10 @@ class foms_order(osv.osv):
 					
 					
 				# Untuk menentukan siapa yang dapat order by_order yang autoplot
-					# DEBUG MODE
-					# vals['start_confirm_date'] = '2017-04-18 00:00:00'
+					# DEBUG_MODE
+					vals['start_confirm_date'] = '2017-04-22 00:00:00'
 					# vals['finish_confirm_date'] = '2017-04-18 01:00:00'
-					# vals['finish_confirm_date'] = '2017-04-18 5:00:00'
+					vals['finish_confirm_date'] = '2017-04-22 5:00:00'
 					# vals['finish_confirm_date'] = '2017-04-18 9:00:00'
 					# vals['finish_confirm_date'] = '2017-04-20 01:00:00'
 					# vals['finish_confirm_date'] = '2017-04-20 5:00:00'
@@ -519,21 +519,30 @@ class foms_order(osv.osv):
 						finish_confirm_time = finish_confirm_time.hour + (finish_confirm_time.minute / 60.0)
 						working_days = (finish_confirm_date-start_confirm_date).days + 1
 						
-						# Get working time supaya tidak usah looping berkali-kali jika start dan finish tidak dalam hari yg sama
+					# Get working time supaya tidak usah looping berkali-kali jika start dan finish tidak dalam hari yg sama
 						working_time = {
-							'0':{'hour_from': 0,'hour_to': 0,},
-							'1':{'hour_from': 0,'hour_to': 0,},
-							'2':{'hour_from': 0,'hour_to': 0,},
-							'3':{'hour_from': 0,'hour_to': 0,},
-							'4':{'hour_from': 0,'hour_to': 0,},
-							'5':{'hour_from': 0,'hour_to': 0,},
-							'6':{'hour_from': 0,'hour_to': 0,},
+							'0': {'hour_from': 0, 'hour_to': 0,},
+							'1': {'hour_from': 0, 'hour_to': 0,},
+							'2': {'hour_from': 0, 'hour_to': 0,},
+							'3': {'hour_from': 0, 'hour_to': 0,},
+							'4': {'hour_from': 0, 'hour_to': 0,},
+							'5': {'hour_from': 0, 'hour_to': 0,},
+							'6': {'hour_from': 0, 'hour_to': 0,},
 						}
+					# jika ada hari yang sama, misal Senin 7-9, 10-14,
+					# maka working_time untuk hari itu dimulai dari 7 sampai 14
+					# jam kosong 9-10 tidak dihitung sebagai jam lembur
 						for working_day in order_data.customer_contract_id.working_time_id.attendance_ids:
-							working_time[working_day.dayofweek]['hour_from'] = working_day.hour_from - SERVER_TIMEZONE
-							working_time[working_day.dayofweek]['hour_to'] = working_day.hour_to - SERVER_TIMEZONE
-						
-						# Hitung lama kerja dan lembur
+							if working_time[working_day.dayofweek]['hour_from'] == working_time[working_day.dayofweek]['hour_to']:
+								working_time[working_day.dayofweek]['hour_from'] = working_day.hour_from - SERVER_TIMEZONE
+								working_time[working_day.dayofweek]['hour_to'] = working_day.hour_to - SERVER_TIMEZONE
+							else:
+								working_time[working_day.dayofweek]['hour_from'] = min(working_day.hour_from - SERVER_TIMEZONE,
+																				working_time[working_day.dayofweek]['hour_from'])
+								working_time[working_day.dayofweek]['hour_to'] = max(working_day.hour_to - SERVER_TIMEZONE,
+									working_time[working_day.dayofweek]['hour_to'])
+							
+					# Hitung lama kerja dan lembur
 						working_normal_time = 0
 						working_overtime = 0
 						w = 1

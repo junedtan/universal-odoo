@@ -91,6 +91,37 @@ DOMAIN_DUPLI_DICT = {
 	'name': 'ilike'
 }
 
+SERVER_TIMEZONE = 7 # WIB
+
+"""
+mengkonversi sebuah datetime (string) atau date (string) menjadi datetime yang sesuai timezone
+server. Di Odoo, timezone pasti GMT, yang artinya bila kita ingin men-store misal tanggal 
+2017-04-13 00:00:00 dalam WIB maka seharusnya yang disimpan bila timezone adalah GMT+7 adalah 
+2017-04-12 17:00:00. method ini melakukan hal itu
+
+date_time: date atau datetime string yang mau dikonversi
+is_date: apakah string mengandung date (True) atau datetime (False)
+reverse: kalau True, maka jam dikurangi, bila False maka ditambah
+to_string: kalau True, hasil konversi dibalikin menjadi string instead of direturn mentah2
+	sebagai datetime
+"""
+def datetime_to_server(date_time, is_date=False, reverse=False, to_string=True):
+	from datetime import datetime, timedelta
+	datetime_format = '%Y-%m-%d %H:%M:%S'
+	datetime_display_format = '%d/%m/%Y %H:%M:%S'
+	if is_date:
+		date_time += ' 00:00:00'
+	date_time_convert = datetime.strptime(date_time,datetime_format)
+	if reverse:
+		date_time_convert = date_time_convert - timedelta(hours=SERVER_TIMEZONE)
+	else:
+		date_time_convert = date_time_convert + timedelta(hours=SERVER_TIMEZONE)
+	if to_string:
+		return date_time_convert.strftime(datetime_display_format)
+	else:
+		return date_time_convert
+
+
 import chjs_region
 import hr_recruitment
 import hr_employee

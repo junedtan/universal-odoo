@@ -1162,6 +1162,7 @@ class foms_contract_quota(osv.osv):
 
 	_columns = {
 		'customer_contract_id': fields.many2one('foms.contract', 'Contract', required=True, readonly=True, ondelete='cascade'),
+		'customer_id': fields.related('customer_contract_id', 'customer_id', type='many2one', string='Customer', relation="res.partner"),
 		'allocation_unit_id': fields.many2one('foms.contract.alloc.unit', 'Alloc. Unit', required=True, readonly=True, ondelete='cascade'),
 		'period': fields.char('Period', required=True, readonly=True),
 		'yellow_limit': fields.float('Yellow Limit', track_visibility="onchange"),
@@ -1384,7 +1385,7 @@ class foms_contract_quota_change_log(osv.osv):
 				'confirm_by': uid,
 				'confirm_date': datetime.now(),
 			}, context=context)
-			# ganti over_quota_status semua order yang lagi pending untuk contract dan allocation unit ini
+		# ganti over_quota_status semua order yang lagi pending untuk contract dan allocation unit ini
 			order_ids = order_obj.search(cr, uid, [
 				('customer_contract_id', '=', vals['customer_contract_id']),
 				('alloc_unit_id', '=', vals['allocation_unit_id']),
@@ -1394,7 +1395,7 @@ class foms_contract_quota_change_log(osv.osv):
 			if len(order_ids) > 0:
 				for order_data in order_obj.browse(cr, uid, order_ids):
 					new_credit_per_usage, new_over_quota_status = order_obj.determine_over_quota_status(cr, uid,
-						vals['customer_contract_id'], vals['allocation_unit_id'], order_data.fleet_type_id.id)
+						vals['customer_contract_id'], vals['allocation_unit_id'], order_data.fleet_type_id.id, add_credit_per_usage=False)
 					order_obj.write(cr, uid, [order_data.id], {
 						'alloc_unit_usage': new_credit_per_usage,
 						'over_quota_status': new_over_quota_status,
@@ -1408,7 +1409,7 @@ class foms_contract_quota_change_log(osv.osv):
 					'notification': ['contract_quota_limit_request'],
 				}, context=context)
 			else:
-			 # cuman boleh dari app, ga boleh langsung input dari Odoo
+			# cuman boleh dari app, ga boleh langsung input dari Odoo
 				raise osv.except_osv(_('Usage Control Error'),_('Usage control of this contract is handled by customer. You cannot record change log, changes must originate from the customer itself.'))
 		return new_id
 	

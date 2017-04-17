@@ -429,34 +429,6 @@ class foms_order(osv.osv):
 						# sebelum cariin mobil dan supir, cek dulu di luar jam kerja ngga ini order
 						# kalau iya, jangan autoplot
 							autoplot = False
-							"""
-							JUNED: tidak usah pakai if vals.get lagi karena di atas udah keburu dipanggil write()
-							dan order_data diisi dengan data terbaru hasil write
-							jadi udah pasti isinya sama
-							if vals.get('start_planned_date', False):
-								date = datetime.strptime(vals['start_planned_date'],"%Y-%m-%d %H:%M:%S").weekday()
-								time = datetime.strptime(vals['start_planned_date'],"%Y-%m-%d %H:%M:%S").time()
-							else:
-								date = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S").weekday()
-								time_str = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S").time()
-								time = time_str.hour + (time_str.minute/60.0)
-							"""
-							"""
-							JUNED: salah algoritma. seharusnya yang dicek bukan order hours tapi working time
-							date = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S").weekday()
-							time_str = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S").time()
-							time = time_str.hour + (time_str.minute / 60.0)
-							for order_hours in order_data.customer_contract_id.order_hours:
-								if date == int(order_hours.dayofweek) and (time >= order_hours.time_from and time <= order_hours.time_to):
-									autoplot = True
-									break
-							See below for the correct one
-							PS: ada yang penting banget yaitu SERVER_TIMEZONE. kenapa penting?
-							di working time ditulis jam 08:00 s/d 17:00. itu adalah WIB (GMT+7)
-							sever menyimpan semua datetime dalam GMT, jadi misal start_planned_date 
-							09:30 WIB itu teh disimpen di database jadi jam 02:30. jadi kalau 08:00 tidak 
-							dikurangi timezone (7) maka itu udah dianggap di luar jam kerja lho padahal mah ngga
-							"""
 							start_planned_date = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S")
 							weekday = start_planned_date.weekday()
 							order_time = start_planned_date.time()
@@ -521,6 +493,24 @@ class foms_order(osv.osv):
 						self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'update', order_data, context=context)
 					elif order_data.service_type == 'by_order':
 						self.webservice_post(cr, uid, ['pic','approver','booker'], 'update', order_data, context=context)
+						
+						
+				# Untuk menentukan siapa yang dapat order by_order yang autoplot
+				# 	if vals.get('start_confirm_date',False) and vals.get('finish_confirm_date',False):
+				# 	# Hitung lama lembur
+				# 		start_confirm_date = datetime.strptime(vals['start_confirm_date'],"%Y-%m-%d %H:%M:%S")
+				# 		start_confirm_weekday = start_confirm_date.weekday()
+				# 		start_confirm_time = start_confirm_date.time()
+				# 		start_confirm_time = start_confirm_time.hour + (order_time.minute / 60.0)
+				# 		finish_confirm_date = datetime.strptime(vals['finish_confirm_date'],"%Y-%m-%d %H:%M:%S")
+				# 		finish_confirm_weekday = finish_confirm_date.weekday()
+				# 		finish_confirm_time = finish_confirm_date.time()
+				# 		finish_confirm_time = finish_confirm_time.hour + (order_time.minute / 60.0)
+				# 		for working_day in order_data.customer_contract_id.working_time_id.attendance_ids:
+				# 			if weekday == int(working_day.dayofweek) and \
+				# 					( >= working_day.hour_from - SERVER_TIMEZONE and  <= working_day.hour_to - SERVER_TIMEZONE):
+				#
+				# 				break
 			# kalau dibatalin
 				elif vals['state'] == 'canceled':
 				# kalau kontraknya pakai usage control, maka hapus dari usage log

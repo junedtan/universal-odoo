@@ -571,8 +571,6 @@ class foms_order(osv.osv):
 							w += 1
 							current_weekday_int = (current_weekday_int+1)%7
 							current_weekday = str(current_weekday_int)
-						current_weekday = 0
-						raise osv.except_osv(_('Argawgawg'),_('wadawdawdawdawdawdawd.'))
 			# kalau dibatalin
 				elif vals['state'] == 'canceled':
 				# kalau kontraknya pakai usage control, maka hapus dari usage log

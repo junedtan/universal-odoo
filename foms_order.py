@@ -292,6 +292,9 @@ class foms_order(osv.osv):
 
 		user_obj = self.pool.get('res.users')
 		
+		# DEBUG_MODE
+		vals['state'] = 'finish_confirmed'
+		
 	#apabila ada perubahan contract cek dahulu apakah contractnya masih active
 		if vals.get('customer_contract_id', False):
 			self._cek_contract_is_active(cr,uid, [vals['customer_contract_id']], context)
@@ -493,24 +496,83 @@ class foms_order(osv.osv):
 						self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'update', order_data, context=context)
 					elif order_data.service_type == 'by_order':
 						self.webservice_post(cr, uid, ['pic','approver','booker'], 'update', order_data, context=context)
+					
+					
+					# Untuk menentukan siapa yang dapat order by_order yang autoplot
+					# DEBUG MODE
+					vals['start_confirm_date'] = '2017-04-18 00:00:00'
+					# vals['finish_confirm_date'] = '2017-04-18 01:00:00'
+					# vals['finish_confirm_date'] = '2017-04-18 5:00:00'
+					# vals['finish_confirm_date'] = '2017-04-18 9:00:00'
+					# vals['finish_confirm_date'] = '2017-04-20 01:00:00'
+					vals['finish_confirm_date'] = '2017-04-20 5:00:00'
+					# vals['finish_confirm_date'] = '2017-04-20 9:00:00'
+					if vals.get('start_confirm_date',False) and vals.get('finish_confirm_date',False):
+						# Get waktu start dan finish
+						start_confirm_date = datetime.strptime(vals['start_confirm_date'],"%Y-%m-%d %H:%M:%S")
+						start_confirm_weekday = start_confirm_date.weekday()
+						start_confirm_time = start_confirm_date.time()
+						start_confirm_time = start_confirm_time.hour + (start_confirm_time.minute / 60.0)
+						finish_confirm_date = datetime.strptime(vals['finish_confirm_date'],"%Y-%m-%d %H:%M:%S")
+						finish_confirm_weekday = finish_confirm_date.weekday()
+						finish_confirm_time = finish_confirm_date.time()
+						finish_confirm_time = finish_confirm_time.hour + (finish_confirm_time.minute / 60.0)
+						working_days = (finish_confirm_date-start_confirm_date).days + 1
 						
+						# Get working time supaya tidak usah looping berkali-kali jika start dan finish tidak dalam hari yg sama
+						working_time = {
+							'0':{'hour_from': 0,'hour_to': 0,},
+							'1':{'hour_from': 0,'hour_to': 0,},
+							'2':{'hour_from': 0,'hour_to': 0,},
+							'3':{'hour_from': 0,'hour_to': 0,},
+							'4':{'hour_from': 0,'hour_to': 0,},
+							'5':{'hour_from': 0,'hour_to': 0,},
+							'6':{'hour_from': 0,'hour_to': 0,},
+						}
+						for working_day in order_data.customer_contract_id.working_time_id.attendance_ids:
+							working_time[working_day.dayofweek]['hour_from'] = working_day.hour_from - SERVER_TIMEZONE
+							working_time[working_day.dayofweek]['hour_to'] = working_day.hour_to - SERVER_TIMEZONE
 						
-				# Untuk menentukan siapa yang dapat order by_order yang autoplot
-				# 	if vals.get('start_confirm_date',False) and vals.get('finish_confirm_date',False):
-				# 	# Hitung lama lembur
-				# 		start_confirm_date = datetime.strptime(vals['start_confirm_date'],"%Y-%m-%d %H:%M:%S")
-				# 		start_confirm_weekday = start_confirm_date.weekday()
-				# 		start_confirm_time = start_confirm_date.time()
-				# 		start_confirm_time = start_confirm_time.hour + (order_time.minute / 60.0)
-				# 		finish_confirm_date = datetime.strptime(vals['finish_confirm_date'],"%Y-%m-%d %H:%M:%S")
-				# 		finish_confirm_weekday = finish_confirm_date.weekday()
-				# 		finish_confirm_time = finish_confirm_date.time()
-				# 		finish_confirm_time = finish_confirm_time.hour + (order_time.minute / 60.0)
-				# 		for working_day in order_data.customer_contract_id.working_time_id.attendance_ids:
-				# 			if weekday == int(working_day.dayofweek) and \
-				# 					( >= working_day.hour_from - SERVER_TIMEZONE and  <= working_day.hour_to - SERVER_TIMEZONE):
-				#
-				# 				break
+						# Hitung lama kerja dan lembur
+						working_normal_time = 0
+						working_overtime = 0
+						w = 1
+						current_weekday_int = start_confirm_weekday
+						current_weekday = str(current_weekday_int)
+						while w <= working_days:
+							if w == 1: current_start_time = start_confirm_time
+							else: current_start_time = 0
+							if w == working_days: current_end_time = finish_confirm_time
+							else: current_end_time = 24
+						# Cek sebelum jam kerja
+							if current_end_time > working_time[current_weekday]['hour_from']:
+								working_overtime += (working_time[current_weekday]['hour_from'] - current_start_time)
+							else:
+								working_overtime += (current_end_time - current_start_time)
+						# Cek pada saat jam kerja
+							if current_end_time > working_time[current_weekday]['hour_from']:
+								if current_end_time < working_time[current_weekday]['hour_to']:
+									if current_start_time > working_time[current_weekday]['hour_from']:
+										working_normal_time += (current_end_time - current_start_time)
+									else:
+										working_normal_time += (current_end_time - working_time[current_weekday]['hour_from'])
+								else:
+									if current_start_time > working_time[current_weekday]['hour_from']:
+										working_normal_time += (working_time[current_weekday]['hour_to'] - current_start_time)
+									else:
+										working_normal_time += (working_time[current_weekday]['hour_to'] -
+																working_time[current_weekday]['hour_from'])
+						# Cek setelah jam kerja
+							if current_end_time > working_time[current_weekday]['hour_to']:
+								if current_start_time > working_time[current_weekday]['hour_from']:
+									working_overtime += (current_end_time - current_start_time)
+								else:
+									working_overtime += (current_end_time - working_time[current_weekday]['hour_to'])
+							w += 1
+							current_weekday_int = (current_weekday_int+1)%7
+							current_weekday = str(current_weekday_int)
+						current_weekday = 0
+						raise osv.except_osv(_('Argawgawg'),_('wadawdawdawdawdawdawd.'))
 			# kalau dibatalin
 				elif vals['state'] == 'canceled':
 				# kalau kontraknya pakai usage control, maka hapus dari usage log

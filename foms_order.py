@@ -995,31 +995,32 @@ class foms_order(osv.osv):
 
 # CRON ---------------------------------------------------------------------------------------------------------------------
 	
-	def cron_calculate_driver_attendance(self, cr, uid, ids):
+	def cron_compute_driver_attendances(self, cr, uid, context=None):
 		employee_obj = self.pool.get('hr.employee')
+		fleet_obj = self.pool.get('foms.contract.fleet ')
 		attendance_obj = self.pool.get('hr.attendance')
 		data_obj = self.pool.get('ir.model.data')
 		# Pool drivers
 		driver_job_id = data_obj.get_object(cr, uid, 'universal', 'hr_job_driver').id
 		drivers = employee_obj.browse(cr, uid, [('job_id', '=', driver_job_id)])
 		for driver in drivers:
-			#TODO Ambil working timenya
+			# TODO Ambil working timenya
 			first_order, last_order = self._get_first_and_last_order_today(cr, uid, driver.id)
-			clock_in_date, clock_out_date= self._determine_clock_datetime(cr, uid, start_working_time, end_working_time,
-				first_order.start_planned_date, last_order.finish_confirmed_date)
+			# clock_in_date, clock_out_date= self._determine_clock_datetime(cr, uid, start_working_time, end_working_time,
+			# 	first_order.start_planned_date, last_order.finish_confirmed_date)
 			# Clock in
 			attendance_obj.create(cr, uid, {
 				'employee_id': driver.id,
-				'contract_id': contract_id.id,
+				# 'contract_id': contract_id.id,
 				'action': 'sign_in',
-				'date': clock_in_date,
+				# 'date': clock_in_date,
 			})
 			# Clock out
 			attendance_obj.create(cr, uid, {
 				'employee_id': driver.id,
-				'contract_id': contract_id.id,
+				# 'contract_id': contract_id.id,
 				'action': 'sign_out',
-				'date': clock_out_date,
+				# 'date': clock_out_date,
 			})
 			pass
 		pass

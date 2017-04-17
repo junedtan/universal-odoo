@@ -156,6 +156,7 @@ class foms_contract(osv.osv):
 		('const_lk_pp', 'CHECK(fee_lk_pp >= 0)', _('Fee Luar Kota PP must be greater than or equal to zero.')),
 		('const_lk_inap', 'CHECK(fee_lk_inap >= 0)', _('Fee Luar Kota Menginap must be greater than or equal to zero.')),
 		('const_holiday_allowance', 'CHECK(fee_holiday_allowance >= 0)', _('Fee holiday allowance must be greater than or equal to zero.')),
+		('const_holiday_allowance', 'CHECK(fee_holiday_allowance >= 0)', _('Fee holiday allowance must be greater than or equal to zero.')),
 	]		
 
 # METHODS ------------------------------------------------------------------------------------------------------------------
@@ -728,6 +729,7 @@ class foms_contract_fleet(osv.osv):
 	_sql_constraints = [
 		('unique_fleet_type', 'UNIQUE(header_id,fleet_vehicle_id)', _('You cannot assign the same vehicle more than once under one contract.')),
 		('unique_driver_id', 'UNIQUE(header_id,driver_id)', _('You cannot assign the same driver more than once under one contract.')),
+		('unique_fullday_user_id', 'UNIQUE(header_id,fullday_user_id)', _('You cannot assign the same full daya user more than once under one contract.')),
 	]	
 	
 # ==========================================================================================================================
@@ -1160,6 +1162,7 @@ class foms_contract_quota(osv.osv):
 
 	_columns = {
 		'customer_contract_id': fields.many2one('foms.contract', 'Contract', required=True, readonly=True, ondelete='cascade'),
+		'customer_id': fields.related('customer_contract_id', 'customer_id', type='many2one', string='Customer', relation="res.partner"),
 		'allocation_unit_id': fields.many2one('foms.contract.alloc.unit', 'Alloc. Unit', required=True, readonly=True, ondelete='cascade'),
 		'period': fields.char('Period', required=True, readonly=True),
 		'yellow_limit': fields.float('Yellow Limit', track_visibility="onchange"),
@@ -1297,12 +1300,12 @@ class foms_contract_quota_change_log(osv.osv):
 
 	_columns = {
 		'customer_contract_id': fields.many2one('foms.contract', 'Contract', required=True, ondelete='cascade', domain=[('state','=','active')]),
+		'customer_id': fields.related('customer_contract_id', 'customer_id', type='many2one', string='Customer', relation="res.partner"),
 		'allocation_unit_id': fields.many2one('foms.contract.alloc.unit', 'Alloc. Unit', required=True, ondelete='cascade'),
 		'state': fields.selection([
 			('draft','Draft'),
 			('approved','Approved'),
 			('rejected','Rejected'),], 'State'),
-		'request_by': fields.many2one('res.users', 'Request By', ondelete='restrict'),
 		'request_date': fields.datetime('Request Date', required=True),
 		'period': fields.char('Period', required=True),
 		'request_longevity': fields.selection([
@@ -1382,7 +1385,7 @@ class foms_contract_quota_change_log(osv.osv):
 				'confirm_by': uid,
 				'confirm_date': datetime.now(),
 			}, context=context)
-			# ganti over_quota_status semua order yang lagi pending untuk contract dan allocation unit ini
+		# ganti over_quota_status semua order yang lagi pending untuk contract dan allocation unit ini
 			order_ids = order_obj.search(cr, uid, [
 				('customer_contract_id', '=', vals['customer_contract_id']),
 				('alloc_unit_id', '=', vals['allocation_unit_id']),
@@ -1392,7 +1395,7 @@ class foms_contract_quota_change_log(osv.osv):
 			if len(order_ids) > 0:
 				for order_data in order_obj.browse(cr, uid, order_ids):
 					new_credit_per_usage, new_over_quota_status = order_obj.determine_over_quota_status(cr, uid,
-						vals['customer_contract_id'], vals['allocation_unit_id'], order_data.fleet_type_id.id)
+						vals['customer_contract_id'], vals['allocation_unit_id'], order_data.fleet_type_id.id, add_credit_per_usage=False)
 					order_obj.write(cr, uid, [order_data.id], {
 						'alloc_unit_usage': new_credit_per_usage,
 						'over_quota_status': new_over_quota_status,
@@ -1406,7 +1409,7 @@ class foms_contract_quota_change_log(osv.osv):
 					'notification': ['contract_quota_limit_request'],
 				}, context=context)
 			else:
-			 # cuman boleh dari app, ga boleh langsung input dari Odoo
+			# cuman boleh dari app, ga boleh langsung input dari Odoo
 				raise osv.except_osv(_('Usage Control Error'),_('Usage control of this contract is handled by customer. You cannot record change log, changes must originate from the customer itself.'))
 		return new_id
 	

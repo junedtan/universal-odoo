@@ -10,17 +10,6 @@ class hr_employee(osv.osv):
 	
 	_inherit = 'hr.employee'
 	
-# CUSTOM METHODS -----------------------------------------------------------------------------------------------------------
-	
-# cek apakah employee ini driver atau bukan
-	def emp_is_driver(self, cr, uid, ids, context={}):
-		if not ids: return False
-		if isinstance(ids, int) == False: ids = ids[0]
-		job_obj = self.pool.get('hr.job')
-		employee_data = self.browse(cr, uid, ids)
-		is_driver = job_obj.is_driver(cr, uid, employee_data.job_id.id)
-		return is_driver
-	
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
@@ -63,6 +52,46 @@ class hr_employee(osv.osv):
 		'driver_type': 'active'
 	}
 	
+# CUSTOM METHODS -----------------------------------------------------------------------------------------------------------
+	
+# cek apakah employee ini driver atau bukan
+	def emp_is_driver(self, cr, uid, ids, context={}):
+		if not ids: return False
+		if isinstance(ids, int) == False: ids = ids[0]
+		job_obj = self.pool.get('hr.job')
+		employee_data = self.browse(cr, uid, ids)
+		is_driver = job_obj.is_driver(cr, uid, employee_data.job_id.id)
+		return is_driver
+	
+	def _broadcast_changed_driver_phone(self, cr, uid, ids, vals, context={}):
+		"""
+		Broadcast ke dirty jika HR mengganti nomor handphone supir untuk mengganti semua field nomor hape supir di setiap
+		order yang sudah ada di app dalam state [new, confirmed, ready, started]
+		"""
+		order_obj = self.pool.get('foms.order')
+	# kalau nomor2 hapenya berubah
+		phone1 = vals.get('phone', False)
+		phone2 = vals.get('mobile_phone2', False)
+		phone3 = vals.get('mobile_phone3', False)
+		if phone1 or phone2 or phone3:
+		# kalau jobnya driver, update ke semua order2 di app yang beliau akan dan sedang pake dirty
+			order_ids = order_obj.search(cr, uid, [('state', 'in', ['new', 'confirmed', 'ready', 'started'])])
+			orders = order_obj.browse(cr, uid, order_ids)
+			for employee_id in ids:
+				for order in orders:
+					if not order.actual_driver_id and not order.assigned_driver_id: continue
+				# Kalau actual_driver_id adalah supir ini, tambahin di yang nanti update
+				# Kalau bukan, cek kalau assigned_driver_id adalah supir ini, kalau ya tambahin di yang nanti update
+				# Ini mencegah kalau2 dia cuman assigned driver tapi bukan actual
+					if (not order.actual_driver_id and order.assigned_driver_id.id == employee_id) or \
+					order.actual_driver_id.id == employee_id:
+						data_columns = {
+							'driver_mobile': order.driver_mobile
+						}
+						order_obj.webservice_post(cr, uid, ['pic','booker','approver','driver','fullday_passenger'],
+							'update', order, data_columns=data_columns, webservice_context={}, context=context)
+		
+	
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 	
 	def create(self, cr, uid, vals, context={}):
@@ -84,6 +113,11 @@ class hr_employee(osv.osv):
 			vals.update({'emp_no': emp_no})
 	# panggil create biasa
 		return super(hr_employee, self).create(cr, uid, vals, context)
+	
+	def write(self, cr, uid, ids, vals, context={}):
+		result = super(hr_employee, self).write(cr, uid, ids, vals, context)
+		self._broadcast_changed_driver_phone(cr, uid, ids, vals, context)
+		return result
 
 	def name_get(self, cr, uid, ids, context={}):
 		if isinstance(ids, (list, tuple)) and not len(ids): return []

@@ -753,7 +753,39 @@ class foms_order(osv.osv):
 		return result
 
 # METHODS ------------------------------------------------------------------------------------------------------------------
-
+	
+	def _get_first_and_last_order_today(self, cr, uid, driver_id):
+	# Get today's first order
+		first_order_ids = self.search(cr, uid, [
+			('actual_driver_id', '=', driver_id),
+			('start_planned_date', '>=', datetime.datetime.now().strftime('%Y-%m-%d 00:00:00')),
+			('start_planned_date', '<=', datetime.datetime.now().strftime('%Y-%m-%d 23:23:59')),
+		], limit=1, order="start_planned_date asc")
+		first_order = self.browse(cr, uid, first_order_ids)
+	# Get today's last order
+		last_order_ids = self.search(cr, uid, [
+			('actual_driver_id', '=', driver_id),
+			('finish_confirmed_date', '>=', datetime.datetime.now().strftime('%Y-%m-%d 00:00:00')),
+			('finish_confirmed_date', '<=', datetime.datetime.now().strftime('%Y-%m-%d 23:23:59')),
+		], limit=1, order="finish_confirmed_date desc")
+		last_order = self.browse(cr, uid, last_order_ids)
+		return first_order, last_order
+	
+	def _determine_clock_datetime(self, cr, uid, start_working_time, end_working_time, start_planned_date, finish_confirmed_date):
+		start_working_time = datetime.strptime(start_working_time, '%H:%M:%S').strftime('%H:%M:%S')
+		start_working_date = datetime.datetime.now().strftime('%Y-%m-%d '+ start_working_time)
+		end_working_time = datetime.strptime(end_working_time, '%H:%M:%S').strftime('%H:%M:%S')
+		end_working_date = datetime.datetime().now().strftime('%Y-%m-%d '+ end_working_time)
+		if start_planned_date > start_working_date:
+			clock_in = start_working_date
+		else:
+			clock_in = start_planned_date
+		if finish_confirmed_date < end_working_date:
+			clock_out = end_working_date
+		else:
+			clock_out = finish_confirmed_date
+		return clock_in, clock_out
+	
 	def determine_over_quota_status(self, cr, uid, customer_contract_id, allocation_unit_id, fleet_type_id, add_credit_per_usage=True):
 		quota_obj = self.pool.get('foms.contract.quota')
 		contract_obj = self.pool.get('foms.contract')
@@ -962,7 +994,36 @@ class foms_order(osv.osv):
 		}
 
 # CRON ---------------------------------------------------------------------------------------------------------------------
-
+	
+	def cron_calculate_driver_attendance(self, cr, uid, ids):
+		employee_obj = self.pool.get('hr.employee')
+		attendance_obj = self.pool.get('hr.attendance')
+		data_obj = self.pool.get('ir.model.data')
+		# Pool drivers
+		driver_job_id = data_obj.get_object(cr, uid, 'universal', 'hr_job_driver').id
+		drivers = employee_obj.browse(cr, uid, [('job_id', '=', driver_job_id)])
+		for driver in drivers:
+			#TODO Ambil working timenya
+			first_order, last_order = self._get_first_and_last_order_today(cr, uid, driver.id)
+			clock_in_date, clock_out_date= self._determine_clock_datetime(cr, uid, start_working_time, end_working_time,
+				first_order.start_planned_date, last_order.finish_confirmed_date)
+			# Clock in
+			attendance_obj.create(cr, uid, {
+				'employee_id': driver.id,
+				'contract_id': contract_id.id,
+				'action': 'sign_in',
+				'date': clock_in_date,
+			})
+			# Clock out
+			attendance_obj.create(cr, uid, {
+				'employee_id': driver.id,
+				'contract_id': contract_id.id,
+				'action': 'sign_out',
+				'date': clock_out_date,
+			})
+			pass
+		pass
+	
 	def _get_contract_workdays(self, contract_data):
 	# return dict of workday dengan key=workday (0,1,2,3,4 - senin selasa rabu, dst) dan value {start, finish}
 		if not contract_data.working_time_id: return {}

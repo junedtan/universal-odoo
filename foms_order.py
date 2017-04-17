@@ -293,7 +293,7 @@ class foms_order(osv.osv):
 		user_obj = self.pool.get('res.users')
 		
 		# DEBUG_MODE
-		vals['state'] = 'finish_confirmed'
+		# vals['state'] = 'finish_confirmed'
 		
 	#apabila ada perubahan contract cek dahulu apakah contractnya masih active
 		if vals.get('customer_contract_id', False):
@@ -498,14 +498,14 @@ class foms_order(osv.osv):
 						self.webservice_post(cr, uid, ['pic','approver','booker'], 'update', order_data, context=context)
 					
 					
-					# Untuk menentukan siapa yang dapat order by_order yang autoplot
+				# Untuk menentukan siapa yang dapat order by_order yang autoplot
 					# DEBUG MODE
-					vals['start_confirm_date'] = '2017-04-18 00:00:00'
+					# vals['start_confirm_date'] = '2017-04-18 00:00:00'
 					# vals['finish_confirm_date'] = '2017-04-18 01:00:00'
 					# vals['finish_confirm_date'] = '2017-04-18 5:00:00'
 					# vals['finish_confirm_date'] = '2017-04-18 9:00:00'
 					# vals['finish_confirm_date'] = '2017-04-20 01:00:00'
-					vals['finish_confirm_date'] = '2017-04-20 5:00:00'
+					# vals['finish_confirm_date'] = '2017-04-20 5:00:00'
 					# vals['finish_confirm_date'] = '2017-04-20 9:00:00'
 					if vals.get('start_confirm_date',False) and vals.get('finish_confirm_date',False):
 						# Get waktu start dan finish

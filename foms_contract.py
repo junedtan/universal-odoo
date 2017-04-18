@@ -88,6 +88,7 @@ class foms_contract(osv.osv):
 		'fee_holiday_allowance': fields.float('Holiday Allowance'),
 		'fee_management': fields.float('Management Fee (%)'),
 		'fee_order_based': fields.one2many('foms.contract.order.based.fee', 'header_id', 'Order-Based Fees'),
+		'billing_cycle': fields.integer('Billing Cycle', required=True),
 	# USAGE CONTROL
 		'usage_control_level': fields.selection([
 			('no_control','No Control'),
@@ -126,12 +127,20 @@ class foms_contract(osv.osv):
 		'is_expense_record': False,
 		'global_yellow_limit': 0,
 		'global_red_limit': 0,
+		'billing_cycle': 1,
 	}	
 	
 # CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
 	
+	def _const_billing_cycle(self, cr, uid, ids, context=None):
+		for data in self.browse(cr, uid, ids, context):
+			if data.billing_cycle < 1 or data.billing_cycle > 28:
+				return False
+		return True
+	
 	_constraints = [
 		#(_const_start_end_date, _('Start date must'), ['shipper_id']),
+		(_const_billing_cycle, _('Billing cycle number should be between 1 and 28 (inclusive).'), ['billing_cycle']),
 	]
 	
 	_sql_constraints = [
@@ -157,7 +166,7 @@ class foms_contract(osv.osv):
 		('const_lk_inap', 'CHECK(fee_lk_inap >= 0)', _('Fee Luar Kota Menginap must be greater than or equal to zero.')),
 		('const_holiday_allowance', 'CHECK(fee_holiday_allowance >= 0)', _('Fee holiday allowance must be greater than or equal to zero.')),
 		('const_holiday_allowance', 'CHECK(fee_holiday_allowance >= 0)', _('Fee holiday allowance must be greater than or equal to zero.')),
-	]		
+	]
 
 # METHODS ------------------------------------------------------------------------------------------------------------------
 

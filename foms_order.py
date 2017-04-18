@@ -1288,8 +1288,7 @@ class foms_order(osv.osv):
 		return work_date
 	
 # ini akan menjadi legacy Anton di kode Universal: nama method paling panjang!
-# :D :D :D
-# JUNED: jangan dihapus, this is so hilarious!
+# :D :D :D jangan dihapus, this is so hilarious!
 	def cron_cek_order_still_running_at_1_hour_before_other_order_start(self, cr, uid, context=None):
 	# cron untuk cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
 		now = datetime.now()

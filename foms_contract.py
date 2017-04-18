@@ -567,6 +567,7 @@ class foms_contract(osv.osv):
 				'default_start_date': contract.start_date,
 				'default_end_date': contract.end_date,
 				'default_schedule_line': shuttle_schedules,
+				'contract_id': contract.id,
 			},
 			'target': 'new',
 		}
@@ -822,6 +823,23 @@ class foms_contract_shuttle_schedule_memory(osv.osv):
 		'end_date': fields.date('End Date', readonly=True),
 		'schedule_line': fields.one2many('foms.contract.shuttle.schedule.line.memory', 'header_id', 'Schedule Lines'),
 	}
+	
+	def fields_view_get(self, cr, uid, view_id=None, view_type='form', context=None, toolbar=False, submenu=False):
+		result = super(foms_contract_shuttle_schedule_memory, self).fields_view_get(cr, uid, view_id, view_type,
+			context, toolbar, submenu)
+		# batasi (via domain) people yang boleh terlibat di kepengurusan hanya yang dari paroki ybs
+		if view_type == 'form':
+			contract_id = context.get('contract_id', False)
+			if not contract_id:
+				return result
+			contract_obj = self.pool.get('foms.contract')
+			contract = contract_obj.browse(cr, uid, contract_id, context)
+			fleet_vehicle_ids = []
+			for car_driver in contract.car_drivers:
+				fleet_vehicle_ids.append(car_driver.fleet_vehicle_id.id)
+			vehicle_id_domain = "[('id', 'in', [%s])]" % ', '.join(map(str, fleet_vehicle_ids))
+			result['fields']['schedule_line']['views']['tree']['arch'] = result['fields']['schedule_line']['views']['tree']['arch'].replace('#stasi_domain#', vehicle_id_domain)
+		return result
 	
 	def action_save_schedule(self, cr, uid, ids, context=None):
 		form_data = self.browse(cr, uid, ids[0])

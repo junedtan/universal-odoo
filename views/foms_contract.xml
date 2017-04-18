@@ -262,7 +262,7 @@
 								<field name="dayofweek" />
 								<field name="sequence" />
 								<field name="route_id" />
-								<field name="fleet_vehicle_id" on_change="_contract_car_drivers_fleet_vehicle(parent.contract_id)"/>
+								<field name="fleet_vehicle_id" domain="#stasi_domain#" on_change="_contract_car_drivers_fleet_vehicle(parent.contract_id)"/>
 								<field name="departure_time" widget="float_time" />
 							</tree>
 						</field>

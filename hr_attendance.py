@@ -25,6 +25,7 @@ class hr_attendance(osv.osv):
 
 	_columns = {
 		'contract_id': fields.many2one('hr.contract','Contract Reference'),
+		'order_id': fields.many2one('foms_order','Order Reference'),
 		'customer_approval': fields.datetime('Customer Approval'),
 		'source': fields.selection(_ATTENDANCE_SOURCE,'Source'),
 		'out_of_town': fields.selection(_OUT_OF_TOWN, 'Out of Town?'),

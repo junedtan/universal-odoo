@@ -1065,7 +1065,8 @@ class foms_order(osv.osv):
 		data_obj = self.pool.get('ir.model.data')
 		# Pool drivers
 		driver_job_id = data_obj.get_object(cr, uid, 'universal', 'hr_job_driver').id
-		drivers = employee_obj.browse(cr, uid, [('job_id', '=', driver_job_id)])
+		driver_ids = employee_obj.search(cr, uid, [('job_id', '=', driver_job_id)])
+		drivers = employee_obj.browse(cr, uid, driver_ids)
 		today = datetime.now()
 		for driver in drivers:
 			first_order, first_finished_order, last_order = self._get_first_and_last_order_times_today(cr, uid, driver.id,
@@ -1076,6 +1077,7 @@ class foms_order(osv.osv):
 				first_order,
 				last_order,
 				today)
+			# TODO GIMANA KALO LIBUR JADI GA ADA WOKRKING TIME
 			first_order_clock_in, first_order_clock_out_in = self._determine_clock_datetime(cr, uid, start_working_time,
 				end_working_time, first_order, today)
 			first_finished_order_clock_in, first_finished_order_clock_out = self._determine_clock_datetime(cr, uid,
@@ -1115,8 +1117,7 @@ class foms_order(osv.osv):
 							('action', '=', 'sign_out'),
 						])
 					# Jika yg sblmnya sudah ada db_clock_out
-						if len(previous_clock_out_id) > 0:
-							# update db_clock_out si hari sebelum2nya
+						if len(previous_clock_out_id) > 0: # update db_clock_out si hari sebelum2nya
 							self._write_attendance(previous_clock_out_id, first_clock_out)
 					# else yg sblmnya belum ada db_clock_out
 						else: # create db_clock_out si hari sebelum2nya
@@ -1183,14 +1184,14 @@ class foms_order(osv.osv):
 		last_working_time_attendances = last_order.customer_contract_id.working_time_id.attendance_ids
 		first_order_start_working_time = first_order_end_working_time = last_order_start_working_time = \
 			last_order_end_working_time = None
-		weekday_today = today.datetime.datetime.today().weekday()
+		weekday_today = today.weekday()
 		for working_time in first_working_time_attendances:
-			if weekday_today == working_time.dayofweek:
+			if str(weekday_today) == working_time.dayofweek:
 				first_order_start_working_time = working_time.hour_from
 				first_order_end_working_time = working_time.hour_to
 				break
 		for working_time in last_working_time_attendances:
-			if weekday_today == working_time.dayofweek:
+			if str(weekday_today) == working_time.dayofweek:
 				last_order_start_working_time = working_time.hour_from
 				last_order_end_working_time = working_time.hour_to
 				break
@@ -1218,15 +1219,15 @@ class foms_order(osv.osv):
 		return first_order, last_order
 	
 	def _determine_clock_datetime(self, cr, uid, start_working_time, end_working_time, order, order_day):
-		start_working_time = datetime.strptime(start_working_time, '%H:%M:%S').strftime('%H:%M:%S')
-		start_working_date = order_day.strftime('%Y-%m-%d '+ start_working_time)
-		end_working_time = datetime.strptime(end_working_time, '%H:%M:%S').strftime('%H:%M:%S')
-		end_working_date = datetime.datetime().now().strftime('%Y-%m-%d '+ end_working_time)
-		if order.start_planned_date > start_working_date:
+		# start_working_time = datetime.strptime(start_working_time, '%H:%M:%S').strftime('%H:%M:%S')
+		start_working_date = order_day+timedelta(hours=start_working_time)
+		# end_working_time = datetime.strptime(end_working_time, '%H:%M:%S').strftime('%H:%M:%S')
+		end_working_date = order_day+timedelta(hours=end_working_time)
+		if datetime.strptime(order.start_planned_date, '%Y-%m-%d %H:%M:%S') > start_working_date:
 			clock_in = start_working_date
 		else:
 			clock_in = order.start_planned_date
-		if order.finish_confirmed_date < end_working_date:
+		if datetime.strptime(order.finish_confirmed_date, '%Y-%m-%d %H:%M:%S') < end_working_date:
 			clock_out = end_working_date
 		else:
 			clock_out = order.finish_confirmed_date
@@ -1235,24 +1236,24 @@ class foms_order(osv.osv):
 	def _get_first_and_last_order_times_today(self, cr, uid, driver_id, today):
 		# Get today's first order
 		first_order_ids = self.search(cr, uid, [
-			('actual_driver_id', '=', driver_id),
+			('assigned_driver_id', '=', driver_id), # TODO SEMUA ASSIGNED DI METHOD INI GANTI JADI ACTUAL
 			('start_planned_date', '>=', today.strftime('%Y-%m-%d 00:00:00')),
-			('start_planned_date', '<=', today.strftime('%Y-%m-%d 23:23:59')),
+			('start_planned_date', '<=', today.strftime('%Y-%m-%d 23:59:59')),
 		], limit=1, order="start_planned_date asc")
 		first_order = self.browse(cr, uid, first_order_ids)
 		# Get today's first finished order
 		first_finished_order_ids = self.search(cr, uid, [
-			('actual_driver_id', '=', driver_id),
-			('finish_confirmed_date', '>=', today.strftime('%Y-%m-%d 00:00:00')),
-			('finish_confirmed_date', '<=', today.strftime('%Y-%m-%d 23:23:59')),
-		], limit=1, order="finish_confirmed_date desc")
+			('assigned_driver_id', '=', driver_id),
+			('finish_confirm_date', '>=', today.strftime('%Y-%m-%d 00:00:00')),
+			('finish_confirm_date', '<=', today.strftime('%Y-%m-%d 23:59:59')),
+		], limit=1, order="finish_confirm_date desc")
 		first_finished_order = self.browse(cr, uid, first_finished_order_ids)
 		# Get today's last order
 		last_order_ids = self.search(cr, uid, [
-			('actual_driver_id', '=', driver_id),
-			('finish_confirmed_date', '>=', today.strftime('%Y-%m-%d 00:00:00')),
-			('finish_confirmed_date', '<=', today.strftime('%Y-%m-%d 23:23:59')),
-		], limit=1, order="finish_confirmed_date desc")
+			('assigned_driver_id', '=', driver_id),
+			('finish_confirm_date', '>=', today.strftime('%Y-%m-%d 00:00:00')),
+			('finish_confirm_date', '<=', today.strftime('%Y-%m-%d 23:59:59')),
+		], limit=1, order="finish_confirm_date desc")
 		last_order = self.browse(cr, uid, last_order_ids)
 		return first_order, first_finished_order, last_order
 	

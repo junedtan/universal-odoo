@@ -5,6 +5,11 @@ from openerp import SUPERUSER_ID
 from . import SERVER_TIMEZONE
 from . import datetime_to_server
 
+try:
+	import Queue as Q  # ver. < 3.0
+except ImportError:
+	import queue as Q
+
 import random, string
 
 _ORDER_STATE = [
@@ -292,9 +297,6 @@ class foms_order(osv.osv):
 
 		user_obj = self.pool.get('res.users')
 		
-		# DEBUG_MODE
-		# vals['state'] = 'finish_confirmed'
-		
 	#apabila ada perubahan contract cek dahulu apakah contractnya masih active
 		if vals.get('customer_contract_id', False):
 			self._cek_contract_is_active(cr,uid, [vals['customer_contract_id']], context)
@@ -496,90 +498,6 @@ class foms_order(osv.osv):
 						self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'update', order_data, context=context)
 					elif order_data.service_type == 'by_order':
 						self.webservice_post(cr, uid, ['pic','approver','booker'], 'update', order_data, context=context)
-					
-					
-				# Untuk menentukan siapa yang dapat order by_order yang autoplot
-					# DEBUG_MODE
-					# vals['start_confirm_date'] = '2017-04-22 00:00:00'
-					# vals['finish_confirm_date'] = '2017-04-18 01:00:00'
-					# vals['finish_confirm_date'] = '2017-04-22 5:00:00'
-					# vals['finish_confirm_date'] = '2017-04-18 9:00:00'
-					# vals['finish_confirm_date'] = '2017-04-20 01:00:00'
-					# vals['finish_confirm_date'] = '2017-04-20 5:00:00'
-					# vals['finish_confirm_date'] = '2017-04-20 9:00:00'
-					if vals.get('start_confirm_date',False) and vals.get('finish_confirm_date',False):
-						# Get waktu start dan finish
-						start_confirm_date = datetime.strptime(vals['start_confirm_date'],"%Y-%m-%d %H:%M:%S")
-						start_confirm_weekday = start_confirm_date.weekday()
-						start_confirm_time = start_confirm_date.time()
-						start_confirm_time = start_confirm_time.hour + (start_confirm_time.minute / 60.0)
-						finish_confirm_date = datetime.strptime(vals['finish_confirm_date'],"%Y-%m-%d %H:%M:%S")
-						finish_confirm_weekday = finish_confirm_date.weekday()
-						finish_confirm_time = finish_confirm_date.time()
-						finish_confirm_time = finish_confirm_time.hour + (finish_confirm_time.minute / 60.0)
-						working_days = (finish_confirm_date-start_confirm_date).days + 1
-						
-					# Get working time supaya tidak usah looping berkali-kali jika start dan finish tidak dalam hari yg sama
-						working_time = {
-							'0': {'hour_from': 0, 'hour_to': 0,},
-							'1': {'hour_from': 0, 'hour_to': 0,},
-							'2': {'hour_from': 0, 'hour_to': 0,},
-							'3': {'hour_from': 0, 'hour_to': 0,},
-							'4': {'hour_from': 0, 'hour_to': 0,},
-							'5': {'hour_from': 0, 'hour_to': 0,},
-							'6': {'hour_from': 0, 'hour_to': 0,},
-						}
-					# jika ada hari yang sama, misal Senin 7-9, 10-14,
-					# maka working_time untuk hari itu dimulai dari 7 sampai 14
-					# jam kosong 9-10 tidak dihitung sebagai jam lembur
-						for working_day in order_data.customer_contract_id.working_time_id.attendance_ids:
-							if working_time[working_day.dayofweek]['hour_from'] == working_time[working_day.dayofweek]['hour_to']:
-								working_time[working_day.dayofweek]['hour_from'] = working_day.hour_from - SERVER_TIMEZONE
-								working_time[working_day.dayofweek]['hour_to'] = working_day.hour_to - SERVER_TIMEZONE
-							else:
-								working_time[working_day.dayofweek]['hour_from'] = min(working_day.hour_from - SERVER_TIMEZONE,
-																				working_time[working_day.dayofweek]['hour_from'])
-								working_time[working_day.dayofweek]['hour_to'] = max(working_day.hour_to - SERVER_TIMEZONE,
-									working_time[working_day.dayofweek]['hour_to'])
-							
-					# Hitung lama kerja dan lembur
-						working_normal_time = 0
-						working_overtime = 0
-						w = 1
-						current_weekday_int = start_confirm_weekday
-						current_weekday = str(current_weekday_int)
-						while w <= working_days:
-							if w == 1: current_start_time = start_confirm_time
-							else: current_start_time = 0
-							if w == working_days: current_end_time = finish_confirm_time
-							else: current_end_time = 24
-						# Cek sebelum jam kerja
-							if current_end_time > working_time[current_weekday]['hour_from']:
-								working_overtime += (working_time[current_weekday]['hour_from'] - current_start_time)
-							else:
-								working_overtime += (current_end_time - current_start_time)
-						# Cek pada saat jam kerja
-							if current_end_time > working_time[current_weekday]['hour_from']:
-								if current_end_time < working_time[current_weekday]['hour_to']:
-									if current_start_time > working_time[current_weekday]['hour_from']:
-										working_normal_time += (current_end_time - current_start_time)
-									else:
-										working_normal_time += (current_end_time - working_time[current_weekday]['hour_from'])
-								else:
-									if current_start_time > working_time[current_weekday]['hour_from']:
-										working_normal_time += (working_time[current_weekday]['hour_to'] - current_start_time)
-									else:
-										working_normal_time += (working_time[current_weekday]['hour_to'] -
-																working_time[current_weekday]['hour_from'])
-						# Cek setelah jam kerja
-							if current_end_time > working_time[current_weekday]['hour_to']:
-								if current_start_time > working_time[current_weekday]['hour_from']:
-									working_overtime += (current_end_time - current_start_time)
-								else:
-									working_overtime += (current_end_time - working_time[current_weekday]['hour_to'])
-							w += 1
-							current_weekday_int = (current_weekday_int+1)%7
-							current_weekday = str(current_weekday_int)
 			# kalau dibatalin
 				elif vals['state'] == 'canceled':
 				# kalau kontraknya pakai usage control, maka hapus dari usage log
@@ -847,33 +765,147 @@ class foms_order(osv.osv):
 			('fleet_type_id','=',fleet_type_id),
 			('id','!=',order_id),
 		])
-		vehicle_in_use_ids = []	# ongoing vehicle that can't be used
+		
 		current_order = self.browse(cr, uid, order_id)
+		driver_in_use_ids = []  # ongoing vehicle that can't be used
 		for order in self.browse(cr, uid, ongoing_order_ids):
-			if order.finish_planned_date >= start_planned_date: # udah jelas ngga available
-				if order.assigned_vehicle_id: vehicle_in_use_ids.append(order.assigned_vehicle_id.id)
-				if order.actual_vehicle_id: vehicle_in_use_ids.append(order.actual_vehicle_id.id)
+			if order.finish_planned_date >= start_planned_date:  # udah jelas ngga available
+				if order.assigned_vehicle_id: driver_in_use_ids.append(order.assigned_driver_id.id)
+				if order.actual_vehicle_id: driver_in_use_ids.append(order.actual_driver_id.id)
+				continue
 		# perhitungkan delay dari satu area ke area lain
 			if order.dest_area_id and current_order.origin_area_id:
 				delay = area_delay_obj.get_delay(cr, uid, order.dest_area_id.id, current_order.origin_area_id.id)
 				finish_date = datetime.strptime(order.finish_planned_date, '%Y-%m-%d %H:%M:%S') + timedelta(minutes=delay)
 				finish_date = finish_date.strftime('%Y-%m-%d %H:%M:%S')
 				if finish_date >= start_planned_date:
-					if order.assigned_vehicle_id: vehicle_in_use_ids.append(order.assigned_vehicle_id.id)
-					if order.actual_vehicle_id: vehicle_in_use_ids.append(order.actual_vehicle_id.id)
-		vehicle_in_use_ids = list(set(vehicle_in_use_ids))
-	# ambil vehicle pertama yang available untuk jenis mobil yang diminta
-		selected_fleet_line = None
+					if order.assigned_vehicle_id: driver_in_use_ids.append(order.assigned_driver_id.id)
+					if order.actual_vehicle_id: driver_in_use_ids.append(order.actual_driver_id.id)
+					continue
+		driver_in_use_ids = list(set(driver_in_use_ids))
+		
+		current_time = datetime.now()
+		nearest_billing_month = current_time.month
+		if current_time.day - current_order.customer_contract_id.billing_cycle < 0:
+			nearest_billing_month -= 1
+		nearest_billing_time = datetime(current_time.year, nearest_billing_month,
+			current_order.customer_contract_id.billing_cycle, 0, 0, 0)
+		
+		q_vehicle_in_use_ids = Q.PriorityQueue()  # ongoing vehicle that can't be used with each total working time as priority
+		
+	# ambil fleet-fleet yang mungkin digunakan
+		possible_fleet_line_ids = []
 		for fleet in current_order.customer_contract_id.car_drivers:
-			if fleet.fleet_vehicle_id.id in vehicle_in_use_ids or fleet.fleet_type_id.id != fleet_type_id: continue
-		# jika ada vehicle di contract tsb dengan type id yg sama
-		# dan tidak sedang digunakan, maka assign ke selected_fleet_line
-			selected_fleet_line = fleet
-			break
-		if selected_fleet_line:
-			return selected_fleet_line.fleet_vehicle_id.id, selected_fleet_line.driver_id.id
+			if fleet.driver_id.id in driver_in_use_ids or fleet.fleet_type_id.id != fleet_type_id: continue
+		# jika ada vehicle di contract tsb dengan fleet type yg sama
+		# dan tidak sedang digunakan, maka append ke possible_fleet_line
+			if fleet.id not in possible_fleet_line_ids:
+				possible_fleet_line_ids.append(fleet.id)
+				driver_order_ids = self.search(cr, uid, [
+					'&', ('start_date', '!=', False),
+					'&', ('finish_date', '!=', False),
+					'&', ('start_date', '>=', str(nearest_billing_time)),
+					'&', ('start_date', '<=', str(current_time)),
+					'|', ('assigned_driver_id', '=', fleet.driver_id.id),
+							('actual_driver_id', '=', fleet.driver_id.id),
+				])
+				total_priority_driver = 0
+				for driver_order_id in driver_order_ids:
+					driver_order = self.browse(cr, uid, driver_order_id)
+					total_priority_driver += self._calculate_total_working_time_priority(cr, uid,
+												driver_order.start_date, driver_order.finish_date,
+												driver_order.customer_contract_id.working_time_id.attendance_ids)
+				q_vehicle_in_use_ids.put((total_priority_driver, fleet))
+			
+	# ambil vehicle pertama yang available untuk jenis mobil yang diminta
+		if not q_vehicle_in_use_ids.empty():
+			selected_fleet = q_vehicle_in_use_ids.get()
+			return selected_fleet[1].fleet_vehicle_id.id, selected_fleet[1].driver_id.id
 		else:
 			return None, None
+
+	def _calculate_total_working_time_priority(self, cr, uid, val_start_confirm_date, val_finish_confirm_date, attendance_ids):
+		"""
+		Untuk menghitung berapa bobot waktu kerja supir dalam sebuah kontrak.
+		Perhitungan bobot sama dengan total jam normal + 1.5*total jam lembur.
+		Digunakan untuk order tipe by_order.
+		:param cr:
+		:param uid:
+		:param val_start_confirm_date: value dari start_confirm_date yang ingin dihitung
+		:param val_finish_confirm_date: value dari finish_confirm_date yang ingin dihitung
+		:param attendance_ids: working_time attendance_ids sebuah order data
+		:return: total bobot
+		"""
+		working_normal_time = 0
+		working_overtime = 0
+		if val_start_confirm_date and val_finish_confirm_date:
+		# Get waktu start dan finish
+			start_confirm_date = datetime.strptime(val_start_confirm_date,"%Y-%m-%d %H:%M:%S")
+			start_confirm_weekday = start_confirm_date.weekday()
+			start_confirm_time = start_confirm_date.time()
+			start_confirm_time = start_confirm_time.hour + (start_confirm_time.minute / 60.0)
+			finish_confirm_date = datetime.strptime(val_finish_confirm_date,"%Y-%m-%d %H:%M:%S")
+			finish_confirm_weekday = finish_confirm_date.weekday()
+			finish_confirm_time = finish_confirm_date.time()
+			finish_confirm_time = finish_confirm_time.hour + (finish_confirm_time.minute / 60.0)
+			working_days = (finish_confirm_date.day - start_confirm_date.day) + 1
+			
+		# Get working time supaya tidak usah looping berkali-kali jika start dan finish tidak dalam hari yg sama
+			working_time = {
+				'0': {'hour_from': 0, 'hour_to': 0, },
+				'1': {'hour_from': 0, 'hour_to': 0, },
+				'2': {'hour_from': 0, 'hour_to': 0, },
+				'3': {'hour_from': 0, 'hour_to': 0, },
+				'4': {'hour_from': 0, 'hour_to': 0, },
+				'5': {'hour_from': 0, 'hour_to': 0, },
+				'6': {'hour_from': 0, 'hour_to': 0, },
+			}
+		# jika ada hari yang sama, misal Senin 7-9, 10-14,
+		# maka working_time untuk hari itu dimulai dari 7 sampai 14
+		# jam kosong 9-10 tidak dihitung sebagai jam lembur
+			for working_day in attendance_ids:
+				if working_time[working_day.dayofweek]['hour_from'] == working_time[working_day.dayofweek]['hour_to']:
+					working_time[working_day.dayofweek]['hour_from'] = working_day.hour_from - SERVER_TIMEZONE
+					working_time[working_day.dayofweek]['hour_to'] = working_day.hour_to - SERVER_TIMEZONE
+				else:
+					working_time[working_day.dayofweek]['hour_from'] = min(working_day.hour_from - SERVER_TIMEZONE,
+						working_time[working_day.dayofweek]['hour_from'])
+					working_time[working_day.dayofweek]['hour_to'] = max(working_day.hour_to - SERVER_TIMEZONE,
+						working_time[working_day.dayofweek]['hour_to'])
+				
+		# Hitung lama kerja dan lembur
+			w = 1
+			current_weekday_int = start_confirm_weekday
+			current_weekday = str(current_weekday_int)
+			while w <= working_days:
+				if w == 1: current_start_time = start_confirm_time
+				else: current_start_time = 0
+				if w == working_days: current_end_time = finish_confirm_time
+				else: current_end_time = 24
+				
+				if current_start_time < working_time[current_weekday]['hour_from']:
+					if current_end_time < working_time[current_weekday]['hour_from']:
+						working_overtime += (current_end_time - current_start_time)
+					elif current_end_time > working_time[current_weekday]['hour_to']:
+						working_overtime += (working_time[current_weekday]['hour_from'] - current_start_time)
+						working_normal_time += (working_time[current_weekday]['hour_to'] -
+												working_time[current_weekday]['hour_from'])
+						working_overtime += (current_end_time - working_time[current_weekday]['hour_to'])
+					else:
+						working_overtime += (working_time[current_weekday]['hour_from'] - current_start_time)
+						working_normal_time += (current_end_time - working_time[current_weekday]['hour_from'])
+				elif current_start_time > working_time[current_weekday]['hour_to']:
+					working_overtime += (current_end_time - current_start_time)
+				else:
+					if current_end_time > working_time[current_weekday]['hour_to']:
+						working_normal_time += (working_time[current_weekday]['hour_to'] - current_start_time)
+						working_overtime += (current_end_time - working_time[current_weekday]['hour_to'])
+					else:
+						working_normal_time += (current_end_time - current_start_time)
+				w += 1
+				current_weekday_int = (current_weekday_int+1) % 7
+				current_weekday = str(current_weekday_int)
+		return working_normal_time + (1.5 * working_overtime)
 
 	_central_dispatch_partners = []
 # JUNED: saya sudah membuat method ini untuk mempermudah messaging dispatcher

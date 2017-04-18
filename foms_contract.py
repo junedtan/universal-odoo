@@ -88,6 +88,7 @@ class foms_contract(osv.osv):
 		'fee_holiday_allowance': fields.float('Holiday Allowance'),
 		'fee_management': fields.float('Management Fee (%)'),
 		'fee_order_based': fields.one2many('foms.contract.order.based.fee', 'header_id', 'Order-Based Fees'),
+		'billing_cycle': fields.integer('Billing Cycle', required=True),
 	# USAGE CONTROL
 		'usage_control_level': fields.selection([
 			('no_control','No Control'),
@@ -126,12 +127,20 @@ class foms_contract(osv.osv):
 		'is_expense_record': False,
 		'global_yellow_limit': 0,
 		'global_red_limit': 0,
+		'billing_cycle': 1,
 	}	
 	
 # CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
 	
+	def _const_billing_cycle(self, cr, uid, ids, context=None):
+		for data in self.browse(cr, uid, ids, context):
+			if data.billing_cycle < 1 or data.billing_cycle > 28:
+				return False
+		return True
+	
 	_constraints = [
 		#(_const_start_end_date, _('Start date must'), ['shipper_id']),
+		(_const_billing_cycle, _('Billing cycle number should be between 1 and 28 (inclusive).'), ['billing_cycle']),
 	]
 	
 	_sql_constraints = [
@@ -157,7 +166,7 @@ class foms_contract(osv.osv):
 		('const_lk_inap', 'CHECK(fee_lk_inap >= 0)', _('Fee Luar Kota Menginap must be greater than or equal to zero.')),
 		('const_holiday_allowance', 'CHECK(fee_holiday_allowance >= 0)', _('Fee holiday allowance must be greater than or equal to zero.')),
 		('const_holiday_allowance', 'CHECK(fee_holiday_allowance >= 0)', _('Fee holiday allowance must be greater than or equal to zero.')),
-	]		
+	]
 
 # METHODS ------------------------------------------------------------------------------------------------------------------
 
@@ -860,20 +869,30 @@ class foms_contract_shuttle_schedule_line_memory(osv.osv):
 	_name = "foms.contract.shuttle.schedule.line.memory"
 	_description = 'Contract Shuttle Schedule Line'
 	
-	def _contract_car_drivers_fleet_vehicle(self, cr, uid, ids, context=None):
+	# def _contract_car_drivers_fleet_vehicle(self, cr, uid, contract_id, context=None):
+	# # filter vehicle berdasarkan hasil fleet planning contract
+	# 	shuttle_schedule_obj = self.pool.get('foms.contract.shuttle.schedule.memory')
+	# 	contract_obj = self.pool.get('foms.contract')
+	# 	result = {}
+	# 	for shuttle_schedule_line in self.browse(cr, uid, ids, context):
+	# 		shuttle_schedule = shuttle_schedule_obj.browse(cr, uid, shuttle_schedule_line.header_id.id, context)
+	# 		contract = contract_obj.browse(cr, uid, shuttle_schedule.contract_id.id, context)
+	# 		fleet_vehicle_id = []
+	# 		for car_driver in contract.car_drivers:
+	# 			fleet_vehicle_id.append(car_driver.fleet_vehicle_id)
+	# 		result[shuttle_schedule.id] = fleet_vehicle_id
+	# 	return result
+	
+	def _contract_car_drivers_fleet_vehicle(self, cr, uid, ids, contract_id, context=None):
 		# filter vehicle berdasarkan hasil fleet planning contract
-		shuttle_schedule_obj = self.pool.get('foms.contract.shuttle.schedule.memory')
 		contract_obj = self.pool.get('foms.contract')
-		result = {}
-		for shuttle_schedule_line in self.browse(cr, uid, ids, context):
-			shuttle_schedule = shuttle_schedule_obj.browse(cr, uid, shuttle_schedule_line.header_id.id, context)
-			contract = contract_obj.browse(cr, uid, shuttle_schedule.contract_id.id, context)
-			fleet_vehicle_id = []
-			for car_driver in contract.car_drivers:
-				fleet_vehicle_id.append(car_driver.fleet_vehicle_id)
-			result[shuttle_schedule.id] = fleet_vehicle_id
-		return result
-		
+		contract = contract_obj.browse(cr, uid, contract_id, context)
+		fleet_vehicle_id = []
+		for car_driver in contract.car_drivers:
+			fleet_vehicle_id.append(car_driver.fleet_vehicle_id.id)
+		return {'domain':{'fleet_vehicle_id':[('id','in',fleet_vehicle_id)]}}
+		# return fleet_vehicle_id
+	
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
@@ -889,11 +908,11 @@ class foms_contract_shuttle_schedule_line_memory(osv.osv):
 			('6','Sunday'),], 'Day of Week', required=True),
 		'sequence': fields.integer('Sequence', required=True),
 		'route_id': fields.many2one('res.partner.route', 'Route', ondelete='restrict', required=True),
-		'fleet_vehicle_id': fields.many2one('fleet.vehicle', 'Fleet Vehicle', ondelete='restrict', required=True,
-			domain="[('id', 'in', contract_car_drivers_fleet_vehicle.ids)]"),
+		# 'contract_car_drivers_fleet_vehicle': fields.function(_contract_car_drivers_fleet_vehicle, method=True, type='one2many'),
+		'fleet_vehicle_id': fields.many2one('fleet.vehicle', 'Fleet Vehicle', ondelete='restrict', required=True,),
+			# domain="[('id', 'in', contract_car_drivers_fleet_vehicle.ids)]"),
 		'departure_time': fields.float('Departure Time', required=True),	
 		#'arrival_time': fields.float('Arrival Time', required=True),
-		'contract_car_drivers_fleet_vehicle': fields.function(_contract_car_drivers_fleet_vehicle, method=True, type='one2many'),
 	}
 	
 # ==========================================================================================================================

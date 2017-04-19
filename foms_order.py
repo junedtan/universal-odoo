@@ -1237,6 +1237,10 @@ class foms_order(osv.osv):
 				clock_out = end_working_date
 			else:
 				clock_out = order.finish_confirm_date
+		if clock_in is not None:
+			clock_in = str(clock_in)
+		if clock_out is not None:
+			clock_out = str(clock_out)
 		return clock_in, clock_out
 		
 	def _get_first_and_last_order_times_today(self, cr, uid, driver_id, today):

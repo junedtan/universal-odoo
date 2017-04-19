@@ -283,18 +283,10 @@ class foms_order(osv.osv):
 						}, context=context)
 		# kalau allocation unit tidak punya approver
 			else:
-			# langsung confirm order ini
-				self.write(cr, uid, [new_id], {
-					'state': 'finish_confirmed',
-					'finish_confirm_date': '2017/04/19 15:00:00', # GMT 0
-				}, context=context)
-			# TODO LINE DIATAS BALIKIN JADI GINI LAGI KALO UDAH DEBUG2 CRONNYA
-			"""
 				# langsung confirm order ini
 				self.write(cr, uid, [new_id], {
 					'state': 'confirmed',
 				}, context=context)
-			"""
 		elif service_type == 'shuttle':
 			self.write(cr, uid, [new_id], {
 				'state': 'confirmed',
@@ -1066,7 +1058,7 @@ class foms_order(osv.osv):
 
 # CRON ---------------------------------------------------------------------------------------------------------------------
 	
-	def cron_compute_driver_attendances(self, cr, uid, ids, context=None): # TODO DEBUG HAPUS IDS KALO UDAH JADI CRON LAGI
+	def cron_compute_driver_attendances(self, cr, uid, context=None):
 		employee_obj = self.pool.get('hr.employee')
 		fleet_obj = self.pool.get('foms.contract.fleet')
 		attendance_obj = self.pool.get('hr.attendance')

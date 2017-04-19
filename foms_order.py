@@ -1234,7 +1234,7 @@ class foms_order(osv.osv):
 		else:
 			start_working_date = order_day + timedelta(hours=start_working_time)
 			if order.start_planned_date and datetime.strptime(order.start_planned_date, '%Y-%m-%d %H:%M:%S') > start_working_date:
-				clock_in = start_working_date
+				clock_in = datetime.strptime(start_working_date, '%Y-%m-%d %H:%M:%S')
 			else:
 				clock_in = order.start_planned_date
 		if end_working_time is None:
@@ -1242,7 +1242,7 @@ class foms_order(osv.osv):
 		else:
 			end_working_date = order_day + timedelta(hours=end_working_time)
 			if order.finish_confirm_date and datetime.strptime(order.finish_confirm_date, '%Y-%m-%d %H:%M:%S') < end_working_date:
-				clock_out = end_working_date
+				clock_out = datetime.strptime(end_working_date, '%Y-%m-%d %H:%M:%S')
 			else:
 				clock_out = order.finish_confirm_date
 		return clock_in, clock_out

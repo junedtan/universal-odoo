@@ -22,11 +22,9 @@ class hr_attendance(osv.osv):
 	_name = 'hr.attendance'
 	
 # ---------------------------------------------------------------------------------------------------------------------------
-"""
-	TODO Si checking harus clockin dlu sbelum clockout dan sebaliknya didisable dulu karena ada bug default odoo yang
-	gabisa update2 attendance yg udah lalu
-	https://github.com/odoo/odoo/issues/1521
-"""
+# TODO Si checking harus clockin dlu sbelum clockout dan sebaliknya didisable dulu karena ada bug default odoo yang
+# gabisa update2 attendance yg udah lalu
+# https://github.com/odoo/odoo/issues/1521
 	def _altern_si_so(self, cr, uid, ids, context=None):
 		return True
 	

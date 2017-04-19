@@ -1058,7 +1058,7 @@ class foms_order(osv.osv):
 
 # CRON ---------------------------------------------------------------------------------------------------------------------
 	
-	def cron_compute_driver_attendances(self, cr, uid, ids, context=None): # TODO HAPUS IDS KALO UDAH GA DEBUGGIN LAGI JADI BUTTON
+	def cron_compute_driver_attendances(self, cr, uid, context=None):
 		employee_obj = self.pool.get('hr.employee')
 		fleet_obj = self.pool.get('foms.contract.fleet')
 		attendance_obj = self.pool.get('hr.attendance')
@@ -1110,7 +1110,7 @@ class foms_order(osv.osv):
 				# Jika first_clock_out <= first_clock_in
 					if first_clock_out <= first_clock_in:
 					# ambil start_planned nya si clock_out
-						previous_start_planned_date = first_finished_order.start_planned_date
+						previous_start_planned_date = datetime.strptime(first_finished_order.start_planned_date, '%Y-%m-%d %H:%M:%S')
 						previous_clock_out_id = attendance_obj.search(cr, uid, [
 							('name', '>=', previous_start_planned_date.date().strftime('%Y-%m-%d 00:00:00')),
 							('name', '<=', previous_start_planned_date.date().strftime('%Y-%m-%d 23:59:59')),
@@ -1145,7 +1145,7 @@ class foms_order(osv.osv):
 			# Jika ada first_clock_out
 				if first_clock_out:
 				# ambil start_planned nya si clock_out
-					previous_start_planned_date = first_finished_order.start_planned_date
+					previous_start_planned_date = datetime.strptime(first_finished_order.start_planned_date, '%Y-%m-%d %H:%M:%S')
 					previous_clock_out_id = attendance_obj.search(cr, uid, [
 						('name', '>=', previous_start_planned_date.date().strftime('%Y-%m-%d 00:00:00')),
 						('name', '<=', previous_start_planned_date.date().strftime('%Y-%m-%d 23:59:59')),
@@ -1237,10 +1237,6 @@ class foms_order(osv.osv):
 				clock_out = end_working_date
 			else:
 				clock_out = order.finish_confirm_date
-		if clock_in is not None:
-			clock_in = str(clock_in)
-		if clock_out is not None:
-			clock_out = str(clock_out)
 		return clock_in, clock_out
 		
 	def _get_first_and_last_order_times_today(self, cr, uid, driver_id, today):

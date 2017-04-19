@@ -1234,17 +1234,17 @@ class foms_order(osv.osv):
 		else:
 			start_working_date = order_day + timedelta(hours=start_working_time)
 			if order.start_planned_date and datetime.strptime(order.start_planned_date, '%Y-%m-%d %H:%M:%S') > start_working_date:
-				clock_in = datetime.strptime(start_working_date, '%Y-%m-%d %H:%M:%S')
+				clock_in = start_working_date
 			else:
-				clock_in = order.start_planned_date
+				clock_in = datetime.strptime(order.start_planned_date, '%Y-%m-%d %H:%M:%S')
 		if end_working_time is None:
 			clock_out = order.finish_confirm_date
 		else:
 			end_working_date = order_day + timedelta(hours=end_working_time)
 			if order.finish_confirm_date and datetime.strptime(order.finish_confirm_date, '%Y-%m-%d %H:%M:%S') < end_working_date:
-				clock_out = datetime.strptime(end_working_date, '%Y-%m-%d %H:%M:%S')
+				clock_out = end_working_date
 			else:
-				clock_out = order.finish_confirm_date
+				clock_out = datetime.strptime(order.finish_confirm_date, '%Y-%m-%d %H:%M:%S')
 		return clock_in, clock_out
 		
 	def _get_first_and_last_order_times_today(self, cr, uid, driver_id, today):

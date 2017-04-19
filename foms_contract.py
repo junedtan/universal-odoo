@@ -741,7 +741,7 @@ class foms_contract_fleet(osv.osv):
 	_sql_constraints = [
 		('unique_fleet_type', 'UNIQUE(header_id,fleet_vehicle_id)', _('You cannot assign the same vehicle more than once under one contract.')),
 		('unique_driver_id', 'UNIQUE(header_id,driver_id)', _('You cannot assign the same driver more than once under one contract.')),
-		('unique_fullday_user_id', 'UNIQUE(header_id,fullday_user_id)', _('You cannot assign the same full daya user more than once under one contract.')),
+		('unique_fullday_user_id', 'UNIQUE(header_id,fullday_user_id)', _('You cannot assign the same full day user more than once under one contract.')),
 	]	
 	
 # ==========================================================================================================================

@@ -322,19 +322,20 @@ class foms_order(osv.osv):
 	# cek apakah bentrok waktu sama order lain
 		if vals.get('assigned_vehicle_id', False) or vals.get('start_planned_date', False):
 		# ambil nilai lama dahulu apabila ternyata hanya terjadi 1 perubahan
-			assigned_vehicle = orders.assigned_vehicle_id.id
-			start_planned_date = orders.start_planned_date
-			finish_planned_date = orders.finish_planned_date
-		# apabila ada perubahan, gunakan nilai yang baru
-			if vals.get('assigned_vehicle_id', False):
-				assigned_vehicle = vals.get('assigned_vehicle_id', False)
-			if vals.get('start_planned_date', False):
-				start_planned_date = vals.get('start_planned_date', False)
-			if vals.get('finish_planned_date', False):
-				finish_planned_date = vals.get('finish_planned_date', False)
-		# cek ada yang beririsan ga
-			if assigned_vehicle and (not source or source == 'form'):
-				self._cek_vehicle_clash(cr, uid, assigned_vehicle, start_planned_date, finish_planned_date, ids[0], context)
+			for data in orders:
+				assigned_vehicle = data.assigned_vehicle_id.id
+				start_planned_date = data.start_planned_date
+				finish_planned_date = data.finish_planned_date
+			# apabila ada perubahan, gunakan nilai yang baru
+				if vals.get('assigned_vehicle_id', False):
+					assigned_vehicle = vals.get('assigned_vehicle_id', False)
+				if vals.get('start_planned_date', False):
+					start_planned_date = vals.get('start_planned_date', False)
+				if vals.get('finish_planned_date', False):
+					finish_planned_date = vals.get('finish_planned_date', False)
+			# cek ada yang beririsan ga
+				if assigned_vehicle and (not source or source == 'form'):
+					self._cek_vehicle_clash(cr, uid, assigned_vehicle, start_planned_date, finish_planned_date, data.id, context)
 		
 	# kalau order diconfirm dari mobile app, cek dulu apakah sudah diconfirm sebelumnya
 	# ini untuk mengantisipasi kalau satu alloc unit ada beberapa approver dan pada balapan meng-approve
@@ -1868,10 +1869,24 @@ class foms_order_replace_vehicle(osv.osv):
 				if replace_vehicle.replaced_vehicle_id.model_id.id != replace_vehicle.replacement_vehicle_id.model_id.id:
 					return False
 		return True
+	
+	def _constraint_replacement_vehicle_use_in_other_contract(self, cr, uid, ids, context=None):
+		# Cek apakah vehiclenya yang mereplace ada di contract lain
+		contract_fleet_obj = self.pool.get('foms.contract.fleet')
+		for replace_vehicles in self.browse(cr, uid, ids, context):
+			for replace_vehicle in replace_vehicles:
+				args = [
+					('header_id.state', 'in', ['active']),
+					('fleet_vehicle_id','=',replace_vehicle.replacement_vehicle_id.id),
+				]
+				contract_fleet_ids = contract_fleet_obj.search(cr, uid, args)
+				if len(contract_fleet_ids)>0:
+					return False
+		return True
 
-# JUNED: tambahkan constraint di mana replacement vehicle tidak boleh sedang dipakai di kontrak aktif lainnya
 	_constraints = [
 		(_constraint_vehicle_same_type, _('Vehicles must be in the same type.'), ['replaced_vehicle_id', 'replacement_vehicle_id']),
+		(_constraint_replacement_vehicle_use_in_other_contract, _('This car is being used in other contracts.'), ['replaced_vehicle_id', 'replacement_vehicle_id']),
 	]
 	
 # OVERRIDES ---------------------------------------------------------------------------------------------------------------
@@ -1930,8 +1945,24 @@ class foms_order_replace_driver(osv.osv):
 		'replacement_date': fields.datetime('Effective Since', required=True),
 		'replacement_reason': fields.text('Replacement Reason'),
 	}
+	
+	def _constraint_replacement_driver_use_in_other_contract(self, cr, uid, ids, context=None):
+		# Cek apakah driver yang mereplace ada di contract lain
+		contract_fleet_obj = self.pool.get('foms.contract.fleet')
+		for replace_drivers in self.browse(cr, uid, ids, context):
+			for replace_driver in replace_drivers:
+				args = [
+					('header_id.state', 'in', ['active']),
+					('driver_id','=',replace_driver.replacement_driver_id.id),
+				]
+				contract_fleet_ids = contract_fleet_obj.search(cr, uid, args)
+				if len(contract_fleet_ids)>0:
+					return False
+		return True
 
-# JUNED: tambahkan constraint di mana driver tidak boleh sedang bertugas di kontrak aktif lainnya
+	_constraints = [
+		(_constraint_replacement_driver_use_in_other_contract, _('Driver is being used in other contracts.'), ['replaced_driver_id', 'replacement_driver_id']),
+	]
 
 # OVERRIDES ---------------------------------------------------------------------------------------------------------------
 	
@@ -1950,7 +1981,7 @@ class foms_order_replace_driver(osv.osv):
 			args = [ 
 				('state', 'in', ['new', 'confirmed', 'ready']),
 				('start_planned_date', '>=', replace_driver.replacement_date),
-				('assigned_driver_id','=',replace_vehicle.replaced_driver_id.id),
+				('assigned_driver_id','=',replace_driver.replaced_driver_id.id),
 			]
 			order_ids = order_obj.search(cr, uid, args)
 			order_obj.write(cr, uid, order_ids, {
@@ -1965,7 +1996,7 @@ class foms_order_replace_driver(osv.osv):
 				('header_id.state', 'not in', ['terimnated', 'finished']),
 				('header_id.start_date', '<=', replace_driver.replacement_date),
 				('header_id.end_date', '>=', replace_driver.replacement_date),
-				('driver_id','=',replace_vehicle.replaced_driver_id.id),
+				('driver_id','=',replace_driver.replaced_driver_id.id),
 			]
 			contract_fleet_ids = contract_fleet_obj.search(cr, uid, args)
 			contract_fleet_obj.write(cr, uid, contract_fleet_ids, {

@@ -1058,7 +1058,7 @@ class foms_order(osv.osv):
 
 # CRON ---------------------------------------------------------------------------------------------------------------------
 	
-	def cron_compute_driver_attendances(self, cr, uid, ids, context=None): # TODO HAPUS ids KARENA DI CRON GA PAKE
+	def cron_compute_driver_attendances(self, cr, uid, ids, context=None): # TODO HAPUS IDS KALO UDAH GA DEBUGGIN LAGI JADI BUTTON
 		employee_obj = self.pool.get('hr.employee')
 		fleet_obj = self.pool.get('foms.contract.fleet')
 		attendance_obj = self.pool.get('hr.attendance')
@@ -1073,11 +1073,7 @@ class foms_order(osv.osv):
 				today)
 			if len(first_order) == 0 and len(last_order) == 0:
 				continue
-			start_working_time, end_working_time = self._get_driver_order_workingtime(
-				first_order,
-				last_order,
-				today)
-			# TODO GIMANA KALO LIBUR JADI GA ADA WOKRKING TIME
+			start_working_time, end_working_time = self._get_driver_order_workingtime(first_order, last_order, today)
 			first_order_clock_in, first_order_clock_out_in = self._determine_clock_datetime(cr, uid, start_working_time,
 				end_working_time, first_order, today)
 			first_finished_order_clock_in, first_finished_order_clock_out = self._determine_clock_datetime(cr, uid,
@@ -1107,7 +1103,8 @@ class foms_order(osv.osv):
 					self._write_attendance(cr, uid, today_clock_in_id, first_clock_in)
 			# else belum ada db_clock_in
 				else: # create db_clock_in
-					self._create_attendance(cr, uid, driver.id, first_order.customer_contract_id.id, 'sign_in', first_clock_in)
+					self._create_attendance(cr, uid, driver.id, first_order.customer_contract_id.id, 'sign_in',
+						first_clock_in)
 			# Jika ada first_clock_out
 				if first_clock_out:
 				# Jika first_clock_out <= first_clock_in
@@ -1245,15 +1242,15 @@ class foms_order(osv.osv):
 	def _get_first_and_last_order_times_today(self, cr, uid, driver_id, today):
 		# Get today's first order
 		first_order_ids = self.search(cr, uid, [
-			('assigned_driver_id', '=', driver_id), # TODO SEMUA ASSIGNED DI METHOD INI GANTI JADI ACTUAL
+			('actual_driver_id', '=', driver_id),
 			('start_planned_date', '>=', today.strftime('%Y-%m-%d 00:00:00')),
 			('start_planned_date', '<=', today.strftime('%Y-%m-%d 23:59:59')),
-			('state', 'in', ['ready', 'started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finish_confirmed']) # TODO DELETE READYNYA
+			('state', 'in', ['started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finish_confirmed'])
 		], limit=1, order="start_planned_date asc")
 		first_order = self.browse(cr, uid, first_order_ids)
 		# Get today's first finished order
 		first_finished_order_ids = self.search(cr, uid, [
-			('assigned_driver_id', '=', driver_id),
+			('actual_driver_id', '=', driver_id),
 			('finish_confirm_date', '>=', today.strftime('%Y-%m-%d 00:00:00')),
 			('finish_confirm_date', '<=', today.strftime('%Y-%m-%d 23:59:59')),
 			('state', 'in', ['ready', 'started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finish_confirmed'])
@@ -1261,7 +1258,7 @@ class foms_order(osv.osv):
 		first_finished_order = self.browse(cr, uid, first_finished_order_ids)
 		# Get today's last order
 		last_order_ids = self.search(cr, uid, [
-			('assigned_driver_id', '=', driver_id),
+			('actual_driver_id', '=', driver_id),
 			('finish_confirm_date', '>=', today.strftime('%Y-%m-%d 00:00:00')),
 			('finish_confirm_date', '<=', today.strftime('%Y-%m-%d 23:59:59')),
 			('state', 'in', ['ready', 'started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finish_confirmed'])

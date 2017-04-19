@@ -300,8 +300,6 @@ class foms_order(osv.osv):
 		source = context.get('source', False)
 
 		orders = self.browse(cr, uid, ids)
-
-		user_obj = self.pool.get('res.users')
 		
 	#apabila ada perubahan contract cek dahulu apakah contractnya masih active
 		if vals.get('customer_contract_id', False):
@@ -434,7 +432,6 @@ class foms_order(osv.osv):
 				# apakah source_area dan dest_area ada di bawah homebase yang sama?
 				# kalo sama, langsung cariin mobil dan supir
 					else:
-						central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_dispatcher')
 						if order_data.origin_area_id and order_data.dest_area_id and \
 						order_data.origin_area_id.homebase_id.id == order_data.dest_area_id.homebase_id.id:
 						# sebelum cariin mobil dan supir, cek dulu di luar jam kerja ngga ini order
@@ -469,25 +466,19 @@ class foms_order(osv.osv):
 												'notification': ['order_fleet_not_ready'],
 										}, context=context)
 									partner_ids = []
-									for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
-									self.message_post(cr, SUPERUSER_ID, order_data.id,
-										body=_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order_data.name,
-										partner_ids=partner_ids)
+									self._message_dispacther(cr, uid, order_data.id,
+										_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order_data.name )
 									return result
 						# jika order di luar hari kerja, jangan autoplot, kirim notif ke dispatcher untuk mengingatkan agar manual assign
 							else:
 								partner_ids = []
-								for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
-								self.message_post(cr, SUPERUSER_ID, order_data.id,
-									body=_('Order %s were booked outside working day. Please assign the vehicle and the driver manually.') % order_data.name,
-									partner_ids=partner_ids)
+								self._message_dispacther(cr, uid, order_data.id,
+									_('Order %s were booked outside working day. Please assign the vehicle and the driver manually.') % order_data.name )
 					# kalo beda homebase, post message
 						else:
 							partner_ids = []
-							for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
-							self.message_post(cr, SUPERUSER_ID, order_data.id,
-								body=_('New order from %s going to different homebase. Manual vehicle/driver assignment needed.') % order_data.customer_contract_id.customer_id.name,
-								partner_ids=partner_ids)
+							self._message_dispacther(cr, uid, order_data.id,
+								_('New order from %s going to different homebase. Manual vehicle/driver assignment needed.') % order_data.customer_contract_id.customer_id.name )
 			# kalau jadi start atau start confirmed dan actual vehicle atau driver masih kosong, maka isikan
 				elif vals['state'] in ['started','start_confirmed','finished','finish_confirmed']:
 					update_data = {}
@@ -914,9 +905,7 @@ class foms_order(osv.osv):
 		return working_normal_time + (1.5 * working_overtime)
 
 	_central_dispatch_partners = []
-# JUNED: saya sudah membuat method ini untuk mempermudah messaging dispatcher
-# contoh pemanggilan ada di _cek_order_assigning_vehicle. tolong update kode supaya 
-# setiap message ke dispatcher memanggil method ini
+	
 	def _message_dispacther(self, cr, uid, data_id, message):
 		if not self._central_dispatch_partners:
 			user_obj = self.pool.get('res.users')

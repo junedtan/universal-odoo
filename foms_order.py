@@ -943,7 +943,7 @@ class foms_order(osv.osv):
 		order_time = request_date_convert.time()
 		order_time = order_time.hour + (order_time.minute/60.0)
 		for order_hours in contract_data.order_hours:
-			if order_day == int(order_hours.dayofweek) and (order_time >= order_hours.time_from - SERVER_TIMEZONE and order_time <= order_hours.time_to - SERVER_TIMEZONE):
+			if order_day == int(order_hours.dayofweek) and (order_time >= order_hours.time_from + SERVER_TIMEZONE and order_time <= order_hours.time_to + SERVER_TIMEZONE):
 				book_in_hours = True
 				break
 		if not book_in_hours:

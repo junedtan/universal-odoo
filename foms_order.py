@@ -1114,6 +1114,9 @@ class foms_order(osv.osv):
 						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_out, last_order.id)
 			else:
 				working_time_leaf = self._get_contract_working_time(first_order.customer_contract_id, yesterday)
+			# Kalau libur, return
+				if working_time_leaf is None:
+					return
 			#dapetin working time
 				date_clock_in, date_clock_out = self._determine_clock_datetimes(cr, uid, first_order, last_order, yesterday, 
 						working_time_leaf.working_time_type, False, working_time_leaf.hour_from, working_time_leaf.hour_to, working_time_leaf.max_hour)

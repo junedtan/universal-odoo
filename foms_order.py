@@ -1045,7 +1045,7 @@ class foms_order(osv.osv):
 			},
 			'target': 'new',
 		}
-
+		
 # CRON ---------------------------------------------------------------------------------------------------------------------
 	def cron_driver_attedances(self, cr, uid, context=None):
 		employee_obj = self.pool.get('hr.employee')
@@ -1066,6 +1066,16 @@ class foms_order(osv.osv):
 				# Dapatkan pasangan clock in dan clock kemarin, jika tidak ada, create, jika ada maka write
 					if len(order_pass_day) != 0
 						clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, driver.id, order_pass_day.customer_contact_id.id, yesterday)
+
+	def action_finish(self, cr, uid, ids, context=None):
+		order = self.browse(cr, uid, ids[0])
+		return self.write(cr, uid, ids, {
+			'state': 'finish_confirmed',
+			'finish_date': order.finish_planned_date,
+			'finish_confirm_date': order.finish_planned_date,
+			'finish_confirm_by': uid,
+			'finish_from': 'central',
+		})
 	
 	def cron_compute_driver_attendances(self, cr, uid, context=None):
 		employee_obj = self.pool.get('hr.employee')

@@ -52,6 +52,7 @@
 					<header>
 						<button name="action_cancel" string="Cancel Order" type="object" states="new,confirmed,ready" groups="universal.group_universal_dispatcher" /> 
 						<button name="action_confirm" string="Confirm" type="object" states="new" confirm="Are you sure to confirm this order?" groups="universal.group_universal_dispatcher" />
+						<button name="action_finish" string="Finish Order" type="object" states="start_confirmed,paused,resumed,finished" confirm="Are you sure to finish this order?" groups="universal.group_universal_dispatcher" />
 						<field name="state" widget="statusbar" readonly="1" />
 					</header>
 					<group>

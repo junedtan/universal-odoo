@@ -506,18 +506,13 @@ class foms_order(osv.osv):
 						])
 						if len(order_ids) == 0:
 						# liat di hari tersebut ada clockin tidak?
-							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid,
-								order_data.actual_driver_id.id, order_data.customer_contract_id.id, datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S'))
-							hr_attendance_obj = self.pool.get('hr.attendance')
-							if order_data.create_source == 'mobile':
-								source = 'app'
-							else:
-								source = 'manual'
+							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, order_data.actual_driver_id.id,
+								order_data.customer_contract_id.id, datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S'))
 							if clock_in:
-								self._write_attendance(cr, uid, clock_in.id, order_data.start_planned_date,  order_data.customer_contract_id.id, order_data.id)
+								self._write_attendance(cr, uid, clock_in.id, order_data.start_planned_date, order_data.customer_contract_id.id, order_data.id)
 							else:
 								self._create_attendance(cr, uid, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
-									'sign_out', order_data.start_planned_date, order_data.id)
+									'sign_in', order_data.start_planned_date, order_data.id)
 				# Kalau state berubah jadi finish confirmed, cek apakah dia order terakhir finish_confirm_date di hari tersebut bukan
 					if vals['state'] in ['finish_confirmed']:
 						order_ids = self.search(cr, uid, [
@@ -527,15 +522,17 @@ class foms_order(osv.osv):
 						])
 						if len(order_ids) == 0:
 							# liat di hari tersebut ada clockin tidak?
-							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid,
-								order_data.actual_driver_id.id, order_data.customer_contract_id.id, datetime.strptime(order_data.finish_confirm_date,'%Y-%m-%d %H:%M:%S'))
-							hr_attendance_obj = self.pool.get('hr.attendance')
-							if order_data.create_source == 'mobile':
-								source = 'app'
-							else:
-								source = 'manual'
+							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, order_data.actual_driver_id.id,
+								order_data.customer_contract_id.id, datetime.strptime(order_data.finish_confirm_date,'%Y-%m-%d %H:%M:%S'))
 							if clock_out:
-								self._write_attendance(cr, uid, clock_out.id, order_data.finish_confirm_date,  order_data.customer_contract_id.id, order_data.id)
+							# kalau order nanggung, create. Kl order biasa, write
+								date_start = datetime.strptime(clock_out.order_id.start_planned_date,'%Y-%m-%d')
+								date_finish = datetime.strptime(clock_out.order_id.finish_confirm_date,'%Y-%m-%d')
+								if date_start != date_finish:
+									self._create_attendance(cr, uid, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
+										'sign_out', order_data.finish_confirm_date, order_data.id)
+								else:
+									self._write_attendance(cr, uid, clock_out.id, order_data.finish_confirm_date, order_data.customer_contract_id.id, order_data.id)
 							else:
 								self._create_attendance(cr, uid, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
 									'sign_out', order_data.finish_confirm_date, order_data.id)

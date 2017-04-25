@@ -1055,8 +1055,19 @@ class foms_order(osv.osv):
 			},
 			'target': 'new',
 		}
-
-# CRON ---------------------------------------------------------------------------------------------------------------------
+	
+	def action_finish(self, cr, uid, ids, context=None):
+		order = self.browse(cr, uid, ids[0])
+		return self.write(cr, uid, ids, {
+			'state': 'finish_confirmed',
+			'finish_date': order.finish_planned_date,
+			'finish_confirm_date': order.finish_planned_date,
+			'finish_confirm_by': uid,
+			'finish_from': 'central',
+		})
+	
+	
+	# CRON ---------------------------------------------------------------------------------------------------------------------
 	
 	def cron_compute_driver_attendances(self, cr, uid, ids, context=None): # TODO HAPUS IDS KALO UDAH GA DEBUGGIN LAGI JADI BUTTON
 		employee_obj = self.pool.get('hr.employee')

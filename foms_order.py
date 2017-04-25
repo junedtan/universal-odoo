@@ -1301,15 +1301,16 @@ class foms_order(osv.osv):
 		last_order = self.browse(cr, uid, last_order_ids)
 		return first_order, last_order
 	
-	def _determine_clock_datetimes(self, cr, uid, first_order, last_finished_order, calculated_date, working_type, is_multi_day=False,
-			start_working_time=None, end_working_time=None, working_time_duration=None):
+	def _determine_clock_datetimes(self, cr, uid, first_order, last_finished_order, calculated_date, working_type,
+			is_multi_day=False, start_working_time=None, end_working_time=None, working_time_duration=None):
 		"""
 		Determines clock-in and clock-out datetime from the given orders and working time.
 		:param first_order: recordset of first order of the day
 		:param last_finished_order: recordset of last finish confirmed order of the day, may be None
 		:param calculated_date: datetime of the date of intended clock in and clock out
 		:param working_type: string of working type, max_hour or duration
-		:param is_multi_day: boolean. If True, first_order and last_order must be the same order
+		:param is_multi_day: boolean. If True, first_order and last_finished_order will be ignored. clock_in, clock_out will
+			be calculated from working time
 		:param start_working_time: floattime of start working time, ignored if working type is duration
 		:param end_working_time: floattime of end working time, ignored if working type is duration
 		:param working_time_duration: floattime of working time duration, ignored if working type is max_hour
@@ -1317,25 +1318,25 @@ class foms_order(osv.osv):
 		"""
 		clock_in = None
 		clock_out = None
-		
-	# If the order is multi day, first_order and last_order must be the same order
-		if is_multi_day and first_order.id != last_finished_order.id:
-			raise Exception("If the order is multi day, first_order and last_order must be the same order")
 	# If there are no working time, then there are no clockin and clockout time
 		if (working_type == 'duration' and (start_working_time is None or end_working_time is None)) \
 				or (working_type == 'max_hour' and working_time_duration is None):
 			return clock_in, clock_out
 		
 	# Pool start_planned_date
-		if first_order.start_planned_date:
-			start_planned_date = datetime.strptime(first_order.start_planned_date, DEFAULT_SERVER_DATETIME_FORMAT)
+		if first_order is not None:
+			if first_order.start_planned_date:
+				start_planned_date = datetime.strptime(first_order.start_planned_date, DEFAULT_SERVER_DATETIME_FORMAT)
+			else:
+				raise Exception('No start planned date found on order')
 		else:
-			raise Exception('No start planned date found on order')
+			start_planned_date = None
 		
 	# Pool finish_planned_date
 		if last_finished_order is not None:
 			if last_finished_order.finish_confirm_date:
-				finish_confirm_date = datetime.strptime(last_finished_order.finish_confirm_date, DEFAULT_SERVER_DATETIME_FORMAT)
+				finish_confirm_date = datetime.strptime(last_finished_order.finish_confirm_date,
+					DEFAULT_SERVER_DATETIME_FORMAT)
 			else:
 				raise Exception('No finish planned date found on order')
 		else:
@@ -1359,13 +1360,17 @@ class foms_order(osv.osv):
 			else:
 				# Force set start working date time to 0800
 				start_working_date = calculated_date.replace(hour=8, minute=0, second=0, microsecond=0)
-			end_working_date = start_planned_date + timedelta(seconds=(working_time_duration) * 60 * 60)
+			end_working_date = start_working_date + timedelta(seconds=(working_time_duration) * 60 * 60)
 		else:
 			raise Exception('Invalid working type')
 			
 	# Calculate clock_in and clock_out
-		clock_in = start_working_date if start_planned_date > start_working_date else start_planned_date
-		clock_out = end_working_date if finish_confirm_date < end_working_date else finish_confirm_date
+		if not is_multi_day:
+			clock_in = start_working_date if start_planned_date > start_working_date else start_planned_date
+			clock_out = end_working_date if finish_confirm_date < end_working_date else finish_confirm_date
+		else:
+			clock_in = start_working_date
+			clock_out = end_working_date
 		return clock_in, clock_out
 	
 	def _determine_clock_datetime(self, cr, uid, start_working_time, end_working_time, order, order_day):

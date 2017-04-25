@@ -1097,7 +1097,7 @@ class foms_order(osv.osv):
 		today = datetime.now()
 		yesterday = today - timedelta(hours=24)
 		for driver in drivers:
-			first_order, last_order = self._get_first_and_last_order_times_today(cr, uid, driver.id, today)
+			first_order, last_order = self._get_days_first_last_order(cr, uid, driver.id, yesterday)
 		# Dapatkan pasangan clock in dan clock kemarin
 			first_clock_in, last_clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, driver.id, yesterday)
 		# Jika tidak ada order pertama di hari itu, maka cek apakah driver itu sedang menjalani order lintas hari, jika tidak maka dia tidak absen
@@ -1123,8 +1123,8 @@ class foms_order(osv.osv):
 					else:
 						self._write_attendance(cr, uid, first_clock_in.id, date_clock_in, last_order.customer_contract_id.id, last_order.id)
 				if date_clock_out is not None:
-					if len(last_order) == 0:
-						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_in, last_order.id)
+					if len(last_clock_out) == 0:
+						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_out, last_order.id)
 					else:
 						self._write_attendance(cr, uid, last_clock_out.id, date_clock_out, last_order.customer_contract_id.id, last_order.id)
 
@@ -1419,20 +1419,20 @@ class foms_order(osv.osv):
 				clock_out = datetime.strptime(order.finish_confirm_date, '%Y-%m-%d %H:%M:%S')
 		return clock_in, clock_out
 		
-	def _get_first_and_last_order_times_today(self, cr, uid, driver_id, date):
+	def _get_days_first_last_order(self, cr, uid, driver_id, calculated_date):
 		# Get date's first order
 		first_order_ids = self.search(cr, uid, [
 			('actual_driver_id', '=', driver_id),
-			('start_planned_date', '>=', date.strftime('%Y-%m-%d 00:00:00')),
-			('start_planned_date', '<=', date.strftime('%Y-%m-%d 23:59:59')),
+			('start_planned_date', '>=', calculated_date.strftime('%Y-%m-%d 00:00:00')),
+			('start_planned_date', '<=', calculated_date.strftime('%Y-%m-%d 23:59:59')),
 			('state', 'in', ['started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finish_confirmed'])
 		], limit=1, order="start_planned_date asc")
 		first_order = self.browse(cr, uid, first_order_ids)
 		# Get date's last order
 		last_order_ids = self.search(cr, uid, [
 			('actual_driver_id', '=', driver_id),
-			('finish_confirm_date', '>=', date.strftime('%Y-%m-%d 00:00:00')),
-			('finish_confirm_date', '<=', date.strftime('%Y-%m-%d 23:59:59')),
+			('finish_confirm_date', '>=', calculated_date.strftime('%Y-%m-%d 00:00:00')),
+			('finish_confirm_date', '<=', calculated_date.strftime('%Y-%m-%d 23:59:59')),
 			('state', '=', 'finish_confirmed')
 		], limit=1, order="finish_confirm_date desc")
 		last_order = self.browse(cr, uid, last_order_ids)

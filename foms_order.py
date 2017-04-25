@@ -1113,20 +1113,20 @@ class foms_order(osv.osv):
 					if len(last_clock_out) == 0 and len(date_clock_out) != 0:
 						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_out, last_order.id)
 			else:
-				working_time_leaf = self._get_contract_working_time(first_order.customer_contact_id, yesterday)
+				working_time_leaf = self._get_contract_working_time(first_order.customer_contract_id, yesterday)
 			#dapetin working time
 				date_clock_in, date_clock_out = self._determine_clock_datetimes(cr, uid, first_order, last_order, yesterday, 
 						working_time_leaf.working_time_type, True, working_time_leaf.hour_from, working_time_leaf.hour_to, working_time_leaf.max_hour)
-				if len(date_clock_in) != 0:
+				if date_clock_in is not None:
 					if len(first_clock_in) == 0:
 						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_in', date_clock_in, last_order.id)
 					else:
-						self._write_attendance(cr, uid, first_clock_in.id, date_clock_in)
-				if len(date_clock_out) != 0:
+						self._write_attendance(cr, uid, first_clock_in.id, date_clock_in, last_order.customer_contract_id.id, last_order.id)
+				if date_clock_out is not None:
 					if len(last_order) == 0:
 						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_in, last_order.id)
 					else:
-						self._write_attendance(cr, uid, last_clock_out.id, date_clock_out)
+						self._write_attendance(cr, uid, last_clock_out.id, date_clock_out, last_order.customer_contract_id.id, last_order.id)
 
 	def action_finish(self, cr, uid, ids, context=None):
 		order = self.browse(cr, uid, ids[0])

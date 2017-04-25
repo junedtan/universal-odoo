@@ -1103,22 +1103,22 @@ class foms_order(osv.osv):
 			if len(first_order) == 0:
 				order_pass_day = self._get_running_multiday_orders(cr, uid, driver.id, yesterday)
 				if len(order_pass_day) > 0:
-					working_time_leaf = self._get_contract_working_time(order_pass_day.customer_contract_id, yesterday)
+					working_time = self._get_contract_working_time(order_pass_day.customer_contract_id, yesterday)
 				#dapetin working time
 					date_clock_in, date_clock_out = self._determine_clock_datetimes(cr, uid, None, None, yesterday,
-						working_time_leaf.working_time_type, True, working_time_leaf.hour_from, working_time_leaf.hour_to, working_time_leaf.max_hour)
+						working_time.working_time_type, True, working_time.hour_from, working_time.hour_to, working_time.max_hour)
 					if len(first_clock_in) == 0 and date_clock_in is not None:
 						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_in', date_clock_in, last_order.id)
 					if len(last_clock_out) == 0 and date_clock_out is not None:
 						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_out, last_order.id)
 			else:
-				working_time_leaf = self._get_contract_working_time(first_order.customer_contract_id, yesterday)
+				working_time = self._get_contract_working_time(first_order.customer_contract_id, yesterday)
 			# Kalau libur, return
-				if working_time_leaf is None:
+				if working_time is None:
 					return
 			#dapetin working time
 				date_clock_in, date_clock_out = self._determine_clock_datetimes(cr, uid, first_order, last_order, yesterday, 
-						working_time_leaf.working_time_type, False, working_time_leaf.hour_from, working_time_leaf.hour_to, working_time_leaf.max_hour)
+						working_time.working_time_type, False, working_time.hour_from, working_time.hour_to, working_time.max_hour)
 				if date_clock_in is not None:
 					if len(first_clock_in) == 0:
 						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_in', date_clock_in, last_order.id)
@@ -1265,40 +1265,40 @@ class foms_order(osv.osv):
 			'order_id': order_id,
 		})
 		
-	def _get_clock_in_clock_out_driver_at_date(self, cr, uid, driver_id, param_date):
+	def _get_clock_in_clock_out_driver_at_date(self, cr, uid, driver_id, calculated_date):
 		attendance_obj = self.pool.get('hr.attendance')
-		param_date = param_date.replace(hour=0, minute=0, second=0, microsecond=0)
-		param_date_from = param_date - timedelta(hours=SERVER_TIMEZONE)
-		param_date_to = param_date_from + timedelta(hours=24)
+		calculated_date = calculated_date.replace(hour=0, minute=0, second=0, microsecond=0)
+		calculated_date_from = calculated_date - timedelta(hours=SERVER_TIMEZONE)
+		calculated_date_to = calculated_date_from + timedelta(hours=24)
 	# Get date's attendance clock in
 		clock_in_ids = attendance_obj.search(cr, uid, [
 			('employee_id', '=', driver_id),
-			('name', '>=', param_date_from.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
-			('name', '<=', param_date_to.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('name', '>=', calculated_date_from.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('name', '<=', calculated_date_to.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
 			('action', '=', 'sign_in'),
 		], limit=1, order="name asc")
 		clock_in = attendance_obj.browse(cr, uid, clock_in_ids)
 	# Get today's last order
 		clock_out_ids = attendance_obj.search(cr, uid, [
 			('employee_id', '=', driver_id),
-			('name', '>=', param_date_from.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
-			('name', '<=', param_date_to.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('name', '>=', calculated_date_from.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('name', '<=', calculated_date_to.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
 			('action', '=', 'sign_out'),
 		], limit=1, order="name desc")
 		clock_out = attendance_obj.browse(cr, uid, clock_out_ids)
 		return clock_in, clock_out
 
-	def _get_contract_working_time(self, contract, calculated_datetime):
+	def _get_contract_working_time(self, contract, calculated_date):
 		"""
 		Returns the given contract workingtime
 		:param contract: recordset of contract (foms.contract)
-		:param calculated_datetime: calculated_date: datetime of the date of intended working time
+		:param calculated_date: calculated_date: datetime of the date of intended working time
 		:return: recordset of working time (resource.calendar.attendance)
 		"""
 		result = None
 		working_times = contract.working_time_id.attendance_ids
 		for working_time in working_times:
-			if str(calculated_datetime.weekday()) == working_time.dayofweek:
+			if str(calculated_date.weekday()) == working_time.dayofweek:
 				result = working_time
 		return result
 		
@@ -1378,21 +1378,33 @@ class foms_order(osv.osv):
 	# Pool start_working_date and end_working_date
 		if working_type == 'duration':
 			if not is_multi_day:
-				start_working_date = start_planned_date.replace(hour=0, minute=0, second=0, microsecond=0)
+				start_working_date = start_planned_date + timedelta(hours=SERVER_TIMEZONE)
+				start_working_date = start_working_date.replace(hour=0, minute=0, second=0, microsecond=0)
 				start_working_date += timedelta(seconds=(start_working_time - SERVER_TIMEZONE) * 60 * 60)
-				end_working_date = start_planned_date.replace(hour=0, minute=0, second=0, microsecond=0)
+				# start_working_date = start_working_date - timedelta(hours=SERVER_TIMEZONE)
+				
+				end_working_date = calculated_date + timedelta(hours=SERVER_TIMEZONE)
+				end_working_date = end_working_date.replace(hour=0, minute=0, second=0, microsecond=0)
 				end_working_date += timedelta(seconds=(end_working_time - SERVER_TIMEZONE) * 60 * 60)
+				# end_working_date = end_working_date - timedelta(hours=SERVER_TIMEZONE)
 			else:
-				start_working_date = calculated_date.replace(hour=0, minute=0, second=0, microsecond=0)
+				start_working_date = calculated_date + timedelta(hours=SERVER_TIMEZONE)
+				start_working_date = start_working_date.replace(hour=0, minute=0, second=0, microsecond=0)
 				start_working_date += timedelta(seconds=(start_working_time - SERVER_TIMEZONE) * 60 * 60)
-				end_working_date = calculated_date.replace(hour=0, minute=0, second=0, microsecond=0)
+				# start_working_date = start_working_date - timedelta(hours=SERVER_TIMEZONE)
+				
+				end_working_date = calculated_date + timedelta(hours=SERVER_TIMEZONE)
+				end_working_date = end_working_date.replace(hour=0, minute=0, second=0, microsecond=0)
 				end_working_date += timedelta(seconds=(end_working_time - SERVER_TIMEZONE) * 60 * 60)
+				# end_working_date = end_working_date - timedelta(hours=SERVER_TIMEZONE)
 		elif working_type == 'max_hour':
 			if not is_multi_day:
 				start_working_date = start_planned_date
 			else:
 				# Force set start working date time to 0800
-				start_working_date = calculated_date.replace(hour=8, minute=0, second=0, microsecond=0)
+				start_working_date = calculated_date + timedelta(hours=SERVER_TIMEZONE)
+				start_working_date = start_working_date.replace(hour=8 + SERVER_TIMEZONE, minute=0, second=0, microsecond=0)
+				# start_working_date = start_working_date - timedelta(hours=SERVER_TIMEZONE)
 			end_working_date = start_working_date + timedelta(seconds=(working_time_duration) * 60 * 60)
 		else:
 			raise Exception('Invalid working type')

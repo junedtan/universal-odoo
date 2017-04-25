@@ -1444,7 +1444,7 @@ class foms_order(osv.osv):
 		calculated_date = calculated_date.replace(hour=0, minute=0, second=0, microsecond=0)
 		calculated_date_from = calculated_date - timedelta(hours=SERVER_TIMEZONE)
 		calculated_date_to = calculated_date_from + timedelta(hours=24)
-		calculated_date_tommorow_to = calculated_date_from + timedelta(hours=23, minutes=59, seconds=59)
+		calculated_date_tommorow_to = calculated_date_to + timedelta(hours=23, minutes=59, seconds=59)
 		# Get date's first order
 		calculated_date = calculated_date - timedelta(hours=SERVER_TIMEZONE)
 		first_order_ids = self.search(cr, uid, [

@@ -505,7 +505,8 @@ class foms_order(osv.osv):
 						])
 						if len(order_ids) == 0:
 						# liat di hari tersebut ada clockin tidak?
-							# clock_in, clock_out = method_anton
+							clock_in, clock_out = _get_clock_in_clock_out_driver_at_date(cr, uid,
+								order_data.actual_driver_id.id, order_data.customer_contract_id.id, datetime.now())
 							hr_attendance_obj = self.pool.get('hr.attendance')
 							if order_data.create_source == 'mobile':
 								source = 'app'
@@ -1090,11 +1091,11 @@ class foms_order(osv.osv):
 			first_order, first_finished_order, last_order = self._get_first_and_last_order_times_today(cr, uid, driver.id,
 				yesterday)
 		# Jika tidak ada order pertama di hari itu, maka cek apakah driver itu sedang menjalani order lintas hari, jika tidak maka dia tidak absen
-			if len(first_order) == 0 
+			if len(first_order) == 0:
 				order_pass_day = self._get_order_driver_pass_days(cr, uid, driver.id, yesterday)
 				# Dapatkan pasangan clock in dan clock kemarin, jika tidak ada, create, jika ada maka write
-					if len(order_pass_day) != 0
-						clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, driver.id, order_pass_day.customer_contact_id.id, yesterday)
+				if len(order_pass_day) != 0:
+					clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, driver.id, order_pass_day.customer_contact_id.id, yesterday)
 
 	def action_finish(self, cr, uid, ids, context=None):
 		order = self.browse(cr, uid, ids[0])
@@ -1224,26 +1225,26 @@ class foms_order(osv.osv):
 			'name': clock_datetime,
 		})
 		
-	def _get_clock_in_clock_out_driver_at_date(self, cr, uid, driver_id, customer_contract_id, date):
+	def _get_clock_in_clock_out_driver_at_date(self, cr, uid, driver_id, customer_contract_id, param_date):
 		attendance_obj = self.pool.get('hr.attendance')
 	# Get date's attendance clock in
 		clock_in_ids = attendance_obj.search(cr, uid, [
 			('employee_id', '=', driver_id),
-			('contract_id': customer_contract_id),
-			('name', '>=', today.strftime('%Y-%m-%d 00:00:00')),
-			('name', '<=', today.strftime('%Y-%m-%d 23:59:59')),
+			('contract_id', customer_contract_id),
+			('name', '>=', param_date.strftime('%Y-%m-%d 00:00:00')),
+			('name', '<=', param_date.strftime('%Y-%m-%d 23:59:59')),
 			('action', '=', 'sign_in'),
 		], limit=1, order="name asc")
-		clock_in = self.browse(cr, uid, first_order_ids)
+		clock_in = attendance_obj.browse(cr, uid, clock_in_ids)
 	# Get today's last order
 		clock_out_ids = attendance_obj.search(cr, uid, [
 			('employee_id', '=', driver_id),
-			('contract_id': customer_contract_id),
-			('name', '>=', today.strftime('%Y-%m-%d 00:00:00')),
-			('name', '<=', today.strftime('%Y-%m-%d 23:59:59')),
+			('contract_id', customer_contract_id),
+			('name', '>=', param_date.strftime('%Y-%m-%d 00:00:00')),
+			('name', '<=', param_date.strftime('%Y-%m-%d 23:59:59')),
 			('action', '=', 'sign_out'),
 		], limit=1, order="name desc")
-		clock_out = self.browse(cr, uid, last_order_ids)
+		clock_out = attendance_obj.browse(cr, uid, clock_out_ids)
 		return clock_in, clock_out
 	
 	def _get_driver_order_workingtime(self, first_order, last_order, today):
@@ -1272,7 +1273,7 @@ class foms_order(osv.osv):
 			else first_order_end_working_time
 		return start_working_time, end_working_time
 		
-	def _get_order_driver_pass_days(self, cr, uid, driver_id, date){
+	def _get_order_driver_pass_days(self, cr, uid, driver_id, date):
 		# Get order still running, start_planned date before date 
 		order_running_ids = self.search(cr, uid, [
 			('actual_driver_id', '=', driver_id),
@@ -1281,7 +1282,6 @@ class foms_order(osv.osv):
 		], limit=1, order="start_planned_date desc")
 		order_running = self.browse(cr, uid, first_order_ids)
 		return order_running
-	}
 	
 	def _get_first_and_last_order_today(self, cr, uid, driver_id, today):
 		# Get today's first order
@@ -1757,8 +1757,8 @@ class foms_order(osv.osv):
 				print user_id
 				print webservice_context
 				sync_obj.post_outgoing(cr, user_id, 'foms.order', command, order_data.id, data_columns=data_columns, data_context=webservice_context)
-
-# ==========================================================================================================================
+				
+	# ==========================================================================================================================
 
 class foms_order_area(osv.osv):
 

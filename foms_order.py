@@ -1077,7 +1077,7 @@ class foms_order(osv.osv):
 		}
 		
 # CRON ---------------------------------------------------------------------------------------------------------------------
-	def cron_driver_attedances(self, cr, uid, context=None):
+	def cron_driver_attendances(self, cr, uid, context=None):
 		employee_obj = self.pool.get('hr.employee')
 		fleet_obj = self.pool.get('foms.contract.fleet')
 		attendance_obj = self.pool.get('hr.attendance')
@@ -1093,9 +1093,20 @@ class foms_order(osv.osv):
 		# Jika tidak ada order pertama di hari itu, maka cek apakah driver itu sedang menjalani order lintas hari, jika tidak maka dia tidak absen
 			if len(first_order) == 0:
 				order_pass_day = self._get_order_driver_pass_days(cr, uid, driver.id, yesterday)
-				# Dapatkan pasangan clock in dan clock kemarin, jika tidak ada, create, jika ada maka write
+			# Dapatkan pasangan clock in dan clock kemarin, jika tidak ada, create, jika ada tidak usah di clock lagi
 				if len(order_pass_day) != 0:
-					clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, driver.id, order_pass_day.customer_contact_id.id, yesterday)
+					first_clock_in, last_clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, driver.id, order_pass_day.customer_contact_id.id, yesterday)
+					# TODO PANGGIL METHOD KO ALDO, BUAT DAPETIN ABSEN CLOCK IN CLOCK OUT
+					date_clock_in, date_clock_out
+					if len(first_clock_in) == 0:
+						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_in)
+					if len(last_clock_out) == 0:
+						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_out)
+			else:
+				# TODO PANGGIL METHOD KO ALDO, BUAT DAPETIN ABSEN CLOCK IN CLOCK OUT
+				date_clock_in, date_clock_out
+			#jika terdapat first order
+				first_clock_in, last_clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, driver.id, first_order.customer_contact_id.id, yesterday)
 
 	def action_finish(self, cr, uid, ids, context=None):
 		order = self.browse(cr, uid, ids[0])
@@ -1274,11 +1285,12 @@ class foms_order(osv.osv):
 		return start_working_time, end_working_time
 		
 	def _get_order_driver_pass_days(self, cr, uid, driver_id, date):
-		# Get order still running, start_planned date before date 
+		# dapetin order lintas hari
 		order_running_ids = self.search(cr, uid, [
 			('actual_driver_id', '=', driver_id),
 			('start_planned_date', '<=', date.strftime('%Y-%m-%d 00:00:00')),
-			('state', 'in', ['started', 'start_confirmed', 'paused', 'resumed'])
+			('finish_planned_date', '>=', date.strftime('%Y-%m-%d 23:59:59')),
+			('state', 'in', ['started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finished_confirmed'])
 		], limit=1, order="start_planned_date desc")
 		order_running = self.browse(cr, uid, first_order_ids)
 		return order_running

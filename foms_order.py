@@ -501,13 +501,13 @@ class foms_order(osv.osv):
 					if vals['state'] in ['start_confirmed']:
 						order_ids = self.search(cr, uid, [
 							('actual_driver_id', '=', order_data.actual_driver_id.id),
-							('start_planned_date', '>=', datetime.now().strftime("%Y-%m-%d 00:00:00")),
+							('start_planned_date', '>=', datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime("%Y-%m-%d 00:00:00")),
 							('start_planned_date', '<', order_data.start_planned_date),
 						])
 						if len(order_ids) == 0:
 						# liat di hari tersebut ada clockin tidak?
-							clock_in, clock_out = _get_clock_in_clock_out_driver_at_date(cr, uid,
-								order_data.actual_driver_id.id, datetime.now())
+							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid,
+								order_data.actual_driver_id.id, datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S'))
 							hr_attendance_obj = self.pool.get('hr.attendance')
 							if order_data.create_source == 'mobile':
 								source = 'app'
@@ -519,6 +519,7 @@ class foms_order(osv.osv):
 									'contract_id': order_data.customer_contract_id.id,
 									'order_id': order_data.id,
 									'source': source,
+									'action': 'sign_in',
 								})
 							else:
 								hr_attendance_obj.create(cr, uid, {
@@ -526,6 +527,39 @@ class foms_order(osv.osv):
 									'contract_id': order_data.customer_contract_id.id,
 									'order_id': order_data.id,
 									'source': source,
+									'action': 'sign_in',
+								})
+				# Kalau state berubah jadi finish confirmed, cek apakah dia order terakhir finish_confirm_date di hari tersebut bukan
+					if vals['state'] in ['finish_confirmed']:
+						order_ids = self.search(cr, uid, [
+							('actual_driver_id', '=', order_data.actual_driver_id.id),
+							('finish_confirm_date', '<=', datetime.strptime(order_data.finish_confirm_date,'%Y-%m-%d %H:%M:%S').strftime("%Y-%m-%d 23:59:59")),
+							('finish_confirm_date', '>', order_data.finish_confirm_date),
+						])
+						if len(order_ids) == 0:
+							# liat di hari tersebut ada clockin tidak?
+							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid,
+								order_data.actual_driver_id.id, datetime.strptime(order_data.finish_confirm_date,'%Y-%m-%d %H:%M:%S'))
+							hr_attendance_obj = self.pool.get('hr.attendance')
+							if order_data.create_source == 'mobile':
+								source = 'app'
+							else:
+								source = 'manual'
+							if clock_out:
+								hr_attendance_obj.write(cr, uid, clock_in.id, {
+									'name': order_data.start_planned_date,
+									'contract_id': order_data.customer_contract_id.id,
+									'order_id': order_data.id,
+									'source': source,
+									'action': 'sign_out',
+								})
+							else:
+								hr_attendance_obj.create(cr, uid, {
+									'name': order_data.start_planned_date,
+									'contract_id': order_data.customer_contract_id.id,
+									'order_id': order_data.id,
+									'source': source,
+									'action': 'sign_out',
 								})
 				# kalau dibatalin
 				elif vals['state'] == 'canceled':
@@ -1087,33 +1121,40 @@ class foms_order(osv.osv):
 		driver_job_id = data_obj.get_object(cr, uid, 'universal', 'hr_job_driver').id
 		driver_ids = employee_obj.search(cr, uid, [('job_id', '=', driver_job_id)])
 		drivers = employee_obj.browse(cr, uid, driver_ids)
-		yesterday = datetime.now() - timedelta(hours=24)
+		today = datetime.now()
+		yesterday = today - timedelta(hours=24)
 		for driver in drivers:
-			first_order, first_finished_order, last_order = self._get_first_and_last_order_times_today(cr, uid, driver.id, yesterday)
+			first_order, last_order = self._get_first_and_last_order_times_today(cr, uid, driver.id, today)
 		# Dapatkan pasangan clock in dan clock kemarin
 			first_clock_in, last_clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, driver.id, yesterday)
 		# Jika tidak ada order pertama di hari itu, maka cek apakah driver itu sedang menjalani order lintas hari, jika tidak maka dia tidak absen
 			if len(first_order) == 0:
 				order_pass_day = self._get_order_driver_pass_days(cr, uid, driver.id, yesterday)
 				if len(order_pass_day) != 0:
-					# TODO PANGGIL METHOD KO ALDO, BUAT DAPETIN ABSEN CLOCK IN CLOCK OUT
-					date_clock_in, date_clock_out
-					if len(first_clock_in) == 0:
-						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_in, last_order.id)
-					if len(last_clock_out) == 0:
+					working_time_leaf = self._get_contract_working_time(order_pass_day.customer_contact_id, yesterday)
+				#dapetin working time
+					date_clock_in, date_clock_out = self._determine_clock_datetimes(cr, uid, None, None, yesterday, 
+						working_time_leaf.working_time_type, True, working_time_leaf.hour_from, working_time_leaf.hour_to, working_time_leaf.max_hour)
+						)
+					if len(first_clock_in) == 0 and len(date_clock_in) != 0:
+						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_in', date_clock_in, last_order.id)
+					if len(last_clock_out) == 0 and len(date_clock_out) != 0:
 						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_out, last_order.id)
 			else:
-				# TODO PANGGIL METHOD KO ALDO, BUAT DAPETIN ABSEN CLOCK IN CLOCK OUT
-				date_clock_in, date_clock_out
-				first_clock_in, last_clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, driver.id, yesterday)
-				if len(first_clock_in) == 0:
-					self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_in, last_order.id)
-				else:
-					self._write_attendance(cr, uid, first_clock_in.id, date_clock_in)
-				if len(date_clock_out) == 0:
-					self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_in, last_order.id)
-				else:
-					self._write_attendance(cr, uid, last_clock_out.id, date_clock_out)
+				working_time_leaf = self._get_contract_working_time(first_order.customer_contact_id, yesterday)
+			#dapetin working time
+				date_clock_in, date_clock_out = self._determine_clock_datetimes(cr, uid, first_order, last_order, yesterday, 
+						working_time_leaf.working_time_type, True, working_time_leaf.hour_from, working_time_leaf.hour_to, working_time_leaf.max_hour)
+				if len(date_clock_in) != 0:
+					if len(first_clock_in) == 0:
+						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_in', date_clock_in, last_order.id)
+					else:
+						self._write_attendance(cr, uid, first_clock_in.id, date_clock_in)
+				if len(date_clock_out) != 0:
+					if len(last_order) == 0:
+						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_in, last_order.id)
+					else:
+						self._write_attendance(cr, uid, last_clock_out.id, date_clock_out)
 
 	def action_finish(self, cr, uid, ids, context=None):
 		order = self.browse(cr, uid, ids[0])
@@ -1262,7 +1303,7 @@ class foms_order(osv.osv):
 		], limit=1, order="name desc")
 		clock_out = attendance_obj.browse(cr, uid, clock_out_ids)
 		return clock_in, clock_out
-	
+		
 	def _get_driver_order_workingtime(self, first_order, last_order, today):
 		"""
 		:return: Tuple of start_working_time, end_working_time. If there is no working time found for that day,
@@ -1317,15 +1358,16 @@ class foms_order(osv.osv):
 		last_order = self.browse(cr, uid, last_order_ids)
 		return first_order, last_order
 	
-	def _determine_clock_datetimes(self, cr, uid, first_order, last_finished_order, calculated_date, working_type, is_multi_day=False,
-			start_working_time=None, end_working_time=None, working_time_duration=None):
+	def _determine_clock_datetimes(self, cr, uid, first_order, last_finished_order, calculated_date, working_type,
+			is_multi_day=False, start_working_time=None, end_working_time=None, working_time_duration=None):
 		"""
 		Determines clock-in and clock-out datetime from the given orders and working time.
 		:param first_order: recordset of first order of the day
 		:param last_finished_order: recordset of last finish confirmed order of the day, may be None
 		:param calculated_date: datetime of the date of intended clock in and clock out
 		:param working_type: string of working type, max_hour or duration
-		:param is_multi_day: boolean. If True, first_order and last_order must be the same order
+		:param is_multi_day: boolean. If True, first_order and last_finished_order will be ignored. clock_in, clock_out will
+			be calculated from working time
 		:param start_working_time: floattime of start working time, ignored if working type is duration
 		:param end_working_time: floattime of end working time, ignored if working type is duration
 		:param working_time_duration: floattime of working time duration, ignored if working type is max_hour
@@ -1333,25 +1375,25 @@ class foms_order(osv.osv):
 		"""
 		clock_in = None
 		clock_out = None
-		
-	# If the order is multi day, first_order and last_order must be the same order
-		if is_multi_day and first_order.id != last_finished_order.id:
-			raise Exception("If the order is multi day, first_order and last_order must be the same order")
 	# If there are no working time, then there are no clockin and clockout time
 		if (working_type == 'duration' and (start_working_time is None or end_working_time is None)) \
 				or (working_type == 'max_hour' and working_time_duration is None):
 			return clock_in, clock_out
 		
 	# Pool start_planned_date
-		if first_order.start_planned_date:
-			start_planned_date = datetime.strptime(first_order.start_planned_date, DEFAULT_SERVER_DATETIME_FORMAT)
+		if first_order is not None:
+			if first_order.start_planned_date:
+				start_planned_date = datetime.strptime(first_order.start_planned_date, DEFAULT_SERVER_DATETIME_FORMAT)
+			else:
+				raise Exception('No start planned date found on order')
 		else:
-			raise Exception('No start planned date found on order')
+			start_planned_date = None
 		
 	# Pool finish_planned_date
 		if last_finished_order is not None:
 			if last_finished_order.finish_confirm_date:
-				finish_confirm_date = datetime.strptime(last_finished_order.finish_confirm_date, DEFAULT_SERVER_DATETIME_FORMAT)
+				finish_confirm_date = datetime.strptime(last_finished_order.finish_confirm_date,
+					DEFAULT_SERVER_DATETIME_FORMAT)
 			else:
 				raise Exception('No finish planned date found on order')
 		else:
@@ -1375,13 +1417,17 @@ class foms_order(osv.osv):
 			else:
 				# Force set start working date time to 0800
 				start_working_date = calculated_date.replace(hour=8, minute=0, second=0, microsecond=0)
-			end_working_date = start_planned_date + timedelta(seconds=(working_time_duration) * 60 * 60)
+			end_working_date = start_working_date + timedelta(seconds=(working_time_duration) * 60 * 60)
 		else:
 			raise Exception('Invalid working type')
 			
 	# Calculate clock_in and clock_out
-		clock_in = start_working_date if start_planned_date > start_working_date else start_planned_date
-		clock_out = end_working_date if finish_confirm_date < end_working_date else finish_confirm_date
+		if not is_multi_day:
+			clock_in = start_working_date if start_planned_date > start_working_date else start_planned_date
+			clock_out = end_working_date if finish_confirm_date < end_working_date else finish_confirm_date
+		else:
+			clock_in = start_working_date
+			clock_out = end_working_date
 		return clock_in, clock_out
 	
 	def _determine_clock_datetime(self, cr, uid, start_working_time, end_working_time, order, order_day):
@@ -1415,14 +1461,6 @@ class foms_order(osv.osv):
 			('state', 'in', ['started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finish_confirmed'])
 		], limit=1, order="start_planned_date asc")
 		first_order = self.browse(cr, uid, first_order_ids)
-		# Get date's first finished order
-		first_finished_order_ids = self.search(cr, uid, [
-			('actual_driver_id', '=', driver_id),
-			('finish_confirm_date', '>=', date.strftime('%Y-%m-%d 00:00:00')),
-			('finish_confirm_date', '<=', date.strftime('%Y-%m-%d 23:59:59')),
-			('state', 'in', ['ready', 'started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finish_confirmed'])
-		], limit=1, order="finish_confirm_date desc")
-		first_finished_order = self.browse(cr, uid, first_finished_order_ids)
 		# Get date's last order
 		last_order_ids = self.search(cr, uid, [
 			('actual_driver_id', '=', driver_id),
@@ -1431,7 +1469,15 @@ class foms_order(osv.osv):
 			('state', '=', 'finish_confirmed')
 		], limit=1, order="finish_confirm_date desc")
 		last_order = self.browse(cr, uid, last_order_ids)
-		return first_order, first_finished_order, last_order
+			# Get date's first finished order
+			# first_finished_order_ids = self.search(cr, uid, [
+				# ('actual_driver_id', '=', driver_id),
+				# ('finish_confirm_date', '>=', date.strftime('%Y-%m-%d 00:00:00')),
+				# ('finish_confirm_date', '<=', date.strftime('%Y-%m-%d 23:59:59')),
+				# ('state', 'in', ['ready', 'started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finish_confirmed'])
+			# ], limit=1, order="finish_confirm_date desc")
+			# first_finished_order = self.browse(cr, uid, first_finished_order_ids)
+		return first_order, last_order
 	
 	def _get_contract_workdays(self, contract_data):
 	# return dict of workday dengan key=workday (0,1,2,3,4 - senin selasa rabu, dst) dan value {start, finish}

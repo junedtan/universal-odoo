@@ -506,8 +506,7 @@ class foms_order(osv.osv):
 						])
 						if len(order_ids) == 0:
 						# liat di hari tersebut ada clockin tidak?
-							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, order_data.actual_driver_id.id,
-								order_data.customer_contract_id.id, datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S'))
+							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, order_data.actual_driver_id.id, datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S'))
 							if clock_in:
 								self._write_attendance(cr, uid, clock_in.id, order_data.start_planned_date, order_data.customer_contract_id.id, order_data.id)
 							else:
@@ -522,13 +521,12 @@ class foms_order(osv.osv):
 						])
 						if len(order_ids) == 0:
 							# liat di hari tersebut ada clockin tidak?
-							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, order_data.actual_driver_id.id,
-								order_data.customer_contract_id.id, datetime.strptime(order_data.finish_confirm_date,'%Y-%m-%d %H:%M:%S'))
+							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, order_data.actual_driver_id.id, datetime.strptime(order_data.finish_confirm_date,'%Y-%m-%d %H:%M:%S'))
 							if clock_out:
 							# kalau order nanggung, create. Kl order biasa, write
-								date_start = datetime.strptime(clock_out.order_id.start_planned_date,'%Y-%m-%d')
-								date_finish = datetime.strptime(clock_out.order_id.finish_confirm_date,'%Y-%m-%d')
-								if date_start != date_finish:
+								date_start = datetime.strptime(clock_out.order_id.start_planned_date, DEFAULT_SERVER_DATETIME_FORMAT)
+								date_finish = datetime.strptime(clock_out.order_id.finish_confirm_date, DEFAULT_SERVER_DATETIME_FORMAT)
+								if date_start.date() != date_finish.date():
 									self._create_attendance(cr, uid, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
 										'sign_out', order_data.finish_confirm_date, order_data.id)
 								else:

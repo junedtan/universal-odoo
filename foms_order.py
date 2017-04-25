@@ -506,29 +506,13 @@ class foms_order(osv.osv):
 						])
 						if len(order_ids) == 0:
 						# liat di hari tersebut ada clockin tidak?
-							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid,
-								order_data.actual_driver_id.id, datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S'))
-							hr_attendance_obj = self.pool.get('hr.attendance')
-							if order_data.create_source == 'mobile':
-								source = 'app'
-							else:
-								source = 'manual'
+							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, order_data.actual_driver_id.id,
+								order_data.customer_contract_id.id, datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S'))
 							if clock_in:
-								hr_attendance_obj.write(cr, uid, clock_in.id, {
-									'name': order_data.start_planned_date,
-									'contract_id': order_data.customer_contract_id.id,
-									'order_id': order_data.id,
-									'source': source,
-									'action': 'sign_in',
-								})
+								self._write_attendance(cr, uid, clock_in.id, order_data.start_planned_date, order_data.customer_contract_id.id, order_data.id)
 							else:
-								hr_attendance_obj.create(cr, uid, {
-									'name': order_data.start_planned_date,
-									'contract_id': order_data.customer_contract_id.id,
-									'order_id': order_data.id,
-									'source': source,
-									'action': 'sign_in',
-								})
+								self._create_attendance(cr, uid, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
+									'sign_in', order_data.start_planned_date, order_data.id)
 				# Kalau state berubah jadi finish confirmed, cek apakah dia order terakhir finish_confirm_date di hari tersebut bukan
 					if vals['state'] in ['finish_confirmed']:
 						order_ids = self.search(cr, uid, [
@@ -538,29 +522,20 @@ class foms_order(osv.osv):
 						])
 						if len(order_ids) == 0:
 							# liat di hari tersebut ada clockin tidak?
-							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid,
-								order_data.actual_driver_id.id, datetime.strptime(order_data.finish_confirm_date,'%Y-%m-%d %H:%M:%S'))
-							hr_attendance_obj = self.pool.get('hr.attendance')
-							if order_data.create_source == 'mobile':
-								source = 'app'
-							else:
-								source = 'manual'
+							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, order_data.actual_driver_id.id,
+								order_data.customer_contract_id.id, datetime.strptime(order_data.finish_confirm_date,'%Y-%m-%d %H:%M:%S'))
 							if clock_out:
-								hr_attendance_obj.write(cr, uid, clock_in.id, {
-									'name': order_data.start_planned_date,
-									'contract_id': order_data.customer_contract_id.id,
-									'order_id': order_data.id,
-									'source': source,
-									'action': 'sign_out',
-								})
+							# kalau order nanggung, create. Kl order biasa, write
+								date_start = datetime.strptime(clock_out.order_id.start_planned_date,'%Y-%m-%d')
+								date_finish = datetime.strptime(clock_out.order_id.finish_confirm_date,'%Y-%m-%d')
+								if date_start != date_finish:
+									self._create_attendance(cr, uid, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
+										'sign_out', order_data.finish_confirm_date, order_data.id)
+								else:
+									self._write_attendance(cr, uid, clock_out.id, order_data.finish_confirm_date, order_data.customer_contract_id.id, order_data.id)
 							else:
-								hr_attendance_obj.create(cr, uid, {
-									'name': order_data.start_planned_date,
-									'contract_id': order_data.customer_contract_id.id,
-									'order_id': order_data.id,
-									'source': source,
-									'action': 'sign_out',
-								})
+								self._create_attendance(cr, uid, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
+									'sign_out', order_data.finish_confirm_date, order_data.id)
 				# kalau dibatalin
 				elif vals['state'] == 'canceled':
 				# kalau kontraknya pakai usage control, maka hapus dari usage log
@@ -1208,11 +1183,11 @@ class foms_order(osv.osv):
 			if first_clock_in:
 			# Jika sudah ada db_clock_in
 				if today_clock_in_id: # update db_clock_in
-					self._write_attendance(cr, uid, today_clock_in_id, first_clock_in)
+					self._write_attendance(cr, uid, today_clock_in_id, first_clock_in, first_order.customer_contract_id.id, first_order.id)
 			# else belum ada db_clock_in
 				else: # create db_clock_in
 					self._create_attendance(cr, uid, driver.id, first_order.customer_contract_id.id, 'sign_in',
-						first_clock_in)
+						first_clock_in, first_order.id)
 			# Jika ada first_clock_out
 				if first_clock_out:
 				# Jika first_clock_out <= first_clock_in
@@ -1226,27 +1201,30 @@ class foms_order(osv.osv):
 						])
 					# Jika yg sblmnya sudah ada db_clock_out
 						if len(previous_clock_out_id) > 0: # update db_clock_out si hari sebelum2nya
-							self._write_attendance(cr, uid, previous_clock_out_id, first_clock_out)
+							self._write_attendance(cr, uid, previous_clock_out_id, first_clock_out, first_finished_order.customer_contract_id.id, first_finished_order.id)
 					# else yg sblmnya belum ada db_clock_out
 						else: # create db_clock_out si hari sebelum2nya
-							self._create_attendance(cr, uid, driver.id, first_finished_order.customer_contract_id.id, 'sign_out', first_clock_out)
+							self._create_attendance(cr, uid, driver.id, first_finished_order.customer_contract_id.id,
+								'sign_out', first_clock_out, first_finished_order.id)
 						
 					# Jika first_clock_out != last_clock_out
 						if first_clock_out != last_clock_out:
 						# Jika db_clock_out sudah ada
 							if today_clock_out_id: # update db_clock_out dgn last_clock_out
-								self._write_attendance(cr, uid, today_clock_out_id, last_clock_out)
+								self._write_attendance(cr, uid, today_clock_out_id, last_clock_out, last_order.customer_contract_id.id, last_order.id)
 						# else db_clock_out belum ada
 							else: # create db_clock_out dgn last_clock_out
-								self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', last_clock_out)
+								self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id,
+									'sign_out', last_clock_out, last_order.id)
 				# else first_clock_out dan last_clock_out pasti lebih besar dari first_clock_in
 					else:
 					# Jika db_clock_out sudah ada
 						if today_clock_out_id: # update db_clock_out dgn last_clock_out
-							self._write_attendance(cr, uid, today_clock_out_id, last_clock_out)
+							self._write_attendance(cr, uid, today_clock_out_id, last_clock_out, last_order.customer_contract_id.id, last_order.id)
 					# else db_clock_out belum ada
 						else: # create db_clock_out dgn last_clock_out
-							self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', last_clock_out)
+							self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out',
+								last_clock_out, last_order.id)
 			# else tidak ada first_clock_out, ga usah ngapa2in
 		# else tidak ada first_clock_in
 			else:
@@ -1261,27 +1239,31 @@ class foms_order(osv.osv):
 					])
 				# Jika yg sblmnya sudah ada db_clock_out
 					if len(previous_clock_out_id) > 0: # update db_clock_out si hari sebelum2nya
-						self._write_attendance(cr, uid, previous_clock_out_id, first_clock_out)
+						self._write_attendance(cr, uid, previous_clock_out_id, first_clock_out, first_finished_order.customer_contract_id.id, first_finished_order.id)
 				# else yg sblmnya belum ada db_clock_out
 					else: # create db_clock_out si hari sebelum2nya
-						self._create_attendance(cr, uid, driver.id, first_finished_order.customer_contract_id.id, 'sign_out', first_clock_out)
+						self._create_attendance(cr, uid, driver.id, first_finished_order.customer_contract_id.id,
+							'sign_out', first_clock_out, first_finished_order.id)
 			# else tidak ada first_clock_out, ga usah ngapa2in
 			pass
 		pass
 	
-	def _create_attendance(self, cr, uid, driver_id, customer_contract_id, clock_type, clock_datetime):
+	def _create_attendance(self, cr, uid, driver_id, customer_contract_id, clock_type, clock_datetime, order_id):
 		attendance_obj = self.pool.get('hr.attendance')
 		attendance_obj.create(cr, uid, {
 			'employee_id': driver_id,
 			'contract_id': customer_contract_id,
 			'action': clock_type,
 			'name': clock_datetime,
+			'order_id': order_id,
 		})
 		
-	def _write_attendance(self, cr, uid, id, clock_datetime):
+	def _write_attendance(self, cr, uid, id, clock_datetime, customer_contract_id, order_id):
 		attendance_obj = self.pool.get('hr.attendance')
 		attendance_obj.write(cr, uid, id, {
 			'name': clock_datetime,
+			'contract_id': customer_contract_id,
+			'order_id': order_id,
 		})
 		
 	def _get_clock_in_clock_out_driver_at_date(self, cr, uid, driver_id, param_date):
@@ -1303,32 +1285,20 @@ class foms_order(osv.osv):
 		], limit=1, order="name desc")
 		clock_out = attendance_obj.browse(cr, uid, clock_out_ids)
 		return clock_in, clock_out
-		
-	def _get_driver_order_workingtime(self, first_order, last_order, today):
+
+	def _get_contract_working_time(self, contract, calculated_datetime):
 		"""
-		:return: Tuple of start_working_time, end_working_time. If there is no working time found for that day,
-		start_working_time or end_working_time may be None
+		Returns the given contract workingtime
+		:param contract: recordset of contract (foms.contract)
+		:param calculated_datetime: calculated_date: datetime of the date of intended working time
+		:return: recordset of working time (resource.calendar.attendance)
 		"""
-		first_working_time_attendances = first_order.customer_contract_id.working_time_id.attendance_ids
-		last_working_time_attendances = last_order.customer_contract_id.working_time_id.attendance_ids
-		first_order_start_working_time = first_order_end_working_time = last_order_start_working_time = \
-			last_order_end_working_time = None
-		weekday_today = today.weekday()
-		for working_time in first_working_time_attendances:
-			if str(weekday_today) == working_time.dayofweek:
-				first_order_start_working_time = working_time.hour_from
-				first_order_end_working_time = working_time.hour_to
-				break
-		for working_time in last_working_time_attendances:
-			if str(weekday_today) == working_time.dayofweek:
-				last_order_start_working_time = working_time.hour_from
-				last_order_end_working_time = working_time.hour_to
-				break
-		start_working_time = first_order_start_working_time if first_order_start_working_time is not None \
-			else last_order_start_working_time
-		end_working_time = last_order_end_working_time if last_order_end_working_time is not None \
-			else first_order_end_working_time
-		return start_working_time, end_working_time
+		result = None
+		working_times = contract.working_time_id.attendance_ids
+		for working_time in working_times:
+			if str(calculated_datetime.weekday()) == working_time.dayofweek:
+				result = working_time
+		return result
 		
 	def _get_order_driver_pass_days(self, cr, uid, driver_id, date):
 		# dapetin order lintas hari

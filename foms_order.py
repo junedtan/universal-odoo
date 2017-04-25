@@ -1227,13 +1227,14 @@ class foms_order(osv.osv):
 			pass
 		pass
 	
-	def _create_attendance(self, cr, uid, driver_id, customer_contract_id, clock_type, clock_datetime):
+	def _create_attendance(self, cr, uid, driver_id, customer_contract_id, clock_type, clock_datetime, order_id):
 		attendance_obj = self.pool.get('hr.attendance')
 		attendance_obj.create(cr, uid, {
 			'employee_id': driver_id,
 			'contract_id': customer_contract_id,
 			'action': clock_type,
 			'name': clock_datetime,
+			'order_id': order_id,
 		})
 		
 	def _write_attendance(self, cr, uid, id, clock_datetime, customer_contract_id, order_id):

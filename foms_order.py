@@ -1302,7 +1302,7 @@ class foms_order(osv.osv):
 	def _get_running_multiday_orders(self, cr, uid, driver_id, calculated_datetime):
 		# dapetin order lintas hari
 		calculated_datetime = calculated_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
-		calculated_datetime = calculated_datetime + timedelta(hours=SERVER_TIMEZONE)
+		calculated_datetime = calculated_datetime - timedelta(hours=SERVER_TIMEZONE)
 		calculated_datetime_tomorrow = calculated_datetime + timedelta(hours=24)
 		order_running_ids = self.search(cr, uid, [
 			('actual_driver_id', '=', driver_id),
@@ -1347,7 +1347,7 @@ class foms_order(osv.osv):
 		"""
 		clock_in = None
 		clock_out = None
-		calculated_date = calculated_date + timedelta(hours=SERVER_TIMEZONE)
+		calculated_date = calculated_date - timedelta(hours=SERVER_TIMEZONE)
 	# If there are no working time, then there are no clockin and clockout time
 		if (working_type == 'duration' and (start_working_time is None or end_working_time is None)) \
 				or (working_type == 'max_hour' and working_time_duration is None):
@@ -1428,10 +1428,10 @@ class foms_order(osv.osv):
 	def _get_days_first_last_order(self, cr, uid, driver_id, calculated_date):
 		
 		calculated_date = calculated_date.replace(hour=0, minute=0, second=0, microsecond=0)
-		calculated_date_from = calculated_date + timedelta(hours=SERVER_TIMEZONE)
+		calculated_date_from = calculated_date - timedelta(hours=SERVER_TIMEZONE)
 		calculated_datetime_to = calculated_date_from + timedelta(hours=24)
 		# Get date's first order
-		calculated_date = calculated_date + timedelta(hours=SERVER_TIMEZONE)
+		calculated_date = calculated_date - timedelta(hours=SERVER_TIMEZONE)
 		first_order_ids = self.search(cr, uid, [
 			('actual_driver_id', '=', driver_id),
 			('start_planned_date', '>=', calculated_date_from.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),

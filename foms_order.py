@@ -1267,19 +1267,22 @@ class foms_order(osv.osv):
 		
 	def _get_clock_in_clock_out_driver_at_date(self, cr, uid, driver_id, param_date):
 		attendance_obj = self.pool.get('hr.attendance')
+		param_date = param_date.replace(hour=0, minute=0, second=0, microsecond=0)
+		param_date_from = param_date - timedelta(hours=SERVER_TIMEZONE)
+		param_date_to = param_date_from + timedelta(hours=24)
 	# Get date's attendance clock in
 		clock_in_ids = attendance_obj.search(cr, uid, [
 			('employee_id', '=', driver_id),
-			('name', '>=', param_date.strftime('%Y-%m-%d 00:00:00')),
-			('name', '<=', param_date.strftime('%Y-%m-%d 23:59:59')),
+			('name', '>=', param_date_from.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('name', '<=', param_date_to.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
 			('action', '=', 'sign_in'),
 		], limit=1, order="name asc")
 		clock_in = attendance_obj.browse(cr, uid, clock_in_ids)
 	# Get today's last order
 		clock_out_ids = attendance_obj.search(cr, uid, [
 			('employee_id', '=', driver_id),
-			('name', '>=', param_date.strftime('%Y-%m-%d 00:00:00')),
-			('name', '<=', param_date.strftime('%Y-%m-%d 23:59:59')),
+			('name', '>=', param_date_from.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('name', '<=', param_date_to.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
 			('action', '=', 'sign_out'),
 		], limit=1, order="name desc")
 		clock_out = attendance_obj.browse(cr, uid, clock_out_ids)
@@ -1308,7 +1311,7 @@ class foms_order(osv.osv):
 			('actual_driver_id', '=', driver_id),
 			('start_planned_date', '<=', calculated_datetime.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
 			('finish_planned_date', '>=', calculated_datetime_tomorrow.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
-			('state', 'in', ['started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finished_confirmed'])
+			('state', 'in', ['started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finish_confirmed'])
 		], limit=1, order="start_planned_date desc")
 		order_running = self.browse(cr, uid, order_running_ids)
 		return order_running
@@ -1426,7 +1429,6 @@ class foms_order(osv.osv):
 		return clock_in, clock_out
 		
 	def _get_days_first_last_order(self, cr, uid, driver_id, calculated_date):
-		
 		calculated_date = calculated_date.replace(hour=0, minute=0, second=0, microsecond=0)
 		calculated_date_from = calculated_date - timedelta(hours=SERVER_TIMEZONE)
 		calculated_datetime_to = calculated_date_from + timedelta(hours=24)

@@ -501,13 +501,13 @@ class foms_order(osv.osv):
 					if vals['state'] in ['start_confirmed']:
 						order_ids = self.search(cr, uid, [
 							('actual_driver_id', '=', order_data.actual_driver_id.id),
-							('start_planned_date', '>=', datetime.now().strftime("%Y-%m-%d 00:00:00")),
+							('start_planned_date', '>=', datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime("%Y-%m-%d 00:00:00")),
 							('start_planned_date', '<', order_data.start_planned_date),
 						])
 						if len(order_ids) == 0:
 						# liat di hari tersebut ada clockin tidak?
-							clock_in, clock_out = _get_clock_in_clock_out_driver_at_date(cr, uid,
-								order_data.actual_driver_id.id, order_data.customer_contract_id.id, datetime.now())
+							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid,
+								order_data.actual_driver_id.id, order_data.customer_contract_id.id, datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S'))
 							hr_attendance_obj = self.pool.get('hr.attendance')
 							if order_data.create_source == 'mobile':
 								source = 'app'
@@ -519,6 +519,7 @@ class foms_order(osv.osv):
 									'contract_id': order_data.customer_contract_id.id,
 									'order_id': order_data.id,
 									'source': source,
+									'action': 'sign_in',
 								})
 							else:
 								hr_attendance_obj.create(cr, uid, {
@@ -526,6 +527,39 @@ class foms_order(osv.osv):
 									'contract_id': order_data.customer_contract_id.id,
 									'order_id': order_data.id,
 									'source': source,
+									'action': 'sign_in',
+								})
+				# Kalau state berubah jadi finish confirmed, cek apakah dia order terakhir finish_confirm_date di hari tersebut bukan
+					if vals['state'] in ['finish_confirmed']:
+						order_ids = self.search(cr, uid, [
+							('actual_driver_id', '=', order_data.actual_driver_id.id),
+							('finish_confirm_date', '<=', datetime.strptime(order_data.finish_confirm_date,'%Y-%m-%d %H:%M:%S').strftime("%Y-%m-%d 23:59:59")),
+							('finish_confirm_date', '>', order_data.finish_confirm_date),
+						])
+						if len(order_ids) == 0:
+							# liat di hari tersebut ada clockin tidak?
+							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid,
+								order_data.actual_driver_id.id, order_data.customer_contract_id.id, datetime.strptime(order_data.finish_confirm_date,'%Y-%m-%d %H:%M:%S'))
+							hr_attendance_obj = self.pool.get('hr.attendance')
+							if order_data.create_source == 'mobile':
+								source = 'app'
+							else:
+								source = 'manual'
+							if clock_out:
+								hr_attendance_obj.write(cr, uid, clock_in.id, {
+									'name': order_data.start_planned_date,
+									'contract_id': order_data.customer_contract_id.id,
+									'order_id': order_data.id,
+									'source': source,
+									'action': 'sign_out',
+								})
+							else:
+								hr_attendance_obj.create(cr, uid, {
+									'name': order_data.start_planned_date,
+									'contract_id': order_data.customer_contract_id.id,
+									'order_id': order_data.id,
+									'source': source,
+									'action': 'sign_out',
 								})
 				# kalau dibatalin
 				elif vals['state'] == 'canceled':
@@ -1231,7 +1265,7 @@ class foms_order(osv.osv):
 	# Get date's attendance clock in
 		clock_in_ids = attendance_obj.search(cr, uid, [
 			('employee_id', '=', driver_id),
-			('contract_id', customer_contract_id),
+			('contract_id', '=', customer_contract_id),
 			('name', '>=', param_date.strftime('%Y-%m-%d 00:00:00')),
 			('name', '<=', param_date.strftime('%Y-%m-%d 23:59:59')),
 			('action', '=', 'sign_in'),
@@ -1240,7 +1274,7 @@ class foms_order(osv.osv):
 	# Get today's last order
 		clock_out_ids = attendance_obj.search(cr, uid, [
 			('employee_id', '=', driver_id),
-			('contract_id', customer_contract_id),
+			('contract_id', '=', customer_contract_id),
 			('name', '>=', param_date.strftime('%Y-%m-%d 00:00:00')),
 			('name', '<=', param_date.strftime('%Y-%m-%d 23:59:59')),
 			('action', '=', 'sign_out'),

@@ -1094,8 +1094,7 @@ class foms_order(osv.osv):
 		driver_job_id = data_obj.get_object(cr, uid, 'universal', 'hr_job_driver').id
 		driver_ids = employee_obj.search(cr, uid, [('job_id', '=', driver_job_id)])
 		drivers = employee_obj.browse(cr, uid, driver_ids)
-		today = datetime.now()
-		yesterday = today - timedelta(hours=24)
+		yesterday = datetime.now() - timedelta(hours=24)
 		for driver in drivers:
 			first_order, last_order = self._get_days_first_last_order(cr, uid, driver.id, yesterday)
 		# Dapatkan pasangan clock in dan clock kemarin

@@ -507,7 +507,7 @@ class foms_order(osv.osv):
 						if len(order_ids) == 0:
 						# liat di hari tersebut ada clockin tidak?
 							clock_in, clock_out = _get_clock_in_clock_out_driver_at_date(cr, uid,
-								order_data.actual_driver_id.id, order_data.customer_contract_id.id, datetime.now())
+								order_data.actual_driver_id.id, datetime.now())
 							hr_attendance_obj = self.pool.get('hr.attendance')
 							if order_data.create_source == 'mobile':
 								source = 'app'
@@ -1089,25 +1089,31 @@ class foms_order(osv.osv):
 		drivers = employee_obj.browse(cr, uid, driver_ids)
 		yesterday = datetime.now() - timedelta(hours=24)
 		for driver in drivers:
-			first_order, first_finished_order, last_order = self._get_first_and_last_order_times_today(cr, uid, driver.id,
-				yesterday)
+			first_order, first_finished_order, last_order = self._get_first_and_last_order_times_today(cr, uid, driver.id, yesterday)
+		# Dapatkan pasangan clock in dan clock kemarin
+			first_clock_in, last_clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, driver.id, yesterday)
 		# Jika tidak ada order pertama di hari itu, maka cek apakah driver itu sedang menjalani order lintas hari, jika tidak maka dia tidak absen
 			if len(first_order) == 0:
 				order_pass_day = self._get_order_driver_pass_days(cr, uid, driver.id, yesterday)
-			# Dapatkan pasangan clock in dan clock kemarin, jika tidak ada, create, jika ada tidak usah di clock lagi
 				if len(order_pass_day) != 0:
-					first_clock_in, last_clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, driver.id, order_pass_day.customer_contact_id.id, yesterday)
 					# TODO PANGGIL METHOD KO ALDO, BUAT DAPETIN ABSEN CLOCK IN CLOCK OUT
 					date_clock_in, date_clock_out
 					if len(first_clock_in) == 0:
-						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_in)
+						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_in, last_order.id)
 					if len(last_clock_out) == 0:
-						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_out)
+						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_out, last_order.id)
 			else:
 				# TODO PANGGIL METHOD KO ALDO, BUAT DAPETIN ABSEN CLOCK IN CLOCK OUT
 				date_clock_in, date_clock_out
-			#jika terdapat first order
-				first_clock_in, last_clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, driver.id, first_order.customer_contact_id.id, yesterday)
+				first_clock_in, last_clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, driver.id, yesterday)
+				if len(first_clock_in) == 0:
+					self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_in, last_order.id)
+				else:
+					self._write_attendance(cr, uid, first_clock_in.id, date_clock_in)
+				if len(date_clock_out) == 0:
+					self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_in, last_order.id)
+				else:
+					self._write_attendance(cr, uid, last_clock_out.id, date_clock_out)
 
 	def action_finish(self, cr, uid, ids, context=None):
 		order = self.browse(cr, uid, ids[0])
@@ -1237,12 +1243,11 @@ class foms_order(osv.osv):
 			'name': clock_datetime,
 		})
 		
-	def _get_clock_in_clock_out_driver_at_date(self, cr, uid, driver_id, customer_contract_id, param_date):
+	def _get_clock_in_clock_out_driver_at_date(self, cr, uid, driver_id, param_date):
 		attendance_obj = self.pool.get('hr.attendance')
 	# Get date's attendance clock in
 		clock_in_ids = attendance_obj.search(cr, uid, [
 			('employee_id', '=', driver_id),
-			('contract_id', customer_contract_id),
 			('name', '>=', param_date.strftime('%Y-%m-%d 00:00:00')),
 			('name', '<=', param_date.strftime('%Y-%m-%d 23:59:59')),
 			('action', '=', 'sign_in'),
@@ -1251,7 +1256,6 @@ class foms_order(osv.osv):
 	# Get today's last order
 		clock_out_ids = attendance_obj.search(cr, uid, [
 			('employee_id', '=', driver_id),
-			('contract_id', customer_contract_id),
 			('name', '>=', param_date.strftime('%Y-%m-%d 00:00:00')),
 			('name', '<=', param_date.strftime('%Y-%m-%d 23:59:59')),
 			('action', '=', 'sign_out'),
@@ -1293,7 +1297,7 @@ class foms_order(osv.osv):
 			('finish_planned_date', '>=', date.strftime('%Y-%m-%d 23:59:59')),
 			('state', 'in', ['started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finished_confirmed'])
 		], limit=1, order="start_planned_date desc")
-		order_running = self.browse(cr, uid, first_order_ids)
+		order_running = self.browse(cr, uid, order_running_ids)
 		return order_running
 	
 	def _get_first_and_last_order_today(self, cr, uid, driver_id, today):

@@ -497,7 +497,37 @@ class foms_order(osv.osv):
 						self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'update', order_data, context=context)
 					elif order_data.service_type == 'by_order':
 						self.webservice_post(cr, uid, ['pic','approver','booker'], 'update', order_data, context=context)
-			# kalau dibatalin
+				# Kalau state berubah jadi start confirmed, cek apakah dia order pertama start_planned_date di hari tersebut bukan
+					if vals['state'] in ['start_confirmed']:
+						order_ids = self.search(cr, uid, [
+							('actual_driver_id', '=', order_data.actual_driver_id.id),
+							('start_planned_date', '>=', datetime.now().strftime("%Y-%m-%d 00:00:00")),
+							('start_planned_date', '<', order_data.start_planned_date),
+						])
+						if len(order_ids) == 0:
+						# liat di hari tersebut ada clockin tidak?
+							clock_in, clock_out = _get_clock_in_clock_out_driver_at_date(cr, uid,
+								order_data.actual_driver_id.id, order_data.customer_contract_id.id, datetime.now())
+							hr_attendance_obj = self.pool.get('hr.attendance')
+							if order_data.create_source == 'mobile':
+								source = 'app'
+							else:
+								source = 'manual'
+							if clock_in:
+								hr_attendance_obj.write(cr, uid, clock_in.id, {
+									'name': order_data.start_planned_date,
+									'contract_id': order_data.customer_contract_id.id,
+									'order_id': order_data.id,
+									'source': source,
+								})
+							else:
+								hr_attendance_obj.create(cr, uid, {
+									'name': order_data.start_planned_date,
+									'contract_id': order_data.customer_contract_id.id,
+									'order_id': order_data.id,
+									'source': source,
+								})
+				# kalau dibatalin
 				elif vals['state'] == 'canceled':
 				# kalau kontraknya pakai usage control, maka hapus dari usage log
 					if order_data.service_type == 'by_order' and contract.usage_control_level != 'no_control':
@@ -1046,8 +1076,37 @@ class foms_order(osv.osv):
 			},
 			'target': 'new',
 		}
-
+		
 # CRON ---------------------------------------------------------------------------------------------------------------------
+	def cron_driver_attedances(self, cr, uid, context=None):
+		employee_obj = self.pool.get('hr.employee')
+		fleet_obj = self.pool.get('foms.contract.fleet')
+		attendance_obj = self.pool.get('hr.attendance')
+		data_obj = self.pool.get('ir.model.data')
+		# Pool drivers
+		driver_job_id = data_obj.get_object(cr, uid, 'universal', 'hr_job_driver').id
+		driver_ids = employee_obj.search(cr, uid, [('job_id', '=', driver_job_id)])
+		drivers = employee_obj.browse(cr, uid, driver_ids)
+		yesterday = datetime.now() - timedelta(hours=24)
+		for driver in drivers:
+			first_order, first_finished_order, last_order = self._get_first_and_last_order_times_today(cr, uid, driver.id,
+				yesterday)
+		# Jika tidak ada order pertama di hari itu, maka cek apakah driver itu sedang menjalani order lintas hari, jika tidak maka dia tidak absen
+			if len(first_order) == 0:
+				order_pass_day = self._get_order_driver_pass_days(cr, uid, driver.id, yesterday)
+				# Dapatkan pasangan clock in dan clock kemarin, jika tidak ada, create, jika ada maka write
+				if len(order_pass_day) != 0:
+					clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, driver.id, order_pass_day.customer_contact_id.id, yesterday)
+
+	def action_finish(self, cr, uid, ids, context=None):
+		order = self.browse(cr, uid, ids[0])
+		return self.write(cr, uid, ids, {
+			'state': 'finish_confirmed',
+			'finish_date': order.finish_planned_date,
+			'finish_confirm_date': order.finish_planned_date,
+			'finish_confirm_by': uid,
+			'finish_from': 'central',
+		})
 	
 	def cron_compute_driver_attendances(self, cr, uid, context=None):
 		employee_obj = self.pool.get('hr.employee')
@@ -1166,6 +1225,28 @@ class foms_order(osv.osv):
 		attendance_obj.write(cr, uid, id, {
 			'name': clock_datetime,
 		})
+		
+	def _get_clock_in_clock_out_driver_at_date(self, cr, uid, driver_id, customer_contract_id, param_date):
+		attendance_obj = self.pool.get('hr.attendance')
+	# Get date's attendance clock in
+		clock_in_ids = attendance_obj.search(cr, uid, [
+			('employee_id', '=', driver_id),
+			('contract_id', customer_contract_id),
+			('name', '>=', param_date.strftime('%Y-%m-%d 00:00:00')),
+			('name', '<=', param_date.strftime('%Y-%m-%d 23:59:59')),
+			('action', '=', 'sign_in'),
+		], limit=1, order="name asc")
+		clock_in = attendance_obj.browse(cr, uid, clock_in_ids)
+	# Get today's last order
+		clock_out_ids = attendance_obj.search(cr, uid, [
+			('employee_id', '=', driver_id),
+			('contract_id', customer_contract_id),
+			('name', '>=', param_date.strftime('%Y-%m-%d 00:00:00')),
+			('name', '<=', param_date.strftime('%Y-%m-%d 23:59:59')),
+			('action', '=', 'sign_out'),
+		], limit=1, order="name desc")
+		clock_out = attendance_obj.browse(cr, uid, clock_out_ids)
+		return clock_in, clock_out
 	
 	def _get_driver_order_workingtime(self, first_order, last_order, today):
 		"""
@@ -1192,6 +1273,16 @@ class foms_order(osv.osv):
 		end_working_time = last_order_end_working_time if last_order_end_working_time is not None \
 			else first_order_end_working_time
 		return start_working_time, end_working_time
+		
+	def _get_order_driver_pass_days(self, cr, uid, driver_id, date):
+		# Get order still running, start_planned date before date 
+		order_running_ids = self.search(cr, uid, [
+			('actual_driver_id', '=', driver_id),
+			('start_planned_date', '<=', date.strftime('%Y-%m-%d 00:00:00')),
+			('state', 'in', ['started', 'start_confirmed', 'paused', 'resumed'])
+		], limit=1, order="start_planned_date desc")
+		order_running = self.browse(cr, uid, first_order_ids)
+		return order_running
 	
 	def _get_first_and_last_order_today(self, cr, uid, driver_id, today):
 		# Get today's first order
@@ -1299,29 +1390,29 @@ class foms_order(osv.osv):
 				clock_out = datetime.strptime(order.finish_confirm_date, '%Y-%m-%d %H:%M:%S')
 		return clock_in, clock_out
 		
-	def _get_first_and_last_order_times_today(self, cr, uid, driver_id, today):
-		# Get today's first order
+	def _get_first_and_last_order_times_today(self, cr, uid, driver_id, date):
+		# Get date's first order
 		first_order_ids = self.search(cr, uid, [
 			('actual_driver_id', '=', driver_id),
-			('start_planned_date', '>=', today.strftime('%Y-%m-%d 00:00:00')),
-			('start_planned_date', '<=', today.strftime('%Y-%m-%d 23:59:59')),
+			('start_planned_date', '>=', date.strftime('%Y-%m-%d 00:00:00')),
+			('start_planned_date', '<=', date.strftime('%Y-%m-%d 23:59:59')),
 			('state', 'in', ['started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finish_confirmed'])
 		], limit=1, order="start_planned_date asc")
 		first_order = self.browse(cr, uid, first_order_ids)
-		# Get today's first finished order
+		# Get date's first finished order
 		first_finished_order_ids = self.search(cr, uid, [
 			('actual_driver_id', '=', driver_id),
-			('finish_confirm_date', '>=', today.strftime('%Y-%m-%d 00:00:00')),
-			('finish_confirm_date', '<=', today.strftime('%Y-%m-%d 23:59:59')),
+			('finish_confirm_date', '>=', date.strftime('%Y-%m-%d 00:00:00')),
+			('finish_confirm_date', '<=', date.strftime('%Y-%m-%d 23:59:59')),
 			('state', 'in', ['ready', 'started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finish_confirmed'])
 		], limit=1, order="finish_confirm_date desc")
 		first_finished_order = self.browse(cr, uid, first_finished_order_ids)
-		# Get today's last order
+		# Get date's last order
 		last_order_ids = self.search(cr, uid, [
 			('actual_driver_id', '=', driver_id),
-			('finish_confirm_date', '>=', today.strftime('%Y-%m-%d 00:00:00')),
-			('finish_confirm_date', '<=', today.strftime('%Y-%m-%d 23:59:59')),
-			('state', 'in', ['ready', 'started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finish_confirmed'])
+			('finish_confirm_date', '>=', date.strftime('%Y-%m-%d 00:00:00')),
+			('finish_confirm_date', '<=', date.strftime('%Y-%m-%d 23:59:59')),
+			('state', '=', 'finish_confirmed')
 		], limit=1, order="finish_confirm_date desc")
 		last_order = self.browse(cr, uid, last_order_ids)
 		return first_order, first_finished_order, last_order
@@ -1734,8 +1825,8 @@ class foms_order(osv.osv):
 				print user_id
 				print webservice_context
 				sync_obj.post_outgoing(cr, user_id, 'foms.order', command, order_data.id, data_columns=data_columns, data_context=webservice_context)
-
-# ==========================================================================================================================
+				
+	# ==========================================================================================================================
 
 class foms_order_area(osv.osv):
 

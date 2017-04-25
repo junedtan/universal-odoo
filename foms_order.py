@@ -1103,10 +1103,10 @@ class foms_order(osv.osv):
 		# Jika tidak ada order pertama di hari itu, maka cek apakah driver itu sedang menjalani order lintas hari, jika tidak maka dia tidak absen
 			if len(first_order) == 0:
 				order_pass_day = self._get_order_driver_pass_days(cr, uid, driver.id, yesterday)
-				if len(order_pass_day) != 0:
+				if len(order_pass_day) > 0:
 					working_time_leaf = self._get_contract_working_time(order_pass_day.customer_contact_id, yesterday)
 				#dapetin working time
-					date_clock_in, date_clock_out = self._determine_clock_datetimes(cr, uid, None, None, yesterday, 
+					date_clock_in, date_clock_out = self._determine_clock_datetimes(cr, uid, None, None, yesterday,
 						working_time_leaf.working_time_type, True, working_time_leaf.hour_from, working_time_leaf.hour_to, working_time_leaf.max_hour)
 					if len(first_clock_in) == 0 and len(date_clock_in) != 0:
 						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_in', date_clock_in, last_order.id)
@@ -1116,7 +1116,7 @@ class foms_order(osv.osv):
 				working_time_leaf = self._get_contract_working_time(first_order.customer_contract_id, yesterday)
 			#dapetin working time
 				date_clock_in, date_clock_out = self._determine_clock_datetimes(cr, uid, first_order, last_order, yesterday, 
-						working_time_leaf.working_time_type, True, working_time_leaf.hour_from, working_time_leaf.hour_to, working_time_leaf.max_hour)
+						working_time_leaf.working_time_type, False, working_time_leaf.hour_from, working_time_leaf.hour_to, working_time_leaf.max_hour)
 				if date_clock_in is not None:
 					if len(first_clock_in) == 0:
 						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_in', date_clock_in, last_order.id)

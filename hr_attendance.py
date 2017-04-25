@@ -21,6 +21,16 @@ class hr_attendance(osv.osv):
 	_inherit = ['hr.attendance','chjs.base.webservice']
 	_name = 'hr.attendance'
 	
+# ---------------------------------------------------------------------------------------------------------------------------
+# Si constraint checking harus clockin dlu sbelum clockout dan sebaliknya didisable dulu karena ada bug default odoo yang
+# gabisa update2 attendance yg udah lalu. Just in case stumble upon this bug again...
+# https://github.com/odoo/odoo/issues/1521
+# 	def _altern_si_so(self, cr, uid, ids, context=None):
+# 		return True
+#
+# 	_constraints = [(_altern_si_so, 'Error ! Sign in (resp. Sign out) must follow Sign out (resp. Sign in)', ['action'])]
+# ---------------------------------------------------------------------------------------------------------------------------
+
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
@@ -220,4 +230,3 @@ class hr_attendance_mass_memory_lines(osv.osv_memory):
 	_defaults = {
 		'out_of_town': 'no',
 	}
-	

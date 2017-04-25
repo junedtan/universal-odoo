@@ -283,7 +283,7 @@ class foms_order(osv.osv):
 						}, context=context)
 		# kalau allocation unit tidak punya approver
 			else:
-			# langsung confirm order ini
+				# langsung confirm order ini
 				self.write(cr, uid, [new_id], {
 					'state': 'confirmed',
 				}, context=context)
@@ -300,8 +300,6 @@ class foms_order(osv.osv):
 		source = context.get('source', False)
 
 		orders = self.browse(cr, uid, ids)
-
-		user_obj = self.pool.get('res.users')
 		
 	#apabila ada perubahan contract cek dahulu apakah contractnya masih active
 		if vals.get('customer_contract_id', False):
@@ -324,19 +322,20 @@ class foms_order(osv.osv):
 	# cek apakah bentrok waktu sama order lain
 		if vals.get('assigned_vehicle_id', False) or vals.get('start_planned_date', False):
 		# ambil nilai lama dahulu apabila ternyata hanya terjadi 1 perubahan
-			assigned_vehicle = orders.assigned_vehicle_id.id
-			start_planned_date = orders.start_planned_date
-			finish_planned_date = orders.finish_planned_date
-		# apabila ada perubahan, gunakan nilai yang baru
-			if vals.get('assigned_vehicle_id', False):
-				assigned_vehicle = vals.get('assigned_vehicle_id', False)
-			if vals.get('start_planned_date', False):
-				start_planned_date = vals.get('start_planned_date', False)
-			if vals.get('finish_planned_date', False):
-				finish_planned_date = vals.get('finish_planned_date', False)
-		# cek ada yang beririsan ga
-			if assigned_vehicle and (not source or source == 'form'):
-				self._cek_vehicle_clash(cr, uid, assigned_vehicle, start_planned_date, finish_planned_date, ids[0], context)
+			for data in orders:
+				assigned_vehicle = data.assigned_vehicle_id.id
+				start_planned_date = data.start_planned_date
+				finish_planned_date = data.finish_planned_date
+			# apabila ada perubahan, gunakan nilai yang baru
+				if vals.get('assigned_vehicle_id', False):
+					assigned_vehicle = vals.get('assigned_vehicle_id', False)
+				if vals.get('start_planned_date', False):
+					start_planned_date = vals.get('start_planned_date', False)
+				if vals.get('finish_planned_date', False):
+					finish_planned_date = vals.get('finish_planned_date', False)
+			# cek ada yang beririsan ga
+				if assigned_vehicle and (not source or source == 'form'):
+					self._cek_vehicle_clash(cr, uid, assigned_vehicle, start_planned_date, finish_planned_date, data.id, context)
 		
 	# kalau order diconfirm dari mobile app, cek dulu apakah sudah diconfirm sebelumnya
 	# ini untuk mengantisipasi kalau satu alloc unit ada beberapa approver dan pada balapan meng-approve
@@ -434,7 +433,6 @@ class foms_order(osv.osv):
 				# apakah source_area dan dest_area ada di bawah homebase yang sama?
 				# kalo sama, langsung cariin mobil dan supir
 					else:
-						central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_dispatcher')
 						if order_data.origin_area_id and order_data.dest_area_id and \
 						order_data.origin_area_id.homebase_id.id == order_data.dest_area_id.homebase_id.id:
 						# sebelum cariin mobil dan supir, cek dulu di luar jam kerja ngga ini order
@@ -469,25 +467,19 @@ class foms_order(osv.osv):
 												'notification': ['order_fleet_not_ready'],
 										}, context=context)
 									partner_ids = []
-									for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
-									self.message_post(cr, SUPERUSER_ID, order_data.id,
-										body=_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order_data.name,
-										partner_ids=partner_ids)
+									self._message_dispacther(cr, uid, order_data.id,
+										_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order_data.name )
 									return result
 						# jika order di luar hari kerja, jangan autoplot, kirim notif ke dispatcher untuk mengingatkan agar manual assign
 							else:
 								partner_ids = []
-								for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
-								self.message_post(cr, SUPERUSER_ID, order_data.id,
-									body=_('Order %s were booked outside working day. Please assign the vehicle and the driver manually.') % order_data.name,
-									partner_ids=partner_ids)
+								self._message_dispacther(cr, uid, order_data.id,
+									_('Order %s were booked outside working day. Please assign the vehicle and the driver manually.') % order_data.name )
 					# kalo beda homebase, post message
 						else:
 							partner_ids = []
-							for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
-							self.message_post(cr, SUPERUSER_ID, order_data.id,
-								body=_('New order from %s going to different homebase. Manual vehicle/driver assignment needed.') % order_data.customer_contract_id.customer_id.name,
-								partner_ids=partner_ids)
+							self._message_dispacther(cr, uid, order_data.id,
+								_('New order from %s going to different homebase. Manual vehicle/driver assignment needed.') % order_data.customer_contract_id.customer_id.name )
 			# kalau jadi start atau start confirmed dan actual vehicle atau driver masih kosong, maka isikan
 				elif vals['state'] in ['started','start_confirmed','finished','finish_confirmed']:
 					update_data = {}
@@ -914,9 +906,7 @@ class foms_order(osv.osv):
 		return working_normal_time + (1.5 * working_overtime)
 
 	_central_dispatch_partners = []
-# JUNED: saya sudah membuat method ini untuk mempermudah messaging dispatcher
-# contoh pemanggilan ada di _cek_order_assigning_vehicle. tolong update kode supaya 
-# setiap message ke dispatcher memanggil method ini
+	
 	def _message_dispacther(self, cr, uid, data_id, message):
 		if not self._central_dispatch_partners:
 			user_obj = self.pool.get('res.users')
@@ -1069,7 +1059,7 @@ class foms_order(osv.osv):
 	
 	# CRON ---------------------------------------------------------------------------------------------------------------------
 	
-	def cron_compute_driver_attendances(self, cr, uid, ids, context=None): # TODO HAPUS IDS KALO UDAH GA DEBUGGIN LAGI JADI BUTTON
+	def cron_compute_driver_attendances(self, cr, uid, context=None):
 		employee_obj = self.pool.get('hr.employee')
 		fleet_obj = self.pool.get('foms.contract.fleet')
 		attendance_obj = self.pool.get('hr.attendance')
@@ -1121,7 +1111,7 @@ class foms_order(osv.osv):
 				# Jika first_clock_out <= first_clock_in
 					if first_clock_out <= first_clock_in:
 					# ambil start_planned nya si clock_out
-						previous_start_planned_date = first_finished_order.start_planned_date
+						previous_start_planned_date = datetime.strptime(first_finished_order.start_planned_date, '%Y-%m-%d %H:%M:%S')
 						previous_clock_out_id = attendance_obj.search(cr, uid, [
 							('name', '>=', previous_start_planned_date.date().strftime('%Y-%m-%d 00:00:00')),
 							('name', '<=', previous_start_planned_date.date().strftime('%Y-%m-%d 23:59:59')),
@@ -1156,7 +1146,7 @@ class foms_order(osv.osv):
 			# Jika ada first_clock_out
 				if first_clock_out:
 				# ambil start_planned nya si clock_out
-					previous_start_planned_date = first_finished_order.start_planned_date
+					previous_start_planned_date = datetime.strptime(first_finished_order.start_planned_date, '%Y-%m-%d %H:%M:%S')
 					previous_clock_out_id = attendance_obj.search(cr, uid, [
 						('name', '>=', previous_start_planned_date.date().strftime('%Y-%m-%d 00:00:00')),
 						('name', '<=', previous_start_planned_date.date().strftime('%Y-%m-%d 23:59:59')),
@@ -1235,19 +1225,21 @@ class foms_order(osv.osv):
 		if start_working_time is None:
 			clock_in = order.start_planned_date
 		else:
-			start_working_date = order_day + timedelta(hours=start_working_time)
+			start_working_date = order_day.replace(hour=0, minute=0, second=0, microsecond=0)
+			start_working_date += timedelta(seconds=(start_working_time - SERVER_TIMEZONE) * 60 * 60)
 			if order.start_planned_date and datetime.strptime(order.start_planned_date, '%Y-%m-%d %H:%M:%S') > start_working_date:
 				clock_in = start_working_date
 			else:
-				clock_in = order.start_planned_date
+				clock_in = datetime.strptime(order.start_planned_date, '%Y-%m-%d %H:%M:%S')
 		if end_working_time is None:
 			clock_out = order.finish_confirm_date
 		else:
-			end_working_date = order_day + timedelta(hours=end_working_time)
+			end_working_date = order_day.replace(hour=0, minute=0, second=0, microsecond=0)
+			end_working_date += timedelta(seconds=(end_working_time - SERVER_TIMEZONE) * 60 * 60)
 			if order.finish_confirm_date and datetime.strptime(order.finish_confirm_date, '%Y-%m-%d %H:%M:%S') < end_working_date:
 				clock_out = end_working_date
 			else:
-				clock_out = order.finish_confirm_date
+				clock_out = datetime.strptime(order.finish_confirm_date, '%Y-%m-%d %H:%M:%S')
 		return clock_in, clock_out
 		
 	def _get_first_and_last_order_times_today(self, cr, uid, driver_id, today):
@@ -1888,10 +1880,24 @@ class foms_order_replace_vehicle(osv.osv):
 				if replace_vehicle.replaced_vehicle_id.model_id.id != replace_vehicle.replacement_vehicle_id.model_id.id:
 					return False
 		return True
+	
+	def _constraint_replacement_vehicle_use_in_other_contract(self, cr, uid, ids, context=None):
+		# Cek apakah vehiclenya yang mereplace ada di contract lain
+		contract_fleet_obj = self.pool.get('foms.contract.fleet')
+		for replace_vehicles in self.browse(cr, uid, ids, context):
+			for replace_vehicle in replace_vehicles:
+				args = [
+					('header_id.state', 'in', ['active']),
+					('fleet_vehicle_id','=',replace_vehicle.replacement_vehicle_id.id),
+				]
+				contract_fleet_ids = contract_fleet_obj.search(cr, uid, args)
+				if len(contract_fleet_ids)>0:
+					return False
+		return True
 
-# JUNED: tambahkan constraint di mana replacement vehicle tidak boleh sedang dipakai di kontrak aktif lainnya
 	_constraints = [
 		(_constraint_vehicle_same_type, _('Vehicles must be in the same type.'), ['replaced_vehicle_id', 'replacement_vehicle_id']),
+		(_constraint_replacement_vehicle_use_in_other_contract, _('This car is being used in other contracts.'), ['replaced_vehicle_id', 'replacement_vehicle_id']),
 	]
 	
 # OVERRIDES ---------------------------------------------------------------------------------------------------------------
@@ -1950,8 +1956,24 @@ class foms_order_replace_driver(osv.osv):
 		'replacement_date': fields.datetime('Effective Since', required=True),
 		'replacement_reason': fields.text('Replacement Reason'),
 	}
+	
+	def _constraint_replacement_driver_use_in_other_contract(self, cr, uid, ids, context=None):
+		# Cek apakah driver yang mereplace ada di contract lain
+		contract_fleet_obj = self.pool.get('foms.contract.fleet')
+		for replace_drivers in self.browse(cr, uid, ids, context):
+			for replace_driver in replace_drivers:
+				args = [
+					('header_id.state', 'in', ['active']),
+					('driver_id','=',replace_driver.replacement_driver_id.id),
+				]
+				contract_fleet_ids = contract_fleet_obj.search(cr, uid, args)
+				if len(contract_fleet_ids)>0:
+					return False
+		return True
 
-# JUNED: tambahkan constraint di mana driver tidak boleh sedang bertugas di kontrak aktif lainnya
+	_constraints = [
+		(_constraint_replacement_driver_use_in_other_contract, _('Driver is being used in other contracts.'), ['replaced_driver_id', 'replacement_driver_id']),
+	]
 
 # OVERRIDES ---------------------------------------------------------------------------------------------------------------
 	
@@ -1970,7 +1992,7 @@ class foms_order_replace_driver(osv.osv):
 			args = [ 
 				('state', 'in', ['new', 'confirmed', 'ready']),
 				('start_planned_date', '>=', replace_driver.replacement_date),
-				('assigned_driver_id','=',replace_vehicle.replaced_driver_id.id),
+				('assigned_driver_id','=',replace_driver.replaced_driver_id.id),
 			]
 			order_ids = order_obj.search(cr, uid, args)
 			order_obj.write(cr, uid, order_ids, {
@@ -1985,7 +2007,7 @@ class foms_order_replace_driver(osv.osv):
 				('header_id.state', 'not in', ['terimnated', 'finished']),
 				('header_id.start_date', '<=', replace_driver.replacement_date),
 				('header_id.end_date', '>=', replace_driver.replacement_date),
-				('driver_id','=',replace_vehicle.replaced_driver_id.id),
+				('driver_id','=',replace_driver.replaced_driver_id.id),
 			]
 			contract_fleet_ids = contract_fleet_obj.search(cr, uid, args)
 			contract_fleet_obj.write(cr, uid, contract_fleet_ids, {

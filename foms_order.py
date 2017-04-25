@@ -1282,31 +1282,19 @@ class foms_order(osv.osv):
 		clock_out = attendance_obj.browse(cr, uid, clock_out_ids)
 		return clock_in, clock_out
 	
-	def _get_driver_order_workingtime(self, first_order, last_order, today):
+	def _get_contract_working_time(self, contract, calculated_datetime):
 		"""
-		:return: Tuple of start_working_time, end_working_time. If there is no working time found for that day,
-		start_working_time or end_working_time may be None
+		Returns the given contract workingtime
+		:param contract: recordset of contract (foms.contract)
+		:param calculated_datetime: calculated_date: datetime of the date of intended working time
+		:return: recordset of working time (resource.calendar.attendance)
 		"""
-		first_working_time_attendances = first_order.customer_contract_id.working_time_id.attendance_ids
-		last_working_time_attendances = last_order.customer_contract_id.working_time_id.attendance_ids
-		first_order_start_working_time = first_order_end_working_time = last_order_start_working_time = \
-			last_order_end_working_time = None
-		weekday_today = today.weekday()
-		for working_time in first_working_time_attendances:
-			if str(weekday_today) == working_time.dayofweek:
-				first_order_start_working_time = working_time.hour_from
-				first_order_end_working_time = working_time.hour_to
-				break
-		for working_time in last_working_time_attendances:
-			if str(weekday_today) == working_time.dayofweek:
-				last_order_start_working_time = working_time.hour_from
-				last_order_end_working_time = working_time.hour_to
-				break
-		start_working_time = first_order_start_working_time if first_order_start_working_time is not None \
-			else last_order_start_working_time
-		end_working_time = last_order_end_working_time if last_order_end_working_time is not None \
-			else first_order_end_working_time
-		return start_working_time, end_working_time
+		result = None
+		working_times = contract.working_time_id.attendance_ids
+		for working_time in working_times:
+			if str(calculated_datetime.weekday()) == working_time.dayofweek:
+				result = working_time
+		return result
 		
 	def _get_order_driver_pass_days(self, cr, uid, driver_id, date):
 		# Get order still running, start_planned date before date 

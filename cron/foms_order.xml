@@ -66,7 +66,7 @@
 			<field eval="" name="args" />
 		</record>
 
-		<record forcecreate="True" id="ir_cron_compute_driver_attendances" model="ir.cron">
+		<record forcecreate="True" id="ir_cron_cron_driver_attendances" model="ir.cron">
 			<field name="name">Create daily attendance for drivers based on orders</field>
 			<field eval="True" name="active" />
 			<field name="user_id" ref="base.user_root" />
@@ -75,7 +75,7 @@
 			<field name="numbercall">-1</field>
 			<field name="active">1</field>
 			<field eval="'foms.order'" name="model" />
-			<field eval="'cron_compute_driver_attendances'" name="function" />
+			<field eval="'cron_driver_attendances'" name="function" />
 			<field eval="" name="args" />
 		</record>
 	</data>

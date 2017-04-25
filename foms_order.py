@@ -1110,7 +1110,6 @@ class foms_order(osv.osv):
 				#dapetin working time
 					date_clock_in, date_clock_out = self._determine_clock_datetimes(cr, uid, None, None, yesterday, 
 						working_time_leaf.working_time_type, True, working_time_leaf.hour_from, working_time_leaf.hour_to, working_time_leaf.max_hour)
-						)
 					if len(first_clock_in) == 0 and len(date_clock_in) != 0:
 						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_in', date_clock_in, last_order.id)
 					if len(last_clock_out) == 0 and len(date_clock_out) != 0:
@@ -1141,112 +1140,112 @@ class foms_order(osv.osv):
 			'finish_from': 'central',
 		})
 	
-	def cron_compute_driver_attendances(self, cr, uid, context=None):
-		employee_obj = self.pool.get('hr.employee')
-		fleet_obj = self.pool.get('foms.contract.fleet')
-		attendance_obj = self.pool.get('hr.attendance')
-		data_obj = self.pool.get('ir.model.data')
-		# Pool drivers
-		driver_job_id = data_obj.get_object(cr, uid, 'universal', 'hr_job_driver').id
-		driver_ids = employee_obj.search(cr, uid, [('job_id', '=', driver_job_id)])
-		drivers = employee_obj.browse(cr, uid, driver_ids)
-		today = datetime.now()
-		for driver in drivers:
-			first_order, first_finished_order, last_order = self._get_first_and_last_order_times_today(cr, uid, driver.id,
-				today)
-			if len(first_order) == 0 and len(last_order) == 0:
-				continue
-			start_working_time, end_working_time = self._get_driver_order_workingtime(first_order, last_order, today)
-			first_order_clock_in, first_order_clock_out_in = self._determine_clock_datetime(cr, uid, start_working_time,
-				end_working_time, first_order, today)
-			first_finished_order_clock_in, first_finished_order_clock_out = self._determine_clock_datetime(cr, uid,
-				start_working_time, end_working_time, first_finished_order, today)
-			last_order_clock_in, last_order_clock_out = self._determine_clock_datetime(cr, uid, start_working_time,
-				end_working_time, last_order, today)
-			
-			first_clock_in = first_order_clock_in
-			first_clock_out = first_finished_order_clock_out
-			last_clock_out = last_order_clock_out
-			
-			today_clock_in_id = attendance_obj.search(cr, uid, [
-				('name', '>=', today.strftime('%Y-%m-%d 00:00:00')),
-				('name', '<=', today.strftime('%Y-%m-%d 23:59:59')),
-				('action', '=', 'sign_in'),
-			])
-			today_clock_out_id = attendance_obj.search(cr, uid, [
-				('name', '>=', today.strftime('%Y-%m-%d 00:00:00')),
-				('name', '<=', today.strftime('%Y-%m-%d 23:59:59')),
-				('action', '=', 'sign_out'),
-			])
-			
-		# Jika ada first_clock_in
-			if first_clock_in:
-			# Jika sudah ada db_clock_in
-				if today_clock_in_id: # update db_clock_in
-					self._write_attendance(cr, uid, today_clock_in_id, first_clock_in, first_order.customer_contract_id.id, first_order.id)
-			# else belum ada db_clock_in
-				else: # create db_clock_in
-					self._create_attendance(cr, uid, driver.id, first_order.customer_contract_id.id, 'sign_in',
-						first_clock_in, first_order.id)
-			# Jika ada first_clock_out
-				if first_clock_out:
-				# Jika first_clock_out <= first_clock_in
-					if first_clock_out <= first_clock_in:
-					# ambil start_planned nya si clock_out
-						previous_start_planned_date = datetime.strptime(first_finished_order.start_planned_date, '%Y-%m-%d %H:%M:%S')
-						previous_clock_out_id = attendance_obj.search(cr, uid, [
-							('name', '>=', previous_start_planned_date.date().strftime('%Y-%m-%d 00:00:00')),
-							('name', '<=', previous_start_planned_date.date().strftime('%Y-%m-%d 23:59:59')),
-							('action', '=', 'sign_out'),
-						])
-					# Jika yg sblmnya sudah ada db_clock_out
-						if len(previous_clock_out_id) > 0: # update db_clock_out si hari sebelum2nya
-							self._write_attendance(cr, uid, previous_clock_out_id, first_clock_out, first_finished_order.customer_contract_id.id, first_finished_order.id)
-					# else yg sblmnya belum ada db_clock_out
-						else: # create db_clock_out si hari sebelum2nya
-							self._create_attendance(cr, uid, driver.id, first_finished_order.customer_contract_id.id,
-								'sign_out', first_clock_out, first_finished_order.id)
-						
-					# Jika first_clock_out != last_clock_out
-						if first_clock_out != last_clock_out:
-						# Jika db_clock_out sudah ada
-							if today_clock_out_id: # update db_clock_out dgn last_clock_out
-								self._write_attendance(cr, uid, today_clock_out_id, last_clock_out, last_order.customer_contract_id.id, last_order.id)
-						# else db_clock_out belum ada
-							else: # create db_clock_out dgn last_clock_out
-								self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id,
-									'sign_out', last_clock_out, last_order.id)
-				# else first_clock_out dan last_clock_out pasti lebih besar dari first_clock_in
-					else:
-					# Jika db_clock_out sudah ada
-						if today_clock_out_id: # update db_clock_out dgn last_clock_out
-							self._write_attendance(cr, uid, today_clock_out_id, last_clock_out, last_order.customer_contract_id.id, last_order.id)
-					# else db_clock_out belum ada
-						else: # create db_clock_out dgn last_clock_out
-							self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out',
-								last_clock_out, last_order.id)
-			# else tidak ada first_clock_out, ga usah ngapa2in
-		# else tidak ada first_clock_in
-			else:
-			# Jika ada first_clock_out
-				if first_clock_out:
-				# ambil start_planned nya si clock_out
-					previous_start_planned_date = datetime.strptime(first_finished_order.start_planned_date, '%Y-%m-%d %H:%M:%S')
-					previous_clock_out_id = attendance_obj.search(cr, uid, [
-						('name', '>=', previous_start_planned_date.date().strftime('%Y-%m-%d 00:00:00')),
-						('name', '<=', previous_start_planned_date.date().strftime('%Y-%m-%d 23:59:59')),
-						('action', '=', 'sign_out'),
-					])
-				# Jika yg sblmnya sudah ada db_clock_out
-					if len(previous_clock_out_id) > 0: # update db_clock_out si hari sebelum2nya
-						self._write_attendance(cr, uid, previous_clock_out_id, first_clock_out, first_finished_order.customer_contract_id.id, first_finished_order.id)
-				# else yg sblmnya belum ada db_clock_out
-					else: # create db_clock_out si hari sebelum2nya
-						self._create_attendance(cr, uid, driver.id, first_finished_order.customer_contract_id.id,
-							'sign_out', first_clock_out, first_finished_order.id)
-			# else tidak ada first_clock_out, ga usah ngapa2in
-			pass
-		pass
+	# def cron_compute_driver_attendances(self, cr, uid, context=None):
+	# 	employee_obj = self.pool.get('hr.employee')
+	# 	fleet_obj = self.pool.get('foms.contract.fleet')
+	# 	attendance_obj = self.pool.get('hr.attendance')
+	# 	data_obj = self.pool.get('ir.model.data')
+	# 	# Pool drivers
+	# 	driver_job_id = data_obj.get_object(cr, uid, 'universal', 'hr_job_driver').id
+	# 	driver_ids = employee_obj.search(cr, uid, [('job_id', '=', driver_job_id)])
+	# 	drivers = employee_obj.browse(cr, uid, driver_ids)
+	# 	today = datetime.now()
+	# 	for driver in drivers:
+	# 		first_order, first_finished_order, last_order = self._get_first_and_last_order_times_today(cr, uid, driver.id,
+	# 			today)
+	# 		if len(first_order) == 0 and len(last_order) == 0:
+	# 			continue
+	# 		start_working_time, end_working_time = self._get_driver_order_workingtime(first_order, last_order, today)
+	# 		first_order_clock_in, first_order_clock_out_in = self._determine_clock_datetime(cr, uid, start_working_time,
+	# 			end_working_time, first_order, today)
+	# 		first_finished_order_clock_in, first_finished_order_clock_out = self._determine_clock_datetime(cr, uid,
+	# 			start_working_time, end_working_time, first_finished_order, today)
+	# 		last_order_clock_in, last_order_clock_out = self._determine_clock_datetime(cr, uid, start_working_time,
+	# 			end_working_time, last_order, today)
+	#
+	# 		first_clock_in = first_order_clock_in
+	# 		first_clock_out = first_finished_order_clock_out
+	# 		last_clock_out = last_order_clock_out
+	#
+	# 		today_clock_in_id = attendance_obj.search(cr, uid, [
+	# 			('name', '>=', today.strftime('%Y-%m-%d 00:00:00')),
+	# 			('name', '<=', today.strftime('%Y-%m-%d 23:59:59')),
+	# 			('action', '=', 'sign_in'),
+	# 		])
+	# 		today_clock_out_id = attendance_obj.search(cr, uid, [
+	# 			('name', '>=', today.strftime('%Y-%m-%d 00:00:00')),
+	# 			('name', '<=', today.strftime('%Y-%m-%d 23:59:59')),
+	# 			('action', '=', 'sign_out'),
+	# 		])
+	#
+	# 	# Jika ada first_clock_in
+	# 		if first_clock_in:
+	# 		# Jika sudah ada db_clock_in
+	# 			if today_clock_in_id: # update db_clock_in
+	# 				self._write_attendance(cr, uid, today_clock_in_id, first_clock_in, first_order.customer_contract_id.id, first_order.id)
+	# 		# else belum ada db_clock_in
+	# 			else: # create db_clock_in
+	# 				self._create_attendance(cr, uid, driver.id, first_order.customer_contract_id.id, 'sign_in',
+	# 					first_clock_in, first_order.id)
+	# 		# Jika ada first_clock_out
+	# 			if first_clock_out:
+	# 			# Jika first_clock_out <= first_clock_in
+	# 				if first_clock_out <= first_clock_in:
+	# 				# ambil start_planned nya si clock_out
+	# 					previous_start_planned_date = datetime.strptime(first_finished_order.start_planned_date, '%Y-%m-%d %H:%M:%S')
+	# 					previous_clock_out_id = attendance_obj.search(cr, uid, [
+	# 						('name', '>=', previous_start_planned_date.date().strftime('%Y-%m-%d 00:00:00')),
+	# 						('name', '<=', previous_start_planned_date.date().strftime('%Y-%m-%d 23:59:59')),
+	# 						('action', '=', 'sign_out'),
+	# 					])
+	# 				# Jika yg sblmnya sudah ada db_clock_out
+	# 					if len(previous_clock_out_id) > 0: # update db_clock_out si hari sebelum2nya
+	# 						self._write_attendance(cr, uid, previous_clock_out_id, first_clock_out, first_finished_order.customer_contract_id.id, first_finished_order.id)
+	# 				# else yg sblmnya belum ada db_clock_out
+	# 					else: # create db_clock_out si hari sebelum2nya
+	# 						self._create_attendance(cr, uid, driver.id, first_finished_order.customer_contract_id.id,
+	# 							'sign_out', first_clock_out, first_finished_order.id)
+	#
+	# 				# Jika first_clock_out != last_clock_out
+	# 					if first_clock_out != last_clock_out:
+	# 					# Jika db_clock_out sudah ada
+	# 						if today_clock_out_id: # update db_clock_out dgn last_clock_out
+	# 							self._write_attendance(cr, uid, today_clock_out_id, last_clock_out, last_order.customer_contract_id.id, last_order.id)
+	# 					# else db_clock_out belum ada
+	# 						else: # create db_clock_out dgn last_clock_out
+	# 							self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id,
+	# 								'sign_out', last_clock_out, last_order.id)
+	# 			# else first_clock_out dan last_clock_out pasti lebih besar dari first_clock_in
+	# 				else:
+	# 				# Jika db_clock_out sudah ada
+	# 					if today_clock_out_id: # update db_clock_out dgn last_clock_out
+	# 						self._write_attendance(cr, uid, today_clock_out_id, last_clock_out, last_order.customer_contract_id.id, last_order.id)
+	# 				# else db_clock_out belum ada
+	# 					else: # create db_clock_out dgn last_clock_out
+	# 						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out',
+	# 							last_clock_out, last_order.id)
+	# 		# else tidak ada first_clock_out, ga usah ngapa2in
+	# 	# else tidak ada first_clock_in
+	# 		else:
+	# 		# Jika ada first_clock_out
+	# 			if first_clock_out:
+	# 			# ambil start_planned nya si clock_out
+	# 				previous_start_planned_date = datetime.strptime(first_finished_order.start_planned_date, '%Y-%m-%d %H:%M:%S')
+	# 				previous_clock_out_id = attendance_obj.search(cr, uid, [
+	# 					('name', '>=', previous_start_planned_date.date().strftime('%Y-%m-%d 00:00:00')),
+	# 					('name', '<=', previous_start_planned_date.date().strftime('%Y-%m-%d 23:59:59')),
+	# 					('action', '=', 'sign_out'),
+	# 				])
+	# 			# Jika yg sblmnya sudah ada db_clock_out
+	# 				if len(previous_clock_out_id) > 0: # update db_clock_out si hari sebelum2nya
+	# 					self._write_attendance(cr, uid, previous_clock_out_id, first_clock_out, first_finished_order.customer_contract_id.id, first_finished_order.id)
+	# 			# else yg sblmnya belum ada db_clock_out
+	# 				else: # create db_clock_out si hari sebelum2nya
+	# 					self._create_attendance(cr, uid, driver.id, first_finished_order.customer_contract_id.id,
+	# 						'sign_out', first_clock_out, first_finished_order.id)
+	# 		# else tidak ada first_clock_out, ga usah ngapa2in
+	# 		pass
+	# 	pass
 	
 	def _create_attendance(self, cr, uid, driver_id, customer_contract_id, clock_type, clock_datetime, order_id):
 		attendance_obj = self.pool.get('hr.attendance')

@@ -1443,13 +1443,14 @@ class foms_order(osv.osv):
 	def _get_days_first_last_order(self, cr, uid, driver_id, calculated_date):
 		calculated_date = calculated_date.replace(hour=0, minute=0, second=0, microsecond=0)
 		calculated_date_from = calculated_date - timedelta(hours=SERVER_TIMEZONE)
-		calculated_datetime_to = calculated_date_from + timedelta(hours=24)
+		calculated_date_to = calculated_date_from + timedelta(hours=24)
+		calculated_date_tommorow_to = calculated_date_from + timedelta(hours=23, minutes=59, seconds=59)
 		# Get date's first order
 		calculated_date = calculated_date - timedelta(hours=SERVER_TIMEZONE)
 		first_order_ids = self.search(cr, uid, [
 			('actual_driver_id', '=', driver_id),
 			('start_planned_date', '>=', calculated_date_from.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
-			('start_planned_date', '<=', calculated_datetime_to.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('start_planned_date', '<=', calculated_date_to.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
 			('state', 'in', ['started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finish_confirmed'])
 		], limit=1, order="start_planned_date asc")
 		first_order = self.browse(cr, uid, first_order_ids)
@@ -1457,7 +1458,9 @@ class foms_order(osv.osv):
 		last_order_ids = self.search(cr, uid, [
 			('actual_driver_id', '=', driver_id),
 			('finish_confirm_date', '>=', calculated_date_from.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
-			('finish_confirm_date', '<=', calculated_datetime_to.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('finish_confirm_date', '<=', calculated_date_tommorow_to.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('start_planned_date', '>=', calculated_date_from.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('start_planned_date', '<=', calculated_date_to.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
 			('state', '=', 'finish_confirmed')
 		], limit=1, order="finish_confirm_date desc")
 		last_order = self.browse(cr, uid, last_order_ids)

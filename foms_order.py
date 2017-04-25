@@ -496,7 +496,36 @@ class foms_order(osv.osv):
 						self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'update', order_data, context=context)
 					elif order_data.service_type == 'by_order':
 						self.webservice_post(cr, uid, ['pic','approver','booker'], 'update', order_data, context=context)
-			# kalau dibatalin
+				# Kalau state berubah jadi start confirmed, cek apakah dia order pertama start_planned_date di hari tersebut bukan
+					if vals['state'] in ['start_confirmed']:
+						order_ids = self.search(cr, uid, [
+							('actual_driver_id', '=', order_data.actual_driver_id.id),
+							('start_planned_date', '>=', datetime.now().strftime("%Y-%m-%d 00:00:00")),
+							('start_planned_date', '<', order_data.start_planned_date),
+						])
+						if len(order_ids) == 0:
+						# liat di hari tersebut ada clockin tidak?
+							# clock_in, clock_out = method_anton
+							hr_attendance_obj = self.pool.get('hr.attendance')
+							if order_data.create_source == 'mobile':
+								source = 'app'
+							else:
+								source = 'manual'
+							if clock_in:
+								hr_attendance_obj.write(cr, uid, clock_in.id, {
+									'name': order_data.start_planned_date,
+									'contract_id': order_data.customer_contract_id.id,
+									'order_id': order_data.id,
+									'source': source,
+								})
+							else:
+								hr_attendance_obj.create(cr, uid, {
+									'name': order_data.start_planned_date,
+									'contract_id': order_data.customer_contract_id.id,
+									'order_id': order_data.id,
+									'source': source,
+								})
+				# kalau dibatalin
 				elif vals['state'] == 'canceled':
 				# kalau kontraknya pakai usage control, maka hapus dari usage log
 					if order_data.service_type == 'by_order' and contract.usage_control_level != 'no_control':

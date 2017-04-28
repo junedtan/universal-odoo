@@ -5,6 +5,7 @@ from openerp import tools
 import math
 import time
 from . import SPECIAL_PERMIT
+from . import datetime_to_server
 
 class hr_holidays(osv.osv):
 	
@@ -128,8 +129,8 @@ class resource_calendar_company_holiday(osv.osv):
 			new_vals = {
 				'leave_ids': [(0, False, {
 					'name': vals['name'],
-					'date_from': datetime.strptime(vals['date_from'],'%Y-%m-%d').strftime("%Y-%m-%d 00:00:00"),
-					'date_to': datetime.strptime(vals['date_to'],'%Y-%m-%d').strftime("%Y-%m-%d 23:59:59"),
+					'date_from': datetime_to_server(vals['date_from'] + ' 00:00:00', reverse=True),
+					'date_to': datetime_to_server(vals['date_to'] + ' 23:59:59', reverse=True),
 					'company_holiday_id': new_id,
 				})]
 			}
@@ -139,13 +140,14 @@ class resource_calendar_company_holiday(osv.osv):
 	def write(self, cr, uid, ids, vals, context={}):
 		result = super(resource_calendar_company_holiday, self).write(cr, uid, ids, vals, context=context)
 		calendar_leave_obj = self.pool.get('resource.calendar.leaves')
+
 		for holiday in self.browse(cr, uid, ids, context=context):
 			calendar_leave_ids = calendar_leave_obj.search(cr, uid, [('company_holiday_id','=',holiday.id)])
 			if len(calendar_leave_ids) == 0: continue
 			calendar_leave_obj.write(cr, uid, calendar_leave_ids, {
 				'name': holiday.name,
-				'date_from': datetime.strptime(holiday.date_from,'%Y-%m-%d').strftime("%Y-%m-%d 00:00:00"),
-				'date_to': datetime.strptime(holiday.date_to,'%Y-%m-%d').strftime("%Y-%m-%d 23:59:59"),
+				'date_from': datetime_to_server(holiday.date_from + ' 00:00:00', reverse=True),
+				'date_to': datetime_to_server(holiday.date_to + ' 23:59:59', reverse=True),
 			})
 		return result
 

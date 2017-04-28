@@ -308,6 +308,7 @@
 			<field name="arch" type="xml">
 				<tree version="7.0" string="Monthly Usage Quota" create="false" edit="false" delete="false">
 					<field name="customer_contract_id" />
+					<field name="customer_id" />
 					<field name="allocation_unit_id" />
 					<field name="period" />
 					<field name="current_usage" />
@@ -348,7 +349,6 @@
 							<field name="allocation_unit_id" on_change="onchange_quota_data(customer_contract_id, allocation_unit_id, period, False)" />
 							<field name="period" on_change="onchange_quota_data(customer_contract_id, allocation_unit_id, period, False)" />
 							<field name="request_longevity" />
-							<field name="request_by" readonly="1" />
 							<field name="request_date" readonly="1" />
 						</group>
 						<group>
@@ -377,6 +377,7 @@
 			<field name="arch" type="xml">
 				<tree version="7.0" string="Quota Change Log" delete="false">
 					<field name="customer_contract_id" />
+					<field name="customer_id" />
 					<field name="allocation_unit_id" />
 					<field name="period" />
 					<field name="request_longevity" />
@@ -397,6 +398,21 @@
 					<field name="period" string="Period" />
 					<filter string="Current" name="filter_current" domain="[('period','=',context_today().strftime('%m/%Y'))]" />
 				</search>
+			</field>
+		</record>
+
+		<!--Change Driver Phone-->
+
+		<record model="ir.ui.view" id="foms_contract_change_driver_phone_tree">
+			<field name="name">foms.contract.change.driver.phone.tree</field>
+			<field name="model">hr.employee</field>
+			<field name="arch" type="xml">
+				<tree version="7.0" string="Driver Phone" editable="bottom" create="false" delete="false">
+					<field name="name" />
+					<field name="phone" />
+					<field name="mobile_phone2" />
+					<field name="mobile_phone3" />
+				</tree>
 			</field>
 		</record>
 

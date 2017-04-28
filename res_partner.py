@@ -42,12 +42,12 @@ class res_partner(osv.osv):
 	def _constraint_partner_code(self, cr, uid, ids, context=None):
 		for data in self.browse(cr, uid, ids, context):
 			existing_ids = self.search(cr, uid, [('partner_code','ilike',data.partner_code),('id','!=',data.id)])
-			if len(existing_ids) > 0: return False
-			if len(data.partner_code) != 4: return False
+			if data.is_company and len(existing_ids) > 0: return False
+			if data.is_company and len(data.partner_code) != 4: return False
 		return True
 	
 	_constraints = [
-		(_constraint_partner_code, _('Order Number Prefix must be unique and four cahracter long.'), ['partner_code'])
+		(_constraint_partner_code, _('Order Number Prefix must be unique and four character long.'), ['partner_code'])
 	]
 	
 	_sql_constraints = [

@@ -4,6 +4,12 @@ from datetime import datetime, date, timedelta
 from openerp import SUPERUSER_ID
 from . import SERVER_TIMEZONE
 from . import datetime_to_server
+from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
+
+try:
+	import Queue as Q  # ver. < 3.0
+except ImportError:
+	import queue as Q
 
 import random, string
 
@@ -152,6 +158,10 @@ class foms_order(osv.osv):
 	# cek dahulu apakah contractnya masih active
 		if vals.get('customer_contract_id', False):
 			self._cek_contract_is_active(cr,uid, [vals['customer_contract_id']], context)
+		
+	#cek apakah ada order by
+		if not vals.get('order_by', False):
+			raise osv.except_osv(_('Order Error'),_('Please input order by.'))
 
 	# untuk order by order, harus dicek dulu bahwa order harus dalam maksimal jam sebelumnya
 		if service_type == 'by_order':
@@ -219,6 +229,8 @@ class foms_order(osv.osv):
 					'pin': fleet_data.fullday_user_id.pin,
 					'state': 'ready',
 				})
+			self.webservice_post(cr, uid, ['fullday_passenger'], 'create', new_data, \
+				webservice_context={}, context=context)
 	# untuk order By Order
 		elif service_type == 'by_order':
 		# cek apakah unit ini punya approver?
@@ -272,7 +284,7 @@ class foms_order(osv.osv):
 						}, context=context)
 		# kalau allocation unit tidak punya approver
 			else:
-			# langsung confirm order ini
+				# langsung confirm order ini
 				self.write(cr, uid, [new_id], {
 					'state': 'confirmed',
 				}, context=context)
@@ -289,8 +301,6 @@ class foms_order(osv.osv):
 		source = context.get('source', False)
 
 		orders = self.browse(cr, uid, ids)
-
-		user_obj = self.pool.get('res.users')
 		
 	#apabila ada perubahan contract cek dahulu apakah contractnya masih active
 		if vals.get('customer_contract_id', False):
@@ -313,19 +323,20 @@ class foms_order(osv.osv):
 	# cek apakah bentrok waktu sama order lain
 		if vals.get('assigned_vehicle_id', False) or vals.get('start_planned_date', False):
 		# ambil nilai lama dahulu apabila ternyata hanya terjadi 1 perubahan
-			assigned_vehicle = orders.assigned_vehicle_id.id
-			start_planned_date = orders.start_planned_date
-			finish_planned_date = orders.finish_planned_date
-		# apabila ada perubahan, gunakan nilai yang baru
-			if vals.get('assigned_vehicle_id', False):
-				assigned_vehicle = vals.get('assigned_vehicle_id', False)
-			if vals.get('start_planned_date', False):
-				start_planned_date = vals.get('start_planned_date', False)
-			if vals.get('finish_planned_date', False):
-				finish_planned_date = vals.get('finish_planned_date', False)
-		# cek ada yang beririsan ga
-			if assigned_vehicle and (not source or source == 'form'):
-				self._cek_vehicle_clash(cr, uid, assigned_vehicle, start_planned_date, finish_planned_date, ids[0], context)
+			for data in orders:
+				assigned_vehicle = data.assigned_vehicle_id.id
+				start_planned_date = data.start_planned_date
+				finish_planned_date = data.finish_planned_date
+			# apabila ada perubahan, gunakan nilai yang baru
+				if vals.get('assigned_vehicle_id', False):
+					assigned_vehicle = vals.get('assigned_vehicle_id', False)
+				if vals.get('start_planned_date', False):
+					start_planned_date = vals.get('start_planned_date', False)
+				if vals.get('finish_planned_date', False):
+					finish_planned_date = vals.get('finish_planned_date', False)
+			# cek ada yang beririsan ga
+				if assigned_vehicle and (not source or source == 'form'):
+					self._cek_vehicle_clash(cr, uid, assigned_vehicle, start_planned_date, finish_planned_date, data.id, context)
 		
 	# kalau order diconfirm dari mobile app, cek dulu apakah sudah diconfirm sebelumnya
 	# ini untuk mengantisipasi kalau satu alloc unit ada beberapa approver dan pada balapan meng-approve
@@ -423,40 +434,11 @@ class foms_order(osv.osv):
 				# apakah source_area dan dest_area ada di bawah homebase yang sama?
 				# kalo sama, langsung cariin mobil dan supir
 					else:
-						central_partner_ids = user_obj.get_partner_ids_by_group(cr, uid, 'universal', 'group_universal_dispatcher')
 						if order_data.origin_area_id and order_data.dest_area_id and \
 						order_data.origin_area_id.homebase_id.id == order_data.dest_area_id.homebase_id.id:
 						# sebelum cariin mobil dan supir, cek dulu di luar jam kerja ngga ini order
 						# kalau iya, jangan autoplot
 							autoplot = False
-							"""
-							JUNED: tidak usah pakai if vals.get lagi karena di atas udah keburu dipanggil write()
-							dan order_data diisi dengan data terbaru hasil write
-							jadi udah pasti isinya sama
-							if vals.get('start_planned_date', False):
-								date = datetime.strptime(vals['start_planned_date'],"%Y-%m-%d %H:%M:%S").weekday()
-								time = datetime.strptime(vals['start_planned_date'],"%Y-%m-%d %H:%M:%S").time()
-							else:
-								date = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S").weekday()
-								time_str = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S").time()
-								time = time_str.hour + (time_str.minute/60.0)
-							"""
-							"""
-							JUNED: salah algoritma. seharusnya yang dicek bukan order hours tapi working time
-							date = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S").weekday()
-							time_str = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S").time()
-							time = time_str.hour + (time_str.minute / 60.0)
-							for order_hours in order_data.customer_contract_id.order_hours:
-								if date == int(order_hours.dayofweek) and (time >= order_hours.time_from and time <= order_hours.time_to):
-									autoplot = True
-									break
-							See below for the correct one
-							PS: ada yang penting banget yaitu SERVER_TIMEZONE. kenapa penting?
-							di working time ditulis jam 08:00 s/d 17:00. itu adalah WIB (GMT+7)
-							sever menyimpan semua datetime dalam GMT, jadi misal start_planned_date 
-							09:30 WIB itu teh disimpen di database jadi jam 02:30. jadi kalau 08:00 tidak 
-							dikurangi timezone (7) maka itu udah dianggap di luar jam kerja lho padahal mah ngga
-							"""
 							start_planned_date = datetime.strptime(order_data.start_planned_date,"%Y-%m-%d %H:%M:%S")
 							weekday = start_planned_date.weekday()
 							order_time = start_planned_date.time()
@@ -486,25 +468,19 @@ class foms_order(osv.osv):
 												'notification': ['order_fleet_not_ready'],
 										}, context=context)
 									partner_ids = []
-									for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
-									self.message_post(cr, SUPERUSER_ID, order_data.id,
-										body=_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order_data.name,
-										partner_ids=partner_ids)
+									self._message_dispacther(cr, uid, order_data.id,
+										_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order_data.name )
 									return result
 						# jika order di luar hari kerja, jangan autoplot, kirim notif ke dispatcher untuk mengingatkan agar manual assign
 							else:
 								partner_ids = []
-								for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
-								self.message_post(cr, SUPERUSER_ID, order_data.id,
-									body=_('Order %s were booked outside working day. Please assign the vehicle and the driver manually.') % order_data.name,
-									partner_ids=partner_ids)
+								self._message_dispacther(cr, uid, order_data.id,
+									_('Order %s were booked outside working day. Please assign the vehicle and the driver manually.') % order_data.name )
 					# kalo beda homebase, post message
 						else:
 							partner_ids = []
-							for partner_id in central_partner_ids: partner_ids.append((4,partner_id))
-							self.message_post(cr, SUPERUSER_ID, order_data.id,
-								body=_('New order from %s going to different homebase. Manual vehicle/driver assignment needed.') % order_data.customer_contract_id.customer_id.name,
-								partner_ids=partner_ids)
+							self._message_dispacther(cr, uid, order_data.id,
+								_('New order from %s going to different homebase. Manual vehicle/driver assignment needed.') % order_data.customer_contract_id.customer_id.name )
 			# kalau jadi start atau start confirmed dan actual vehicle atau driver masih kosong, maka isikan
 				elif vals['state'] in ['started','start_confirmed','finished','finish_confirmed']:
 					update_data = {}
@@ -521,7 +497,44 @@ class foms_order(osv.osv):
 						self.webservice_post(cr, uid, ['pic','driver','fullday_passenger'], 'update', order_data, context=context)
 					elif order_data.service_type == 'by_order':
 						self.webservice_post(cr, uid, ['pic','approver','booker'], 'update', order_data, context=context)
-			# kalau dibatalin
+				# Kalau state berubah jadi start confirmed, cek apakah dia order pertama start_planned_date di hari tersebut bukan
+					if vals['state'] in ['start_confirmed']:
+						order_ids = self.search(cr, uid, [
+							('actual_driver_id', '=', order_data.actual_driver_id.id),
+							('start_planned_date', '>=', datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime("%Y-%m-%d 00:00:00")),
+							('start_planned_date', '<', order_data.start_planned_date),
+						])
+						if len(order_ids) == 0:
+						# liat di hari tersebut ada clockin tidak?
+							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, order_data.actual_driver_id.id, datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S'))
+							if clock_in:
+								self._write_attendance(cr, uid, clock_in.id, order_data.start_planned_date, order_data.customer_contract_id.id, order_data.id)
+							else:
+								self._create_attendance(cr, uid, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
+									'sign_in', order_data.start_planned_date, order_data.id)
+				# Kalau state berubah jadi finish confirmed, cek apakah dia order terakhir finish_confirm_date di hari tersebut bukan
+					if vals['state'] in ['finish_confirmed']:
+						order_ids = self.search(cr, uid, [
+							('actual_driver_id', '=', order_data.actual_driver_id.id),
+							('finish_confirm_date', '<=', datetime.strptime(order_data.finish_confirm_date,'%Y-%m-%d %H:%M:%S').strftime("%Y-%m-%d 23:59:59")),
+							('finish_confirm_date', '>', order_data.finish_confirm_date),
+						])
+						if len(order_ids) == 0:
+							# liat di hari tersebut ada clockin tidak?
+							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, order_data.actual_driver_id.id, datetime.strptime(order_data.finish_confirm_date,'%Y-%m-%d %H:%M:%S'))
+							if clock_out:
+							# kalau order nanggung, create. Kl order biasa, write
+								date_start = datetime.strptime(clock_out.order_id.start_planned_date, DEFAULT_SERVER_DATETIME_FORMAT)
+								date_finish = datetime.strptime(clock_out.order_id.finish_confirm_date, DEFAULT_SERVER_DATETIME_FORMAT)
+								if date_start.date() != date_finish.date():
+									self._create_attendance(cr, uid, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
+										'sign_out', order_data.finish_confirm_date, order_data.id)
+								else:
+									self._write_attendance(cr, uid, clock_out.id, order_data.finish_confirm_date, order_data.customer_contract_id.id, order_data.id)
+							else:
+								self._create_attendance(cr, uid, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
+									'sign_out', order_data.finish_confirm_date, order_data.id)
+				# kalau dibatalin
 				elif vals['state'] == 'canceled':
 				# kalau kontraknya pakai usage control, maka hapus dari usage log
 					if order_data.service_type == 'by_order' and contract.usage_control_level != 'no_control':
@@ -748,7 +761,7 @@ class foms_order(osv.osv):
 		return result
 
 # METHODS ------------------------------------------------------------------------------------------------------------------
-
+	
 	def determine_over_quota_status(self, cr, uid, customer_contract_id, allocation_unit_id, fleet_type_id, add_credit_per_usage=True):
 		quota_obj = self.pool.get('foms.contract.quota')
 		contract_obj = self.pool.get('foms.contract')
@@ -789,34 +802,150 @@ class foms_order(osv.osv):
 			('fleet_type_id','=',fleet_type_id),
 			('id','!=',order_id),
 		])
-		vehicle_in_use_ids = []
+		
 		current_order = self.browse(cr, uid, order_id)
+		driver_in_use_ids = []  # ongoing vehicle that can't be used
 		for order in self.browse(cr, uid, ongoing_order_ids):
-			if order.finish_planned_date < start_planned_date: continue # udah jelas available
+			if order.finish_planned_date >= start_planned_date:  # udah jelas ngga available
+				if order.assigned_vehicle_id: driver_in_use_ids.append(order.assigned_driver_id.id)
+				if order.actual_vehicle_id: driver_in_use_ids.append(order.actual_driver_id.id)
+				continue
 		# perhitungkan delay dari satu area ke area lain
 			if order.dest_area_id and current_order.origin_area_id:
 				delay = area_delay_obj.get_delay(cr, uid, order.dest_area_id.id, current_order.origin_area_id.id)
 				finish_date = datetime.strptime(order.finish_planned_date, '%Y-%m-%d %H:%M:%S') + timedelta(minutes=delay)
 				finish_date = finish_date.strftime('%Y-%m-%d %H:%M:%S')
-				if finish_date < start_planned_date: continue
-			if order.assigned_vehicle_id: vehicle_in_use_ids.append(order.assigned_vehicle_id.id)
-			if order.actual_vehicle_id: vehicle_in_use_ids.append(order.actual_vehicle_id.id)
-		vehicle_in_use_ids = list(set(vehicle_in_use_ids))
-	# ambil vehicle pertama yang available untuk jenis mobil yang diminta
-		selected_fleet_line = None
+				if finish_date >= start_planned_date:
+					if order.assigned_vehicle_id: driver_in_use_ids.append(order.assigned_driver_id.id)
+					if order.actual_vehicle_id: driver_in_use_ids.append(order.actual_driver_id.id)
+					continue
+		driver_in_use_ids = list(set(driver_in_use_ids))
+		
+		current_time = datetime.now()
+		nearest_billing_month = current_time.month
+		if current_time.day - current_order.customer_contract_id.billing_cycle < 0:
+			nearest_billing_month -= 1
+		nearest_billing_time = datetime(current_time.year, nearest_billing_month,
+			current_order.customer_contract_id.billing_cycle, 0, 0, 0)
+		
+		q_vehicle_in_use_ids = Q.PriorityQueue()  # ongoing vehicle that can't be used with each total working time as priority
+		
+	# ambil fleet-fleet yang mungkin digunakan
+		possible_fleet_line_ids = []
 		for fleet in current_order.customer_contract_id.car_drivers:
-			if fleet.fleet_vehicle_id.id in vehicle_in_use_ids or fleet.fleet_type_id.id != fleet_type_id: continue
-			selected_fleet_line = fleet
-			break
-		if selected_fleet_line:
-			return selected_fleet_line.fleet_vehicle_id.id, selected_fleet_line.driver_id.id
+			if fleet.driver_id.id in driver_in_use_ids or fleet.fleet_type_id.id != fleet_type_id: continue
+		# jika ada vehicle di contract tsb dengan fleet type yg sama
+		# dan tidak sedang digunakan, maka append ke possible_fleet_line
+			if fleet.id not in possible_fleet_line_ids:
+				possible_fleet_line_ids.append(fleet.id)
+				driver_order_ids = self.search(cr, uid, [
+					'&', ('start_date', '!=', False),
+					'&', ('finish_date', '!=', False),
+					'&', ('start_date', '>=', str(nearest_billing_time)),
+					'&', ('start_date', '<=', str(current_time)),
+					'|', ('assigned_driver_id', '=', fleet.driver_id.id),
+							('actual_driver_id', '=', fleet.driver_id.id),
+				])
+				total_priority_driver = 0
+				for driver_order_id in driver_order_ids:
+					driver_order = self.browse(cr, uid, driver_order_id)
+					total_priority_driver += self._calculate_total_working_time_priority(cr, uid,
+												driver_order.start_date, driver_order.finish_date,
+												driver_order.customer_contract_id.working_time_id.attendance_ids)
+				q_vehicle_in_use_ids.put((total_priority_driver, fleet))
+			
+	# ambil vehicle pertama yang available untuk jenis mobil yang diminta
+		if not q_vehicle_in_use_ids.empty():
+			selected_fleet = q_vehicle_in_use_ids.get()
+			return selected_fleet[1].fleet_vehicle_id.id, selected_fleet[1].driver_id.id
 		else:
 			return None, None
 
+	def _calculate_total_working_time_priority(self, cr, uid, val_start_confirm_date, val_finish_confirm_date, attendance_ids):
+		"""
+		Untuk menghitung berapa bobot waktu kerja supir dalam sebuah kontrak.
+		Perhitungan bobot sama dengan total jam normal + 1.5*total jam lembur.
+		Digunakan untuk order tipe by_order.
+		:param cr:
+		:param uid:
+		:param val_start_confirm_date: value dari start_confirm_date yang ingin dihitung
+		:param val_finish_confirm_date: value dari finish_confirm_date yang ingin dihitung
+		:param attendance_ids: working_time attendance_ids sebuah order data
+		:return: total bobot
+		"""
+		working_normal_time = 0
+		working_overtime = 0
+		if val_start_confirm_date and val_finish_confirm_date:
+		# Get waktu start dan finish
+			start_confirm_date = datetime.strptime(val_start_confirm_date,"%Y-%m-%d %H:%M:%S")
+			start_confirm_weekday = start_confirm_date.weekday()
+			start_confirm_time = start_confirm_date.time()
+			start_confirm_time = start_confirm_time.hour + (start_confirm_time.minute / 60.0)
+			finish_confirm_date = datetime.strptime(val_finish_confirm_date,"%Y-%m-%d %H:%M:%S")
+			finish_confirm_weekday = finish_confirm_date.weekday()
+			finish_confirm_time = finish_confirm_date.time()
+			finish_confirm_time = finish_confirm_time.hour + (finish_confirm_time.minute / 60.0)
+			working_days = (finish_confirm_date.day - start_confirm_date.day) + 1
+			
+		# Get working time supaya tidak usah looping berkali-kali jika start dan finish tidak dalam hari yg sama
+			working_time = {
+				'0': {'hour_from': 0, 'hour_to': 0, },
+				'1': {'hour_from': 0, 'hour_to': 0, },
+				'2': {'hour_from': 0, 'hour_to': 0, },
+				'3': {'hour_from': 0, 'hour_to': 0, },
+				'4': {'hour_from': 0, 'hour_to': 0, },
+				'5': {'hour_from': 0, 'hour_to': 0, },
+				'6': {'hour_from': 0, 'hour_to': 0, },
+			}
+		# jika ada hari yang sama, misal Senin 7-9, 10-14,
+		# maka working_time untuk hari itu dimulai dari 7 sampai 14
+		# jam kosong 9-10 tidak dihitung sebagai jam lembur
+			for working_day in attendance_ids:
+				if working_time[working_day.dayofweek]['hour_from'] == working_time[working_day.dayofweek]['hour_to']:
+					working_time[working_day.dayofweek]['hour_from'] = working_day.hour_from - SERVER_TIMEZONE
+					working_time[working_day.dayofweek]['hour_to'] = working_day.hour_to - SERVER_TIMEZONE
+				else:
+					working_time[working_day.dayofweek]['hour_from'] = min(working_day.hour_from - SERVER_TIMEZONE,
+						working_time[working_day.dayofweek]['hour_from'])
+					working_time[working_day.dayofweek]['hour_to'] = max(working_day.hour_to - SERVER_TIMEZONE,
+						working_time[working_day.dayofweek]['hour_to'])
+				
+		# Hitung lama kerja dan lembur
+			w = 1
+			current_weekday_int = start_confirm_weekday
+			current_weekday = str(current_weekday_int)
+			while w <= working_days:
+				if w == 1: current_start_time = start_confirm_time
+				else: current_start_time = 0
+				if w == working_days: current_end_time = finish_confirm_time
+				else: current_end_time = 24
+				
+				if current_start_time < working_time[current_weekday]['hour_from']:
+					if current_end_time < working_time[current_weekday]['hour_from']:
+						working_overtime += (current_end_time - current_start_time)
+					elif current_end_time > working_time[current_weekday]['hour_to']:
+						working_overtime += (working_time[current_weekday]['hour_from'] - current_start_time)
+						working_normal_time += (working_time[current_weekday]['hour_to'] -
+												working_time[current_weekday]['hour_from'])
+						working_overtime += (current_end_time - working_time[current_weekday]['hour_to'])
+					else:
+						working_overtime += (working_time[current_weekday]['hour_from'] - current_start_time)
+						working_normal_time += (current_end_time - working_time[current_weekday]['hour_from'])
+				elif current_start_time > working_time[current_weekday]['hour_to']:
+					working_overtime += (current_end_time - current_start_time)
+				else:
+					if current_end_time > working_time[current_weekday]['hour_to']:
+						working_normal_time += (working_time[current_weekday]['hour_to'] - current_start_time)
+						working_overtime += (current_end_time - working_time[current_weekday]['hour_to'])
+					else:
+						working_normal_time += (current_end_time - current_start_time)
+				w += 1
+				current_weekday_int = (current_weekday_int+1) % 7
+				current_weekday = str(current_weekday_int)
+		return working_normal_time + (1.5 * working_overtime)
+
 	_central_dispatch_partners = []
-# JUNED: saya sudah membuat method ini untuk mempermudah messaging dispatcher
-# contoh pemanggilan ada di _cek_order_assigning_vehicle. tolong update kode supaya 
-# setiap message ke dispatcher memanggil method ini
+	
 	def _message_dispacther(self, cr, uid, data_id, message):
 		if not self._central_dispatch_partners:
 			user_obj = self.pool.get('res.users')
@@ -843,7 +972,7 @@ class foms_order(osv.osv):
 		order_time = request_date_convert.time()
 		order_time = order_time.hour + (order_time.minute/60.0)
 		for order_hours in contract_data.order_hours:
-			if order_day == int(order_hours.dayofweek) and (order_time >= order_hours.time_from - SERVER_TIMEZONE and order_time <= order_hours.time_to - SERVER_TIMEZONE):
+			if order_day == int(order_hours.dayofweek) and (order_time >= order_hours.time_from + SERVER_TIMEZONE and order_time <= order_hours.time_to + SERVER_TIMEZONE):
 				book_in_hours = True
 				break
 		if not book_in_hours:
@@ -926,9 +1055,14 @@ class foms_order(osv.osv):
 					'&',('start_planned_date', '<=', start_planned_date),
 					('finish_planned_date', '>=', start_planned_date)
 			])
+		if new_id:
+			new_order = self.browse(cr, uid, new_id)
+			new_order_contract_id = new_order.customer_contract_id.id
+		else:
+			new_order_contract_id = None
 		if len(order_ids) > 0:
-			order_data = self.browse(cr, uid, order_ids)
-			raise osv.except_osv(_('Order Error'),_('Assigned vehicle clash with order %s with start planned date %s and finish planned date. %s'
+			for order_data in self.browse(cr, uid, order_ids):
+				raise osv.except_osv(_('Order Error'),_('Assigned vehicle clash with order %s with start planned date %s and finish planned date. %s'
 					% (order_data[0].name, datetime_to_server(order_data[0].start_planned_date), datetime_to_server(order_data[0].finish_planned_date))))
 			
 # ACTION -------------------------------------------------------------------------------------------------------------------
@@ -955,9 +1089,397 @@ class foms_order(osv.osv):
 			},
 			'target': 'new',
 		}
-
+		
 # CRON ---------------------------------------------------------------------------------------------------------------------
+	def cron_driver_attendances(self, cr, uid, context=None):
+		employee_obj = self.pool.get('hr.employee')
+		fleet_obj = self.pool.get('foms.contract.fleet')
+		attendance_obj = self.pool.get('hr.attendance')
+		data_obj = self.pool.get('ir.model.data')
+		# Pool drivers
+		driver_job_id = data_obj.get_object(cr, uid, 'universal', 'hr_job_driver').id
+		driver_ids = employee_obj.search(cr, uid, [('job_id', '=', driver_job_id)])
+		drivers = employee_obj.browse(cr, uid, driver_ids)
+		yesterday = datetime.now() - timedelta(hours=24)
+		for driver in drivers:
+			first_order, last_order = self._get_days_first_last_order(cr, uid, driver.id, yesterday)
+		# Dapatkan pasangan clock in dan clock kemarin
+			first_clock_in, last_clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, driver.id, yesterday)
+		# Jika tidak ada order pertama di hari itu, maka cek apakah driver itu sedang menjalani order lintas hari, jika tidak maka dia tidak absen
+			if len(first_order) == 0:
+				order_pass_day = self._get_running_multiday_orders(cr, uid, driver.id, yesterday)
+				if len(order_pass_day) > 0:
+					working_time = self._get_contract_working_time(order_pass_day.customer_contract_id, yesterday)
+				#dapetin working time
+					date_clock_in, date_clock_out = self._determine_clock_datetimes(cr, uid, None, None, yesterday,
+						working_time.working_time_type, True, working_time.hour_from, working_time.hour_to, working_time.max_hour)
+					if len(first_clock_in) == 0 and date_clock_in is not None:
+						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_in', date_clock_in, last_order.id)
+					if len(last_clock_out) == 0 and date_clock_out is not None:
+						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_out, last_order.id)
+			else:
+				working_time = self._get_contract_working_time(first_order.customer_contract_id, yesterday)
+			# Kalau libur, return
+				if working_time is None:
+					return
+			#dapetin working time
+				date_clock_in, date_clock_out = self._determine_clock_datetimes(cr, uid, first_order, last_order, yesterday, 
+						working_time.working_time_type, False, working_time.hour_from, working_time.hour_to, working_time.max_hour)
+				if date_clock_in is not None:
+					if len(first_clock_in) == 0:
+						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_in', date_clock_in, last_order.id)
+					else:
+						self._write_attendance(cr, uid, first_clock_in.id, date_clock_in, last_order.customer_contract_id.id, last_order.id)
+				if date_clock_out is not None:
+					if len(last_clock_out) == 0:
+						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out', date_clock_out, last_order.id)
+					else:
+						self._write_attendance(cr, uid, last_clock_out.id, date_clock_out, last_order.customer_contract_id.id, last_order.id)
 
+	def action_finish(self, cr, uid, ids, context=None):
+		order = self.browse(cr, uid, ids[0])
+		return self.write(cr, uid, ids, {
+			'state': 'finish_confirmed',
+			'finish_date': order.finish_planned_date,
+			'finish_confirm_date': order.finish_planned_date,
+			'finish_confirm_by': uid,
+			'finish_from': 'central',
+		})
+	
+	# def cron_compute_driver_attendances(self, cr, uid, context=None):
+	# 	employee_obj = self.pool.get('hr.employee')
+	# 	fleet_obj = self.pool.get('foms.contract.fleet')
+	# 	attendance_obj = self.pool.get('hr.attendance')
+	# 	data_obj = self.pool.get('ir.model.data')
+	# 	# Pool drivers
+	# 	driver_job_id = data_obj.get_object(cr, uid, 'universal', 'hr_job_driver').id
+	# 	driver_ids = employee_obj.search(cr, uid, [('job_id', '=', driver_job_id)])
+	# 	drivers = employee_obj.browse(cr, uid, driver_ids)
+	# 	today = datetime.now()
+	# 	for driver in drivers:
+	# 		first_order, first_finished_order, last_order = self._get_first_and_last_order_times_today(cr, uid, driver.id,
+	# 			today)
+	# 		if len(first_order) == 0 and len(last_order) == 0:
+	# 			continue
+	# 		start_working_time, end_working_time = self._get_driver_order_workingtime(first_order, last_order, today)
+	# 		first_order_clock_in, first_order_clock_out_in = self._determine_clock_datetime(cr, uid, start_working_time,
+	# 			end_working_time, first_order, today)
+	# 		first_finished_order_clock_in, first_finished_order_clock_out = self._determine_clock_datetime(cr, uid,
+	# 			start_working_time, end_working_time, first_finished_order, today)
+	# 		last_order_clock_in, last_order_clock_out = self._determine_clock_datetime(cr, uid, start_working_time,
+	# 			end_working_time, last_order, today)
+	#
+	# 		first_clock_in = first_order_clock_in
+	# 		first_clock_out = first_finished_order_clock_out
+	# 		last_clock_out = last_order_clock_out
+	#
+	# 		today_clock_in_id = attendance_obj.search(cr, uid, [
+	# 			('name', '>=', today.strftime('%Y-%m-%d 00:00:00')),
+	# 			('name', '<=', today.strftime('%Y-%m-%d 23:59:59')),
+	# 			('action', '=', 'sign_in'),
+	# 		])
+	# 		today_clock_out_id = attendance_obj.search(cr, uid, [
+	# 			('name', '>=', today.strftime('%Y-%m-%d 00:00:00')),
+	# 			('name', '<=', today.strftime('%Y-%m-%d 23:59:59')),
+	# 			('action', '=', 'sign_out'),
+	# 		])
+	#
+	# 	# Jika ada first_clock_in
+	# 		if first_clock_in:
+	# 		# Jika sudah ada db_clock_in
+	# 			if today_clock_in_id: # update db_clock_in
+	# 				self._write_attendance(cr, uid, today_clock_in_id, first_clock_in, first_order.customer_contract_id.id, first_order.id)
+	# 		# else belum ada db_clock_in
+	# 			else: # create db_clock_in
+	# 				self._create_attendance(cr, uid, driver.id, first_order.customer_contract_id.id, 'sign_in',
+	# 					first_clock_in, first_order.id)
+	# 		# Jika ada first_clock_out
+	# 			if first_clock_out:
+	# 			# Jika first_clock_out <= first_clock_in
+	# 				if first_clock_out <= first_clock_in:
+	# 				# ambil start_planned nya si clock_out
+	# 					previous_start_planned_date = datetime.strptime(first_finished_order.start_planned_date, '%Y-%m-%d %H:%M:%S')
+	# 					previous_clock_out_id = attendance_obj.search(cr, uid, [
+	# 						('name', '>=', previous_start_planned_date.date().strftime('%Y-%m-%d 00:00:00')),
+	# 						('name', '<=', previous_start_planned_date.date().strftime('%Y-%m-%d 23:59:59')),
+	# 						('action', '=', 'sign_out'),
+	# 					])
+	# 				# Jika yg sblmnya sudah ada db_clock_out
+	# 					if len(previous_clock_out_id) > 0: # update db_clock_out si hari sebelum2nya
+	# 						self._write_attendance(cr, uid, previous_clock_out_id, first_clock_out, first_finished_order.customer_contract_id.id, first_finished_order.id)
+	# 				# else yg sblmnya belum ada db_clock_out
+	# 					else: # create db_clock_out si hari sebelum2nya
+	# 						self._create_attendance(cr, uid, driver.id, first_finished_order.customer_contract_id.id,
+	# 							'sign_out', first_clock_out, first_finished_order.id)
+	#
+	# 				# Jika first_clock_out != last_clock_out
+	# 					if first_clock_out != last_clock_out:
+	# 					# Jika db_clock_out sudah ada
+	# 						if today_clock_out_id: # update db_clock_out dgn last_clock_out
+	# 							self._write_attendance(cr, uid, today_clock_out_id, last_clock_out, last_order.customer_contract_id.id, last_order.id)
+	# 					# else db_clock_out belum ada
+	# 						else: # create db_clock_out dgn last_clock_out
+	# 							self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id,
+	# 								'sign_out', last_clock_out, last_order.id)
+	# 			# else first_clock_out dan last_clock_out pasti lebih besar dari first_clock_in
+	# 				else:
+	# 				# Jika db_clock_out sudah ada
+	# 					if today_clock_out_id: # update db_clock_out dgn last_clock_out
+	# 						self._write_attendance(cr, uid, today_clock_out_id, last_clock_out, last_order.customer_contract_id.id, last_order.id)
+	# 				# else db_clock_out belum ada
+	# 					else: # create db_clock_out dgn last_clock_out
+	# 						self._create_attendance(cr, uid, driver.id, last_order.customer_contract_id.id, 'sign_out',
+	# 							last_clock_out, last_order.id)
+	# 		# else tidak ada first_clock_out, ga usah ngapa2in
+	# 	# else tidak ada first_clock_in
+	# 		else:
+	# 		# Jika ada first_clock_out
+	# 			if first_clock_out:
+	# 			# ambil start_planned nya si clock_out
+	# 				previous_start_planned_date = datetime.strptime(first_finished_order.start_planned_date, '%Y-%m-%d %H:%M:%S')
+	# 				previous_clock_out_id = attendance_obj.search(cr, uid, [
+	# 					('name', '>=', previous_start_planned_date.date().strftime('%Y-%m-%d 00:00:00')),
+	# 					('name', '<=', previous_start_planned_date.date().strftime('%Y-%m-%d 23:59:59')),
+	# 					('action', '=', 'sign_out'),
+	# 				])
+	# 			# Jika yg sblmnya sudah ada db_clock_out
+	# 				if len(previous_clock_out_id) > 0: # update db_clock_out si hari sebelum2nya
+	# 					self._write_attendance(cr, uid, previous_clock_out_id, first_clock_out, first_finished_order.customer_contract_id.id, first_finished_order.id)
+	# 			# else yg sblmnya belum ada db_clock_out
+	# 				else: # create db_clock_out si hari sebelum2nya
+	# 					self._create_attendance(cr, uid, driver.id, first_finished_order.customer_contract_id.id,
+	# 						'sign_out', first_clock_out, first_finished_order.id)
+	# 		# else tidak ada first_clock_out, ga usah ngapa2in
+	# 		pass
+	# 	pass
+	
+	def _create_attendance(self, cr, uid, driver_id, customer_contract_id, clock_type, clock_datetime, order_id):
+		attendance_obj = self.pool.get('hr.attendance')
+		attendance_obj.create(cr, uid, {
+			'employee_id': driver_id,
+			'contract_id': customer_contract_id,
+			'action': clock_type,
+			'name': clock_datetime,
+			'order_id': order_id,
+		})
+		
+	def _write_attendance(self, cr, uid, id, clock_datetime, customer_contract_id, order_id):
+		attendance_obj = self.pool.get('hr.attendance')
+		attendance_obj.write(cr, uid, id, {
+			'name': clock_datetime,
+			'contract_id': customer_contract_id,
+			'order_id': order_id,
+		})
+		
+	def _get_clock_in_clock_out_driver_at_date(self, cr, uid, driver_id, calculated_date):
+		attendance_obj = self.pool.get('hr.attendance')
+		calculated_date = calculated_date.replace(hour=0, minute=0, second=0, microsecond=0)
+		calculated_date_from = calculated_date - timedelta(hours=SERVER_TIMEZONE)
+		calculated_date_to = calculated_date_from + timedelta(hours=24)
+	# Get date's attendance clock in
+		clock_in_ids = attendance_obj.search(cr, uid, [
+			('employee_id', '=', driver_id),
+			('name', '>=', calculated_date_from.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('name', '<=', calculated_date_to.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('action', '=', 'sign_in'),
+		], limit=1, order="name asc")
+		clock_in = attendance_obj.browse(cr, uid, clock_in_ids)
+	# Get today's last order
+		clock_out_ids = attendance_obj.search(cr, uid, [
+			('employee_id', '=', driver_id),
+			('name', '>=', calculated_date_from.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('name', '<=', calculated_date_to.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('action', '=', 'sign_out'),
+		], limit=1, order="name desc")
+		clock_out = attendance_obj.browse(cr, uid, clock_out_ids)
+		return clock_in, clock_out
+
+	def _get_contract_working_time(self, contract, calculated_date):
+		"""
+		Returns the given contract workingtime
+		:param contract: recordset of contract (foms.contract)
+		:param calculated_date: calculated_date: datetime of the date of intended working time
+		:return: recordset of working time (resource.calendar.attendance)
+		"""
+		result = None
+		working_times = contract.working_time_id.attendance_ids
+		for working_time in working_times:
+			if str(calculated_date.weekday()) == working_time.dayofweek:
+				result = working_time
+		return result
+		
+	def _get_running_multiday_orders(self, cr, uid, driver_id, calculated_datetime):
+		# dapetin order lintas hari
+		calculated_datetime = calculated_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
+		calculated_datetime = calculated_datetime - timedelta(hours=SERVER_TIMEZONE)
+		calculated_datetime_tomorrow = calculated_datetime + timedelta(hours=24)
+		order_running_ids = self.search(cr, uid, [
+			('actual_driver_id', '=', driver_id),
+			('start_planned_date', '<=', calculated_datetime.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('finish_planned_date', '>=', calculated_datetime_tomorrow.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('state', 'in', ['started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finish_confirmed'])
+		], limit=1, order="start_planned_date desc")
+		order_running = self.browse(cr, uid, order_running_ids)
+		return order_running
+	
+	# def _get_first_and_last_order_today(self, cr, uid, driver_id, today):
+	# 	# Get today's first order
+	# 	first_order_ids = self.search(cr, uid, [
+	# 		('actual_driver_id', '=', driver_id),
+	# 		('start_planned_date', '>=', today.strftime('%Y-%m-%d 00:00:00')),
+	# 		('start_planned_date', '<=', today.strftime('%Y-%m-%d 23:59:59')),
+	# 	], limit=1, order="start_planned_date asc")
+	# 	first_order = self.browse(cr, uid, first_order_ids)
+	# 	# Get today's last order
+	# 	last_order_ids = self.search(cr, uid, [
+	# 		('actual_driver_id', '=', driver_id),
+	# 		('finish_confirm_date', '>=', today.strftime('%Y-%m-%d 00:00:00')),
+	# 		('finish_confirm_date', '<=', today.strftime('%Y-%m-%d 23:59:59')),
+	# 	], limit=1, order="finish_confirm_date desc")
+	# 	last_order = self.browse(cr, uid, last_order_ids)
+	# 	return first_order, last_order
+	
+	def _determine_clock_datetimes(self, cr, uid, first_order, last_finished_order, calculated_date, working_type,
+			is_multi_day=False, start_working_time=None, end_working_time=None, working_time_duration=None):
+		"""
+		Determines clock-in and clock-out datetime from the given orders and working time.
+		:param first_order: recordset of first order of the day
+		:param last_finished_order: recordset of last finish confirmed order of the day, may be None
+		:param calculated_date: datetime of the date of intended clock in and clock out
+		:param working_type: string of working type, max_hour or duration
+		:param is_multi_day: boolean. If True, first_order and last_finished_order will be ignored. clock_in, clock_out will
+			be calculated from working time
+		:param start_working_time: floattime of start working time, ignored if working type is duration
+		:param end_working_time: floattime of end working time, ignored if working type is duration
+		:param working_time_duration: floattime of working time duration, ignored if working type is max_hour
+		:return: tuple of two datetime objects; (clock_in and clock_out)
+		"""
+		clock_in = None
+		clock_out = None
+		calculated_date = calculated_date - timedelta(hours=SERVER_TIMEZONE)
+	# If there are no working time, then there are no clockin and clockout time
+		if (working_type == 'duration' and (start_working_time is None or end_working_time is None)) \
+				or (working_type == 'max_hour' and working_time_duration is None):
+			return clock_in, clock_out
+		
+	# Pool start_planned_date
+		if first_order is not None:
+			if first_order.start_planned_date:
+				start_planned_date = datetime.strptime(first_order.start_planned_date, DEFAULT_SERVER_DATETIME_FORMAT)
+			else:
+				raise Exception('No start planned date found on order')
+		else:
+			start_planned_date = None
+		
+	# Pool finish_planned_date
+		if last_finished_order is not None:
+			if last_finished_order.finish_confirm_date:
+				finish_confirm_date = datetime.strptime(last_finished_order.finish_confirm_date,
+					DEFAULT_SERVER_DATETIME_FORMAT)
+			else:
+				raise Exception('No finish planned date found on order')
+		else:
+			finish_confirm_date = None
+			
+	# Pool start_working_date and end_working_date
+		if working_type == 'duration':
+			if not is_multi_day:
+				start_working_date = start_planned_date + timedelta(hours=SERVER_TIMEZONE)
+				start_working_date = start_working_date.replace(hour=0, minute=0, second=0, microsecond=0)
+				start_working_date += timedelta(seconds=(start_working_time - SERVER_TIMEZONE) * 60 * 60)
+				# start_working_date = start_working_date - timedelta(hours=SERVER_TIMEZONE)
+				
+				end_working_date = calculated_date + timedelta(hours=SERVER_TIMEZONE)
+				end_working_date = end_working_date.replace(hour=0, minute=0, second=0, microsecond=0)
+				end_working_date += timedelta(seconds=(end_working_time - SERVER_TIMEZONE) * 60 * 60)
+				# end_working_date = end_working_date - timedelta(hours=SERVER_TIMEZONE)
+			else:
+				start_working_date = calculated_date + timedelta(hours=SERVER_TIMEZONE)
+				start_working_date = start_working_date.replace(hour=0, minute=0, second=0, microsecond=0)
+				start_working_date += timedelta(seconds=(start_working_time - SERVER_TIMEZONE) * 60 * 60)
+				# start_working_date = start_working_date - timedelta(hours=SERVER_TIMEZONE)
+				
+				end_working_date = calculated_date + timedelta(hours=SERVER_TIMEZONE)
+				end_working_date = end_working_date.replace(hour=0, minute=0, second=0, microsecond=0)
+				end_working_date += timedelta(seconds=(end_working_time - SERVER_TIMEZONE) * 60 * 60)
+				# end_working_date = end_working_date - timedelta(hours=SERVER_TIMEZONE)
+		elif working_type == 'max_hour':
+			if not is_multi_day:
+				start_working_date = start_planned_date
+			else:
+				# Force set start working date time to 0800
+				start_working_date = calculated_date + timedelta(hours=SERVER_TIMEZONE)
+				start_working_date = start_working_date.replace(hour=8 + SERVER_TIMEZONE, minute=0, second=0, microsecond=0)
+				# start_working_date = start_working_date - timedelta(hours=SERVER_TIMEZONE)
+			end_working_date = start_working_date + timedelta(seconds=(working_time_duration) * 60 * 60)
+		else:
+			raise Exception('Invalid working type')
+			
+	# Calculate clock_in and clock_out
+		if not is_multi_day:
+			clock_in = start_working_date if start_planned_date > start_working_date else start_planned_date
+			clock_out = end_working_date if finish_confirm_date < end_working_date else finish_confirm_date
+		else:
+			clock_in = start_working_date
+			clock_out = end_working_date
+		return clock_in, clock_out
+	
+	def _determine_clock_datetime(self, cr, uid, start_working_time, end_working_time, order, order_day):
+	# Kalau start atau end workingtimenya None, pake start_planned_date atau finish_confirm_date
+		if start_working_time is None:
+			clock_in = order.start_planned_date
+		else:
+			start_working_date = order_day.replace(hour=0, minute=0, second=0, microsecond=0)
+			start_working_date += timedelta(seconds=(start_working_time - SERVER_TIMEZONE) * 60 * 60)
+			if order.start_planned_date and datetime.strptime(order.start_planned_date, '%Y-%m-%d %H:%M:%S') > start_working_date:
+				clock_in = start_working_date
+			else:
+				clock_in = datetime.strptime(order.start_planned_date, '%Y-%m-%d %H:%M:%S')
+		if end_working_time is None:
+			clock_out = order.finish_confirm_date
+		else:
+			end_working_date = order_day.replace(hour=0, minute=0, second=0, microsecond=0)
+			end_working_date += timedelta(seconds=(end_working_time - SERVER_TIMEZONE) * 60 * 60)
+			if order.finish_confirm_date and datetime.strptime(order.finish_confirm_date, '%Y-%m-%d %H:%M:%S') < end_working_date:
+				clock_out = end_working_date
+			else:
+				clock_out = datetime.strptime(order.finish_confirm_date, '%Y-%m-%d %H:%M:%S')
+		return clock_in, clock_out
+		
+	def _get_days_first_last_order(self, cr, uid, driver_id, calculated_date):
+		calculated_date = calculated_date.replace(hour=0, minute=0, second=0, microsecond=0)
+		calculated_date_from = calculated_date - timedelta(hours=SERVER_TIMEZONE)
+		calculated_date_to = calculated_date_from + timedelta(hours=24)
+		calculated_date_tommorow_to = calculated_date_to + timedelta(hours=23, minutes=59, seconds=59)
+		# Get date's first order
+		calculated_date = calculated_date - timedelta(hours=SERVER_TIMEZONE)
+		first_order_ids = self.search(cr, uid, [
+			('actual_driver_id', '=', driver_id),
+			('start_planned_date', '>=', calculated_date_from.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('start_planned_date', '<=', calculated_date_to.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('state', 'in', ['started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finish_confirmed'])
+		], limit=1, order="start_planned_date asc")
+		first_order = self.browse(cr, uid, first_order_ids)
+		# Get date's last order
+		last_order_ids = self.search(cr, uid, [
+			('actual_driver_id', '=', driver_id),
+			('finish_confirm_date', '>=', calculated_date_from.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('finish_confirm_date', '<=', calculated_date_tommorow_to.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('start_planned_date', '>=', calculated_date_from.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('start_planned_date', '<=', calculated_date_to.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+			('state', '=', 'finish_confirmed')
+		], limit=1, order="finish_confirm_date desc")
+		last_order = self.browse(cr, uid, last_order_ids)
+			# Get date's first finished order
+			# first_finished_order_ids = self.search(cr, uid, [
+				# ('actual_driver_id', '=', driver_id),
+				# ('finish_confirm_date', '>=', date.strftime('%Y-%m-%d 00:00:00')),
+				# ('finish_confirm_date', '<=', date.strftime('%Y-%m-%d 23:59:59')),
+				# ('state', 'in', ['ready', 'started', 'start_confirmed', 'paused', 'resumed', 'finished', 'finish_confirmed'])
+			# ], limit=1, order="finish_confirm_date desc")
+			# first_finished_order = self.browse(cr, uid, first_finished_order_ids)
+		return first_order, last_order
+	
 	def _get_contract_workdays(self, contract_data):
 	# return dict of workday dengan key=workday (0,1,2,3,4 - senin selasa rabu, dst) dan value {start, finish}
 		if not contract_data.working_time_id: return {}
@@ -990,8 +1512,7 @@ class foms_order(osv.osv):
 		return work_date
 	
 # ini akan menjadi legacy Anton di kode Universal: nama method paling panjang!
-# :D :D :D
-# JUNED: jangan dihapus, this is so hilarious!
+# :D :D :D jangan dihapus, this is so hilarious!
 	def cron_cek_order_still_running_at_1_hour_before_other_order_start(self, cr, uid, context=None):
 	# cron untuk cek apakah ada order yg sudah diplot ke mobil x tapi 1 jam sblm nya order sebelumnya ternyata belom selesai
 		now = datetime.now()
@@ -1232,13 +1753,13 @@ class foms_order(osv.osv):
 		for fleet in contract_data.car_drivers:
 			fleet_ids.append(fleet.fleet_vehicle_id.id)
 			driver_ids.append(fleet.driver_id.id)
-		print fleet_ids
-		print driver_ids
-	# sudah!
+	# bila fullday maka harus dipilih Order by (yaitu penumpang fullday), jangan default=uid
+		value = {}
+		value['service_type'] = contract_data.service_type
+		if contract_data.service_type == 'full_day':
+			value['order_by'] = ''
 		return {
-			'value': {
-				'service_type': contract_data.service_type,
-			},
+			'value': value,
 			'domain': {
 				'fleet_type_id': [('id','in',fleet_type_ids)],
 				'origin_area_id': [('id','in',area_ids)],
@@ -1367,8 +1888,8 @@ class foms_order(osv.osv):
 				print user_id
 				print webservice_context
 				sync_obj.post_outgoing(cr, user_id, 'foms.order', command, order_data.id, data_columns=data_columns, data_context=webservice_context)
-
-# ==========================================================================================================================
+				
+	# ==========================================================================================================================
 
 class foms_order_area(osv.osv):
 
@@ -1515,7 +2036,7 @@ class foms_order_cancel_memory(osv.osv_memory):
 			cancel_reason = context.get('cancel_reason')
 			cancel_reason_other = context.get('cancel_reason_other')
 			cancel_by = context.get('cancel_by')
-		#kalau dari mobile app dan cancel reason nya kosong, maka itu berarti order dicancel karena delay exceeded
+		# kalau dari mobile app dan cancel reason nya kosong, maka itu berarti order dicancel karena delay exceeded
 			if not cancel_reason and not cancel_reason_other:
 				model_obj = self.pool.get('ir.model.data')
 				model, reason_id = model_obj.get_object_reference(cr, uid, 'universal', 'foms_cancel_reason_delay_exceeded')
@@ -1570,10 +2091,24 @@ class foms_order_replace_vehicle(osv.osv):
 				if replace_vehicle.replaced_vehicle_id.model_id.id != replace_vehicle.replacement_vehicle_id.model_id.id:
 					return False
 		return True
+	
+	def _constraint_replacement_vehicle_use_in_other_contract(self, cr, uid, ids, context=None):
+		# Cek apakah vehiclenya yang mereplace ada di contract lain
+		contract_fleet_obj = self.pool.get('foms.contract.fleet')
+		for replace_vehicles in self.browse(cr, uid, ids, context):
+			for replace_vehicle in replace_vehicles:
+				args = [
+					('header_id.state', 'in', ['active']),
+					('fleet_vehicle_id','=',replace_vehicle.replacement_vehicle_id.id),
+				]
+				contract_fleet_ids = contract_fleet_obj.search(cr, uid, args)
+				if len(contract_fleet_ids)>0:
+					return False
+		return True
 
-# JUNED: tambahkan constraint di mana replacement vehicle tidak boleh sedang dipakai di kontrak aktif lainnya
 	_constraints = [
 		(_constraint_vehicle_same_type, _('Vehicles must be in the same type.'), ['replaced_vehicle_id', 'replacement_vehicle_id']),
+		(_constraint_replacement_vehicle_use_in_other_contract, _('This car is being used in other contracts.'), ['replaced_vehicle_id', 'replacement_vehicle_id']),
 	]
 	
 # OVERRIDES ---------------------------------------------------------------------------------------------------------------
@@ -1632,8 +2167,24 @@ class foms_order_replace_driver(osv.osv):
 		'replacement_date': fields.datetime('Effective Since', required=True),
 		'replacement_reason': fields.text('Replacement Reason'),
 	}
+	
+	def _constraint_replacement_driver_use_in_other_contract(self, cr, uid, ids, context=None):
+		# Cek apakah driver yang mereplace ada di contract lain
+		contract_fleet_obj = self.pool.get('foms.contract.fleet')
+		for replace_drivers in self.browse(cr, uid, ids, context):
+			for replace_driver in replace_drivers:
+				args = [
+					('header_id.state', 'in', ['active']),
+					('driver_id','=',replace_driver.replacement_driver_id.id),
+				]
+				contract_fleet_ids = contract_fleet_obj.search(cr, uid, args)
+				if len(contract_fleet_ids)>0:
+					return False
+		return True
 
-# JUNED: tambahkan constraint di mana driver tidak boleh sedang bertugas di kontrak aktif lainnya
+	_constraints = [
+		(_constraint_replacement_driver_use_in_other_contract, _('Driver is being used in other contracts.'), ['replaced_driver_id', 'replacement_driver_id']),
+	]
 
 # OVERRIDES ---------------------------------------------------------------------------------------------------------------
 	
@@ -1652,7 +2203,7 @@ class foms_order_replace_driver(osv.osv):
 			args = [ 
 				('state', 'in', ['new', 'confirmed', 'ready']),
 				('start_planned_date', '>=', replace_driver.replacement_date),
-				('assigned_driver_id','=',replace_vehicle.replaced_driver_id.id),
+				('assigned_driver_id','=',replace_driver.replaced_driver_id.id),
 			]
 			order_ids = order_obj.search(cr, uid, args)
 			order_obj.write(cr, uid, order_ids, {
@@ -1667,7 +2218,7 @@ class foms_order_replace_driver(osv.osv):
 				('header_id.state', 'not in', ['terimnated', 'finished']),
 				('header_id.start_date', '<=', replace_driver.replacement_date),
 				('header_id.end_date', '>=', replace_driver.replacement_date),
-				('driver_id','=',replace_vehicle.replaced_driver_id.id),
+				('driver_id','=',replace_driver.replaced_driver_id.id),
 			]
 			contract_fleet_ids = contract_fleet_obj.search(cr, uid, args)
 			contract_fleet_obj.write(cr, uid, contract_fleet_ids, {

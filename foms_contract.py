@@ -88,6 +88,7 @@ class foms_contract(osv.osv):
 		'fee_holiday_allowance': fields.float('Holiday Allowance'),
 		'fee_management': fields.float('Management Fee (%)'),
 		'fee_order_based': fields.one2many('foms.contract.order.based.fee', 'header_id', 'Order-Based Fees'),
+		'billing_cycle': fields.integer('Billing Cycle', required=True),
 	# USAGE CONTROL
 		'usage_control_level': fields.selection([
 			('no_control','No Control'),
@@ -126,12 +127,20 @@ class foms_contract(osv.osv):
 		'is_expense_record': False,
 		'global_yellow_limit': 0,
 		'global_red_limit': 0,
+		'billing_cycle': 1,
 	}	
 	
 # CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
 	
+	def _const_billing_cycle(self, cr, uid, ids, context=None):
+		for data in self.browse(cr, uid, ids, context):
+			if data.billing_cycle < 1 or data.billing_cycle > 28:
+				return False
+		return True
+	
 	_constraints = [
 		#(_const_start_end_date, _('Start date must'), ['shipper_id']),
+		(_const_billing_cycle, _('Billing cycle number should be between 1 and 28 (inclusive).'), ['billing_cycle']),
 	]
 	
 	_sql_constraints = [
@@ -157,7 +166,7 @@ class foms_contract(osv.osv):
 		('const_lk_inap', 'CHECK(fee_lk_inap >= 0)', _('Fee Luar Kota Menginap must be greater than or equal to zero.')),
 		('const_holiday_allowance', 'CHECK(fee_holiday_allowance >= 0)', _('Fee holiday allowance must be greater than or equal to zero.')),
 		('const_holiday_allowance', 'CHECK(fee_holiday_allowance >= 0)', _('Fee holiday allowance must be greater than or equal to zero.')),
-	]		
+	]
 
 # METHODS ------------------------------------------------------------------------------------------------------------------
 
@@ -531,6 +540,8 @@ class foms_contract(osv.osv):
 		contract = self.browse(cr, uid, contract_id, context=context)
 		if contract.service_type != 'shuttle':
 			raise osv.except_osv(_('Contract Error'),_('Shuttle schedules are for Shuttle contracts only. Please make sure service type of this contract is Shuttle.'))
+		if len(contract.car_drivers) == 0:
+			raise osv.except_osv(_('Contract Error'),_('Dont have any vehicle, please fill fleet planning vehicle first.'))
 	# ambil settingan shuttle schedule
 		shuttle_schedules = []
 		for schedule in contract.shuttle_schedules:
@@ -556,6 +567,7 @@ class foms_contract(osv.osv):
 				'default_start_date': contract.start_date,
 				'default_end_date': contract.end_date,
 				'default_schedule_line': shuttle_schedules,
+				'contract_id': contract.id,
 			},
 			'target': 'new',
 		}
@@ -729,7 +741,7 @@ class foms_contract_fleet(osv.osv):
 	_sql_constraints = [
 		('unique_fleet_type', 'UNIQUE(header_id,fleet_vehicle_id)', _('You cannot assign the same vehicle more than once under one contract.')),
 		('unique_driver_id', 'UNIQUE(header_id,driver_id)', _('You cannot assign the same driver more than once under one contract.')),
-		('unique_fullday_user_id', 'UNIQUE(header_id,fullday_user_id)', _('You cannot assign the same full daya user more than once under one contract.')),
+		('unique_fullday_user_id', 'UNIQUE(header_id,fullday_user_id)', _('You cannot assign the same full day user more than once under one contract.')),
 	]	
 	
 # ==========================================================================================================================
@@ -812,6 +824,23 @@ class foms_contract_shuttle_schedule_memory(osv.osv):
 		'schedule_line': fields.one2many('foms.contract.shuttle.schedule.line.memory', 'header_id', 'Schedule Lines'),
 	}
 	
+	def fields_view_get(self, cr, uid, view_id=None, view_type='form', context=None, toolbar=False, submenu=False):
+		result = super(foms_contract_shuttle_schedule_memory, self).fields_view_get(cr, uid, view_id, view_type,
+			context, toolbar, submenu)
+		if view_type == 'form':
+			contract_id = context.get('contract_id', False)
+			if not contract_id:
+				return result
+			contract_obj = self.pool.get('foms.contract')
+			contract = contract_obj.browse(cr, uid, contract_id, context)
+			fleet_vehicle_ids = []
+			for car_driver in contract.car_drivers:
+				fleet_vehicle_ids.append(car_driver.fleet_vehicle_id.id)
+			vehicle_id_domain = "[('id', 'in', [%s])]" % ', '.join(map(str, fleet_vehicle_ids))
+			result['fields']['schedule_line']['views']['tree']['arch'] = \
+				result['fields']['schedule_line']['views']['tree']['arch'].replace('#fleet_vehicle_id_domain#', vehicle_id_domain)
+		return result
+	
 	def action_save_schedule(self, cr, uid, ids, context=None):
 		form_data = self.browse(cr, uid, ids[0])
 		contract_id = form_data.contract_id.id
@@ -873,9 +902,9 @@ class foms_contract_shuttle_schedule_line_memory(osv.osv):
 			('6','Sunday'),], 'Day of Week', required=True),
 		'sequence': fields.integer('Sequence', required=True),
 		'route_id': fields.many2one('res.partner.route', 'Route', ondelete='restrict', required=True),
-		'fleet_vehicle_id': fields.many2one('fleet.vehicle', 'Fleet Vehicle', ondelete='restrict', required=True),
+		'fleet_vehicle_id': fields.many2one('fleet.vehicle', 'Fleet Vehicle', ondelete='restrict', required=True,),
 		'departure_time': fields.float('Departure Time', required=True),	
-		#'arrival_time': fields.float('Arrival Time', required=True),	
+		#'arrival_time': fields.float('Arrival Time', required=True),
 	}
 	
 # ==========================================================================================================================

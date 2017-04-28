@@ -312,20 +312,21 @@ class foms_order(osv.osv):
 		
 	# cek apakah bentrok waktu sama order lain
 		if vals.get('assigned_vehicle_id', False) or vals.get('start_planned_date', False):
-		# ambil nilai lama dahulu apabila ternyata hanya terjadi 1 perubahan
-			assigned_vehicle = orders.assigned_vehicle_id.id
-			start_planned_date = orders.start_planned_date
-			finish_planned_date = orders.finish_planned_date
-		# apabila ada perubahan, gunakan nilai yang baru
-			if vals.get('assigned_vehicle_id', False):
-				assigned_vehicle = vals.get('assigned_vehicle_id', False)
-			if vals.get('start_planned_date', False):
-				start_planned_date = vals.get('start_planned_date', False)
-			if vals.get('finish_planned_date', False):
-				finish_planned_date = vals.get('finish_planned_date', False)
-		# cek ada yang beririsan ga
-			if assigned_vehicle and (not source or source == 'form'):
-				self._cek_vehicle_clash(cr, uid, assigned_vehicle, start_planned_date, finish_planned_date, ids[0], context)
+			for order in orders:
+			# ambil nilai lama dahulu apabila ternyata hanya terjadi 1 perubahan
+				assigned_vehicle = order.assigned_vehicle_id.id
+				start_planned_date = order.start_planned_date
+				finish_planned_date = order.finish_planned_date
+			# apabila ada perubahan, gunakan nilai yang baru
+				if vals.get('assigned_vehicle_id', False):
+					assigned_vehicle = vals.get('assigned_vehicle_id', False)
+				if vals.get('start_planned_date', False):
+					start_planned_date = vals.get('start_planned_date', False)
+				if vals.get('finish_planned_date', False):
+					finish_planned_date = vals.get('finish_planned_date', False)
+			# cek ada yang beririsan ga
+				if assigned_vehicle and (not source or source == 'form'):
+					self._cek_vehicle_clash(cr, uid, assigned_vehicle, start_planned_date, finish_planned_date, ids[0], context)
 		
 	# kalau order diconfirm dari mobile app, cek dulu apakah sudah diconfirm sebelumnya
 	# ini untuk mengantisipasi kalau satu alloc unit ada beberapa approver dan pada balapan meng-approve
@@ -925,9 +926,14 @@ class foms_order(osv.osv):
 					'&',('start_planned_date', '<=', start_planned_date),
 					('finish_planned_date', '>=', start_planned_date)
 			])
+		if new_id:
+			new_order = self.browse(cr, uid, new_id)
+			new_order_contract_id = new_order.customer_contract_id.id
+		else:
+			new_order_contract_id = None
 		if len(order_ids) > 0:
-			order_data = self.browse(cr, uid, order_ids)
-			raise osv.except_osv(_('Order Error'),_('Assigned vehicle clash with order %s with start planned date %s and finish planned date. %s'
+			for order_data in self.browse(cr, uid, order_ids):
+				raise osv.except_osv(_('Order Error'),_('Assigned vehicle clash with order %s with start planned date %s and finish planned date. %s'
 					% (order_data[0].name, datetime_to_server(order_data[0].start_planned_date), datetime_to_server(order_data[0].finish_planned_date))))
 			
 # ACTION -------------------------------------------------------------------------------------------------------------------
@@ -1514,7 +1520,7 @@ class foms_order_cancel_memory(osv.osv_memory):
 			cancel_reason = context.get('cancel_reason')
 			cancel_reason_other = context.get('cancel_reason_other')
 			cancel_by = context.get('cancel_by')
-		#kalau dari mobile app dan cancel reason nya kosong, maka itu berarti order dicancel karena delay exceeded
+		# kalau dari mobile app dan cancel reason nya kosong, maka itu berarti order dicancel karena delay exceeded
 			if not cancel_reason and not cancel_reason_other:
 				model_obj = self.pool.get('ir.model.data')
 				model, reason_id = model_obj.get_object_reference(cr, uid, 'universal', 'foms_cancel_reason_delay_exceeded')

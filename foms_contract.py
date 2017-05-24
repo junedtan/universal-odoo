@@ -169,7 +169,11 @@ class foms_contract(osv.osv):
 	]
 
 # METHODS ------------------------------------------------------------------------------------------------------------------
-
+	
+	def website_mobile_app_search(self, cr, uid, param):
+		contract_ids = self.search(cr, uid, [], context=param)
+		return self.browse(cr, uid, contract_ids)
+	
 	def set_to_planned(self, cr, uid, contract_id, context={}):
 	# ini di-load ulang supaya mendapatkan data schedule terbaru
 		contract_data = self.browse(cr, uid, contract_id)
@@ -237,10 +241,6 @@ class foms_contract(osv.osv):
 				}, context=context)
 				self.webservice_post(cr, uid, ['driver'], 'update', contract, context=context)
 		return result
-		
-	def website_mobile_app_search(self, cr, uid, param):
-		contract_ids = self.search(cr, uid, [], context=param)
-		return self.browse(cr, uid, contract_ids)
 	
 	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
 		context = context and context or {}

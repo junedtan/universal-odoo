@@ -35,11 +35,17 @@ class website_mobile_app(http.Controller):
 		})
 		result = [];
 		for contract_data in contract_datas:
-			id = str(contract_data.id)
-			name = contract_data.name
+			fleet_vehicle_arr = []
+			for fleet_data in contract_data.car_drivers:
+				if fleet_data.fullday_user_id.id == uid:
+					fleet_vehicle_arr.append({
+						'id': fleet_data.fleet_vehicle_id.id,
+						'name': fleet_data.fleet_vehicle_id.name,
+					})
 			result.append({
-				'id': id,
-				'name': name,
+				'id': contract_data.id,
+				'name': contract_data.name,
+				'fleet_vehicle': fleet_vehicle_arr,
 			});
 		result = sorted(result, key=lambda contract: contract['name'])
 		return json.dumps(result)

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+	<t t-name="website_mobile_app_create_order">
+		<div class="full_height container universal_website_mobile_app">
+			<div class="col-md-6">
+				<h2>Information</h2>
+				<div class="form-group ml10">
+					<label for="contract">Contract</label>
+					<select id="contract" class="form-control">
+						<option value="all">[All status]</option>
+						<option value="draft">Draft</option>
+						<option value="giro">Giro filled, unpaid</option>
+						<option value="posted">Paid</option>
+					</select>
+				</div>
+				<div class="form-group ml10">
+					<label for="fleet">Fleet</label>
+					<select id="fleet" class="form-control">
+						<option value="all">[All status]</option>
+						<option value="draft">Draft</option>
+						<option value="giro">Giro filled, unpaid</option>
+						<option value="posted">Paid</option>
+					</select>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<h2>Time</h2>
+				<div class="form-group ml10">
+					<label for="start_planned">Start Planned</label>
+					<input id="start_planned" class="form-control" type="datetime-local"/>
+				</div>
+				<div class="form-group ml10">
+					<label for="finish_planned">Finish Planned</label>
+					<input id="finish_planned" class="form-control" type="datetime-local"/>
+				</div>
+			</div>
+			<div class="row ml10">
+				<div class="col-md-1 form-group">
+					<button type="button" id="btn_create_order" class="btn btn-success">Create Order</button>
+				</div>
+			</div>
+		</div>
+	</t>
+
+</templates>

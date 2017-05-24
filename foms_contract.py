@@ -238,6 +238,10 @@ class foms_contract(osv.osv):
 				self.webservice_post(cr, uid, ['driver'], 'update', contract, context=context)
 		return result
 		
+	def website_mobile_app_search(self, cr, uid, param):
+		contract_ids = self.search(cr, uid, [], context=param)
+		return self.browse(cr, uid, contract_ids)
+	
 	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
 		context = context and context or {}
 		user_obj = self.pool.get('res.users')

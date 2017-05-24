@@ -8,10 +8,9 @@
 				<div class="form-group ml10">
 					<label for="contract">Contract</label>
 					<select id="contract" class="form-control">
-						<option value="all">[All status]</option>
-						<option value="draft">Draft</option>
-						<option value="giro">Giro filled, unpaid</option>
-						<option value="posted">Paid</option>
+						<t t-foreach="contract_datas" t-as="contract_data">
+							<option t-attf-value="{{contract_data.id}}"><t t-esc="contract_data.name"/></option>
+						</t>
 					</select>
 				</div>
 				<div class="form-group ml10">
@@ -28,11 +27,11 @@
 				<h2>Time</h2>
 				<div class="form-group ml10">
 					<label for="start_planned">Start Planned</label>
-					<input id="start_planned" class="form-control" type="datetime-local"/>
+					<input id="start_planned" class="form-control" type="datetime-local" t-attf-value="{{start_planned_default}}"/>
 				</div>
 				<div class="form-group ml10">
 					<label for="finish_planned">Finish Planned</label>
-					<input id="finish_planned" class="form-control" type="datetime-local"/>
+					<input id="finish_planned" class="form-control" type="datetime-local" t-attf-value="{{finish_planned_default}}"/>
 				</div>
 			</div>
 			<div class="row ml10">

@@ -8,7 +8,28 @@ var n = this,
     i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "", 
     j = (j = i.length) > 3 ? j % 3 : 0;
    return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
- };
+};
+
+function pad(num, size) {
+    var s = num+"";
+    while (s.length < size) s = "0" + s;
+    return s;
+}
+
+Date.prototype.toDatetimeString = function() {
+    var currentdate = this;
+    return pad(currentdate.getFullYear(),4) + "-"
+		+ pad((currentdate.getMonth()+1),2)  + "-"
+		+ pad(currentdate.getDate(),2) + "T"
+		+ pad(currentdate.getHours(),2) + ":"
+		+ pad(currentdate.getMinutes(),2) + ":"
+		+ pad(currentdate.getSeconds(),2);
+};
+
+Date.prototype.addHours = function(h) {
+   this.setTime(this.getTime() + (h*60*60*1000));
+   return this;
+}
 
 $(document).ready(function () {
 	

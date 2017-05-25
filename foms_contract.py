@@ -170,10 +170,6 @@ class foms_contract(osv.osv):
 
 # METHODS ------------------------------------------------------------------------------------------------------------------
 	
-	def website_mobile_app_search(self, cr, uid, param):
-		contract_ids = self.search(cr, uid, [], context=param)
-		return self.browse(cr, uid, contract_ids)
-	
 	def set_to_planned(self, cr, uid, contract_id, context={}):
 	# ini di-load ulang supaya mendapatkan data schedule terbaru
 		contract_data = self.browse(cr, uid, contract_id)

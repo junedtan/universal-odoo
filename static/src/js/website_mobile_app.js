@@ -23,18 +23,46 @@ $(document).ready(function () {
 				'start_planned_default': new Date().addHours(1).toDatetimeString(),
 				'finish_planned_default': new Date().addHours(2).toDatetimeString(),
 			}));
+
+			$('#create_order_contract').change(function(){
+				onchange_create_order_contract($(this).val());
+			});
+
+			$('#btn_create_order').click(function(){
+				onclick_create_order_button();
+			});
 		});
 	});
 
-	$('#create_order_contract').on('change', function() {
+	function onclick_create_order_button() {
+		create_order_json = {
+			'contract_id': $('#create_order_contract').val(),
+			'fleet_vehicle_id': $('#create_order_fleet_vehicle').val(),
+			'start_planned': $('#create_order_start_planned').val(),
+			'finish_planned': $('#create_order_finish_planned').val(),
+		};
+		$.ajax({
+			dataType: "json",
+			url: '/mobile_app/create_order/' + JSON.stringify(create_order_json),
+			method: 'POST',
+			success: function(response) {
+				alert(response.info);
+				if(response.success){
+					alert('success')
+				}
+			},
+		});
+	}
+
+	function onchange_create_order_contract(contract_id) {
 		$.each(self.contract_datas, function(index, contract_data) {
-			if (contract_data.id == this.value) {
+			if (contract_data.id == contract_id) {
 				$('#create_order_fleet_vehicle').empty();
 				$.each(contract_data.fleet_vehicle, function(index, fleet_vehicle_data) {
 					$('#create_order_fleet_vehicle').append('<option value=' + fleet_vehicle_data.id + '">' + fleet_vehicle_data.name + '</option>');
 				});
 			}
 		});
-	});
+	};
 
 });

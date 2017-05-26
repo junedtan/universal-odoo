@@ -98,11 +98,15 @@ class website_mobile_app(http.Controller):
 				'id': order_data.id,
 				'name': order_data.name,
 				'request_date': order_data.request_date,
+				'start_planned_date': order_data.start_planned_date,
+				'finish_planned_date': order_data.finish_planned_date,
+				'assigned_vehicle_name': order_data.assigned_vehicle_id.name,
+				'assigned_driver_name': order_data.assigned_driver_id.name,
 			});
-		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'])
-		result['ready'] = sorted(result['ready'], key=lambda order: order['request_date'])
-		result['running'] = sorted(result['running'], key=lambda order: order['request_date'])
-		result['history'] = sorted(result['history'], key=lambda order: order['request_date'])
+		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
+		result['ready'] = sorted(result['ready'], key=lambda order: order['request_date'], reverse=True)
+		result['running'] = sorted(result['running'], key=lambda order: order['request_date'], reverse=True)
+		result['history'] = sorted(result['history'], key=lambda order: order['request_date'], reverse=True)
 		return json.dumps(result)
 
 class website_mobile_app_handler(osv.osv):

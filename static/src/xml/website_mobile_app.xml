@@ -57,45 +57,31 @@
 				<t t-if="order_datas[classification_value].length != 0">
 					<div class="detail_container accordion_detail" >
 						<t t-foreach="order_datas[classification_value]" t-as="order">
-							<h5><t t-esc="order.request_date"/> - <b><t t-esc="order.name"/></b></h5>
+							<h5><b><t t-esc="order.name"/></b> - <t t-esc="order.request_date"/></h5>
+							<table class="table">
+								<tr>
+									<td class="td_key">Start</td>
+									<td class="td_separator">:</td>
+									<td><t t-esc="order.start_planned_date"/></td>
+									<td class="td_key">Driver</td>
+									<td class="td_separator">:</td>
+									<td><t t-esc="order.assigned_driver_name"/></td>
+								</tr>
+								<tr>
+									<td class="td_key">Finish</td>
+									<td class="td_separator">:</td>
+									<td><t t-esc="order.finish_planned_date"/></td>
+									<td class="td_key">Vehicle</td>
+									<td class="td_separator">:</td>
+									<td><t t-esc="order.assigned_vehicle_name"/></td>
+								</tr>
+							</table>
+							<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
 						</t>
 					</div>
 				</t>
 			</t>
 		</t>
 	</t>
-			<!--</t>-->
-					<!--<t t-if="stock_opname['line_ids'].length == 0">-->
-						<!--<div class="row">-->
-							<!--<div class="col-xs-12" style="text-align: center; color: darkgray;">-->
-								<!--<h4>Data Kosong</h4>-->
-							<!--</div>-->
-						<!--</div>-->
-					<!--</t>-->
-					<!--<t t-if="stock_opname['line_ids'].length > 0">-->
-						<!--<table class="table table-condensed table-striped">-->
-							<!--<tr>-->
-								<!--<th style="width: 35%">Product</th>-->
-								<!--<th style="width: 35%">Location</th>-->
-								<!--<th style="width: 15%">Theoretical</th>-->
-								<!--<th style="width: 15%">Real</th>-->
-							<!--</tr>-->
-							<!--<t t-foreach="stock_opname['line_ids']" t-as="stock_opname_line">-->
-								<!--<tr>-->
-									<!--<td><t t-esc="stock_opname_line['product_name']"/></td>-->
-									<!--<td><t t-esc="stock_opname_line['location_name']"/></td>-->
-									<!--<td><t t-esc="stock_opname_line['theoretical_qty']"/> <t t-esc="stock_opname_line['product_uom_name']"/></td>-->
-									<!--<td>-->
-										<!--<t t-if="stock_opname['state'] == 'done'">-->
-											<!--<t t-esc="stock_opname_line['product_qty']"/> <t t-esc="stock_opname_line['product_uom_name']"/>-->
-										<!--</t>-->
-										<!--<t t-if="stock_opname['state'] != 'done'">-->
-											<!-- - -->
-										<!--</t>-->
-									<!--</td>-->
-								<!--</tr>-->
-							<!--</t>	-->
-						<!--</table>-->
-					<!--</t>-->
 
 </templates>

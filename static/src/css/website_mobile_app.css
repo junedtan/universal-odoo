@@ -24,6 +24,14 @@ hr {
 	margin-bottom: 2px;
 }
 
+.td_key {
+	width: 10%;
+}
+
+.td_separator {
+	width: 1%;
+}
+
 div.row_hoverable:hover {
 	background-color: #EEEEEE;
 }

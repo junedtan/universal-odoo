@@ -13,8 +13,22 @@ import json
 import pytz
 from datetime import datetime, date
 
+_ORDER_STATE = [
+	('new','New'),
+	('rejected','Rejected'),
+	('confirmed','Confirmed'),
+	('ready','Ready'),
+	('started','Started'),
+	('start_confirmed','Start Confirmed'),
+	('paused','Paused'),
+	('resumed','Resumed'),
+	('finished','Finished'),
+	('finish_confirmed','Finish Confirmed'),
+	('canceled','Canceled')
+]
+
 class website_mobile_app(http.Controller):
-	
+
 	@http.route('/mobile_app', type='http', auth="user", website=True)
 	def mobile_app(self, **kwargs):
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
@@ -97,11 +111,14 @@ class website_mobile_app(http.Controller):
 			result[classification].append({
 				'id': order_data.id,
 				'name': order_data.name,
-				'request_date': order_data.request_date,
-				'start_planned_date': order_data.start_planned_date,
-				'finish_planned_date': order_data.finish_planned_date,
+				'state': dict(_ORDER_STATE).get(order_data.state, ''),
+				'request_date':  datetime.strptime(order_data.request_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
+				'start_planned_date': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
+				'finish_planned_date':  datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
 				'assigned_vehicle_name': order_data.assigned_vehicle_id.name,
 				'assigned_driver_name': order_data.assigned_driver_id.name,
+				'origin_location': order_data.origin_location,
+				'dest_location': order_data.dest_location,
 			});
 		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
 		result['ready'] = sorted(result['ready'], key=lambda order: order['request_date'], reverse=True)

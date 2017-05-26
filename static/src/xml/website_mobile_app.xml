@@ -57,22 +57,25 @@
 				<t t-if="order_datas[classification_value].length != 0">
 					<div class="detail_container accordion_detail" >
 						<t t-foreach="order_datas[classification_value]" t-as="order">
-							<h5><b><t t-esc="order.name"/></b> - <t t-esc="order.request_date"/></h5>
+							<div class="list_title">
+								<b><t t-esc="order.name"/></b> - <t t-esc="order.state"/>
+							</div>
+							Requested at: <t t-esc="order.request_date"/>
+							<!--<t t-esc="order.origin_location"/> - <t t-esc="order.dest_location"/>-->
 							<table class="table">
 								<tr>
-									<td class="td_key">Start</td>
-									<td class="td_separator">:</td>
-									<td><t t-esc="order.start_planned_date"/></td>
-									<td class="td_key">Driver</td>
-									<td class="td_separator">:</td>
+									<td class="td_list">Time</td>
+									<td class="td_list">:</td>
+									<td><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
+								</tr>
+								<tr>
+									<td class="td_list">Driver</td>
+									<td class="td_list">:</td>
 									<td><t t-esc="order.assigned_driver_name"/></td>
 								</tr>
 								<tr>
-									<td class="td_key">Finish</td>
-									<td class="td_separator">:</td>
-									<td><t t-esc="order.finish_planned_date"/></td>
-									<td class="td_key">Vehicle</td>
-									<td class="td_separator">:</td>
+									<td class="td_list">Vehicle</td>
+									<td class="td_list">:</td>
 									<td><t t-esc="order.assigned_vehicle_name"/></td>
 								</tr>
 							</table>

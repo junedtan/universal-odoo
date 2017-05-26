@@ -24,11 +24,12 @@ hr {
 	margin-bottom: 2px;
 }
 
-.td_key {
-	width: 10%;
+.list_title {
+	font-size: large;
+	margin-top: 10px;
 }
 
-.td_separator {
+.td_list {
 	width: 1%;
 }
 

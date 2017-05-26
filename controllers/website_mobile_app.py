@@ -75,31 +75,45 @@ class website_mobile_app(http.Controller):
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
 		uid = env.uid
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		contract_datas = handler_obj.search_contract({
+		order_datas = handler_obj.search_order({
 			'by_user_id': True,
 			'user_id': uid,
 		})
-		result = [];
-		for contract_data in contract_datas:
-			fleet_vehicle_arr = []
-			for fleet_data in contract_data.car_drivers:
-				if fleet_data.fullday_user_id.id == uid:
-					fleet_vehicle_arr.append({
-						'id': fleet_data.fleet_vehicle_id.id,
-						'name': fleet_data.fleet_vehicle_id.name,
-					})
-			result.append({
-				'id': contract_data.id,
-				'name': contract_data.name,
-				'fleet_vehicle': fleet_vehicle_arr,
+		result = {
+			'pending': [],
+			'ready'  : [],
+			'running': [],
+			'history': [],
+		};
+		for order_data in order_datas:
+			if order_data.state in ['new', 'confirmed']:
+				classification = 'pending'
+			elif order_data.state in ['ready', 'started']:
+				classification = 'ready'
+			elif order_data.state in ['start_confirmed', 'paused', 'resumed', 'finished']:
+				classification = 'running'
+			else:
+				classification = 'history'
+			result[classification].append({
+				'id': order_data.id,
+				'name': order_data.name,
+				'request_date': order_data.request_date,
 			});
-		result = sorted(result, key=lambda contract: contract['name'])
+		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'])
+		result['ready'] = sorted(result['ready'], key=lambda order: order['request_date'])
+		result['running'] = sorted(result['running'], key=lambda order: order['request_date'])
+		result['history'] = sorted(result['history'], key=lambda order: order['request_date'])
 		return json.dumps(result)
 
 class website_mobile_app_handler(osv.osv):
 	_name = 'universal.website.mobile_app.handler'
 	_description = 'Model for handling website-based requests'
 	_auto = False
+	
+	def search_order(self, cr, uid, param_context):
+		order_obj = self.pool.get('foms.order');
+		order_ids = order_obj.search(cr, uid, [], context=param_context)
+		return order_obj.browse(cr, uid, order_ids)
 	
 	def search_contract(self, cr, uid, param_context):
 		contract_obj = self.pool.get('foms.contract');

@@ -16,6 +16,19 @@ function pad(num, size) {
     return s;
 }
 
+function alert_error(XMLHttpRequest) {
+	response = XMLHttpRequest.responseText;
+	console.log(response);
+	index_start = response.indexOf("except_orm: ");
+	index_end = response.indexOf("</pre>", index_start);
+	exception_string = response.substring(index_start, index_end);
+
+	index_start = exception_string.indexOf(", u'") + 4;
+	index_end = exception_string.length-3;
+	exception_string = exception_string.substring(index_start, index_end);
+	alert(exception_string);
+}
+
 Date.prototype.toDatetimeString = function() {
     var currentdate = this;
     return pad(currentdate.getFullYear(),4) + "-"

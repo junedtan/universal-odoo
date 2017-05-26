@@ -7,7 +7,7 @@ $(document).ready(function () {
 
 	var contract_datas = [];
 
-// EVENT HANDLER ============================================================================================================
+// CREATE ORDER =============================================================================================================
 
 	$('#website_mobile_app_menu_book_vehicle').click(function() {
 		$.get('/mobile_app/fetch_contracts', null, function(data){
@@ -69,17 +69,32 @@ $(document).ready(function () {
 		});
 	};
 
-	function alert_error(XMLHttpRequest) {
-		response = XMLHttpRequest.responseText;
-		console.log(response);
-		index_start = response.indexOf("except_orm: ");
-		index_end = response.indexOf("</pre>", index_start);
-		exception_string = response.substring(index_start, index_end);
+// LIST ORDER ===============================================================================================================
 
-		index_start = exception_string.indexOf(", u'") + 4;
-		index_end = exception_string.length-3;
-		exception_string = exception_string.substring(index_start, index_end);
-		alert(exception_string);
-	}
+	$('#website_mobile_app_menu_list_orders').click(function() {
+		$.get('/mobile_app/fetch_orders', null, function(data){
+			classifications = {
+				'Pending': 'pending',
+				'Ready': 'ready',
+				'Running': 'running',
+				'History': 'history',
+			}
+			console.log(JSON.parse(data));
+			$("#main_container", self).html(qweb.render('website_mobile_app_list_order',{
+				'classifications': classifications,
+				'order_datas': JSON.parse(data),
+			}));
+
+			$(".accordion").click(function(event) {
+				$(this).toggleClass("active");
+				var detail = $(this).next();
+				if (detail.css("maxHeight") != "0px"){
+					detail.css("maxHeight", "0px");
+				} else {
+					detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
+				}
+			});
+		});
+	});
 
 });

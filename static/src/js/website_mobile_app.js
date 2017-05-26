@@ -63,7 +63,7 @@ $(document).ready(function () {
 			if (contract_data.id == contract_id) {
 				$('#create_order_fleet_vehicle').empty();
 				$.each(contract_data.fleet_vehicle, function(index, fleet_vehicle_data) {
-					$('#create_order_fleet_vehicle').append('<option value=' + fleet_vehicle_data.id + '">' + fleet_vehicle_data.name + '</option>');
+					$('#create_order_fleet_vehicle').append('<option value=' + fleet_vehicle_data.id + '>' + fleet_vehicle_data.name + '</option>');
 				});
 			}
 		});

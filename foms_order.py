@@ -150,8 +150,11 @@ class foms_order(osv.osv):
 	def create(self, cr, uid, vals, context={}):
 		contract_obj = self.pool.get('foms.contract')
 		contract_data = contract_obj.browse(cr, uid, vals['customer_contract_id'])
-
-		service_type = vals.get('service_type', contract_data.service_type or False)
+		
+		service_type = vals.get('service_type', False)
+		if not service_type:
+			service_type = contract_data.service_type
+			vals['service_type'] = contract_data.service_type
 
 		user_obj = self.pool.get('res.users')
 		
@@ -219,9 +222,14 @@ class foms_order(osv.osv):
 		if service_type == 'full_day':
 			fleet_data = None
 			for fleet in new_data.customer_contract_id.car_drivers:
-				if fleet.fullday_user_id.id == new_data.order_by.id:
-					fleet_data = fleet
-					break
+				if vals.get('assigned_vehicle_id', False):
+					if fleet.fullday_user_id.id == new_data.order_by.id and fleet.fleet_vehicle_id.id == vals.get('assigned_vehicle_id', False):
+						fleet_data = fleet
+						break
+				else:
+					if fleet.fullday_user_id.id == new_data.order_by.id:
+						fleet_data = fleet
+						break
 			if fleet_data:
 				self.write(cr, uid, [new_id], {
 					'assigned_driver_id': fleet_data.driver_id.id,
@@ -967,9 +975,10 @@ class foms_order(osv.osv):
 
 	def _cek_request_date(self, cr, uid, request_date, contract_data):
 		book_in_hours = False
-		request_date_convert = datetime.strptime(request_date, "%Y-%m-%d %H:%M:%S")
-		order_day = request_date_convert.weekday()
-		order_time = request_date_convert.time()
+		if type(request_date) is string:
+			request_date = datetime.strptime(request_date, "%Y-%m-%d %H:%M:%S")
+		order_day = request_date.weekday()
+		order_time = request_date.time()
 		order_time = order_time.hour + (order_time.minute/60.0)
 		for order_hours in contract_data.order_hours:
 			if order_day == int(order_hours.dayofweek) and (order_time >= order_hours.time_from + SERVER_TIMEZONE and order_time <= order_hours.time_to + SERVER_TIMEZONE):
@@ -980,9 +989,7 @@ class foms_order(osv.osv):
 		if not contract_data.working_time_id:
 			raise osv.except_osv(_('Order Error'),_('Working time for this order\'s contract is not set. Please contact PT. Universal.'))
 		book_in_holiday = False
-		print request_date
 		for holiday in contract_data.working_time_id.leave_ids:
-			print holiday.date_from, holiday.date_to
 			if request_date >= holiday.date_from and request_date <= holiday.date_to:
 				book_in_holiday = True
 				break
@@ -1198,7 +1205,7 @@ class foms_order(osv.osv):
 	# 			# Jika first_clock_out <= first_clock_in
 	# 				if first_clock_out <= first_clock_in:
 	# 				# ambil start_planned nya si clock_out
-	# 					previous_start_planned_date = datetime.strptime(first_finished_order.start_planned_date, '%Y-%m-%d %H:%M:%S')
+# 					previous_start_planned_date = datetime.strptime(first_finished_order.start_planned_date, '%Y-%m-%d %H:%M:%S')
 	# 					previous_clock_out_id = attendance_obj.search(cr, uid, [
 	# 						('name', '>=', previous_start_planned_date.date().strftime('%Y-%m-%d 00:00:00')),
 	# 						('name', '<=', previous_start_planned_date.date().strftime('%Y-%m-%d 23:59:59')),

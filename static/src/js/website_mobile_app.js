@@ -46,10 +46,13 @@ $(document).ready(function () {
 			url: '/mobile_app/create_order/' + JSON.stringify(create_order_json),
 			method: 'POST',
 			success: function(response) {
-				alert(response);
-				alert(response.info);
-				if(response.success){
-					alert('success')
+				if (response.status) {
+					alert(response.info);
+					if(response.success){
+						$('#website_mobile_app_menu_list_orders').click();
+					}
+				} else {
+					alert('Server Unreachable.');
 				}
 			},
 			error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -79,7 +82,6 @@ $(document).ready(function () {
 				'Running': 'running',
 				'History': 'history',
 			}
-			console.log(JSON.parse(data));
 			$("#main_container", self).html(qweb.render('website_mobile_app_list_order',{
 				'classifications': classifications,
 				'order_datas': JSON.parse(data),
@@ -96,5 +98,55 @@ $(document).ready(function () {
 			});
 		});
 	});
+
+// CHANGE PASSWORD ==========================================================================================================
+
+	$('#website_mobile_app_menu_change_password').click(function() {
+		$("#main_container", self).html(qweb.render('website_mobile_app_change_password'));
+		$('#btn_change_password').click(function(){
+			onclick_change_password_button();
+		});
+	});
+
+	function onclick_change_password_button() {
+		old_password = $('#change_password_old').val();
+		new_password = $('#change_password_new').val();
+		retype_password = $('#change_password_retype').val();
+
+		if(new_password != retype_password) {
+			alert('New Password and Retype Password doesn\'t match.');
+			$('#change_password_new').val('');
+			$('#change_password_retype').val('')
+		} else if(old_password.length == 0){
+			alert('Old Password may not be empty.');
+		}  else if(new_password.length == 0){
+			alert('New Password may not be empty.');
+		} else {
+			change_password_json = {
+				'old_password': old_password,
+				'new_password': new_password,
+			};
+			$.ajax({
+				dataType: "json",
+				url: '/mobile_app/change_password/' + JSON.stringify(change_password_json),
+				method: 'POST',
+				success: function(response) {
+					if (response.status) {
+						alert(response.info);
+						$('#change_password_old').val('');
+						if(response.success){
+							$('#change_password_new').val('');
+							$('#change_password_retype').val('')
+						}
+					} else {
+						alert('Server Unreachable.');
+					}
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					alert_error(XMLHttpRequest);
+				} ,
+			});
+		}
+	}
 
 });

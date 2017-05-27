@@ -58,11 +58,11 @@ class res_users(osv.osv):
 		result = super(res_users, self).write(cr, uid, ids, vals, context=context)
 	# if is_pic or is_approver or is_booker or is_fullday_passenger or is_webservice_sync
 	# then delete user group employee, because it shouldn't be that way
-		for id in ids:
-			if self._should_hr_off(cr, uid, id):
-				cr.execute("DELETE FROM res_groups_users_rel WHERE uid=%s AND gid in (" % id +
-						   "SELECT id FROM res_groups WHERE category_id in (" +
-						   "SELECT id FROM ir_module_category WHERE name='Human Resources' ))")
+	# 	for id in ids:
+	# 		if self._should_hr_off(cr, uid, id):
+	# 			cr.execute("DELETE FROM res_groups_users_rel WHERE uid=%s AND gid in (" % id +
+	# 					   "SELECT id FROM res_groups WHERE category_id in (" +
+	# 					   "SELECT id FROM ir_module_category WHERE name='Human Resources' ))")
 		
 	# bila ada perubahan password, untuk fullday_passenger ubah juga pin nya (idem password), dan broadcast perubahannya
 		if vals.get('password'):

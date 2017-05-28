@@ -6,6 +6,9 @@ openerp.universal = function(instance) {
 
 	instance.web.client_actions.add('universal.timeline_by_date','instance.universal.TimelineByDate');
 	instance.web.client_actions.add('universal.timeline_by_driver','instance.universal.TimelineByDriver');
+
+// TIMELINE BY DATE =========================================================================================================
+
 	instance.universal.TimelineByDate = instance.web.Widget.extend({
 
 		QWeb: QWeb,
@@ -18,7 +21,7 @@ openerp.universal = function(instance) {
 			'click #button_filter': 'onclick_filter_button',
 		},
 
-//Fundamental Function ==================================================================================================================
+// FUNDAMENTAL FUNCTION -----------------------------------------------------------------------------------------------------
 
 		init: function(parent) {
 			this._super(parent);
@@ -42,17 +45,29 @@ openerp.universal = function(instance) {
 			this.onclick_filter_button();
 		},
 
+// METHODS ------------------------------------------------------------------------------------------------------------------
+
 		onclick_filter_button: function(){
-			this.render_timeline();
+			var filter_date = new Date($('#filter_date').val());
+			var year = filter_date.getFullYear();
+			var month = filter_date.getMonth()+1;
+			var day = filter_date.getDate();
+			this.render_table(day, month, year);
 		},
 
-		render_timeline: function() {
+		render_table: function(day, month, year) {
+			new this.instance.web.Model('universal.timeline')
+        		.call('get_timeline_by_date', {
+        			 'day' : day,
+        			 'month' : month,
+        			 'year': year,
+        		}).done(function(response) {
+        			console.log(response);
+        		});
 			$('#div_main').html(this.QWeb.render("universal_timelie_by_date_table",{
 
 			}));
 		},
-
-// UTILITY ==================================================================================================================
 
 		pad: function(num, size){
 			var s = num+"";

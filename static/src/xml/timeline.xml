@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates xml:space="preserve">
+
+	<t t-name="universal_timeline_by_date">
+		<div class="wrapper_universal_timeline_by_date">
+			<div class="row no-margin padding6 margin6" id="div_filter">
+  				<input type="date" id="filter_date"/>
+				<div type="button" id="button_filter" class="btn btn-primary">Filter</div>
+			</div>
+			<hr class="no-margin"/>
+			<div class="row no_margin" id="div_main">
+			</div>
+		</div>
+	</t>
+
+	<t t-name="universal_timelie_by_date_table">
+		<div class="wrapper_universal_timelie_by_date_table">
+			HAHAHA
+		</div>
+	</t>
+
+</templates>

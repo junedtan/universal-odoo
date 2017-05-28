@@ -133,10 +133,10 @@ $(document).ready(function () {
 				success: function(response) {
 					if (response.status) {
 						alert(response.info);
-						$('#change_password_old').val('');
 						if(response.success){
-							$('#change_password_new').val('');
-							$('#change_password_retype').val('')
+							logout();
+						}else {
+							$('#change_password_old').val('');
 						}
 					} else {
 						alert('Server Unreachable.');

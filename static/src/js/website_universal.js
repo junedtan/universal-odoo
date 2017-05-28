@@ -44,6 +44,10 @@ Date.prototype.addHours = function(h) {
    return this;
 }
 
+function logout() {
+	window.location.href = "/web/session/logout?redirect=/";
+}
+
 $(document).ready(function () {
 	
 	var message_timer;

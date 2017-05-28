@@ -56,6 +56,7 @@ openerp.universal = function(instance) {
 		},
 
 		render_table: function(day, month, year) {
+			var self = this;
 			new this.instance.web.Model('universal.timeline')
         		.call('get_timeline_by_date', {
         			 'day' : day,
@@ -63,10 +64,15 @@ openerp.universal = function(instance) {
         			 'year': year,
         		}).done(function(response) {
         			console.log(response);
+        			if (response.status) {
+						$('#div_main').html(self.QWeb.render("universal_timelie_by_date_table",{
+							'drivers': response.drivers,
+							'hours': response.hours,
+						}));
+					} else {
+						alert('Server Unreachable.')
+					}
         		});
-			$('#div_main').html(this.QWeb.render("universal_timelie_by_date_table",{
-
-			}));
 		},
 
 		pad: function(num, size){

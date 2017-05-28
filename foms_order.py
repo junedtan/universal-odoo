@@ -975,7 +975,9 @@ class foms_order(osv.osv):
 
 	def _cek_request_date(self, cr, uid, request_date, contract_data):
 		book_in_hours = False
-		if type(request_date) is string:
+		if type(request_date) is unicode:
+			request_date = request_date.encode('ascii', 'ignore')
+		if type(request_date) is string or type(request_date) is str:
 			request_date = datetime.strptime(request_date, "%Y-%m-%d %H:%M:%S")
 		order_day = request_date.weekday()
 		order_time = request_date.time()

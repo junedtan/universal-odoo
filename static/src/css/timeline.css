@@ -5,3 +5,11 @@
 .margin6 {
 	margin: 6px;
 }
+
+.bg-planned {
+	background-color: green;
+}
+
+.bg-none {
+	background-color: black;
+}

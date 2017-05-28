@@ -7,9 +7,13 @@
 }
 
 .bg-planned {
-	background-color: green;
+	background-color: yellow;
 }
 
 .bg-none {
-	background-color: black;
+	background-color: transparent;
+}
+
+.bg-actual {
+	background-color: red;
 }

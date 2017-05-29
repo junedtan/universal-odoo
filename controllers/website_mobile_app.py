@@ -32,12 +32,13 @@ class website_mobile_app(http.Controller):
 	@http.route('/mobile_app', type='http', auth="user", website=True)
 	def mobile_app(self, **kwargs):
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
-		uid = env.uid
-	# tentukan apakah yang login ini fullday-passennger. di luar itu ngga bisa diakses
-		partner_obj = env['res.partner']
 		user_obj = env['res.users']
+		is_fullday_passenger = user_obj.has_group('universal.group_universal_passenger')
+		user_group = ''
+		if is_fullday_passenger:
+			user_group = 'fullday_passenger'
 		return request.render("universal.website_mobile_app_main_menu", {
-			'user_group': 'fullday_passenger'
+			'user_group': user_group,
 		})
 	
 	@http.route('/mobile_app/fetch_contracts', type='http', auth="user", website=True)

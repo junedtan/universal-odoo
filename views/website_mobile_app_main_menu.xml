@@ -5,6 +5,14 @@
 			<t t-call="website.layout">
 				<div class="container universal_website_mobile_app">
 					<div class="row" id="menu_container">
+						<t t-if="user_group == ''">
+							<div class="oe_callout oe_callout_danger">
+								<h4>Error</h4>
+								<p>
+									You must login as Fullday Passenger.
+								</p>
+							</div>
+						</t>
 						<t t-if="user_group == 'fullday_passenger'">
 							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
 									id="website_mobile_app_menu_book_vehicle">Book Vehicle</div>

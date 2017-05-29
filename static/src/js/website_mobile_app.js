@@ -41,6 +41,19 @@ $(document).ready(function () {
 			'start_planned': $('#create_order_start_planned').val(),
 			'finish_planned': $('#create_order_finish_planned').val(),
 		};
+		if (typeof create_order_json['contract_id'] == 'undefined') {
+			alert('You have no Contract!');
+			return;
+		} else if (typeof create_order_json['fleet_vehicle_id'] == 'undefined') {
+			alert('You have no Fleet!');
+			return;
+		} else if (!create_order_json['start_planned']) {
+			alert('Please input the start planned date correctly!');
+			return;
+		} else if (!create_order_json['finish_planned']) {
+			alert('Please input the finish planned date correctly!');
+			return;
+		}
 		$.ajax({
 			dataType: "json",
 			url: '/mobile_app/create_order/' + JSON.stringify(create_order_json),

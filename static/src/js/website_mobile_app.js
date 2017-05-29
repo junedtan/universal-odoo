@@ -7,9 +7,17 @@ $(document).ready(function () {
 
 	var contract_datas = [];
 
+	function onclick_menu(id) {
+		$('#website_mobile_app_menu_book_vehicle').removeClass('active');
+		$('#website_mobile_app_menu_list_orders').removeClass('active');
+		$('#website_mobile_app_menu_change_password').removeClass('active');
+		$(id).addClass('active');
+	}
+
 // CREATE ORDER =============================================================================================================
 
 	$('#website_mobile_app_menu_book_vehicle').click(function() {
+		onclick_menu('#website_mobile_app_menu_book_vehicle');
 		$.get('/mobile_app/fetch_contracts', null, function(data){
 			self.contract_datas = JSON.parse(data);
 			var fleet_vehicle_datas = []
@@ -88,6 +96,7 @@ $(document).ready(function () {
 // LIST ORDER ===============================================================================================================
 
 	$('#website_mobile_app_menu_list_orders').click(function() {
+		onclick_menu('#website_mobile_app_menu_list_orders');
 		$.get('/mobile_app/fetch_orders', null, function(data){
 			classifications = {
 				'Pending': 'pending',
@@ -115,6 +124,7 @@ $(document).ready(function () {
 // CHANGE PASSWORD ==========================================================================================================
 
 	$('#website_mobile_app_menu_change_password').click(function() {
+		onclick_menu('#website_mobile_app_menu_change_password');
 		$("#main_container", self).html(qweb.render('website_mobile_app_change_password'));
 		$('#btn_change_password').click(function(){
 			onclick_change_password_button();

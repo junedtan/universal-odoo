@@ -17,3 +17,8 @@
 .bg-actual {
 	background-color: red;
 }
+
+#btn_filter {
+	margin-left: 10px;
+	width: 100px;
+}

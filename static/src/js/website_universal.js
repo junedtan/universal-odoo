@@ -16,7 +16,7 @@ function pad(num, size) {
     return s;
 }
 
-function alert_error(XMLHttpRequest) {
+function alert_error(XMLHttpRequest, errorThrown) {
 	response = XMLHttpRequest.responseText;
 	console.log(response);
 	index_start = response.indexOf("except_orm: ");
@@ -26,7 +26,11 @@ function alert_error(XMLHttpRequest) {
 	index_start = exception_string.indexOf(", u'") + 4;
 	index_end = exception_string.length-3;
 	exception_string = exception_string.substring(index_start, index_end);
-	alert(exception_string);
+	if (exception_string.length == 0) {
+		alert(errorThrown);
+	} else {
+		alert(exception_string);
+	}
 }
 
 Date.prototype.toDatetimeString = function() {

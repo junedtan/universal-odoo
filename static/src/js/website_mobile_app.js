@@ -77,7 +77,7 @@ $(document).ready(function () {
 				}
 			},
 			error: function(XMLHttpRequest, textStatus, errorThrown) {
-				alert_error(XMLHttpRequest);
+				alert_error(XMLHttpRequest, errorThrown);
 			} ,
 		});
 	}

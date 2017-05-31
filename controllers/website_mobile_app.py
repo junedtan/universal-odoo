@@ -169,7 +169,7 @@ class website_mobile_app_handler(osv.osv):
 		start_planned = datetime.strptime(start_planned, '%Y-%m-%dT%H:%M:%S')
 		finish_planned = domain.get('finish_planned', '')
 		finish_planned = datetime.strptime(finish_planned, '%Y-%m-%dT%H:%M:%S')
-		return order_obj.create(cr, uid, {
+		return order_obj.create(cr, SUPERUSER_ID, {
 			'customer_contract_id': contract_id,
 			'order_by': uid,
 			'assigned_vehicle_id': fleet_vehicle_id,

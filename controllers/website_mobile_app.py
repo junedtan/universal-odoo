@@ -70,19 +70,27 @@ class website_mobile_app(http.Controller):
 	@http.route('/mobile_app/create_order/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_create_order(self, data, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		result = handler_obj.create_order(json.loads(data))
-		if result:
+		try:
+			result = handler_obj.create_order(json.loads(data))
+		except Exception, e:
 			response = {
 				'status': 'ok',
-				'info': _('Create Order Success'),
-				'success' : True,
-			}
-		else:
-			response = {
-				'status': 'ok',
-				'info': _('Create Order Failed'),
+				'info': str(e.value),
 				'success' : False,
 			}
+		else:
+			if result:
+				response = {
+					'status': 'ok',
+					'info': _('Create Order Success'),
+					'success' : True,
+				}
+			else:
+				response = {
+					'status': 'ok',
+					'info': _('Create Order Failed'),
+					'success' : False,
+				}
 		return json.dumps(response)
 	
 	@http.route('/mobile_app/fetch_orders', type='http', auth="user", website=True)

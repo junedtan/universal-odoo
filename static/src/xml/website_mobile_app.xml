@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+	<t t-name="website_mobile_app_create_order">
+		<div class="full_height container universal_website_mobile_app">
+			<div class="col-md-6">
+				<h2>Information</h2>
+				<div class="form-group ml10">
+					<label for="create_order_contract">Contract</label>
+					<select id="create_order_contract" class="form-control">
+						<t t-foreach="contract_datas" t-as="contract_data">
+							<option t-attf-value="{{contract_data.id}}"><t t-esc="contract_data.name"/></option>
+						</t>
+					</select>
+				</div>
+				<div class="form-group ml10">
+					<label for="create_order_fleet_vehicle">Fleet Vehicle</label>
+					<select id="create_order_fleet_vehicle" class="form-control">
+						<t t-foreach="fleet_vehicle_datas" t-as="fleet_vehicle_data">
+							<option t-attf-value="{{fleet_vehicle_data.id}}"><t t-esc="fleet_vehicle_data.name"/></option>
+						</t>
+					</select>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<h2>Time</h2>
+				<div class="form-group ml10">
+					<label for="create_order_start_planned">Start Planned</label>
+					<input id="create_order_start_planned" class="form-control" type="datetime-local" t-attf-value="{{start_planned_default}}"/>
+				</div>
+				<div class="form-group ml10">
+					<label for="create_order_finish_planned">Finish Planned</label>
+					<input id="create_order_finish_planned" class="form-control" type="datetime-local" t-attf-value="{{finish_planned_default}}"/>
+				</div>
+			</div>
+			<div class="row ml10">
+				<div class="col-md-1 form-group">
+					<button type="button" id="btn_create_order" class="btn btn-success">Create Order</button>
+				</div>
+			</div>
+		</div>
+	</t>
+
+	<t t-name="website_mobile_app_list_order">
+		<t class="full_height container universal_website_mobile_app">
+			<t t-foreach="classifications" t-as="classification">
+				<div class="row_hoverable accordion">
+					<h5><t t-esc="classification"/></h5>
+				</div>
+				<t t-if="order_datas[classification_value].length == 0">
+					<div class="detail_container accordion_detail" >
+						<div class="col-xs-12" style="text-align: center; color: darkgray;">
+							<h4>Data Kosong</h4>
+						</div>
+					</div>
+				</t>
+				<t t-if="order_datas[classification_value].length != 0">
+					<div class="detail_container accordion_detail" >
+						<t t-foreach="order_datas[classification_value]" t-as="order">
+							<div class="list_title">
+								<b><t t-esc="order.name"/></b> - <t t-esc="order.state"/>
+							</div>
+							Requested at: <t t-esc="order.request_date"/>
+							<!--<t t-esc="order.origin_location"/> - <t t-esc="order.dest_location"/>-->
+							<table class="table">
+								<tr>
+									<td class="td_list">Time</td>
+									<td class="td_list">:</td>
+									<td><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
+								</tr>
+								<tr>
+									<td class="td_list">Driver</td>
+									<td class="td_list">:</td>
+									<td><t t-esc="order.assigned_driver_name"/></td>
+								</tr>
+								<tr>
+									<td class="td_list">Vehicle</td>
+									<td class="td_list">:</td>
+									<td><t t-esc="order.assigned_vehicle_name"/></td>
+								</tr>
+							</table>
+							<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
+						</t>
+					</div>
+				</t>
+			</t>
+		</t>
+	</t>
+
+	<t t-name="website_mobile_app_change_password">
+		<div class="full_height container universal_website_mobile_app">
+			<div class="col-xs-12">
+				<div class="form-group ml10">
+					<label for="change_password_old">Old Password</label>
+					<input type="password" id="change_password_old" class="form-control"/>
+				</div>
+				<div class="form-group ml10">
+					<label for="change_password_new">New Password</label>
+					<input type="password" id="change_password_new" class="form-control"/>
+				</div>
+				<div class="form-group ml10">
+					<label for="change_password_retype">Retype New Password</label>
+					<input type="password" id="change_password_retype" class="form-control"/>
+				</div>
+			</div>
+			<div class="row ml10">
+				<div class="col-md-1 form-group">
+					<button type="button" id="btn_change_password" class="btn btn-success">Change Password</button>
+				</div>
+			</div>
+		</div>
+	</t>
+
+</templates>

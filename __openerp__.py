@@ -19,7 +19,7 @@
 	'sequence': 150,
 	'data': [
 		'security/universal_security.xml',
-		# 'security/ir.model.access.csv',
+		'security/ir.model.access.csv',
 		'security/ir_rule.xml',
 		'security/workflow.xml',
 		'data/hr.department.csv',
@@ -30,6 +30,7 @@
 		'data/fleet.xml',
 		'data/hr_expense.xml',
 		'data/foms_order.xml',
+		'views/website_mobile_app_main_menu.xml',
 		'views/universal.xml',
 		'views/chjs_region.xml',
 		'views/hr_recruitment.xml',

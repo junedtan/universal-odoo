@@ -99,6 +99,13 @@
 			<field name="sequence" type="int">50</field>
 		</record>
 
+		<record id="universal_menu_mobile_app" model="website.menu">
+			<field name="name">Mobile App</field>
+			<field name="url">/mobile_app</field>
+			<field name="parent_id" ref="website.main_menu"/>
+			<field name="sequence" type="int">51</field>
+		</record>
+
 		<record id="universal_action_attendance_mass" model="ir.actions.act_window">
 			<field name="name">Mass Input Attendance</field>	
 			<field name="res_model">hr.attendance.mass.memory</field>	
@@ -279,6 +286,18 @@
 			<field name="view_mode">tree,form</field>
 		</record>
 
+		<record id="universal_action_timeline_by_date" model="ir.actions.client">
+			<field name="name">Timeline by Date</field>
+			<field name="tag">universal.timeline_by_date</field>
+			<field name="context">{'hide_sidebar': 1}</field>
+		</record>
+
+		<record id="universal_action_timeline_by_driver" model="ir.actions.client">
+			<field name="name">Timeline by Driver</field>
+			<field name="tag">universal.timeline_by_driver</field>
+			<field name="context">{'hide_sidebar': 1}</field>
+		</record>
+
 		<menuitem parent="hr.menu_hr_configuration" sequence="3" id="universal_menu_job_position" action="universal_action_job_position"
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver"/>
 		<menuitem parent="base.menu_crm_case_job_req_main" sequence="3" id="hr_recruitment.menu_crm_case_categ0_act_job" action="hr_recruitment.crm_case_categ0_act_job" 
@@ -325,6 +344,8 @@
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver" />
 
 		<menuitem sequence="20" name="FOMS" id="universal_menu_foms" />
+		<menuitem sequence="21" name="Timeline by Date" id="universal_menu_timeline_by_date" action="universal_action_timeline_by_date" />
+		<menuitem sequence="22" name="Timeline by Driver" id="universal_menu_timeline_by_driver" action="universal_action_timeline_by_driver" />
 		
 		<menuitem sequence="1" parent="universal_menu_foms" name="Contract" id="universal_menu_foms_contract" />
 			<menuitem sequence="1" parent="universal_menu_foms_contract" action="universal_action_foms_contract" id="universal_menu_foms_contract1" groups="universal.group_universal_staff_marketing,universal.group_universal_staff_opr_kend,universal.group_universal_staff_opr_driv,universal.group_universal_dispatcher" />

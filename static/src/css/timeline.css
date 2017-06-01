@@ -1,0 +1,24 @@
+.filter-month-year {
+	width: 250px;
+}
+
+.margin6 {
+	margin: 6px;
+}
+
+.bg-planned {
+	background-color: yellow;
+}
+
+.bg-none {
+	background-color: transparent;
+}
+
+.bg-actual {
+	background-color: red;
+}
+
+#btn_filter {
+	margin-left: 10px;
+	width: 100px;
+}

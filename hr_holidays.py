@@ -129,8 +129,8 @@ class resource_calendar_company_holiday(osv.osv):
 			new_vals = {
 				'leave_ids': [(0, False, {
 					'name': vals['name'],
-					'date_from': datetime_to_server(vals['date_from'] + ' 00:00:00', reverse=True),
-					'date_to': datetime_to_server(vals['date_to'] + ' 23:59:59', reverse=True),
+					'date_from': datetime_to_server(vals['date_from'] + ' 00:00:00', reverse=True, to_string=False),
+					'date_to': datetime_to_server(vals['date_to'] + ' 23:59:59', reverse=True, to_string=False),
 					'company_holiday_id': new_id,
 				})]
 			}

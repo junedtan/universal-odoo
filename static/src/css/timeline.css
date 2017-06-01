@@ -6,13 +6,27 @@
     width: 100%;
     margin-top: 0px;
     padding-top: 10px;
+    padding-left: 10px;
+    padding-bottom: 10px;
     position:fixed;
-    height: 50px;
+    height: 55px;
     background: white;
 }
 
+.table th {
+   text-align: center;
+}
+
+.vertical-line {
+    border-left:1px solid LightGray;
+    height:100%;
+    margin-top: -5px;
+    margin-left: -5px;
+    position: fixed;
+}
+
 #div_main {
-    margin-top: 60px;
+    margin-top: 55px;
 }
 
 .ml16 {
@@ -35,7 +49,15 @@
 	background-color: red;
 }
 
+.bg-now {
+	background-color: cyan;
+}
+
 #btn_filter {
 	margin-left: 10px;
 	width: 100px;
+}
+
+.table-fixed tr {
+  overflow-y: auto;
 }

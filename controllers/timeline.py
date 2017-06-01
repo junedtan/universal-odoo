@@ -50,18 +50,24 @@ class universal_timeline(osv.osv):
 				if order_actual.finish_date:
 					finish = datetime.strptime(order_actual.finish_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
 				else:
-					finish = datetime.now()
+					now = datetime.now()
+					if now >= date and now <= tomorrow_date:
+						finish = now
+					elif now >= tomorrow_date:
+						finish = tomorrow_date
+					else:
+						finish = date
 				start_minute = 0
 				finish_minute = 24 * 60
 				if start > date:
 					start_minute = start.hour * 60 + start.minute
 				if finish < tomorrow_date:
 					finish_minute = finish.hour * 60 + finish.minute
-				actual_orders.append({
-					'mode': 'actual',
-					'start': start_minute - finish_before,
-					'finish': finish_minute - start_minute,
-				})
+				if finish_minute - start_minute != 0:
+					actual_orders.append({
+						'start': start_minute - finish_before,
+						'finish': finish_minute - start_minute,
+					})
 				finish_before = finish_minute
 		# PLANNED ORDER
 			planned_orders = []
@@ -75,20 +81,30 @@ class universal_timeline(osv.osv):
 					start_minute = start.hour * 60 + start.minute
 				if finish < tomorrow_date:
 					finish_minute = finish.hour * 60 + finish.minute
-				planned_orders.append({
-					'mode': 'planned',
-					'start': start_minute - finish_before,
-					'finish': finish_minute - start_minute,
-				})
+				if finish_minute - start_minute != 0:
+					planned_orders.append({
+						'start': start_minute - finish_before,
+						'finish': finish_minute - start_minute,
+					})
 				finish_before = finish_minute
+		# NOW
+			now = datetime.now()
+			now_time = []
+			if now >= date and now <= tomorrow_date:
+				now_time.append({
+					'start': now.hour * 60,
+					'finish': now.minute,
+				})
 		# ADD TO RESULT
-			result.append({
-				'driver_id': driver_data.id,
-				'driver_name': driver_data.name,
-				'license_plates': license_plates,
-				'planned_orders': planned_orders,
-				'actual_orders': actual_orders
-			})
+			if len(planned_orders) != 0 or len(actual_orders) != 0:
+				result.append({
+					'driver_id': driver_data.id,
+					'driver_name': driver_data.name,
+					'license_plates': license_plates,
+					'planned_orders': planned_orders,
+					'actual_orders': actual_orders,
+					'now_time': now_time,
+				})
 		hours = []
 		for hour in range(0, 24):
 			hours.append(str(hour).zfill(2) + ':00')
@@ -139,10 +155,11 @@ class universal_timeline(osv.osv):
 					finish_minute = finish.hour * 60 + finish.minute
 				if start_date > datetime.now():
 					finish_minute = 0
-				actual_orders.append({
-					'start': start_minute - finish_before,
-					'finish': finish_minute - start_minute,
-				})
+				if finish_minute - start_minute != 0:
+					actual_orders.append({
+						'start': start_minute - finish_before,
+						'finish': finish_minute - start_minute,
+					})
 				finish_before = finish_minute
 		# PLANNED ORDER
 			planned_orders = []
@@ -156,16 +173,26 @@ class universal_timeline(osv.osv):
 					start_minute = start.hour * 60 + start.minute
 				if finish < tomorrow_date:
 					finish_minute = finish.hour * 60 + finish.minute
-				planned_orders.append({
-					'start': start_minute - finish_before,
-					'finish': finish_minute - start_minute,
-				})
+				if finish_minute - start_minute != 0:
+					planned_orders.append({
+						'start': start_minute - finish_before,
+						'finish': finish_minute - start_minute,
+					})
 				finish_before = finish_minute
+		# NOW
+			now = datetime.now()
+			now_time = []
+			if now >= start_date and now <= tomorrow_date:
+				now_time.append({
+					'start': now.hour * 60,
+					'finish': now.minute,
+				})
 		# ADD TO RESULT
 			result.append({
 				'date_string': start_date.strftime("%d-%m-%Y"),
 				'planned_orders': planned_orders,
-				'actual_orders': actual_orders
+				'actual_orders': actual_orders,
+				'now_time': now_time,
 			})
 			start_date += timedelta(days=1);
 		hours = []

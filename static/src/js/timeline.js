@@ -44,14 +44,15 @@ openerp.universal = function(instance) {
             var today = new Date();
             var date_string = self.pad((today.getMonth()+1),2)  + "/" + self.pad(today.getDate(),2) + '/' + self.pad(today.getFullYear(),4);
             $('#filter_date').val(date_string);
-            $('.header').css({position: 'fixed'});
 			this.onclick_filter_button();
 		},
 
 // METHODS ------------------------------------------------------------------------------------------------------------------
 
 		onclick_filter_button: function(){
-			var filter_date = new Date($('#filter_date').val());
+			var self = this;
+			var date_arr = $('#filter_date').val().split('/');
+			var filter_date = new Date(date_arr[1] + '/' + date_arr[0] + '/' + date_arr[2]);
 			var year = filter_date.getFullYear();
 			var month = filter_date.getMonth()+1;
 			var day = filter_date.getDate();

@@ -38,10 +38,13 @@ openerp.universal = function(instance) {
 		},
 
 		start: function() {
+		    var self = this;
 			this.$el.html(this.QWeb.render("universal_timeline_by_date"));
-			var today = new Date();
-			var date_string = this.pad(today.getFullYear(),4) + "-" + this.pad((today.getMonth()+1),2)  + "-" + this.pad(today.getDate(),2);
-			$('#filter_date').val(date_string);
+            $('.datepicker').datepicker();
+            var today = new Date();
+            var date_string = self.pad((today.getMonth()+1),2)  + "/" + self.pad(today.getDate(),2) + '/' + self.pad(today.getFullYear(),4);
+            $('#filter_date').val(date_string);
+            $('.header').css({position: 'fixed'});
 			this.onclick_filter_button();
 		},
 
@@ -123,8 +126,9 @@ openerp.universal = function(instance) {
 						self.$el.html(self.QWeb.render("universal_timeline_by_driver",{
 							'drivers': response.drivers,
 						}));
+						$('.datepicker').datepicker();
 						var today = new Date();
-						var date_string = self.pad(today.getFullYear(),4) + "-" + self.pad((today.getMonth()+1),2)  + "-" + self.pad(today.getDate(),2);
+						var date_string = self.pad((today.getMonth()+1),2)  + "/" + self.pad(today.getDate(),2) + '/' + self.pad(today.getFullYear(),4);
 						$('#filter_start_date').val(date_string);
 						$('#filter_end_date').val(date_string);
 
@@ -144,8 +148,10 @@ openerp.universal = function(instance) {
 
 		onclick_filter_button: function(){
 			var self = this;
-			var filter_start_date = new Date($('#filter_start_date').val());
-			var filter_end_date = new Date($('#filter_end_date').val());
+			start_date_arr = $('#filter_start_date').val().split('/');
+			end_date_arr = $('#filter_end_date').val().split('/');
+			var filter_start_date = new Date(start_date_arr[1] + '/' + start_date_arr[0] + '/' + start_date_arr[2]);
+			var filter_end_date = new Date(end_date_arr[1] + '/' + end_date_arr[0] + '/' + end_date_arr[2]);
 			var start_date = filter_start_date.getFullYear() + '-' + (filter_start_date.getMonth()+1) + '-' + filter_start_date.getDate();
 			var end_date = filter_end_date.getFullYear() + '-' + (filter_end_date.getMonth()+1) + '-' + filter_end_date.getDate();
 			this.render_table(self.driver_id, start_date, end_date);

@@ -4,19 +4,14 @@
 
 	<t t-name="universal_timeline_by_date">
 		<div class="wrapper_universal_timeline_by_date">
-			<div class="row no-margin margin6" id="div_filter">
-				<div class="col-md-2">
-					<div class="form-group">
-						<label for="filter_date">Date</label>
-						<input class='form-control' type="date" id="filter_date"/>
+			<div class="row no-margin margin6 div_filter">
+				<form class="form-inline">
+  					<div class="form-group">
+						<label for="filter_date">Date: </label>
+						<input class="datepicker" id="filter_date" size="8" type="text" readonly=""/>
 					</div>
-				</div>
-				<div class="col-md-1">
-					<div class="form-group">
-						<label for="button_filter" style="opacity: 0;">label</label>
-						<div type="button" id="button_filter" class="btn btn-primary form-control">Filter</div>
-					</div>
-				</div>
+					<div type="button" id="button_filter" class="btn btn-primary ml16">Filter</div>
+				</form>
 			</div>
 			<hr class="no-margin"/>
 			<div class="row no-margin" id="div_main">
@@ -27,7 +22,7 @@
 	<t t-name="universal_timeline_by_date_table">
 		<div class="wrapper_universal_timelie_by_date_table">
 			<table class="table table-condensed table-striped">
-				<tr>
+				<tr class="header">
 					<th>Driver</th>
 					<th>License Plate</th>
 					<t t-foreach="hours" t-as="hour">
@@ -72,11 +67,11 @@
 
 	<t t-name="universal_timeline_by_driver">
 		<div class="wrapper_universal_timeline_by_driver">
-			<div class="row no-margin padding6 margin6" id="div_filter">
-				<div class="col-md-2">
-					<div class="form-group">
+			<div class="row no-margin padding6 margin6 div_filter">
+				<form class="form-inline">
+  					<div class="form-group">
 						<label for="filter_driver">Driver</label>
-  						<input class="form-control" list="filter_driver_list" id="filter_driver">
+						<input list="filter_driver_list" id="filter_driver">
 							<datalist id="filter_driver_list" >
 								<t t-foreach="drivers" t-as="driver">
 									<option t-att-id="driver.id" t-attf-value="{{driver.name}}"/>
@@ -84,25 +79,16 @@
 							</datalist>
 						</input>
 					</div>
-				</div>
-				<div class="col-md-2">
 					<div class="form-group">
-						<label for="filter_start_date">Start Date</label>
-						<input class='form-control' type="date" id="filter_start_date"/>
+						<label class="ml16" for="filter_start_date">Start Date</label>
+						<input class="datepicker" id="filter_start_date" size="8" type="text" readonly=""/>
 					</div>
-				</div>
-				<div class="col-md-2">
 					<div class="form-group">
-						<label for="filter_end_date">End Date</label>
-						<input class='form-control' type="date" id="filter_end_date"/>
+						<label class="ml16" for="filter_end_date">End Date</label>
+						<input class="datepicker" id="filter_end_date" size="8" type="text" readonly=""/>
 					</div>
-				</div>
-				<div class="col-md-1">
-					<div class="form-group">
-						<label for="button_filter" style="opacity: 0;">label</label>
-						<div type="button" id="button_filter" class="btn btn-primary form-control">Filter</div>
-					</div>
-				</div>
+					<div type="button" id="button_filter" class="btn btn-primary ml16">Filter</div>
+				</form>
 			</div>
 			<hr class="no-margin"/>
 			<div class="row no-margin" id="div_main">

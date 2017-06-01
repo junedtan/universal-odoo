@@ -137,6 +137,8 @@ class universal_timeline(osv.osv):
 					start_minute = start.hour * 60 + start.minute
 				if finish < tomorrow_date:
 					finish_minute = finish.hour * 60 + finish.minute
+				if start_date > datetime.now():
+					finish_minute = 0
 				actual_orders.append({
 					'start': start_minute - finish_before,
 					'finish': finish_minute - start_minute,

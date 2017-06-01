@@ -2,6 +2,23 @@
 	width: 250px;
 }
 
+.div_filter {
+    width: 100%;
+    margin-top: 0px;
+    padding-top: 10px;
+    position:fixed;
+    height: 50px;
+    background: white;
+}
+
+#div_main {
+    margin-top: 60px;
+}
+
+.ml16 {
+	margin-left: 16px;
+}
+
 .margin6 {
 	margin: 6px;
 }

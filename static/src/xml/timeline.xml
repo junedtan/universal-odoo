@@ -36,12 +36,15 @@
 					<tr>
 						<td><t t-esc='driver.driver_name'/></td>
 						<td>
+							<t t-set="first" t-value="'True'"/>
 							<t t-foreach="driver.license_plates" t-as="license_plate">
-								<t t-esc='license_plate'/><br/>
+								<t t-if="first == 'False'">	/ </t>
+								<t t-esc='license_plate'/>
+								<t t-set= "first" t-value="'False'" />
 							</t>
 						</td>
 						<td colspan="24" style="padding:0px;">
-							<div class="progress no-margin" style="height:28px;">
+							<div class="progress">
 								<t t-foreach="driver.planned_orders" t-as="order">
 									<div class="progress-bar bg-none" role="progressbar"
 											t-attf-style='width:{{100.0*order.start/1440}}%'>
@@ -51,7 +54,7 @@
 									</div>
 								</t>
 							</div>
-							<div class="progress no-margin" style="height:28px; margin-top:-28px;">
+							<div class="progress" style="margin-top:-28px;">
 								<t t-foreach="driver.actual_orders" t-as="order">
 									<div class="progress-bar bg-none" role="progressbar"
 											t-attf-style='width:{{100.0*order.start/1440}}%'>
@@ -61,7 +64,7 @@
 									</div>
 								</t>
 							</div>
-							<div class="progress no-margin" style="height:28px; margin-top:-28px;">
+							<div class="progress" style="margin-top:-28px;">
 								<t t-foreach="driver.now_time" t-as="order">
 									<div class="progress-bar bg-none" role="progressbar"
 											t-attf-style='width:{{100.0*order.start/1440}}%'>
@@ -128,7 +131,7 @@
 						<tr>
 							<td><t t-esc='date.date_string'/></td>
 							<td colspan="24" style="padding:0px;">
-								<div class="progress no-margin" style="height:28px;">
+								<div class="progress">
 									<t t-foreach="date.planned_orders" t-as="order">
 										<div class="progress-bar bg-none" role="progressbar"
 												t-attf-style='width:{{100.0*order.start/1440}}%'>
@@ -138,7 +141,7 @@
 										</div>
 									</t>
 								</div>
-								<div class="progress no-margin" style="height:28px; margin-top:-28px;">
+								<div class="progress" style="margin-top:-28px;">
 									<t t-foreach="date.actual_orders" t-as="order">
 										<div class="progress-bar bg-none" role="progressbar"
 												t-attf-style='width:{{100.0*order.start/1440}}%'>
@@ -148,7 +151,7 @@
 										</div>
 									</t>
 								</div>
-								<div class="progress no-margin" style="height:28px; margin-top:-28px;">
+								<div class="progress" style="margin-top:-28px;">
 									<t t-foreach="date.now_time" t-as="order">
 										<div class="progress-bar bg-none" role="progressbar"
 												t-attf-style='width:{{100.0*order.start/1440}}%'>

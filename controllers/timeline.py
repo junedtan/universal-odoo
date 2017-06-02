@@ -10,11 +10,11 @@ class universal_timeline(osv.osv):
 	_description = 'Timeline Controller'
 	_auto = False
 	
-	def get_timeline_by_date(self, cr, uid, day, month, year):
+	def get_timeline_by_date(self, cr, uid, date_string):
 		user_obj = self.pool.get('res.users');
 		order_obj = self.pool.get('foms.order');
 		contract_fleet_obj = self.pool.get('foms.contract.fleet');
-		date = datetime(year=year, month=month, day=day)
+		date = datetime.strptime(date_string,'%m/%d/%Y')
 		tomorrow_date = date + timedelta(days=1)
 		
 		drivers_ids = user_obj.get_user_ids_by_group(cr, SUPERUSER_ID, 'universal', 'group_universal_driver')
@@ -93,7 +93,7 @@ class universal_timeline(osv.osv):
 			if now >= date and now <= tomorrow_date:
 				now_time.append({
 					'start': now.hour * 60,
-					'finish': now.minute,
+					'finish': 60,
 				})
 		# ADD TO RESULT
 			if len(planned_orders) != 0 or len(actual_orders) != 0:
@@ -118,8 +118,8 @@ class universal_timeline(osv.osv):
 	def get_timeline_by_driver(self, cr, uid, driver_id, start_date_string, end_date_string):
 		user_obj = self.pool.get('res.users')
 		order_obj = self.pool.get('foms.order')
-		start_date = datetime.strptime(start_date_string,'%Y-%m-%d')
-		end_date = datetime.strptime(end_date_string,'%Y-%m-%d')
+		start_date = datetime.strptime(start_date_string,'%m/%d/%Y')
+		end_date = datetime.strptime(end_date_string,'%m/%d/%Y')
 		
 		driver_data = user_obj.browse(cr, uid, driver_id)
 		result = []
@@ -185,7 +185,7 @@ class universal_timeline(osv.osv):
 			if now >= start_date and now <= tomorrow_date:
 				now_time.append({
 					'start': now.hour * 60,
-					'finish': now.minute,
+					'finish': 60,
 				})
 		# ADD TO RESULT
 			result.append({

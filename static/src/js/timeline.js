@@ -50,22 +50,14 @@ openerp.universal = function(instance) {
 // METHODS ------------------------------------------------------------------------------------------------------------------
 
 		onclick_filter_button: function(){
-			var self = this;
-			var date_arr = $('#filter_date').val().split('/');
-			var filter_date = new Date(date_arr[1] + '/' + date_arr[0] + '/' + date_arr[2]);
-			var year = filter_date.getFullYear();
-			var month = filter_date.getMonth()+1;
-			var day = filter_date.getDate();
-			this.render_table(day, month, year);
+			this.render_table($('#filter_date').val());
 		},
 
-		render_table: function(day, month, year) {
+		render_table: function(date_string) {
 			var self = this;
 			new this.instance.web.Model('universal.timeline')
         		.call('get_timeline_by_date', {
-        			 'day' : day,
-        			 'month' : month,
-        			 'year': year,
+        			 'date_string' : date_string,
         		}).done(function(response) {
         			console.log(response);
         			if (response.status) {
@@ -149,13 +141,7 @@ openerp.universal = function(instance) {
 
 		onclick_filter_button: function(){
 			var self = this;
-			start_date_arr = $('#filter_start_date').val().split('/');
-			end_date_arr = $('#filter_end_date').val().split('/');
-			var filter_start_date = new Date(start_date_arr[1] + '/' + start_date_arr[0] + '/' + start_date_arr[2]);
-			var filter_end_date = new Date(end_date_arr[1] + '/' + end_date_arr[0] + '/' + end_date_arr[2]);
-			var start_date = filter_start_date.getFullYear() + '-' + (filter_start_date.getMonth()+1) + '-' + filter_start_date.getDate();
-			var end_date = filter_end_date.getFullYear() + '-' + (filter_end_date.getMonth()+1) + '-' + filter_end_date.getDate();
-			this.render_table(self.driver_id, start_date, end_date);
+			this.render_table(self.driver_id, $('#filter_start_date').val(), $('#filter_end_date').val());
 		},
 
 		render_table: function(driver_id, start_date, end_date) {

@@ -26,20 +26,25 @@ $(document).ready(function () {
 			if (self.contract_datas.length != 0) {
 				fleet_vehicle_datas = self.contract_datas[0].fleet_vehicle
 			}
-			$("#main_container", self).html(qweb.render('website_mobile_app_create_order',{
-				'user_group': 'booker',
-				'contract_datas': self.contract_datas,
-				'fleet_vehicle_datas': fleet_vehicle_datas,
-				'start_planned_default': new Date().addHours(1).toDatetimeString(),
-				'finish_planned_default': new Date().addHours(2).toDatetimeString(),
-			}));
+			$.get('/mobile_app/get_user_group', null, function(data){
+				var parsed_data = JSON.parse(data);
+				var user_group = parsed_data['user_group'];
 
-			$('#create_order_contract').change(function(){
-				onchange_create_order_contract($(this).val());
-			});
+				$("#main_container", self).html(qweb.render('website_mobile_app_create_order',{
+					'user_group': user_group,
+					'contract_datas': self.contract_datas,
+					'fleet_vehicle_datas': fleet_vehicle_datas,
+					'start_planned_default': new Date().addHours(1).toDatetimeString(),
+					'finish_planned_default': new Date().addHours(2).toDatetimeString(),
+				}));
 
-			$('#btn_create_order').click(function(){
-				onclick_create_order_button();
+				$('#create_order_contract').change(function(){
+					onchange_create_order_contract($(this).val());
+				});
+
+				$('#btn_create_order').click(function(){
+					onclick_create_order_button();
+				});
 			});
 		});
 	});

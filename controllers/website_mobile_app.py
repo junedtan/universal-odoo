@@ -31,6 +31,14 @@ class website_mobile_app(http.Controller):
 
 	@http.route('/mobile_app', type='http', auth="user", website=True)
 	def mobile_app(self, **kwargs):
+		response = self.mobile_app_get_user_group()
+		data = json.loads(response.data)
+		return request.render("universal.website_mobile_app_main_menu", {
+			'user_group': data['user_group'],
+		})
+	
+	@http.route('/mobile_app/get_user_group', type='http', auth="user", website=True)
+	def mobile_app_get_user_group(self, **kwargs):
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
 		user_obj = env['res.users']
 		is_fullday_passenger = user_obj.has_group('universal.group_universal_passenger')
@@ -49,8 +57,8 @@ class website_mobile_app(http.Controller):
 			user_group = 'approver'
 		# elif is_driver:
 		# 	user_group = 'driver'
-		return request.render("universal.website_mobile_app_main_menu", {
-			'user_group': user_group,
+		return json.dumps({
+			'user_group': user_group
 		})
 	
 	@http.route('/mobile_app/fetch_contracts', type='http', auth="user", website=True)

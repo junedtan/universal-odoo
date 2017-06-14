@@ -34,9 +34,21 @@ class website_mobile_app(http.Controller):
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
 		user_obj = env['res.users']
 		is_fullday_passenger = user_obj.has_group('universal.group_universal_passenger')
+		is_booker = user_obj.has_group('universal.group_universal_booker')
+		is_pic = user_obj.has_group('universal.group_universal_customer_pic')
+		is_approver = user_obj.has_group('universal.group_universal_approver')
+		# is_driver = user_obj.has_group('universal.group_universal_driver')
 		user_group = ''
 		if is_fullday_passenger:
 			user_group = 'fullday_passenger'
+		elif is_booker:
+			user_group = 'booker'
+		elif is_pic:
+			user_group = 'pic'
+		elif is_approver:
+			user_group = 'approver'
+		# elif is_driver:
+		# 	user_group = 'driver'
 		return request.render("universal.website_mobile_app_main_menu", {
 			'user_group': user_group,
 		})

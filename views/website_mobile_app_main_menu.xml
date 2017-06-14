@@ -28,16 +28,16 @@
 									id="website_mobile_app_menu_list_orders">Orders</div>
 						</t>
 						<t t-if="user_group == 'pic'">
-							<!--<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"-->
-									<!--id="website_mobile_app_menu_list_contract">Contract</div>-->
-							<!--<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"-->
-									<!--id="website_mobile_app_menu_list_shuttle">Shuttle</div>-->
+							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
+									id="website_mobile_app_menu_list_contract">Contract</div>
+							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
+									id="website_mobile_app_menu_list_shuttle">Shuttle</div>
 							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
 									id="website_mobile_app_menu_list_orders">Orders</div>
 						</t>
 						<t t-if="user_group == 'approver'">
-							<!--<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"-->
-									<!--id="website_mobile_app_menu_list_contract">Contract</div>-->
+							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
+									id="website_mobile_app_menu_list_contract">Contract</div>
 							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
 									id="website_mobile_app_menu_book_vehicle">Book Vehicle</div>
 							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"

@@ -11,10 +11,12 @@ $(document).ready(function () {
 		$('#website_mobile_app_menu_book_vehicle').removeClass('active');
 		$('#website_mobile_app_menu_list_orders').removeClass('active');
 		$('#website_mobile_app_menu_change_password').removeClass('active');
+		$('#website_mobile_app_menu_list_contract').removeClass('active');
+		$('#website_mobile_app_menu_list_shuttle').removeClass('active');
 		$(id).addClass('active');
 	}
 
-// CREATE ORDER =============================================================================================================
+// BOOK VEHICLE =============================================================================================================
 
 	$('#website_mobile_app_menu_book_vehicle').click(function() {
 		onclick_menu('#website_mobile_app_menu_book_vehicle');
@@ -25,7 +27,7 @@ $(document).ready(function () {
 				fleet_vehicle_datas = self.contract_datas[0].fleet_vehicle
 			}
 			$("#main_container", self).html(qweb.render('website_mobile_app_create_order',{
-				'user_group': 'fullday_passenger',
+				'user_group': 'booker',
 				'contract_datas': self.contract_datas,
 				'fleet_vehicle_datas': fleet_vehicle_datas,
 				'start_planned_default': new Date().addHours(1).toDatetimeString(),
@@ -87,7 +89,8 @@ $(document).ready(function () {
 			if (contract_data.id == contract_id) {
 				$('#create_order_fleet_vehicle').empty();
 				$.each(contract_data.fleet_vehicle, function(index, fleet_vehicle_data) {
-					$('#create_order_fleet_vehicle').append('<option value=' + fleet_vehicle_data.id + '>' + fleet_vehicle_data.name + '</option>');
+					$('#create_order_fleet_vehicle').append(
+						'<option value=' + fleet_vehicle_data.id + '>' + fleet_vehicle_data.name + '</option>');
 				});
 			}
 		});
@@ -171,5 +174,11 @@ $(document).ready(function () {
 			});
 		}
 	}
+
+// LIST CONTRACT ============================================================================================================
+
+	$('#website_mobile_app_menu_list_contract').click(function() {
+
+	});
 
 });

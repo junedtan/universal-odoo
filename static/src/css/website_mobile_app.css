@@ -52,3 +52,7 @@ div.row_hoverable{
 		font-weight: bold
 	}
 }
+
+.no_bold {
+	font-weight:normal;
+}

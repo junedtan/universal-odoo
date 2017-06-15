@@ -45,6 +45,21 @@ $(document).ready(function () {
 				$('#btn_create_order').click(function(){
 					onclick_create_order_button();
 				});
+
+				var ckb_i_am_passenger = $('#ckb_i_am_passenger');
+				ckb_i_am_passenger.click(function(){
+					onclick_create_order_i_am_passenger();
+				});
+				ckb_i_am_passenger.click();
+				onclick_create_order_i_am_passenger();
+
+				$('#btn_add_passenger').click(function(){
+					onclick_create_order_add_passenger();
+				});
+
+				$('#btn_remove_passenger').click(function(){
+					onclick_create_order_remove_passenger(this);
+				});
 			});
 		});
 	});
@@ -100,6 +115,45 @@ $(document).ready(function () {
 			}
 		});
 	};
+
+	function onclick_create_order_i_am_passenger() {
+		var checkbox = $("#ckb_i_am_passenger");
+		my_id = "passenger_me";
+		if(checkbox.prop('checked')) {
+			var table_passengers = $("#passengers");
+			table_passengers.prepend(get_row_string_passenger("Me", "0182381223", false, my_id));
+		} else {
+			$("#"+my_id).remove();
+		}
+	};
+
+	function onclick_create_order_add_passenger() {
+		var table_passengers = $("#passengers");
+		table_passengers.append(get_row_string_passenger("", "", true, ""));
+	};
+
+	function onclick_create_order_remove_passenger(button_remove) {
+		button_remove.closest('tr').remove();
+	};
+
+	function get_row_string_passenger(name, phone, removable, id) {
+		if(id === "") {
+			var row = '<tr>';
+		} else {
+			var row = '<tr id="' + id + '">'
+		}
+		row += '<td><input type="text" class="form-control" value="' + name + '"/></td>' +
+				'<td><input type="text" class="form-control" value="' + phone + '"/></td>';
+		if(removable) {
+			row += '<td><button id="remove_passenger" type="button" class="close" aria-label="Close">' +
+						'<span aria-hidden="true">x</span>' +
+					'</button></td>';
+		} else {
+			row += '<td></td>';
+		}
+		row += '</tr>';
+		return row;
+	}
 
 // LIST ORDER ===============================================================================================================
 

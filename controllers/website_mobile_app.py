@@ -75,18 +75,13 @@ class website_mobile_app(http.Controller):
 	
 	@http.route('/mobile_app/get_required_book_vehicle', type='http', auth="user", website=True)
 	def mobile_app_get_required_book_vehicle(self, **kwargs):
+		# User
 		response_user_group = self.mobile_app_get_user_group()
 		data_user_group = json.loads(response_user_group.data)
-		
-		response_fetch_contract = self.mobile_app_fetch_contracts()
-		data_fetch_contract = json.loads(response_fetch_contract.data)
-		
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
 		uid = env.uid
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		data_users = handler_obj.get_user_data({
-			'user_id': uid,
-		})
+		data_users = handler_obj.get_user_data({})
 		user = {
 			'name': '',
 			'phone': '',
@@ -97,11 +92,33 @@ class website_mobile_app(http.Controller):
 				'phone': data_user.phone,
 			}
 			break
+		# Contract
+		response_fetch_contract = self.mobile_app_fetch_contracts()
+		data_fetch_contract = json.loads(response_fetch_contract.data)
+		# Order Type
 		order_type_arr = []
 		for order_type in _ORDER_TYPE:
 			order_type_arr.append({
 				'id': order_type[0],
 				'name': order_type[1],
+			})
+		# Route Area To
+		route_city_arr = []
+		regions = handler_obj.search_region({})
+		for region in regions:
+			areas = handler_obj.search_order_area({
+				'homebase_id': region.id
+			})
+			route_area_arr = []
+			for area in areas:
+				route_area_arr.append({
+					'id': area.id,
+					'name': area.name,
+				})
+			route_city_arr.append({
+				'id': region.id,
+				'name': region.name,
+				'areas': route_area_arr,
 			})
 		
 		return json.dumps({
@@ -109,6 +126,7 @@ class website_mobile_app(http.Controller):
 			'contract_datas': data_fetch_contract,
 			'user': user,
 			'order_type': order_type_arr,
+			'route_to': route_city_arr,
 		})
 	
 	@http.route('/mobile_app/fetch_contracts', type='http', auth="user", website=True)
@@ -140,7 +158,6 @@ class website_mobile_app(http.Controller):
 					})
 			# Order Area From
 			order_areas = handler_obj.search_order_area({
-				'user_id': uid,
 				'homebase_id': contract_data.homebase_id.id,
 			})
 			route_from_arr = []
@@ -268,6 +285,11 @@ class website_mobile_app_handler(osv.osv):
 		order_area_obj = self.pool.get('foms.order.area');
 		order_area_ids = order_area_obj.search(cr, uid, [('homebase_id', '=', param_context['homebase_id'])], context=param_context)
 		return order_area_obj.browse(cr, uid, order_area_ids)
+	
+	def search_region(self, cr, uid, param_context):
+		region_obj = self.pool.get('chjs.region');
+		region_ids = region_obj.search(cr, uid, [])
+		return region_obj.browse(cr, uid, region_ids)
 	
 	def search_contract(self, cr, uid, param_context):
 		contract_obj = self.pool.get('foms.contract');

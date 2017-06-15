@@ -248,12 +248,26 @@ $(document).ready(function () {
 				} ,
 			});
 		}
-	}
+	};
 
 // LIST CONTRACT ============================================================================================================
 
 	$('#website_mobile_app_menu_list_contract').click(function() {
-
+		onclick_menu('#website_mobile_app_menu_list_contract');
+			$.get('/mobile_app/fetch_contracts', null, function(data){
+				$("#main_container", self).html(qweb.render('website_mobile_app_list_contract',{
+					'contract_datas': JSON.parse(data),
+				}));
+//				$(".accordion").click(function(event) {
+//					$(this).toggleClass("active");
+//					var detail = $(this).next();
+//					if (detail.css("maxHeight") != "0px"){
+//						detail.css("maxHeight", "0px");
+//					} else {
+//						detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
+//					}
+//				});
+       		});
 	});
 
 });

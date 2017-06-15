@@ -27,6 +27,12 @@ _ORDER_STATE = [
 	('canceled','Canceled')
 ]
 
+_SERVICE_TYPE = [
+	('full_day','Full-day Service'),
+	('by_order','By Order'),
+	('shuttle','Shuttle')
+]
+
 class website_mobile_app(http.Controller):
 
 	@http.route('/mobile_app', type='http', auth="user", website=True)
@@ -83,6 +89,10 @@ class website_mobile_app(http.Controller):
 				'id': contract_data.id,
 				'name': contract_data.name,
 				'fleet_vehicle': fleet_vehicle_arr,
+				'state': contract_data.state,
+				'start_date': datetime.strptime(contract_data.start_date,'%Y-%m-%d').strftime('%d-%m-%Y'),
+				'end_date': datetime.strptime(contract_data.end_date,'%Y-%m-%d').strftime('%d-%m-%Y'),
+				'service_type': dict(_SERVICE_TYPE).get(contract_data.service_type, ''),
 			});
 		result = sorted(result, key=lambda contract: contract['name'])
 		return json.dumps(result)

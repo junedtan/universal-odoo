@@ -232,17 +232,29 @@
 				</div>
 			</t>
 			<t t-if="contract_datas.length != 0">
+				<t t-set="i" t-value="0"/>
 				<t t-foreach="contract_datas" t-as="contract">
-					<div class="div_list_contract" t-attf-id_contract = "{{contract.id}}">
-						<div class="list_title">
+					<div class="div_list_contract" t-attf-id_contract = "{{i}}">
+						<div class="list_title" t-attf-id_contract = "{{i}}">
 							<b><t t-esc="contract.name"/></b> - <t t-esc="contract.state"/>
 						</div>
 						<t t-esc="contract.start_date"/> / <t t-esc="contract.end_date"/><br></br>
 						Service Type: <t t-esc="contract.service_type"/>
 						<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
 					</div>
+					<t t-set="i" t-value="i+1"/>
 				</t>
 			</t>
 		</t>
+	</t>
+
+	<!-- DETAIL CONTRACT -->
+	<t t-name="website_mobile_app_detail_contract">
+		<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
+			id="website_mobile_app_menu_info_contract">Info</div>
+		<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
+			id="website_mobile_app_menu_usage_control">Usage Control</div>
+		<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
+			id="website_mobile_app_menu_quota_changes">Quota Changes</div>
 	</t>
 </templates>

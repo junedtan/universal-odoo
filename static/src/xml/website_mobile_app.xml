@@ -91,7 +91,9 @@
 			<div id="create_order_route_from">
 				<label class="no_bold" for="create_order_route_from_area">Area</label>
 				<select id="create_order_route_from_area" class="form-control">
-					<!-- TODO -->
+					<t t-foreach="from_areas" t-as="from_area">
+						<option t-attf-value="{{from_area.id}}"><t t-esc="from_area.name"/></option>
+					</t>
 				</select>
 				<label class="no_bold" for="create_order_route_from_location">Location</label>
 				<input id="create_order_route_from_location" class="form-control" type="text"/>

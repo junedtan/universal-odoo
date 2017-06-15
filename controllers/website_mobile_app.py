@@ -122,6 +122,7 @@ class website_mobile_app(http.Controller):
 		})
 		result = [];
 		for contract_data in contract_datas:
+			# Fleet
 			fleet_vehicle_arr = []
 			for fleet_data in contract_data.car_drivers:
 				if fleet_data.fullday_user_id.id == uid:
@@ -129,6 +130,7 @@ class website_mobile_app(http.Controller):
 						'id': fleet_data.fleet_vehicle_id.id,
 						'name': fleet_data.fleet_vehicle_id.name,
 					})
+			# Unit
 			unit_arr = []
 			for allocation_unit in contract_data.allocation_units:
 				if uid in allocation_unit.booker_ids.ids:
@@ -136,11 +138,24 @@ class website_mobile_app(http.Controller):
 						'id': allocation_unit.id,
 						'name': allocation_unit.name,
 					})
+			# Order Area From
+			order_areas = handler_obj.search_order_area({
+				'user_id': uid,
+				'homebase_id': contract_data.homebase_id.id,
+			})
+			route_from_arr = []
+			for area in order_areas:
+				route_from_arr.append({
+					'id': area.id,
+					'name': area.name,
+				})
+			# Appending data
 			result.append({
 				'id': contract_data.id,
 				'name': contract_data.name,
 				'fleet_vehicle': fleet_vehicle_arr,
 				'units': unit_arr,
+				'route_from': route_from_arr,
 				'state': contract_data.state,
 				'start_date': datetime.strptime(contract_data.start_date,'%Y-%m-%d').strftime('%d-%m-%Y'),
 				'end_date': datetime.strptime(contract_data.end_date,'%Y-%m-%d').strftime('%d-%m-%Y'),
@@ -248,6 +263,11 @@ class website_mobile_app_handler(osv.osv):
 		order_obj = self.pool.get('foms.order');
 		order_ids = order_obj.search(cr, uid, [], context=param_context)
 		return order_obj.browse(cr, uid, order_ids)
+	
+	def search_order_area(self, cr, uid, param_context):
+		order_area_obj = self.pool.get('foms.order.area');
+		order_area_ids = order_area_obj.search(cr, uid, [('homebase_id', '=', param_context['homebase_id'])], context=param_context)
+		return order_area_obj.browse(cr, uid, order_area_ids)
 	
 	def search_contract(self, cr, uid, param_context):
 		contract_obj = self.pool.get('foms.contract');

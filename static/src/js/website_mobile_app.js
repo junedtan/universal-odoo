@@ -31,9 +31,11 @@ $(document).ready(function () {
 
 			var fleet_vehicle_datas = [];
 			var units = [];
+			var route_from = [];
 			if (self.contract_datas.length != 0) {
 				fleet_vehicle_datas = self.contract_datas[0].fleet_vehicle;
 				units = self.contract_datas[0].units;
+				route_from = self.contract_datas[0].route_from;
 			}
 
 			$("#main_container", self).html(qweb.render('website_mobile_app_create_order',{
@@ -44,9 +46,9 @@ $(document).ready(function () {
 				'units': units,
 				'order_types': order_type,
 				// Route
-//				'from_area': ,
-//				'to_city': ,
-//				'to_area': ,
+				'from_areas': route_from,
+//				'to_cities': ,
+//				'to_areas': ,
 				// Passenger
 				// Time
 				'start_planned_default': new Date().addHours(1).toDatetimeString(),

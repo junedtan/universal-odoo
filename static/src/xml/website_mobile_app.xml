@@ -69,13 +69,17 @@
 		<div class="form-group ml10">
 			<label for="create_order_info_unit">Unit</label>
 			<select id="create_order_info_unit" class="form-control">
-				<!-- TODO -->
+				<t t-foreach="units" t-as="unit">
+					<option t-attf-value="{{unit.id}}"><t t-esc="unit.name"/></option>
+				</t>
 			</select>
 		</div>
 		<div class="form-group ml10">
 			<label for="create_order_info_type">Type</label>
 			<select id="create_order_info_type" class="form-control">
-				<!-- TODO -->
+				<t t-foreach="order_types" t-as="order_type">
+					<option t-attf-value="{{order_type.id}}"><t t-esc="order_type.name"/></option>
+				</t>
 			</select>
 		</div>
 	</t>

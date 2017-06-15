@@ -25,12 +25,15 @@ $(document).ready(function () {
 			var response = JSON.parse(data);
 			console.log(response);
 			var user_group = response['user_group'];
+			var order_type = response['order_type'];
 			self.user = response['user'];
 			self.contract_datas = response['contract_datas'];
 
 			var fleet_vehicle_datas = [];
+			var units = [];
 			if (self.contract_datas.length != 0) {
 				fleet_vehicle_datas = self.contract_datas[0].fleet_vehicle;
+				units = self.contract_datas[0].units;
 			}
 
 			$("#main_container", self).html(qweb.render('website_mobile_app_create_order',{
@@ -38,8 +41,8 @@ $(document).ready(function () {
 				// Information
 				'contract_datas': self.contract_datas,
 				'fleet_vehicle_datas': fleet_vehicle_datas,
-//				'units': ,
-//				'types': ,
+				'units': units,
+				'order_types': order_type,
 				// Route
 //				'from_area': ,
 //				'to_city': ,

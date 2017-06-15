@@ -27,6 +27,12 @@ _ORDER_STATE = [
 	('canceled','Canceled')
 ]
 
+_ORDER_TYPE = [
+	('one_way_drop_off','One-way Drop Off'),
+	('one_way_pickup','One-way Pick-up'),
+	('two_way','Two Way')
+]
+
 class website_mobile_app(http.Controller):
 
 	@http.route('/mobile_app', type='http', auth="user", website=True)
@@ -85,11 +91,18 @@ class website_mobile_app(http.Controller):
 				'phone': data_user.phone,
 			}
 			break
+		order_type_arr = []
+		for order_type in _ORDER_TYPE:
+			order_type_arr.append({
+				'id': order_type[0],
+				'name': order_type[1],
+			})
 		
 		return json.dumps({
 			'user_group': data_user_group['user_group'],
 			'contract_datas': data_fetch_contract,
 			'user': user,
+			'order_type': order_type_arr,
 		})
 	
 	@http.route('/mobile_app/fetch_contracts', type='http', auth="user", website=True)
@@ -110,10 +123,18 @@ class website_mobile_app(http.Controller):
 						'id': fleet_data.fleet_vehicle_id.id,
 						'name': fleet_data.fleet_vehicle_id.name,
 					})
+			unit_arr = []
+			for allocation_unit in contract_data.allocation_units:
+				if uid in allocation_unit.booker_ids.ids:
+					unit_arr.append({
+						'id': allocation_unit.id,
+						'name': allocation_unit.name,
+					})
 			result.append({
 				'id': contract_data.id,
 				'name': contract_data.name,
 				'fleet_vehicle': fleet_vehicle_arr,
+				'units': unit_arr,
 			});
 		result = sorted(result, key=lambda contract: contract['name'])
 		return json.dumps(result)

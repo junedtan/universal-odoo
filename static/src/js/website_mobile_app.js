@@ -26,6 +26,7 @@ $(document).ready(function () {
 			console.log(response);
 			var user_group = response['user_group'];
 			var order_type = response['order_type'];
+			var cities = response['route_to'];
 			self.user = response['user'];
 			self.contract_datas = response['contract_datas'];
 
@@ -47,8 +48,8 @@ $(document).ready(function () {
 				'order_types': order_type,
 				// Route
 				'from_areas': route_from,
-//				'to_cities': ,
-//				'to_areas': ,
+				'to_cities': cities,
+				'to_areas': cities[0].areas,
 				// Passenger
 				// Time
 				'start_planned_default': new Date().addHours(1).toDatetimeString(),

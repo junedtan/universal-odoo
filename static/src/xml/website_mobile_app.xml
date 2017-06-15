@@ -104,11 +104,15 @@
 			<div id="create_order_route_to">
 				<label class="no_bold" for="create_order_route_to_city">City</label>
 				<select id="create_order_route_to_city" class="form-control">
-					<!-- TODO -->
+					<t t-foreach="to_cities" t-as="city">
+						<option t-attf-value="{{city.id}}"><t t-esc="city.name"/></option>
+					</t>
 				</select>
 				<label class="no_bold" for="create_order_route_to_area">Area</label>
 				<select id="create_order_route_to_area" class="form-control">
-					<!-- TODO -->
+					<t t-foreach="to_areas" t-as="area">
+						<option t-attf-value="{{area.id}}"><t t-esc="area.name"/></option>
+					</t>
 				</select>
 				<label class="no_bold" for="create_order_route_to_location">Location</label>
 				<input id="create_order_route_to_location" class="form-control" type="text"/>

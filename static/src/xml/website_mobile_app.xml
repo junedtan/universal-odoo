@@ -48,16 +48,16 @@
 	<t t-name="website_mobile_app_create_order_information_basic">
 		<h2>Information</h2>
 		<div class="form-group ml10">
-			<label for="create_order_contract">Contract</label>
-			<select id="create_order_contract" class="form-control">
+			<label for="create_order_info_contract">Contract</label>
+			<select id="create_order_info_contract" class="form-control">
 				<t t-foreach="contract_datas" t-as="contract_data">
 					<option t-attf-value="{{contract_data.id}}"><t t-esc="contract_data.name"/></option>
 				</t>
 			</select>
 		</div>
 		<div class="form-group ml10">
-			<label for="create_order_fleet_vehicle">Fleet Vehicle</label>
-			<select id="create_order_fleet_vehicle" class="form-control">
+			<label for="create_order_info_fleet_vehicle">Fleet Vehicle</label>
+			<select id="create_order_info_fleet_vehicle" class="form-control">
 				<t t-foreach="fleet_vehicle_datas" t-as="fleet_vehicle_data">
 					<option t-attf-value="{{fleet_vehicle_data.id}}"><t t-esc="fleet_vehicle_data.name"/></option>
 				</t>
@@ -67,29 +67,63 @@
 
 	<t t-name="website_mobile_app_create_order_information_other">
 		<div class="form-group ml10">
-			<label for="create_order_contract">Unit</label>
-			<select id="create_order_contract" class="form-control">
-				<!--<t t-foreach="contract_datas" t-as="contract_data">-->
-					<!--<option t-attf-value="{{contract_data.id}}"><t t-esc="contract_data.name"/></option>-->
-				<!--</t>-->
+			<label for="create_order_info_unit">Unit</label>
+			<select id="create_order_info_unit" class="form-control">
+				<!-- TODO -->
 			</select>
 		</div>
 		<div class="form-group ml10">
-			<label for="create_order_fleet_vehicle">Type</label>
-			<select id="create_order_fleet_vehicle" class="form-control">
-				<!--<t t-foreach="fleet_vehicle_datas" t-as="fleet_vehicle_data">-->
-					<!--<option t-attf-value="{{fleet_vehicle_data.id}}"><t t-esc="fleet_vehicle_data.name"/></option>-->
-				<!--</t>-->
+			<label for="create_order_info_type">Type</label>
+			<select id="create_order_info_type" class="form-control">
+				<!-- TODO -->
 			</select>
 		</div>
 	</t>
 
 	<t t-name="website_mobile_app_create_order_route">
 		<h2>Route</h2>
+		<div class="form-group ml10">
+			<label for="create_order_route_from">From</label>
+			<div id="create_order_route_from">
+				<label class="no_bold" for="create_order_route_from_area">Area</label>
+				<select id="create_order_route_from_area" class="form-control">
+					<!-- TODO -->
+				</select>
+				<label class="no_bold" for="create_order_route_from_location">Location</label>
+				<input id="create_order_route_from_location" class="form-control" type="text"/>
+			</div>
+		</div>
+		<div class="form-group ml10">
+			<label for="create_order_route_to">To</label>
+			<div id="create_order_route_to">
+				<label class="no_bold" for="create_order_route_to_city">City</label>
+				<select id="create_order_route_to_city" class="form-control">
+					<!-- TODO -->
+				</select>
+				<label class="no_bold" for="create_order_route_to_area">Area</label>
+				<select id="create_order_route_to_area" class="form-control">
+					<!-- TODO -->
+				</select>
+				<label class="no_bold" for="create_order_route_to_location">Location</label>
+				<input id="create_order_route_to_location" class="form-control" type="text"/>
+			</div>
+		</div>
 	</t>
 
 	<t t-name="website_mobile_app_create_order_passenger">
 		<h2>Passenger</h2>
+		<label class="no_bold"><input id="ckb_i_am_passenger" type="checkbox" name="passenger" value="1"> I am the passenger</input></label>
+		<table id="passengers" class="table table-bordered table-striped table-highlight">
+			<thead>
+				<th>Name</th>
+				<th>Phone</th>
+				<th><button id="btn_add_passenger" type="button" class="add" aria-label="Add">
+						<span aria-hidden="true">+</span>
+					</button></th>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
 	</t>
 
 	<t t-name="website_mobile_app_create_order_time">

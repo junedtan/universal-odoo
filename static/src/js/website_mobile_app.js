@@ -56,10 +56,6 @@ $(document).ready(function () {
 				$('#btn_add_passenger').click(function(){
 					onclick_create_order_add_passenger();
 				});
-
-				$('#btn_remove_passenger').click(function(){
-					onclick_create_order_remove_passenger(this);
-				});
 			});
 		});
 	});
@@ -130,6 +126,9 @@ $(document).ready(function () {
 	function onclick_create_order_add_passenger() {
 		var table_passengers = $("#passengers");
 		table_passengers.append(get_row_string_passenger("", "", true, ""));
+		$(".btn_remove_passenger").click(function(){
+			onclick_create_order_remove_passenger(this);
+		});
 	};
 
 	function onclick_create_order_remove_passenger(button_remove) {
@@ -145,7 +144,7 @@ $(document).ready(function () {
 		row += '<td><input type="text" class="form-control" value="' + name + '"/></td>' +
 				'<td><input type="text" class="form-control" value="' + phone + '"/></td>';
 		if(removable) {
-			row += '<td><button id="remove_passenger" type="button" class="close" aria-label="Close">' +
+			row += '<td><button type="button" class="btn_remove_passenger close" aria-label="Close">' +
 						'<span aria-hidden="true">x</span>' +
 					'</button></td>';
 		} else {
@@ -153,7 +152,7 @@ $(document).ready(function () {
 		}
 		row += '</tr>';
 		return row;
-	}
+	};
 
 // LIST ORDER ===============================================================================================================
 

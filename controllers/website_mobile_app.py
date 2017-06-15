@@ -61,6 +61,37 @@ class website_mobile_app(http.Controller):
 			'user_group': user_group
 		})
 	
+	@http.route('/mobile_app/get_required_book_vehicle', type='http', auth="user", website=True)
+	def mobile_app_get_required_book_vehicle(self, **kwargs):
+		response_user_group = self.mobile_app_get_user_group()
+		data_user_group = json.loads(response_user_group.data)
+		
+		response_fetch_contract = self.mobile_app_fetch_contracts()
+		data_fetch_contract = json.loads(response_fetch_contract.data)
+		
+		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
+		uid = env.uid
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		data_users = handler_obj.get_user_data({
+			'user_id': uid,
+		})
+		user = {
+			'name': '',
+			'phone': '',
+		}
+		for data_user in data_users:
+			user = {
+				'name': data_user.name,
+				'phone': data_user.phone,
+			}
+			break
+		
+		return json.dumps({
+			'user_group': data_user_group['user_group'],
+			'contract_datas': data_fetch_contract,
+			'user': user,
+		})
+	
 	@http.route('/mobile_app/fetch_contracts', type='http', auth="user", website=True)
 	def mobile_app_fetch_contracts(self, **kwargs):
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
@@ -176,6 +207,11 @@ class website_mobile_app_handler(osv.osv):
 	_name = 'universal.website.mobile_app.handler'
 	_description = 'Model for handling website-based requests'
 	_auto = False
+	
+	def get_user_data(self, cr, uid, param_context):
+		user_obj = self.pool.get('res.users')
+		user = user_obj.browse(cr, uid, uid)
+		return user.partner_id
 	
 	def search_order(self, cr, uid, param_context):
 		order_obj = self.pool.get('foms.order');

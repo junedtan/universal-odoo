@@ -6,6 +6,7 @@ $(document).ready(function () {
 	qweb.add_template('/universal/static/src/xml/website_mobile_app.xml');
 
 	var contract_datas = [];
+	var user = {};
 
 	function onclick_menu(id) {
 		$('#website_mobile_app_menu_book_vehicle').removeClass('active');
@@ -20,42 +21,52 @@ $(document).ready(function () {
 
 	$('#website_mobile_app_menu_book_vehicle').click(function() {
 		onclick_menu('#website_mobile_app_menu_book_vehicle');
-		$.get('/mobile_app/fetch_contracts', null, function(data){
-			self.contract_datas = JSON.parse(data);
-			var fleet_vehicle_datas = []
+		$.get('/mobile_app/get_required_book_vehicle', null, function(data){
+			var response = JSON.parse(data);
+			console.log(response);
+			var user_group = response['user_group'];
+			self.user = response['user'];
+			self.contract_datas = response['contract_datas'];
+
+			var fleet_vehicle_datas = [];
 			if (self.contract_datas.length != 0) {
-				fleet_vehicle_datas = self.contract_datas[0].fleet_vehicle
+				fleet_vehicle_datas = self.contract_datas[0].fleet_vehicle;
 			}
-			$.get('/mobile_app/get_user_group', null, function(data){
-				var parsed_data = JSON.parse(data);
-				var user_group = parsed_data['user_group'];
 
-				$("#main_container", self).html(qweb.render('website_mobile_app_create_order',{
-					'user_group': user_group,
-					'contract_datas': self.contract_datas,
-					'fleet_vehicle_datas': fleet_vehicle_datas,
-					'start_planned_default': new Date().addHours(1).toDatetimeString(),
-					'finish_planned_default': new Date().addHours(2).toDatetimeString(),
-				}));
+			$("#main_container", self).html(qweb.render('website_mobile_app_create_order',{
+				'user_group': user_group,
+				// Information
+				'contract_datas': self.contract_datas,
+				'fleet_vehicle_datas': fleet_vehicle_datas,
+//				'units': ,
+//				'types': ,
+				// Route
+//				'from_area': ,
+//				'to_city': ,
+//				'to_area': ,
+				// Passenger
+				// Time
+				'start_planned_default': new Date().addHours(1).toDatetimeString(),
+				'finish_planned_default': new Date().addHours(2).toDatetimeString(),
+			}));
 
-				$('#create_order_contract').change(function(){
-					onchange_create_order_contract($(this).val());
-				});
+			$('#create_order_contract').change(function(){
+				onchange_create_order_contract($(this).val());
+			});
 
-				$('#btn_create_order').click(function(){
-					onclick_create_order_button();
-				});
+			$('#btn_create_order').click(function(){
+				onclick_create_order_button();
+			});
 
-				var ckb_i_am_passenger = $('#ckb_i_am_passenger');
-				ckb_i_am_passenger.click(function(){
-					onclick_create_order_i_am_passenger();
-				});
-				ckb_i_am_passenger.click();
+			var ckb_i_am_passenger = $('#ckb_i_am_passenger');
+			ckb_i_am_passenger.click(function(){
 				onclick_create_order_i_am_passenger();
+			});
+			ckb_i_am_passenger.click();
+			onclick_create_order_i_am_passenger();
 
-				$('#btn_add_passenger').click(function(){
-					onclick_create_order_add_passenger();
-				});
+			$('#btn_add_passenger').click(function(){
+				onclick_create_order_add_passenger();
 			});
 		});
 	});
@@ -117,7 +128,8 @@ $(document).ready(function () {
 		my_id = "passenger_me";
 		if(checkbox.prop('checked')) {
 			var table_passengers = $("#passengers");
-			table_passengers.prepend(get_row_string_passenger("Me", "0182381223", false, my_id));
+			table_passengers.prepend(get_row_string_passenger(self.user.name,
+				self.user.phone === false ? '-' : self.user.phone, my_id, false));
 		} else {
 			$("#"+my_id).remove();
 		}
@@ -125,7 +137,7 @@ $(document).ready(function () {
 
 	function onclick_create_order_add_passenger() {
 		var table_passengers = $("#passengers");
-		table_passengers.append(get_row_string_passenger("", "", true, ""));
+		table_passengers.append(get_row_string_passenger("", "", "", true));
 		$(".btn_remove_passenger").click(function(){
 			onclick_create_order_remove_passenger(this);
 		});
@@ -135,20 +147,22 @@ $(document).ready(function () {
 		button_remove.closest('tr').remove();
 	};
 
-	function get_row_string_passenger(name, phone, removable, id) {
+	function get_row_string_passenger(name, phone, id, removable) {
 		if(id === "") {
 			var row = '<tr>';
 		} else {
-			var row = '<tr id="' + id + '">'
+			var row = '<tr id="' + id + '">';
 		}
-		row += '<td><input type="text" class="form-control" value="' + name + '"/></td>' +
-				'<td><input type="text" class="form-control" value="' + phone + '"/></td>';
-		if(removable) {
-			row += '<td><button type="button" class="btn_remove_passenger close" aria-label="Close">' +
-						'<span aria-hidden="true">x</span>' +
-					'</button></td>';
+		if(removable === true) {
+			row += '<td><input type="text" class="form-control" value="' + name + '"/></td>' +
+                   	'<td><input type="text" class="form-control" value="' + phone + '"/></td>' +
+                   	'<td><button type="button" class="btn_remove_passenger close" aria-label="Close">' +
+							'<span aria-hidden="true">x</span>' +
+						'</button></td>';
 		} else {
-			row += '<td></td>';
+			row += '<td><input type="text" class="form-control" value="' + name + '" readonly/></td>' +
+                   	'<td><input type="text" class="form-control" value="' + phone + '" readonly/></td>' +
+                   	'<td></td>';
 		}
 		row += '</tr>';
 		return row;

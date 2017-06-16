@@ -92,12 +92,13 @@ $(document).ready(function () {
 				passengers.push({
 					'name': name,
 					'phone': phone,
-					'is_orderer': row.val()
+					'is_orderer': row.attr("id") ? true : false,
 				})
 			} else {
 				alert('Please complete the passengers information, name and phone number are both required!'); return false;
 			}
 		});
+		console.log(passengers);
 
 		create_order_json = {
 			'contract_id': $('#create_order_info_contract').val(),

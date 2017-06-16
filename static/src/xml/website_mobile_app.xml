@@ -278,7 +278,7 @@
 								<td><t t-esc="shuttle.assigned_vehicle_name"/></td>
 							</tr>
 						</table>
-						<hr style="bshuttle:solid 1px; bshuttle-color:darkgrey; margin:0px;"/>
+						<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
 					</t>
 				</div>
 			</t>
@@ -361,6 +361,86 @@
 					<td><t t-esc="max_delay_minutes"/></td>
 				</tr>
 			</table>
+		</div>
+	</t>
+
+	<!-- DETAIL CONTRACT QUOTA CHANGES -->
+	<t t-name="website_mobile_app_detail_contract_quota_changes">
+		<div class="contract_info no_padding">
+			<t t-foreach="classifications" t-as="classification">
+				<div class="row_hoverable accordion">
+					<h5><t t-esc="classification"/></h5>
+				</div>
+				<t t-if="quota_changes[classification_value].length == 0">
+					<div class="detail_container accordion_detail" >
+						<div class="col-xs-12" style="text-align: center; color: darkgray;">
+							<h4>Data Kosong</h4>
+						</div>
+					</div>
+				</t>
+				<t t-if="quota_changes[classification_value].length != 0">
+					<div class="detail_container accordion_detail" >
+						<t t-foreach="quota_changes[classification_value]" t-as="quota_change">
+							<div class="list_title">
+								<b><t t-esc="quota_change.name"/></b>
+							</div>
+							<table class="table">
+								<tr>
+									<td class="td_list">Request Date</td>
+									<td class="td_list">:</td>
+									<td><t t-esc="quota_change.request_date"/></td>
+								</tr>
+								<tr>
+									<td class="td_list">Request By</td>
+									<td class="td_list">:</td>
+									<td><t t-esc="quota_change.request_by"/></td>
+								</tr>
+								<tr>
+									<td class="td_list">Request Type</td>
+									<td class="td_list">:</td>
+									<td><t t-esc="quota_change.request_type"/></td>
+								</tr>
+								<tr>
+									<td class="td_list">Yellow Limit</td>
+									<td class="td_list">:</td>
+									<td><strike><t t-esc="quota_change.yellow_limit_old"/></strike></td>
+								</tr>
+								<tr>
+									<td class="td_list"></td>
+									<td class="td_list"></td>
+									<td><t t-esc="quota_change.yellow_limit_new"/></td>
+								</tr>
+								<tr>
+									<td class="td_list">Red Limit</td>
+									<td class="td_list">:</td>
+									<td><strike><t t-esc="quota_change.red_limit_old"/></strike></td>
+								</tr>
+								<tr>
+									<td class="td_list"></td>
+									<td class="td_list"></td>
+									<td><t t-esc="quota_change.red_limit_new"/></td>
+								</tr>
+								<tr>
+									<td class="td_list">Respond Date</td>
+									<td class="td_list">:</td>
+									<td><t t-esc="quota_change.respond_date"/></td>
+								</tr>
+								<tr>
+									<td class="td_list">Status</td>
+									<td class="td_list">:</td>
+									<td><t t-esc="quota_change.state"/></td>
+								</tr>
+								<tr>
+									<td class="td_list">Reason</td>
+									<td class="td_list">:</td>
+									<td><t t-esc="quota_change.reason"/></td>
+								</tr>
+							</table>
+							<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
+						</t>
+					</div>
+				</t>
+			</t>
 		</div>
 	</t>
 </templates>

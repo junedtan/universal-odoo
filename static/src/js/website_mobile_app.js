@@ -414,5 +414,16 @@ $(document).ready(function () {
 				'max_delay_minutes': contract.max_delay_minutes,
 			}));
 		});
+		$('#website_mobile_app_menu_quota_changes').click(function() {
+			onclick_detail_contract_menu('#website_mobile_app_menu_quota_changes');
+			var contract = self.contract_datas[self.id_click_contract]
+			$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_detail_contract_quota_changes',{
+				'classifications': {
+					'Pending': 'pending',
+                    'History': 'history',
+				}
+				'quota_changes': contract.quota_changes_by_classification,
+			}));
+		});
 	};
 });

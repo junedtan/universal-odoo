@@ -166,12 +166,25 @@ class website_mobile_app(http.Controller):
 					'id': area.id,
 					'name': area.name,
 				})
+			# Shuttle
+			shuttle_arr = []
+			for shuttle_schedule in contract_data.shuttle_schedules:
+				if uid == shuttle_schedule.route_id.header_id.id:
+					shuttle_arr.append({
+						'id': shuttle_schedule.id,
+						'name': shuttle_schedule.route_id.name,
+						'departure_time': shuttle_schedule.departure_time,
+						# 'arrival_time': shuttle_schedule.arrival_time,
+						'assigned_driver_name': shuttle_schedule.fleet_vehicle_id.driver_id.name,
+						'assigned_vehicle_name': shuttle_schedule.fleet_vehicle_id.name,
+					})
 			# Appending data
 			result.append({
 				'id': contract_data.id,
 				'name': contract_data.name,
 				'fleet_vehicle': fleet_vehicle_arr,
 				'units': unit_arr,
+				'shuttle_schedules': shuttle_arr,
 				'route_from': route_from_arr,
 				'state': contract_data.state,
 				'start_date': datetime.strptime(contract_data.start_date,'%Y-%m-%d').strftime('%d-%m-%Y'),
@@ -251,6 +264,24 @@ class website_mobile_app(http.Controller):
 		result['running'] = sorted(result['running'], key=lambda order: order['request_date'], reverse=True)
 		result['history'] = sorted(result['history'], key=lambda order: order['request_date'], reverse=True)
 		return json.dumps(result)
+	
+	@http.route('/mobile_app/fetch_contract_shuttles', type='http', auth="user", website=True)
+	def mobile_app_fetch_orders(self, **kwargs):
+		response_fetch_contract = self.mobile_app_fetch_contracts()
+		data_fetch_contract = json.loads(response_fetch_contract.data)
+		contract_datas = data_fetch_contract
+		for contract_data in contract_datas:
+			contract_shuttle_days = {
+				'0': [], '1': [], '2': [], '3': [], '4': [], '5': [], '6': [],
+			};
+			for shuttle_schedule in contract_data['shuttle_schedules']:
+				if shuttle_schedule.dayofweek == 'A':
+					for day_number in contract_shuttle_days:
+						contract_shuttle_days[day_number].append(shuttle_schedule)
+				else:
+					contract_shuttle_days[shuttle_schedule.dayofweek].append(shuttle_schedule)
+			contract_data['shuttle_schedules_by_days'] = contract_shuttle_days
+		return json.dumps(contract_datas)
 	
 	@http.route('/mobile_app/change_password/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_change_password(self, data, **kwargs):

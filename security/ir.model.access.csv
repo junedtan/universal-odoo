@@ -350,3 +350,4 @@ access_foms_contract_alloc_unit_customer_pic,foms.contract.alloc.unit customer_p
 access_foms_contract_customer_pic,foms.contract customer_pic,universal.model_foms_contract,universal.group_universal_customer_pic,1,0,0,0
 access_foms_contract_fleet_customer_pic,foms.contract.fleet customer_pic,universal.model_foms_contract_fleet,universal.group_universal_customer_pic,1,0,0,0
 access_foms_order_customer_pic,foms.order customer_pic,universal.model_foms_order,universal.group_universal_customer_pic,1,0,0,0
+access_fleet_vehicle_group_universal_customer_pic,fleet.vehicle group_universal_customer_pic,universal.model_fleet_vehicle,universal.group_universal_customer_pic,1,0,0,0

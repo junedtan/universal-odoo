@@ -6,6 +6,7 @@ $(document).ready(function () {
 	qweb.add_template('/universal/static/src/xml/website_mobile_app.xml');
 
 	var contract_datas = [];
+	var to_cities = [];
 	var user = {};
 	var id_click_contract;
 
@@ -32,10 +33,10 @@ $(document).ready(function () {
 		$.get('/mobile_app/get_required_book_vehicle', null, function(data){
 			var response = JSON.parse(data);
 			console.log(response);
-			var user_group = response['user_group'];
 			var order_type = response['order_type'];
-			var cities = response['route_to'];
+			self.to_cities = response['route_to'];
 			self.user = response['user'];
+			self.user['user_group'] = response['user_group'];
 			self.contract_datas = response['contract_datas'];
 
 			var fleet_vehicle_datas = [];
@@ -48,7 +49,7 @@ $(document).ready(function () {
 			}
 
 			$("#main_container", self).html(qweb.render('website_mobile_app_create_order',{
-				'user_group': user_group,
+				'user_group': self.user['user_group'],
 				// Information
 				'contract_datas': self.contract_datas,
 				'fleet_vehicle_datas': fleet_vehicle_datas,
@@ -56,8 +57,8 @@ $(document).ready(function () {
 				'order_types': order_type,
 				// Route
 				'from_areas': route_from,
-				'to_cities': cities,
-				'to_areas': cities[0].areas,
+				'to_cities': self.to_cities,
+				'to_areas': self.to_cities[0].areas,
 				// Passenger
 				// Time
 				'start_planned_default': new Date().addHours(1).toDatetimeString(),
@@ -66,6 +67,10 @@ $(document).ready(function () {
 
 			$('#create_order_contract').change(function(){
 				onchange_create_order_contract($(this).val());
+			});
+
+			$('#create_order_route_to_city').change(function(){
+				onchange_create_order_route_to_city($(this).val());
 			});
 
 			$('#btn_create_order').click(function(){
@@ -86,25 +91,68 @@ $(document).ready(function () {
 	});
 
 	function onclick_create_order_button() {
+		passengers = [];
+		$('#passengers > tbody > tr').each(function() {
+			var row = $(this);
+			var name = row.find('.tbl_name').val().trim();
+			var phone = row.find('.tbl_phone').val().trim();
+			if(name && phone) {
+				passengers.push({
+					'name': name,
+					'phone': phone,
+					'is_orderer': row.attr("id") ? true : false,
+				})
+			} else {
+				alert('Please complete the passengers information, name and phone number are both required!'); return false;
+			}
+		});
+		console.log(passengers);
+
 		create_order_json = {
-			'contract_id': $('#create_order_contract').val(),
-			'fleet_vehicle_id': $('#create_order_fleet_vehicle').val(),
+			'contract_id': $('#create_order_info_contract').val(),
+			'fleet_vehicle_id': $('#create_order_info_fleet_vehicle').val(),
+			'unit_id': $('#create_order_info_unit').val(),
+			'type_id': $('#create_order_info_type').val(),
+
+			'from_area_id': $('#create_order_route_from_area').val(),
+			'from_location': $('#create_order_route_from_location').val().trim(),
+
+			'to_city_id': $('#create_order_route_to_city').val(),
+			'to_area_id': $('#create_order_route_to_area').val(),
+			'to_location': $('#create_order_route_to_location').val().trim(),
+
+			'i_am_passenger': $("#ckb_i_am_passenger").prop('checked'),
+			'passengers': passengers,
+
 			'start_planned': $('#create_order_start_planned').val(),
 			'finish_planned': $('#create_order_finish_planned').val(),
 		};
 		if (create_order_json['contract_id'] == null) {
-			alert('You have no Contract!');
-			return;
+			alert('You have no Contract!'); return;
 		} else if (create_order_json['fleet_vehicle_id'] == null) {
-			alert('You have no Fleet!');
-			return;
+			alert('You have no Fleet!'); return;
 		} else if (!create_order_json['start_planned']) {
-			alert('Please input the start planned date correctly!');
-			return;
+			alert('Please input the start planned date correctly!'); return;
 		} else if (!create_order_json['finish_planned']) {
-			alert('Please input the finish planned date correctly!');
-			return;
+			alert('Please input the finish planned date correctly!'); return;
+		} else if(self.user['user_group'] === 'booker' || self.user['user_group'] === 'approver') {
+			if (create_order_json['unit_id'] == null) {
+				alert('You have no Unit!'); return;
+			} else if (create_order_json['type_id'] == null) {
+				alert('Please select the Order Type!'); return;
+			} else if (!create_order_json['from_area_id']) {
+				alert('Please select the Origin Area!'); return;
+			} else if (!create_order_json['from_location']) {
+				alert('Please input the Origin Location!'); return;
+			} else if (!create_order_json['to_city_id']) {
+				alert('Please select the Destination City!'); return;
+			} else if (!create_order_json['to_area_id']) {
+				alert('Please select the Destination Area!'); return;
+			} else if (!create_order_json['to_location']) {
+				alert('Please input the Destination Location!'); return;
+			}
 		}
+
 		$.ajax({
 			dataType: "json",
 			url: '/mobile_app/create_order/' + JSON.stringify(create_order_json),
@@ -128,10 +176,35 @@ $(document).ready(function () {
 	function onchange_create_order_contract(contract_id) {
 		$.each(self.contract_datas, function(index, contract_data) {
 			if (contract_data.id == contract_id) {
+				// Update fleet selection
 				$('#create_order_fleet_vehicle').empty();
 				$.each(contract_data.fleet_vehicle, function(index, fleet_vehicle_data) {
 					$('#create_order_fleet_vehicle').append(
 						'<option value=' + fleet_vehicle_data.id + '>' + fleet_vehicle_data.name + '</option>');
+				});
+				// Update allocation unit selection
+				$('#create_order_info_unit').empty();
+				$.each(contract_data.units, function(index, unit) {
+					$('#create_order_info_unit').append(
+						'<option value=' + unit.id + '>' + unit.name + '</option>');
+				});
+				// Update route_from_area selection
+				$('#create_order_route_from_area').empty();
+				$.each(contract_data.route_from, function(index, route) {
+					$('#create_order_route_from_area').append(
+						'<option value=' + route.id + '>' + route.name + '</option>');
+				});
+			}
+		});
+	};
+
+	function onchange_create_order_route_to_city(city_id) {
+		$.each(self.to_cities, function(index, city) {
+			if (city.id == city_id) {
+				$('#create_order_route_to_area').empty();
+				$.each(city.areas, function(index, area) {
+					$('#create_order_route_to_area').append(
+						'<option value=' + area.id + '>' + area.name + '</option>');
 				});
 			}
 		});
@@ -168,14 +241,14 @@ $(document).ready(function () {
 			var row = '<tr id="' + id + '">';
 		}
 		if(removable === true) {
-			row += '<td><input type="text" class="form-control" value="' + name + '"/></td>' +
-                   	'<td><input type="text" class="form-control" value="' + phone + '"/></td>' +
+			row += '<td><input type="text" class="tbl_name form-control" value="' + name + '"/></td>' +
+                   	'<td><input type="text" class="tbl_phone form-control" value="' + phone + '"/></td>' +
                    	'<td><button type="button" class="btn_remove_passenger close" aria-label="Close">' +
 							'<span aria-hidden="true">x</span>' +
 						'</button></td>';
 		} else {
-			row += '<td><input type="text" class="form-control" value="' + name + '" readonly/></td>' +
-                   	'<td><input type="text" class="form-control" value="' + phone + '" readonly/></td>' +
+			row += '<td><input type="text" class="tbl_name form-control" value="' + name + '" readonly/></td>' +
+                   	'<td><input type="text" class="tbl_phone form-control" value="' + phone + '" readonly/></td>' +
                    	'<td></td>';
 		}
 		row += '</tr>';

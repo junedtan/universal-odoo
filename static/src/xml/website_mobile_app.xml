@@ -298,12 +298,12 @@
 			<t t-if="contract_datas.length != 0">
 				<t t-set="i" t-value="0"/>
 				<t t-foreach="contract_datas" t-as="contract">
-					<div class="div_list_contract" t-attf-id_contract = "{{i}}">
-						<div class="list_title" t-attf-id_contract = "{{i}}">
+					<div class="list_contract contract_detail" t-attf-id_contract = "{{i}}">
+						<div class="list_title" style="pointer-events:none;">
 							<b><t t-esc="contract.name"/></b> - <t t-esc="contract.state"/>
 						</div>
 						<t t-esc="contract.start_date"/> / <t t-esc="contract.end_date"/><br></br>
-						Service Type: <t t-esc="contract.service_type"/>
+						Service Type: <t t-esc="contract.service_type"/><br></br><br></br>
 						<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
 					</div>
 					<t t-set="i" t-value="i+1"/>
@@ -314,7 +314,7 @@
 
 	<!-- DETAIL CONTRACT HEADER-->
 	<t t-name="website_mobile_app_detail_contract">
-		<div class="row" id="menu_detail_contract_container">
+		<div class="row contract_detail" id="menu_detail_contract_container">
 			<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
 				id="website_mobile_app_menu_info_contract">Info</div>
 			<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
@@ -323,20 +323,44 @@
 				id="website_mobile_app_menu_quota_changes">Quota Changes</div>
 		</div>
 
-		<div class="row" id="detail_contract_main_container"/>
+		<div class="row contract_detail" id="detail_contract_main_container"/>
 	</t>
 
 	<!-- DETAIL CONTRACT INFO-->
 	<t t-name="website_mobile_app_detail_contract_info">
-		<div class="form-group ml10">
-			Status : <t t-esc="state"/> <br></br>
-			Period : <t t-esc="start_date"/> / <t t-esc="end_date"/> <br></br>
-			Service Type : <t t-esc="service_type"/> <br></br>
-		</div>
-		<div class="form-group ml10">
-			Max Order Time : <t t-esc="by_order_minimum_minutes"/> <br></br>
-			Max Start : <t t-esc="min_start_minutes"/> <br></br>
-			Max Delay : <t t-esc="max_delay_minutes"/> <br></br>
+		<div class="contract_info no_padding">
+			<table class="table">
+				<tr>
+					<td>Status</td>
+					<td>:</td>
+					<td><t t-esc="state"/></td>
+				</tr>
+				<tr>
+					<td>Period</td>
+					<td>:</td>
+					<td><t t-esc="start_date"/> / <t t-esc="end_date"/></td>
+				</tr>
+				<tr>
+					<td>Service Type</td>
+					<td>:</td>
+					<td><t t-esc="service_type"/></td>
+				</tr>
+				<tr>
+					<td>Max Order Time</td>
+					<td>:</td>
+					<td><t t-esc="by_order_minimum_minutes"/></td>
+				</tr>
+				<tr>
+					<td>Max Start</td>
+					<td>:</td>
+					<td><t t-esc="min_start_minutes"/></td>
+				</tr>
+				<tr>
+					<td>Max Delay</td>
+					<td>:</td>
+					<td><t t-esc="max_delay_minutes"/></td>
+				</tr>
+			</table>
 		</div>
 	</t>
 </templates>

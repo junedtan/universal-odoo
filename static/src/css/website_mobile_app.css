@@ -56,3 +56,21 @@ div.row_hoverable{
 .no_bold {
 	font-weight:normal;
 }
+
+.no_margin {
+	margin: 0px;
+}
+
+.no_padding {
+	padding: 0px;
+}
+
+.contract_detail {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.contract_info {
+	margin-left: 10px;
+	margin-right: 10px;
+}

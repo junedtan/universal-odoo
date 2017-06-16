@@ -389,8 +389,9 @@ $(document).ready(function () {
 				$("#main_container", self).html(qweb.render('website_mobile_app_list_contract',{
 					'contract_datas': JSON.parse(data),
 				}));
-				$(".div_list_contract").click(function(event) {
+				$(".list_contract").click(function(event) {
 					var target = $(event.target);
+					console.log(target);
 					self.id_click_contract =  target.attr("id_contract");
 					//$('#website_mobile_app_menu_info_contract').click();
 					$("#main_container", self).html(qweb.render('website_mobile_app_detail_contract'));

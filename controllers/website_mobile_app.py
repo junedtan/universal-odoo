@@ -318,11 +318,10 @@ class website_mobile_app(http.Controller):
 	@http.route('/mobile_app/get_usage_control_list/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_get_usage_control_list(self, data, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		au_list, quota_list = handler_obj.search_all_au_contract_quota_usage(int(data))
+		quota_list = handler_obj.search_all_au_contract_quota_usage(int(data))
 		return json.dumps({
 			'status': 'ok',
-			'au_list': au_list,
-			'quota_list': quota_list,
+			'quota_list': json.dumps(quota_list),
 			'success' : True,
 		})
 	
@@ -435,21 +434,14 @@ class website_mobile_app_handler(osv.osv):
 			return result
 	
 	def search_all_au_contract_quota_usage(self, cr, uid, id_contract, context={}):
-		au_obj = self.pool.get('foms.contract.alloc.unit')
 		quota_obj = self.pool.get('foms.contract.quota')
-		au_ids = au_obj.search(cr, uid, [('header_id', '=', id_contract)])
-		quota_ids = quota_obj.search(cr, uid, [('customer_contract_id', '=', id_contract), ('allocation_unit_id','in', au_ids)])
+		quota_ids = quota_obj.search(cr, uid, [('customer_contract_id', '=', id_contract)])
 		quota_list = []
-		au_list = []
-		
 		if len(quota_ids) > 0:
 			quota_list = quota_obj.browse(cr, uid, quota_ids)
-		if len(au_ids) > 0:
-			au_list = au_obj.browse(cr, uid, au_ids)
-		return au_list, quota_list
-	
+		return quota_list
+
 	def search_all_quota_changes(self, cr, uid, id_contract, context={}):
 		quota_obj = self.pool.get('foms.contract.quota.change.log')
 		quota_ids = quota_obj.search(cr, uid, [('customer_contract_id', '=', id_contract)])
 		return quota_obj.browse(cr, uid, quota_ids)
-		

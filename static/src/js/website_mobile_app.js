@@ -106,7 +106,6 @@ $(document).ready(function () {
 				alert('Please complete the passengers information, name and phone number are both required!'); return false;
 			}
 		});
-		console.log(passengers);
 
 		create_order_json = {
 			'contract_id': $('#create_order_info_contract').val(),
@@ -423,8 +422,11 @@ $(document).ready(function () {
 				method: 'POST',
 				success: function(response) {
 					if (response.status) {
-						alert(response.info);
 						if(response.success){
+						console.log(response.quota_list);
+							$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_list_control_usage',{
+								'quota_list': JSON.parse(response.quota_list),
+                            }));
 
 						}
 					} else {

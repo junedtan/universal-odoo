@@ -222,6 +222,70 @@
 		</div>
 	</t>
 
+
+	<!-- LIST ORDER -->
+
+	<t t-name="website_mobile_app_list_shuttle">
+		<t class="full_height container universal_website_mobile_app">
+			<h2>Select Contract:</h2>
+			<div class="form-group ml10">
+				<label for="list_shuttle_contract">Contract</label>
+				<select id="list_shuttle_contract" class="form-control">
+					<t t-foreach="contract_datas" t-as="contract_data">
+						<option t-attf-value="{{contract_data.id}}"><t t-esc="contract_data.name"/></option>
+					</t>
+				</select>
+			</div>
+		</t>
+		<div id="website_mobile_app_list_shuttle_schedules"></div>
+	</t>
+
+	<t t-name="website_mobile_app_list_shuttle_schedules">
+		<t t-foreach="days" t-as="day">
+			<div class="row_hoverable accordion">
+				<h5><t t-esc="day"/></h5>
+			</div>
+			<t t-if="shuttle_datas[day_value].length == 0">
+				<div class="detail_container accordion_detail" >
+					<div class="col-xs-12" style="text-align: center; color: darkgray;">
+						<h4>Data Kosong</h4>
+					</div>
+				</div>
+			</t>
+			<t t-if="shuttle_datas[day_value].length != 0">
+				<div class="detail_container accordion_detail" >
+					<t t-foreach="shuttle_datas[day_value]" t-as="shuttle">
+						<div class="list_title">
+							<b><t t-esc="shuttle.name"/></b>
+						</div>
+						<table class="table">
+							<tr>
+								<td class="td_list">Time</td>
+								<td class="td_list">:</td>
+								<td>
+									<t t-esc="shuttle.departure_time"/>
+									<!-- - <t t-esc="shuttle.arrival_time"/>-->
+								</td>
+							</tr>
+							<tr>
+								<td class="td_list">Driver</td>
+								<td class="td_list">:</td>
+								<td><t t-esc="shuttle.assigned_driver_name"/></td>
+							</tr>
+							<tr>
+								<td class="td_list">Vehicle</td>
+								<td class="td_list">:</td>
+								<td><t t-esc="shuttle.assigned_vehicle_name"/></td>
+							</tr>
+						</table>
+						<hr style="bshuttle:solid 1px; bshuttle-color:darkgrey; margin:0px;"/>
+					</t>
+				</div>
+			</t>
+		</t>
+	</t>
+	
+
 	<!-- LIST CONTRACT -->
 
 	<t t-name="website_mobile_app_list_contract">
@@ -234,12 +298,12 @@
 			<t t-if="contract_datas.length != 0">
 				<t t-set="i" t-value="0"/>
 				<t t-foreach="contract_datas" t-as="contract">
-					<div class="div_list_contract" t-attf-id_contract = "{{i}}">
-						<div class="list_title" t-attf-id_contract = "{{i}}">
+					<div class="list_contract contract_detail" t-attf-id_contract = "{{i}}">
+						<div class="list_title" style="pointer-events:none;">
 							<b><t t-esc="contract.name"/></b> - <t t-esc="contract.state"/>
 						</div>
 						<t t-esc="contract.start_date"/> / <t t-esc="contract.end_date"/><br></br>
-						Service Type: <t t-esc="contract.service_type"/>
+						Service Type: <t t-esc="contract.service_type"/><br></br><br></br>
 						<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
 					</div>
 					<t t-set="i" t-value="i+1"/>
@@ -250,29 +314,53 @@
 
 	<!-- DETAIL CONTRACT HEADER-->
 	<t t-name="website_mobile_app_detail_contract">
-		<div class="row" id="menu_detail_contract_container">
-			<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
+		<div class="row contract_detail" id="menu_detail_contract_container">
+			<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
 				id="website_mobile_app_menu_info_contract">Info</div>
-			<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
+			<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
 				id="website_mobile_app_menu_usage_control">Usage Control</div>
-			<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
+			<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
 				id="website_mobile_app_menu_quota_changes">Quota Changes</div>
 		</div>
 
-		<div class="row" id="detail_contract_main_container"/>
+		<div class="row contract_detail" id="detail_contract_main_container"/>
 	</t>
 
 	<!-- DETAIL CONTRACT INFO-->
 	<t t-name="website_mobile_app_detail_contract_info">
-		<div class="form-group ml10">
-			Status : <t t-esc="state"/> <br></br>
-			Period : <t t-esc="start_date"/> / <t t-esc="end_date"/> <br></br>
-			Service Type : <t t-esc="service_type"/> <br></br>
-		</div>
-		<div class="form-group ml10">
-			Max Order Time : <t t-esc="by_order_minimum_minutes"/> <br></br>
-			Max Start : <t t-esc="min_start_minutes"/> <br></br>
-			Max Delay : <t t-esc="max_delay_minutes"/> <br></br>
+		<div class="contract_info no_padding">
+			<table class="table">
+				<tr>
+					<td>Status</td>
+					<td>:</td>
+					<td><t t-esc="state"/></td>
+				</tr>
+				<tr>
+					<td>Period</td>
+					<td>:</td>
+					<td><t t-esc="start_date"/> / <t t-esc="end_date"/></td>
+				</tr>
+				<tr>
+					<td>Service Type</td>
+					<td>:</td>
+					<td><t t-esc="service_type"/></td>
+				</tr>
+				<tr>
+					<td>Max Order Time</td>
+					<td>:</td>
+					<td><t t-esc="by_order_minimum_minutes"/></td>
+				</tr>
+				<tr>
+					<td>Max Start</td>
+					<td>:</td>
+					<td><t t-esc="min_start_minutes"/></td>
+				</tr>
+				<tr>
+					<td>Max Delay</td>
+					<td>:</td>
+					<td><t t-esc="max_delay_minutes"/></td>
+				</tr>
+			</table>
 		</div>
 	</t>
 

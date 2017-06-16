@@ -283,6 +283,51 @@ $(document).ready(function () {
 		});
 	});
 
+// LIST SHUTTLE =============================================================================================================
+
+	$('#website_mobile_app_menu_list_shuttle').click(function() {
+		onclick_menu('#website_mobile_app_menu_list_shuttles');
+		$.get('/mobile_app/fetch_contract_shuttles', null, function(data){
+			self.contract_datas = JSON.parse(data);
+			$("#main_container", self).html(qweb.render('website_mobile_app_list_shuttle',{
+				'contract_datas': self.contract_datas,
+			}));
+			$('#list_shuttle_contract').change(function(){
+				onchange_list_shuttle_contract($(this).val());
+			});
+		});
+	});
+
+	function onchange_list_shuttle_contract(contract_id) {
+		$.each(self.contract_datas, function(index, contract_data) {
+			if (contract_data.id == contract_id) {
+				// Update shuttle schedule
+				days = {
+					'Monday': '0',
+					'Tuesday': '1',
+					'Wednesday': '2',
+					'Thursday': '3',
+					'Friday': '4',
+					'Saturday': '5',
+					'Sunday': '6',
+				}
+				$("#website_mobile_app_list_shuttle_schedules", self).html(qweb.render('website_mobile_app_list_shuttle_schedules',{
+					'days': days,
+					'shuttle_datas': contract_data.shuttle_schedules_by_days,
+				}));
+				$(".accordion").click(function(event) {
+					$(this).toggleClass("active");
+					var detail = $(this).next();
+					if (detail.css("maxHeight") != "0px"){
+						detail.css("maxHeight", "0px");
+					} else {
+						detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
+					}
+				});
+			}
+		});
+	};
+
 // CHANGE PASSWORD ==========================================================================================================
 
 	$('#website_mobile_app_menu_change_password').click(function() {
@@ -344,7 +389,7 @@ $(document).ready(function () {
 				$("#main_container", self).html(qweb.render('website_mobile_app_list_contract',{
 					'contract_datas': JSON.parse(data),
 				}));
-				$(".div_list_contract").click(function(event) {
+				$(".list_contract").click(function(event) {
 					var target = $(event.target);
 					self.index_click_contract =  target.attr("id_contract");
 					//$('#website_mobile_app_menu_info_contract').click();

@@ -182,28 +182,6 @@ class website_mobile_app(http.Controller):
 					'assigned_driver_name': driver_name,
 					'assigned_vehicle_name': shuttle_schedule.fleet_vehicle_id.name,
 				})
-			# Quota Changes
-			quota_arr = []
-			for shuttle_schedule in contract_data.shuttle_schedules:
-				driver_name = ''
-				for fleet_data in contract_data.car_drivers:
-					if fleet_data.fleet_vehicle_id.id == shuttle_schedule.fleet_vehicle_id.id:
-						driver_name = fleet_data.driver_id.name
-				quota_arr.append({
-					'id': shuttle_schedule.id,
-					'name': shuttle_schedule.route_id.name,
-					'request_date': shuttle_schedule.dayofweek,
-					'request_by': shuttle_schedule.departure_time,
-					'request_type': shuttle_schedule.departure_time,
-					'arrival_time': shuttle_schedule.arrival_time,
-					'yellow_limit_old': driver_name,
-					'yellow_limit_new': driver_name,
-					'red_limit_old': driver_name,
-					'red_limit_new': driver_name,
-					'respond_date': shuttle_schedule.fleet_vehicle_id.name,
-					'state': shuttle_schedule.fleet_vehicle_id.name,
-					'reason': shuttle_schedule.fleet_vehicle_id.name,
-				})
 			# Appending data
 			result.append({
 				'id': contract_data.id,
@@ -211,7 +189,6 @@ class website_mobile_app(http.Controller):
 				'fleet_vehicle': fleet_vehicle_arr,
 				'units': unit_arr,
 				'shuttle_schedules': shuttle_arr,
-				'quota_changes': quota_arr,
 				'route_from': route_from_arr,
 				'state': contract_data.state,
 				'start_date': datetime.strptime(contract_data.start_date,'%Y-%m-%d').strftime('%d-%m-%Y'),
@@ -310,23 +287,44 @@ class website_mobile_app(http.Controller):
 			contract_data['shuttle_schedules_by_days'] = contract_shuttle_days
 		return json.dumps(contract_datas)
 	
-	@http.route('/mobile_app/fetch_contract_quota_changes', type='http', auth="user", website=True)
-	def mobile_app_fetch_contract_shuttles(self, **kwargs):
-		response_fetch_contract = self.mobile_app_fetch_contracts()
-		data_fetch_contract = json.loads(response_fetch_contract.data)
-		contract_datas = data_fetch_contract
-		for contract_data in contract_datas:
-			contract_shuttle_days = {
-				'0': [], '1': [], '2': [], '3': [], '4': [], '5': [], '6': [],
-			};
-			for shuttle_schedule in contract_data['shuttle_schedules']:
-				if shuttle_schedule['dayofweek'] == 'A':
-					for day_number in contract_shuttle_days:
-						contract_shuttle_days[day_number].append(shuttle_schedule)
-				else:
-					contract_shuttle_days[shuttle_schedule['dayofweek']].append(shuttle_schedule)
-			contract_data['shuttle_schedules_by_days'] = contract_shuttle_days
-		return json.dumps(contract_datas)
+	@http.route('/mobile_app/fetch_contract_quota_changes/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_fetch_contract_quota_changes(self, data, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		quota_changes = handler_obj.search_all_quota_changes(int(data))
+		# Quota Changes by Pending/History
+		quota_pending_history = {
+			'pending': [], 'history': [],
+		}
+		for quota_change in quota_changes:
+			classification = 'history'
+			if quota_change.state == 'draft':
+				classification = 'pending'
+			quota_pending_history[classification].append({
+				'id': quota_change.id,
+				'name': quota_change.allocation_unit_id.name,
+				'request_date': quota_change.request_date,
+				'request_by': quota_change.request_by,
+				'request_type': quota_change.request_longevity,
+				'yellow_limit_old': quota_change.old_yellow_limit,
+				'yellow_limit_new': quota_change.new_yellow_limit,
+				'red_limit_old': quota_change.old_red_limit,
+				'red_limit_new': quota_change.new_red_limit,
+				'respond_date': quota_change.fleet_vehicle_id.name,
+				'state': quota_change.fleet_vehicle_id.name,
+				'reason': quota_change.reject_reason,
+			})
+		return json.dumps(quota_pending_history)
+	
+	@http.route('/mobile_app/get_usage_control_list/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_get_usage_control_list(self, data, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		au_list, quota_list = handler_obj.search_all_au_contract_quota_usage(int(data))
+		return json.dumps({
+			'status': 'ok',
+			'au_list': au_list,
+			'quota_list': quota_list,
+			'success' : True,
+		})
 	
 	@http.route('/mobile_app/change_password/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_change_password(self, data, **kwargs):
@@ -344,17 +342,6 @@ class website_mobile_app(http.Controller):
 				'info': _('Old Password is not correct.'),
 				'success' : False,
 			})
-	
-	@http.route('/mobile_app/get_usage_control_list/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_get_usage_control_list(self, data, **kwargs):
-		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		au_list, quota_list = handler_obj.search_all_au_contract_quota_usage(int(data))
-		return json.dumps({
-			'status': 'ok',
-			'au_list': au_list,
-			'quota_list': quota_list,
-			'success' : True,
-		})
 
 class website_mobile_app_handler(osv.osv):
 	_name = 'universal.website.mobile_app.handler'
@@ -460,4 +447,9 @@ class website_mobile_app_handler(osv.osv):
 		if len(au_ids) > 0:
 			au_list = au_obj.browse(cr, uid, au_ids)
 		return au_list, quota_list
+	
+	def search_all_quota_changes(self, cr, uid, id_contract, context={}):
+		quota_obj = self.pool.get('foms.contract.quota.change.log')
+		quota_ids = quota_obj.search(cr, uid, [('customer_contract_id', '=', id_contract)])
+		return quota_obj.browse(cr, uid, quota_ids)
 		

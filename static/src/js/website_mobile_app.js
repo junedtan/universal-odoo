@@ -416,7 +416,7 @@ $(document).ready(function () {
 		});
 		//Onclick menu usage control
 		$('#website_mobile_app_menu_usage_control').click(function() {
-			onclick_menu('#website_mobile_app_menu_usage_control');
+			onclick_detail_contract_menu('#website_mobile_app_menu_usage_control');
 			$.ajax({
 				dataType: "json",
 				url: '/mobile_app/get_usage_control_list/' + JSON.stringify(self.contract_datas[self.index_click_contract].id),
@@ -439,14 +439,46 @@ $(document).ready(function () {
         //Onclick menu quota changes
 		$('#website_mobile_app_menu_quota_changes').click(function() {
 			onclick_detail_contract_menu('#website_mobile_app_menu_quota_changes');
-			var contract = self.contract_datas[self.id_click_contract]
-			$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_detail_contract_quota_changes',{
-				'classifications': {
+			$.get('/mobile_app/fetch_contract_quota_changes/' + JSON.stringify(self.contract_datas[self.index_click_contract].id), null, function(data){
+//				var response = JSON.parse(data);
+				classifications = {
 					'Pending': 'pending',
-                    'History': 'history',
-				}
-				'quota_changes': contract.quota_changes_by_classification,
-			}));
+					'History': 'history',
+				};
+				$("#detail_contract_main_container", self).html(
+				qweb.render('website_mobile_app_detail_contract_quota_changes',{
+					'classifications': classifications,
+					'quota_changes': JSON.parse(data),
+				}));
+			});
+//			$.ajax({
+//				dataType: "json",
+//				url: '/mobile_app/fetch_contract_quota_changes/' + JSON.stringify(self.contract_datas[self.index_click_contract].id),
+//				method: 'POST',
+//				success: function(response) {
+//					if (response.status) {
+//						alert(response.info);
+//						if(response.success){
+//							console.log(response);
+//							console.log(response.data);
+//							classifications = {
+//								'Pending': 'pending',
+//								'History': 'history',
+//							};
+//							$("#detail_contract_main_container", self).html(
+//							qweb.render('website_mobile_app_detail_contract_quota_changes',{
+//								'classifications': classifications,
+//								'quota_changes': JSON.parse(response.data),
+//							}));
+//						}
+//					} else {
+//						alert('Server Unreachable.');
+//					}
+//				},
+//				error: function(XMLHttpRequest, textStatus, errorThrown) {
+//					alert_error(XMLHttpRequest);
+//				} ,
+//			});
 		});
 	};
 });

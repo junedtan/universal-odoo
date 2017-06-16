@@ -302,14 +302,44 @@ class website_mobile_app_handler(osv.osv):
 		contract_id = int(contract_id.encode('ascii', 'ignore'))
 		fleet_vehicle_id = domain.get('fleet_vehicle_id', '')
 		fleet_vehicle_id = int(fleet_vehicle_id.encode('ascii', 'ignore'))
+		unit_id = domain.get('unit_id', '')
+		unit_id = int(unit_id.encode('ascii', 'ignore'))
+		type_id = domain.get('type_id', '')
+		
+		from_area_id = domain.get('from_area_id', '')
+		from_area_id = int(from_area_id.encode('ascii', 'ignore'))
+		from_location = domain.get('from_location', '')
+		
+		# to_city_id = domain.get('to_city_id', '')
+		# to_city_id = int(to_city_id.encode('ascii', 'ignore'))
+		to_area_id = domain.get('to_area_id', '')
+		to_area_id = int(to_area_id.encode('ascii', 'ignore'))
+		to_location = domain.get('to_location', '')
+		
+		is_orderer_passenger = domain.get('i_am_passenger', '')
+		passengers = domain.get('passengers', [])
+		
 		start_planned = domain.get('start_planned', '')
 		start_planned = datetime.strptime(start_planned, '%Y-%m-%dT%H:%M:%S')
 		finish_planned = domain.get('finish_planned', '')
 		finish_planned = datetime.strptime(finish_planned, '%Y-%m-%dT%H:%M:%S')
+		
 		return order_obj.create(cr, SUPERUSER_ID, {
 			'customer_contract_id': contract_id,
 			'order_by': uid,
 			'assigned_vehicle_id': fleet_vehicle_id,
+			'alloc_unit_id': unit_id,
+			'order_type_by_order': type_id,
+			
+			'origin_area_id': from_area_id,
+			'origin_location': from_location,
+			# 'dest_city_id': to_city_id,
+			'dest_area_id': to_area_id,
+			'dest_location': to_location,
+			
+			'is_orderer_passenger': is_orderer_passenger,
+			'passengers': passengers,
+			
 			'start_planned_date': start_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
 			'finish_planned_date': finish_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
 			'request_date': datetime.now(),

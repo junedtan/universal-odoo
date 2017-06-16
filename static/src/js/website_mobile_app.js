@@ -25,10 +25,10 @@ $(document).ready(function () {
 		$.get('/mobile_app/get_required_book_vehicle', null, function(data){
 			var response = JSON.parse(data);
 			console.log(response);
-			var user_group = response['user_group'];
 			var order_type = response['order_type'];
 			self.to_cities = response['route_to'];
 			self.user = response['user'];
+			self.user['user_group'] = response['user_group'];
 			self.contract_datas = response['contract_datas'];
 
 			var fleet_vehicle_datas = [];
@@ -41,7 +41,7 @@ $(document).ready(function () {
 			}
 
 			$("#main_container", self).html(qweb.render('website_mobile_app_create_order',{
-				'user_group': user_group,
+				'user_group': self.user['user_group'],
 				// Information
 				'contract_datas': self.contract_datas,
 				'fleet_vehicle_datas': fleet_vehicle_datas,
@@ -83,25 +83,66 @@ $(document).ready(function () {
 	});
 
 	function onclick_create_order_button() {
+		passengers = [];
+		$('#passengers > tbody > tr').each(function() {
+			var row = $(this);
+			var name = row.find('.tbl_name').val().trim();
+			var phone = row.find('.tbl_phone').val().trim();
+			if(name && phone) {
+				passengers.push({
+					'name': name,
+					'phone': phone,
+				})
+			} else {
+				alert('Please complete the passengers information, name and phone number are both required!'); return false;
+			}
+		});
+
 		create_order_json = {
-			'contract_id': $('#create_order_contract').val(),
-			'fleet_vehicle_id': $('#create_order_fleet_vehicle').val(),
+			'contract_id': $('#create_order_info_contract').val(),
+			'fleet_vehicle_id': $('#create_order_info_fleet_vehicle').val(),
+			'unit_id': $('#create_order_info_unit').val(),
+			'type_id': $('#create_order_info_type').val(),
+
+			'from_area_id': $('#create_order_route_from_area').val(),
+			'from_location': $('#create_order_route_from_location').val().trim(),
+
+			'to_city_id': $('#create_order_route_to_city').val(),
+			'to_area_id': $('#create_order_route_to_area').val(),
+			'to_location': $('#create_order_route_to_location').val().trim(),
+
+			'i_am_passenger': $("#ckb_i_am_passenger").prop('checked'),
+			'passengers': passengers,
+
 			'start_planned': $('#create_order_start_planned').val(),
 			'finish_planned': $('#create_order_finish_planned').val(),
 		};
 		if (create_order_json['contract_id'] == null) {
-			alert('You have no Contract!');
-			return;
+			alert('You have no Contract!'); return;
 		} else if (create_order_json['fleet_vehicle_id'] == null) {
-			alert('You have no Fleet!');
-			return;
+			alert('You have no Fleet!'); return;
 		} else if (!create_order_json['start_planned']) {
-			alert('Please input the start planned date correctly!');
-			return;
+			alert('Please input the start planned date correctly!'); return;
 		} else if (!create_order_json['finish_planned']) {
-			alert('Please input the finish planned date correctly!');
-			return;
+			alert('Please input the finish planned date correctly!'); return;
+		} else if(self.user['user_group'] === 'booker' || self.user['user_group'] === 'approver') {
+			if (create_order_json['unit_id'] == null) {
+				alert('You have no Unit!'); return;
+			} else if (create_order_json['type_id'] == null) {
+				alert('Please select the Order Type!'); return;
+			} else if (!create_order_json['from_area_id']) {
+				alert('Please select the Origin Area!'); return;
+			} else if (!create_order_json['from_location']) {
+				alert('Please input the Origin Location!'); return;
+			} else if (!create_order_json['to_city_id']) {
+				alert('Please select the Destination City!'); return;
+			} else if (!create_order_json['to_area_id']) {
+				alert('Please select the Destination Area!'); return;
+			} else if (!create_order_json['to_location']) {
+				alert('Please input the Destination Location!'); return;
+			}
 		}
+
 		$.ajax({
 			dataType: "json",
 			url: '/mobile_app/create_order/' + JSON.stringify(create_order_json),
@@ -190,14 +231,14 @@ $(document).ready(function () {
 			var row = '<tr id="' + id + '">';
 		}
 		if(removable === true) {
-			row += '<td><input type="text" class="form-control" value="' + name + '"/></td>' +
-                   	'<td><input type="text" class="form-control" value="' + phone + '"/></td>' +
+			row += '<td><input type="text" class="tbl_name form-control" value="' + name + '"/></td>' +
+                   	'<td><input type="text" class="tbl_phone form-control" value="' + phone + '"/></td>' +
                    	'<td><button type="button" class="btn_remove_passenger close" aria-label="Close">' +
 							'<span aria-hidden="true">x</span>' +
 						'</button></td>';
 		} else {
-			row += '<td><input type="text" class="form-control" value="' + name + '" readonly/></td>' +
-                   	'<td><input type="text" class="form-control" value="' + phone + '" readonly/></td>' +
+			row += '<td><input type="text" class="tbl_name form-control" value="' + name + '" readonly/></td>' +
+                   	'<td><input type="text" class="tbl_phone form-control" value="' + phone + '" readonly/></td>' +
                    	'<td></td>';
 		}
 		row += '</tr>';

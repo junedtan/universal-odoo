@@ -317,7 +317,9 @@ class website_mobile_app_handler(osv.osv):
 		to_location = domain.get('to_location', '')
 		
 		is_orderer_passenger = domain.get('i_am_passenger', '')
-		passengers = domain.get('passengers', [])
+		passengers = []
+		for passenger in domain.get('passengers', []):
+			passengers.append([0,False,passenger])
 		
 		start_planned = domain.get('start_planned', '')
 		start_planned = datetime.strptime(start_planned, '%Y-%m-%dT%H:%M:%S')

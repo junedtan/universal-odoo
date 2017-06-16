@@ -92,6 +92,7 @@ $(document).ready(function () {
 				passengers.push({
 					'name': name,
 					'phone': phone,
+					'is_orderer': row.val()
 				})
 			} else {
 				alert('Please complete the passengers information, name and phone number are both required!'); return false;

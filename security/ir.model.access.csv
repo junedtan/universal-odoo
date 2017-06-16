@@ -346,3 +346,7 @@ access_foms_contract_booker,foms.contract booker,universal.model_foms_contract,u
 access_foms_contract_fleet_booker,foms.contract.fleet booker,universal.model_foms_contract_fleet,universal.group_universal_booker,1,0,0,0
 access_foms_order_booker,foms.order booker,universal.model_foms_order,universal.group_universal_booker,1,0,0,0
 access_chjs_region_booker,chjs.region booker,chjs_region.model_chjs_region,universal.group_universal_booker,1,0,0,0
+access_foms_contract_alloc_unit_customer_pic,foms.contract.alloc.unit customer_pic,universal.model_foms_contract_alloc_unit,universal.group_universal_customer_pic,1,0,0,0
+access_foms_contract_customer_pic,foms.contract customer_pic,universal.model_foms_contract,universal.group_universal_customer_pic,1,0,0,0
+access_foms_contract_fleet_customer_pic,foms.contract.fleet customer_pic,universal.model_foms_contract_fleet,universal.group_universal_customer_pic,1,0,0,0
+access_foms_order_customer_pic,foms.order customer_pic,universal.model_foms_order,universal.group_universal_customer_pic,1,0,0,0

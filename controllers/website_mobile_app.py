@@ -344,6 +344,17 @@ class website_mobile_app(http.Controller):
 				'info': _('Old Password is not correct.'),
 				'success' : False,
 			})
+	
+	@http.route('/mobile_app/get_usage_control_list/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_get_usage_control_list(self, data, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		au_list, quota_list = handler_obj.search_all_au_contract_quota_usage(int(data))
+		return json.dumps({
+			'status': 'ok',
+			'au_list': au_list,
+			'quota_list': quota_list,
+			'success' : True,
+		})
 
 class website_mobile_app_handler(osv.osv):
 	_name = 'universal.website.mobile_app.handler'
@@ -435,3 +446,18 @@ class website_mobile_app_handler(osv.osv):
 			result = user_obj.change_password(cr, uid, old_password, new_password)
 		finally:
 			return result
+	
+	def search_all_au_contract_quota_usage(self, cr, uid, id_contract, context={}):
+		au_obj = self.pool.get('foms.contract.alloc.unit')
+		quota_obj = self.pool.get('foms.contract.quota')
+		au_ids = au_obj.search(cr, uid, [('header_id', '=', id_contract)])
+		quota_ids = quota_obj.search(cr, uid, [('customer_contract_id', '=', id_contract), ('allocation_unit_id','in', au_ids)])
+		quota_list = []
+		au_list = []
+		
+		if len(quota_ids) > 0:
+			quota_list = quota_obj.browse(cr, uid, quota_ids)
+		if len(au_ids) > 0:
+			au_list = au_obj.browse(cr, uid, au_ids)
+		return au_list, quota_list
+		

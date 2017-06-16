@@ -364,6 +364,31 @@
 		</div>
 	</t>
 
+	<!-- DETAIL CONTRACT LIST CONTROL USAGE-->
+	<t t-name="website_mobile_app_list_control_usage">
+		<t class="full_height container universal_website_mobile_app">
+			<t t-if="control_usage.length == 0">
+				<div class="col-xs-12" style="text-align: center; color: darkgray;">
+					<h4>Data Kosong</h4>
+				</div>
+			</t>
+			<t t-if="contract_datas.length != 0">
+				<t t-set="i" t-value="0"/>
+				<t t-foreach="contract_datas" t-as="contract">
+					<div class="div_list_contract" t-attf-id_contract = "{{i}}">
+						<div class="list_title" t-attf-id_contract = "{{i}}">
+							<b><t t-esc="contract.name"/></b> - <t t-esc="contract.state"/>
+						</div>
+						<t t-esc="contract.start_date"/> / <t t-esc="contract.end_date"/><br></br>
+						Service Type: <t t-esc="contract.service_type"/>
+						<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
+					</div>
+					<t t-set="i" t-value="i+1"/>
+				</t>
+			</t>
+		</t>
+	</t>
+
 	<!-- DETAIL CONTRACT QUOTA CHANGES -->
 	<t t-name="website_mobile_app_detail_contract_quota_changes">
 		<div class="contract_info no_padding">

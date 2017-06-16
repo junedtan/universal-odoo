@@ -315,11 +315,11 @@
 	<!-- DETAIL CONTRACT HEADER-->
 	<t t-name="website_mobile_app_detail_contract">
 		<div class="row contract_detail" id="menu_detail_contract_container">
-			<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
+			<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
 				id="website_mobile_app_menu_info_contract">Info</div>
-			<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
+			<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
 				id="website_mobile_app_menu_usage_control">Usage Control</div>
-			<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
+			<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
 				id="website_mobile_app_menu_quota_changes">Quota Changes</div>
 		</div>
 

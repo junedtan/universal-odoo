@@ -270,7 +270,7 @@ class website_mobile_app(http.Controller):
 		return json.dumps(result)
 	
 	@http.route('/mobile_app/fetch_contract_shuttles', type='http', auth="user", website=True)
-	def mobile_app_fetch_orders(self, **kwargs):
+	def mobile_app_fetch_contract_shuttles(self, **kwargs):
 		response_fetch_contract = self.mobile_app_fetch_contracts()
 		data_fetch_contract = json.loads(response_fetch_contract.data)
 		contract_datas = data_fetch_contract

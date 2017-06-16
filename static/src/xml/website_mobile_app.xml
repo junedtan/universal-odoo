@@ -256,7 +256,7 @@
 				<div class="detail_container accordion_detail" >
 					<t t-foreach="shuttle_datas[day_value]" t-as="shuttle">
 						<div class="list_title">
-							<b><t t-esc="shuttle.route_id.name"/></b>
+							<b><t t-esc="shuttle.name"/></b>
 						</div>
 						<table class="table">
 							<tr>

@@ -288,17 +288,12 @@ $(document).ready(function () {
 	$('#website_mobile_app_menu_list_shuttle').click(function() {
 		onclick_menu('#website_mobile_app_menu_list_shuttles');
 		$.get('/mobile_app/fetch_contract_shuttles', null, function(data){
+			self.contract_datas = JSON.parse(data);
 			$("#main_container", self).html(qweb.render('website_mobile_app_list_shuttle',{
-				'contract_datas': JSON.parse(data),
+				'contract_datas': self.contract_datas,
 			}));
-			$(".accordion").click(function(event) {
-				$(this).toggleClass("active");
-				var detail = $(this).next();
-				if (detail.css("maxHeight") != "0px"){
-					detail.css("maxHeight", "0px");
-				} else {
-					detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
-				}
+			$('#list_shuttle_contract').change(function(){
+				onchange_list_shuttle_contract($(this).val());
 			});
 		});
 	});
@@ -320,6 +315,15 @@ $(document).ready(function () {
 					'days': days,
 					'shuttle_datas': contract_data.shuttle_schedules_by_days,
 				}));
+				$(".accordion").click(function(event) {
+					$(this).toggleClass("active");
+					var detail = $(this).next();
+					if (detail.css("maxHeight") != "0px"){
+						detail.css("maxHeight", "0px");
+					} else {
+						detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
+					}
+				});
 			}
 		});
 	};

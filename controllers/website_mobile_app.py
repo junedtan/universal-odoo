@@ -169,15 +169,19 @@ class website_mobile_app(http.Controller):
 			# Shuttle
 			shuttle_arr = []
 			for shuttle_schedule in contract_data.shuttle_schedules:
-				if uid == shuttle_schedule.route_id.header_id.id:
-					shuttle_arr.append({
-						'id': shuttle_schedule.id,
-						'name': shuttle_schedule.route_id.name,
-						'departure_time': shuttle_schedule.departure_time,
-						# 'arrival_time': shuttle_schedule.arrival_time,
-						'assigned_driver_name': shuttle_schedule.fleet_vehicle_id.driver_id.name,
-						'assigned_vehicle_name': shuttle_schedule.fleet_vehicle_id.name,
-					})
+				driver_name = ''
+				for fleet_data in contract_data.car_drivers:
+					if fleet_data.fleet_vehicle_id.id == shuttle_schedule.fleet_vehicle_id.id:
+						driver_name = fleet_data.driver_id.name
+				shuttle_arr.append({
+					'id': shuttle_schedule.id,
+					'name': shuttle_schedule.route_id.name,
+					'dayofweek': shuttle_schedule.dayofweek,
+					'departure_time': shuttle_schedule.departure_time,
+					# 'arrival_time': shuttle_schedule.arrival_time,
+					'assigned_driver_name': driver_name,
+					'assigned_vehicle_name': shuttle_schedule.fleet_vehicle_id.name,
+				})
 			# Appending data
 			result.append({
 				'id': contract_data.id,
@@ -275,11 +279,11 @@ class website_mobile_app(http.Controller):
 				'0': [], '1': [], '2': [], '3': [], '4': [], '5': [], '6': [],
 			};
 			for shuttle_schedule in contract_data['shuttle_schedules']:
-				if shuttle_schedule.dayofweek == 'A':
+				if shuttle_schedule['dayofweek'] == 'A':
 					for day_number in contract_shuttle_days:
 						contract_shuttle_days[day_number].append(shuttle_schedule)
 				else:
-					contract_shuttle_days[shuttle_schedule.dayofweek].append(shuttle_schedule)
+					contract_shuttle_days[shuttle_schedule['dayofweek']].append(shuttle_schedule)
 			contract_data['shuttle_schedules_by_days'] = contract_shuttle_days
 		return json.dumps(contract_datas)
 	

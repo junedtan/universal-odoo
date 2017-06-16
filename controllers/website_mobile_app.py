@@ -177,6 +177,9 @@ class website_mobile_app(http.Controller):
 				'start_date': datetime.strptime(contract_data.start_date,'%Y-%m-%d').strftime('%d-%m-%Y'),
 				'end_date': datetime.strptime(contract_data.end_date,'%Y-%m-%d').strftime('%d-%m-%Y'),
 				'service_type': dict(_SERVICE_TYPE).get(contract_data.service_type, ''),
+				'min_start_minutes': contract_data.min_start_minutes,
+				'max_delay_minutes': contract_data.max_delay_minutes,
+				'by_order_minimum_minutes' : contract_data.by_order_minimum_minutes,
 			});
 		result = sorted(result, key=lambda contract: contract['name'])
 		return json.dumps(result)

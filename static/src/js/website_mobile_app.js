@@ -7,6 +7,7 @@ $(document).ready(function () {
 
 	var contract_datas = [];
 	var user = {};
+	var id_click_contract;
 
 	function onclick_menu(id) {
 		$('#website_mobile_app_menu_book_vehicle').removeClass('active');
@@ -15,7 +16,14 @@ $(document).ready(function () {
 		$('#website_mobile_app_menu_list_contract').removeClass('active');
 		$('#website_mobile_app_menu_list_shuttle').removeClass('active');
 		$(id).addClass('active');
-	}
+	};
+
+	function onclick_detail_contract_menu(id) {
+		$('#website_mobile_app_menu_info_contract').removeClass('active');
+		$('#website_mobile_app_menu_usage_control').removeClass('active');
+		$('#website_mobile_app_menu_quota_changes').removeClass('active');
+		$(id).addClass('active');
+    };
 
 // BOOK VEHICLE =============================================================================================================
 
@@ -115,7 +123,7 @@ $(document).ready(function () {
 				alert_error(XMLHttpRequest, errorThrown);
 			} ,
 		});
-	}
+	};
 
 	function onchange_create_order_contract(contract_id) {
 		$.each(self.contract_datas, function(index, contract_data) {
@@ -265,15 +273,27 @@ $(document).ready(function () {
 				}));
 				$(".div_list_contract").click(function(event) {
 					var target = $(event.target);
-					var id_contract =  target.attr("id_contract");
-
-					console.log(id_contract);
-					$("#main_container", self).html(qweb.render('website_mobile_app_detail_contract',{
-						//console_log(data);
-						//'contract_datas': JSON.parse(data),
-					}));
+					self.id_click_contract =  target.attr("id_contract");
+					//$('#website_mobile_app_menu_info_contract').click();
+					$("#main_container", self).html(qweb.render('website_mobile_app_detail_contract'));
+					setOnClickButtonMenuDetailContract();
 				});
        		});
 	});
 
+	function setOnClickButtonMenuDetailContract(){
+		$('#website_mobile_app_menu_info_contract').click(function() {
+			onclick_detail_contract_menu('#website_mobile_app_menu_info_contract');
+			var contract = self.contract_datas[self.id_click_contract]
+			$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_detail_contract_info',{
+				'state': contract.state,
+				'start_date': contract.start_date,
+				'end_date': contract.end_date,
+				'service_type': contract.service_type,
+				'by_order_minimum_minutes': contract.by_order_minimum_minutes,
+				'min_start_minutes': contract.min_start_minutes,
+				'max_delay_minutes': contract.max_delay_minutes,
+			}));
+		});
+	};
 });

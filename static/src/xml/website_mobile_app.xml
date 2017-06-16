@@ -248,13 +248,31 @@
 		</t>
 	</t>
 
-	<!-- DETAIL CONTRACT -->
+	<!-- DETAIL CONTRACT HEADER-->
 	<t t-name="website_mobile_app_detail_contract">
-		<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
-			id="website_mobile_app_menu_info_contract">Info</div>
-		<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
-			id="website_mobile_app_menu_usage_control">Usage Control</div>
-		<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
-			id="website_mobile_app_menu_quota_changes">Quota Changes</div>
+		<div class="row" id="menu_detail_contract_container">
+			<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
+				id="website_mobile_app_menu_info_contract">Info</div>
+			<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
+				id="website_mobile_app_menu_usage_control">Usage Control</div>
+			<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
+				id="website_mobile_app_menu_quota_changes">Quota Changes</div>
+		</div>
+
+		<div class="row" id="detail_contract_main_container"/>
+	</t>
+
+	<!-- DETAIL CONTRACT INFO-->
+	<t t-name="website_mobile_app_detail_contract_info">
+		<div class="form-group ml10">
+			Status : <t t-esc="state"/> <br></br>
+			Period : <t t-esc="start_date"/> / <t t-esc="end_date"/> <br></br>
+			Service Type : <t t-esc="service_type"/> <br></br>
+		</div>
+		<div class="form-group ml10">
+			Max Order Time : <t t-esc="by_order_minimum_minutes"/> <br></br>
+			Max Start : <t t-esc="min_start_minutes"/> <br></br>
+			Max Delay : <t t-esc="max_delay_minutes"/> <br></br>
+		</div>
 	</t>
 </templates>

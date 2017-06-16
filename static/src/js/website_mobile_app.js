@@ -6,6 +6,7 @@ $(document).ready(function () {
 	qweb.add_template('/universal/static/src/xml/website_mobile_app.xml');
 
 	var contract_datas = [];
+	var to_cities = [];
 	var user = {};
 
 	function onclick_menu(id) {
@@ -26,7 +27,7 @@ $(document).ready(function () {
 			console.log(response);
 			var user_group = response['user_group'];
 			var order_type = response['order_type'];
-			var cities = response['route_to'];
+			self.to_cities = response['route_to'];
 			self.user = response['user'];
 			self.contract_datas = response['contract_datas'];
 
@@ -48,8 +49,8 @@ $(document).ready(function () {
 				'order_types': order_type,
 				// Route
 				'from_areas': route_from,
-				'to_cities': cities,
-				'to_areas': cities[0].areas,
+				'to_cities': self.to_cities,
+				'to_areas': self.to_cities[0].areas,
 				// Passenger
 				// Time
 				'start_planned_default': new Date().addHours(1).toDatetimeString(),
@@ -58,6 +59,10 @@ $(document).ready(function () {
 
 			$('#create_order_contract').change(function(){
 				onchange_create_order_contract($(this).val());
+			});
+
+			$('#create_order_route_to_city').change(function(){
+				onchange_create_order_route_to_city($(this).val());
 			});
 
 			$('#btn_create_order').click(function(){
@@ -120,10 +125,35 @@ $(document).ready(function () {
 	function onchange_create_order_contract(contract_id) {
 		$.each(self.contract_datas, function(index, contract_data) {
 			if (contract_data.id == contract_id) {
+				// Update fleet selection
 				$('#create_order_fleet_vehicle').empty();
 				$.each(contract_data.fleet_vehicle, function(index, fleet_vehicle_data) {
 					$('#create_order_fleet_vehicle').append(
 						'<option value=' + fleet_vehicle_data.id + '>' + fleet_vehicle_data.name + '</option>');
+				});
+				// Update allocation unit selection
+				$('#create_order_info_unit').empty();
+				$.each(contract_data.units, function(index, unit) {
+					$('#create_order_info_unit').append(
+						'<option value=' + unit.id + '>' + unit.name + '</option>');
+				});
+				// Update route_from_area selection
+				$('#create_order_route_from_area').empty();
+				$.each(contract_data.route_from, function(index, route) {
+					$('#create_order_route_from_area').append(
+						'<option value=' + route.id + '>' + route.name + '</option>');
+				});
+			}
+		});
+	};
+
+	function onchange_create_order_route_to_city(city_id) {
+		$.each(self.to_cities, function(index, city) {
+			if (city.id == city_id) {
+				$('#create_order_route_to_area').empty();
+				$.each(city.areas, function(index, area) {
+					$('#create_order_route_to_area').append(
+						'<option value=' + area.id + '>' + area.name + '</option>');
 				});
 			}
 		});

@@ -322,39 +322,37 @@ class website_mobile_app(http.Controller):
 	
 	@http.route('/mobile_app/approve_quota_changes/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_approve_quota_changes(self, data, **kwargs):
-		# handler_obj = http.request.env['universal.website.mobile_app.handler']
-		# result = handler_obj.change_password(json.loads(data))
-		# if result:
-		# 	return json.dumps({
-		# 		'status': 'ok',
-		# 		'info': _('Change Password Success'),
-		# 		'success' : True,
-		# 	})
-		# else:
-		# 	return json.dumps({
-		# 		'status': 'ok',
-		# 		'info': _('Old Password is not correct.'),
-		# 		'success' : False,
-		# 	})
-		pass
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		result = handler_obj.approve_quota_change(int(data))
+		if result:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Quota Change Approved'),
+				'success': True,
+			})
+		else:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Approving Quota Change Failed'),
+				'success': False,
+			})
 	
 	@http.route('/mobile_app/reject_quota_changes/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_reject_quota_changes(self, data, **kwargs):
-		# handler_obj = http.request.env['universal.website.mobile_app.handler']
-		# result = handler_obj.change_password(json.loads(data))
-		# if result:
-		# 	return json.dumps({
-		# 		'status': 'ok',
-		# 		'info': _('Change Password Success'),
-		# 		'success' : True,
-		# 	})
-		# else:
-		# 	return json.dumps({
-		# 		'status': 'ok',
-		# 		'info': _('Old Password is not correct.'),
-		# 		'success' : False,
-		# 	})
-		pass
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		result = handler_obj.reject_quota_change(json.loads(data))
+		if result:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Quota Change Rejected'),
+				'success': True,
+			})
+		else:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Rejecting Quota Change Failed'),
+				'success': False,
+			})
 	
 	@http.route('/mobile_app/get_usage_control_list/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_get_usage_control_list(self, data, **kwargs):
@@ -486,3 +484,23 @@ class website_mobile_app_handler(osv.osv):
 		quota_obj = self.pool.get('foms.contract.quota.change.log')
 		quota_ids = quota_obj.search(cr, uid, [('customer_contract_id', '=', id_contract)])
 		return quota_obj.browse(cr, uid, quota_ids)
+	
+	def approve_quota_change(self, cr, uid, change_log_id, context={}):
+		quota_obj = self.pool.get('foms.contract.quota.change.log')
+		return quota_obj.write(cr, uid, [change_log_id], {
+			'state': 'approved',
+			'confirm_by': uid,
+			'confirm_date': datetime.now(),
+		}, context=context)
+	
+	def reject_quota_change(self, cr, uid, domain, context={}):
+		quota_obj = self.pool.get('foms.contract.quota.change.log')
+		change_log_id = int(domain.get('change_log_id', '').encode('ascii', 'ignore'))
+		reject_reason = domain.get('reject_reason', '').encode('ascii', 'ignore')
+		return quota_obj.write(cr, uid, [change_log_id], {
+			'state': 'rejected',
+			'reject_reason': reject_reason,
+			'confirm_by': uid,
+			'confirm_date': datetime.now(),
+		}, context=context)
+	

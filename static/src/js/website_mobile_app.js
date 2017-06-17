@@ -469,10 +469,52 @@ $(document).ready(function () {
 
 		function onclick_button_change_log_approve(change_log_id) {
 			console.log(change_log_id);
+			$.ajax({
+				dataType: "json",
+				url: '/mobile_app/approve_quota_changes/' + change_log_id,
+				method: 'POST',
+				success: function(response) {
+					if (response.status) {
+						alert(response.info);
+						if(response.success){
+							$('#website_mobile_app_menu_quota_changes').click();
+						} else {}
+					} else {
+						alert('Server Unreachable.');
+					}
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					alert_error(XMLHttpRequest);
+				} ,
+			});
 		};
 
 		function onclick_button_change_log_reject(change_log_id) {
-			console.log(change_log_id);
+			var reject_reason = prompt("Input the reject reason:", "");
+			if (reject_reason !== null && reject_reason !== "") {
+				reject_change_log_data = {
+					'change_log_id': change_log_id,
+					'reject_reason': reject_reason,
+				};
+				$.ajax({
+					dataType: "json",
+					url: '/mobile_app/reject_quota_changes/' + JSON.stringify(reject_change_log_data),
+					method: 'POST',
+					success: function(response) {
+						if (response.status) {
+							alert(response.info);
+							if(response.success){
+								$('#website_mobile_app_menu_quota_changes').click();
+							} else {}
+						} else {
+							alert('Server Unreachable.');
+						}
+					},
+					error: function(XMLHttpRequest, textStatus, errorThrown) {
+						alert_error(XMLHttpRequest);
+					} ,
+				});
+			}
 		};
 	};
 });

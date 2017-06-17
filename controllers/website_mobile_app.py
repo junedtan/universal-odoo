@@ -39,6 +39,11 @@ _SERVICE_TYPE = [
 	('shuttle','Shuttle')
 ]
 
+_REQUEST_LONGEVITY = [
+	('temporary','Temporary'),
+	('permanent','Permanent'),
+]
+
 class website_mobile_app(http.Controller):
 
 	@http.route('/mobile_app', type='http', auth="user", website=True)
@@ -303,14 +308,14 @@ class website_mobile_app(http.Controller):
 				'id': quota_change.id,
 				'name': quota_change.allocation_unit_id.name,
 				'request_date': quota_change.request_date,
-				'request_by': quota_change.request_by,
-				'request_type': quota_change.request_longevity,
+				'request_by': quota_change.create_uid.name,
+				'request_type': dict(_REQUEST_LONGEVITY).get(quota_change.request_longevity, ''),
 				'yellow_limit_old': quota_change.old_yellow_limit,
 				'yellow_limit_new': quota_change.new_yellow_limit,
 				'red_limit_old': quota_change.old_red_limit,
 				'red_limit_new': quota_change.new_red_limit,
-				'respond_date': quota_change.fleet_vehicle_id.name,
-				'state': quota_change.fleet_vehicle_id.name,
+				'respond_date': quota_change.confirm_date,
+				'state': quota_change.state,
 				'reason': quota_change.reject_reason,
 			})
 		return json.dumps(quota_pending_history)

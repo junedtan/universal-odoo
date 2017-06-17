@@ -452,35 +452,16 @@ $(document).ready(function () {
 					'classifications': classifications,
 					'quota_changes': JSON.parse(data),
 				}));
+				$(".accordion").click(function(event) {
+					$(this).toggleClass("active");
+					var detail = $(this).next();
+					if (detail.css("maxHeight") != "0px"){
+						detail.css("maxHeight", "0px");
+					} else {
+						detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
+					}
+				});
 			});
-//			$.ajax({
-//				dataType: "json",
-//				url: '/mobile_app/fetch_contract_quota_changes/' + JSON.stringify(self.contract_datas[self.index_click_contract].id),
-//				method: 'POST',
-//				success: function(response) {
-//					if (response.status) {
-//						alert(response.info);
-//						if(response.success){
-//							console.log(response);
-//							console.log(response.data);
-//							classifications = {
-//								'Pending': 'pending',
-//								'History': 'history',
-//							};
-//							$("#detail_contract_main_container", self).html(
-//							qweb.render('website_mobile_app_detail_contract_quota_changes',{
-//								'classifications': classifications,
-//								'quota_changes': JSON.parse(response.data),
-//							}));
-//						}
-//					} else {
-//						alert('Server Unreachable.');
-//					}
-//				},
-//				error: function(XMLHttpRequest, textStatus, errorThrown) {
-//					alert_error(XMLHttpRequest);
-//				} ,
-//			});
 		});
 	};
 });

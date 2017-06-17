@@ -32,7 +32,6 @@ $(document).ready(function () {
 		onclick_menu('#website_mobile_app_menu_book_vehicle');
 		$.get('/mobile_app/get_required_book_vehicle', null, function(data){
 			var response = JSON.parse(data);
-			console.log(response);
 			var order_type = response['order_type'];
 			self.to_cities = response['route_to'];
 			self.user = response['user'];
@@ -423,7 +422,6 @@ $(document).ready(function () {
 				success: function(response) {
 					if (response.status) {
 						if(response.success){
-						console.log(response.quota_list);
 							$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_list_control_usage',{
 								'quota_list': JSON.parse(response.quota_list),
                             }));
@@ -442,7 +440,6 @@ $(document).ready(function () {
 		$('#website_mobile_app_menu_quota_changes').click(function() {
 			onclick_detail_contract_menu('#website_mobile_app_menu_quota_changes');
 			$.get('/mobile_app/fetch_contract_quota_changes/' + JSON.stringify(self.contract_datas[self.index_click_contract].id), null, function(data){
-//				var response = JSON.parse(data);
 				classifications = {
 					'Pending': 'pending',
 					'History': 'history',
@@ -461,7 +458,21 @@ $(document).ready(function () {
 						detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
 					}
 				});
+				$(".quota_change_btn_approve").click(function(){
+					onclick_button_change_log_approve($(this).attr("value"));
+				});
+				$(".quota_change_btn_reject").click(function(){
+					onclick_button_change_log_reject($(this).attr("value"));
+				});
 			});
 		});
+
+		function onclick_button_change_log_approve(change_log_id) {
+			console.log(change_log_id);
+		};
+
+		function onclick_button_change_log_reject(change_log_id) {
+			console.log(change_log_id);
+		};
 	};
 });

@@ -463,10 +463,10 @@
 							</table>
 							<t t-if="classification_value == 'pending'">
 								<div>
-									<div type="button" class="btn btn-success col-md-1 col-xs-3 ml10"
-										id="quota_change_btn_approve">Approve</div>
-									<div type="button" class="btn btn-danger col-md-1 col-xs-3 ml10"
-										id="quota_change_btn_reject">Reject</div>
+									<div type="button" t-attf-value="{{quota_change.id}}"
+										class="quota_change_btn_approve btn btn-success col-md-1 col-xs-3 ml10">Approve</div>
+									<div type="button" t-attf-value="{{quota_change.id}}"
+										class="quota_change_btn_reject btn btn-danger col-md-1 col-xs-3 ml10">Reject</div>
 								</div>
 							</t><br></br><br></br>
 							<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>

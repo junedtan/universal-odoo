@@ -320,6 +320,42 @@ class website_mobile_app(http.Controller):
 			})
 		return json.dumps(quota_pending_history)
 	
+	@http.route('/mobile_app/approve_quota_changes/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_approve_quota_changes(self, data, **kwargs):
+		# handler_obj = http.request.env['universal.website.mobile_app.handler']
+		# result = handler_obj.change_password(json.loads(data))
+		# if result:
+		# 	return json.dumps({
+		# 		'status': 'ok',
+		# 		'info': _('Change Password Success'),
+		# 		'success' : True,
+		# 	})
+		# else:
+		# 	return json.dumps({
+		# 		'status': 'ok',
+		# 		'info': _('Old Password is not correct.'),
+		# 		'success' : False,
+		# 	})
+		pass
+	
+	@http.route('/mobile_app/reject_quota_changes/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_reject_quota_changes(self, data, **kwargs):
+		# handler_obj = http.request.env['universal.website.mobile_app.handler']
+		# result = handler_obj.change_password(json.loads(data))
+		# if result:
+		# 	return json.dumps({
+		# 		'status': 'ok',
+		# 		'info': _('Change Password Success'),
+		# 		'success' : True,
+		# 	})
+		# else:
+		# 	return json.dumps({
+		# 		'status': 'ok',
+		# 		'info': _('Old Password is not correct.'),
+		# 		'success' : False,
+		# 	})
+		pass
+	
 	@http.route('/mobile_app/get_usage_control_list/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_get_usage_control_list(self, data, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']

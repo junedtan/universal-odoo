@@ -468,7 +468,6 @@ $(document).ready(function () {
 		});
 
 		function onclick_button_change_log_approve(change_log_id) {
-			console.log(change_log_id);
 			$.ajax({
 				dataType: "json",
 				url: '/mobile_app/approve_quota_changes/' + change_log_id,

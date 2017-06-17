@@ -74,3 +74,8 @@ div.row_hoverable{
 	margin-left: 10px;
 	margin-right: 10px;
 }
+
+.strike_through_text {
+	text-decoration: line-through;
+	color: gray;
+}

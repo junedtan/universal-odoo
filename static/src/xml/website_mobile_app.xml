@@ -426,7 +426,7 @@
 								<tr>
 									<td class="td_list">Yellow Limit</td>
 									<td class="td_list">:</td>
-									<td class="td_list"><strike><t t-esc="quota_change.yellow_limit_old"/></strike></td>
+									<td class="td_list strike_through_text"><t t-esc="quota_change.yellow_limit_old"/></td>
 								</tr>
 								<tr>
 									<td class="td_list"></td>
@@ -436,7 +436,7 @@
 								<tr>
 									<td class="td_list">Red Limit</td>
 									<td class="td_list">:</td>
-									<td class="td_list"><strike><t t-esc="quota_change.red_limit_old"/></strike></td>
+									<td class="td_list strike_through_text"><t t-esc="quota_change.red_limit_old"/></td>
 								</tr>
 								<tr>
 									<td class="td_list"></td>

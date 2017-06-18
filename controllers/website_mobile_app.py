@@ -9,6 +9,7 @@ from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 from openerp.addons.website.models.website import slug
 
 import json
+import locale
 
 import pytz
 from datetime import datetime, date
@@ -358,9 +359,37 @@ class website_mobile_app(http.Controller):
 	def mobile_app_get_usage_control_list(self, data, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		quota_list = handler_obj.search_all_au_contract_quota_usage(int(data))
+		quota_from_arr = []
+		for quota in quota_list:
+			total_nominal, total_count = handler_obj.search_total_request_nominal_quota_changes(quota.customer_contract_id.id, quota.allocation_unit_id.id)
+			prural = 'time'
+			status = 'OK'
+			response_user_group = self.mobile_app_get_user_group()
+			data_user_group = json.loads(response_user_group.data)
+			is_approver = False
+			if data_user_group['user_group'] == 'approver':
+				is_approver = True
+			if quota.current_usage > quota.red_limit:
+				status = 'Overlimit'
+			elif quota.current_usage > quota.yellow_limit:
+				status = 'Warning'
+			locale.setlocale( locale.LC_ALL, locale= "Indonesian")
+			if total_count > 1:
+				prural = 'times'
+			quota_from_arr.append({
+				'id': quota.id,
+				'allocation_unit_name': quota.allocation_unit_id.name,
+				'control_level' : quota.customer_contract_id.usage_control_level,
+				'total_request_nominal' : locale.currency(total_nominal, grouping= True),
+				'total_request_count' : total_count,
+				'current_usage' : quota.current_usage,
+				'prulal' : prural,
+				'status' : status,
+				'is_approver' : is_approver,
+			})
 		return json.dumps({
 			'status': 'ok',
-			'quota_list': json.dumps(quota_list),
+			'quota_list': json.dumps(quota_from_arr),
 			'success' : True,
 		})
 	
@@ -475,15 +504,28 @@ class website_mobile_app_handler(osv.osv):
 	def search_all_au_contract_quota_usage(self, cr, uid, id_contract, context={}):
 		quota_obj = self.pool.get('foms.contract.quota')
 		quota_ids = quota_obj.search(cr, uid, [('customer_contract_id', '=', id_contract)])
-		quota_list = []
-		if len(quota_ids) > 0:
-			quota_list = quota_obj.browse(cr, uid, quota_ids)
-		return quota_list
+		return quota_obj.browse(cr, uid, quota_ids)
 
 	def search_all_quota_changes(self, cr, uid, id_contract, context={}):
 		quota_obj = self.pool.get('foms.contract.quota.change.log')
 		quota_ids = quota_obj.search(cr, uid, [('customer_contract_id', '=', id_contract)])
 		return quota_obj.browse(cr, uid, quota_ids)
+	
+	def search_total_request_nominal_quota_changes(self, cr, uid, contract_id, allocation_unit_id, context={}):
+		quota_change_obj = self.pool.get('foms.contract.quota.change.log')
+		now = datetime.now()
+		period = "%02d/%04d" % (now.month ,now.year)
+		quota_change_log_ids = quota_change_obj.search(cr, uid, [('customer_contract_id', '=', contract_id),
+												('allocation_unit_id', '=', allocation_unit_id),
+												('state', '=', 'approved'),
+												('period', '=', period)])
+		result_nominal = 0
+		for quota_change in quota_change_obj.browse(cr, uid, quota_change_log_ids):
+			if quota_change.new_red_limit != 0:
+				result_nominal += quota_change.new_red_limit - quota_change.old_red_limit
+			elif quota_change.new_yellow_limit != 0:
+				result_nominal += quota_change.new_yellow_limit - quota_change.old_yellow_limit
+		return result_nominal, len(quota_change_log_ids)
 	
 	def approve_quota_change(self, cr, uid, change_log_id, context={}):
 		quota_obj = self.pool.get('foms.contract.quota.change.log')

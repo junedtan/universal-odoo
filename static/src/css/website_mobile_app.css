@@ -75,6 +75,10 @@ div.row_hoverable{
 	margin-right: 10px;
 }
 
+.contract_usage_control {
+	margin-bottom: 10px;
+}
+
 .strike_through_text {
 	text-decoration: line-through;
 	color: gray;

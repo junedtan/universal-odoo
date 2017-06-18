@@ -223,7 +223,7 @@
 	</t>
 
 
-	<!-- LIST ORDER -->
+	<!-- LIST SHUTTLE -->
 
 	<t t-name="website_mobile_app_list_shuttle">
 		<t class="full_height container universal_website_mobile_app">
@@ -331,33 +331,33 @@
 		<div class="contract_info no_padding">
 			<table class="table">
 				<tr>
-					<td>Status</td>
-					<td>:</td>
+					<td class="td_list">Status</td>
+					<td class="td_list">:</td>
 					<td><t t-esc="state"/></td>
 				</tr>
 				<tr>
-					<td>Period</td>
-					<td>:</td>
+					<td class="td_list">Period</td>
+					<td class="td_list">:</td>
 					<td><t t-esc="start_date"/> / <t t-esc="end_date"/></td>
 				</tr>
 				<tr>
-					<td>Service Type</td>
-					<td>:</td>
+					<td class="td_list">Service Type</td>
+					<td class="td_list">:</td>
 					<td><t t-esc="service_type"/></td>
 				</tr>
 				<tr>
-					<td>Max Order Time</td>
-					<td>:</td>
+					<td class="td_list">Max Order Time</td>
+					<td class="td_list">:</td>
 					<td><t t-esc="by_order_minimum_minutes"/></td>
 				</tr>
 				<tr>
-					<td>Max Start</td>
-					<td>:</td>
+					<td class="td_list">Max Start</td>
+					<td class="td_list">:</td>
 					<td><t t-esc="min_start_minutes"/></td>
 				</tr>
 				<tr>
-					<td>Max Delay</td>
-					<td>:</td>
+					<td class="td_list">Max Delay</td>
+					<td class="td_list">:</td>
 					<td><t t-esc="max_delay_minutes"/></td>
 				</tr>
 			</table>
@@ -377,11 +377,33 @@
 				<t t-foreach="quota_list" t-as="quota">
 					<div class="div_list_quota_usage" t-attf-index_list_quota = "{{i}}">
 						<div class="list_title" style="pointer-events:none;">
-							<b><t t-esc="quota.allocation_unit_id.name"/></b>
+							<b><t t-esc="allocation_unit_name"/></b>
 						</div>
-						Quota Ussage: <t t-esc="quota.current_usage"/>
+						<t t-if="control_level == 'no_control'">
+							Quota changes requested <t t-esc="total_request_count"/> <t t-esc="prulal"/> with total of <t t-esc="total_request_nominal"/>
+						</t>
+						<table class="table">
+							<tr>
+								<td class="td_list"> Usage </td>
+								<td class="td_list"> : </td>
+								<td> <t t-esc="current_usage"/> </td>
+							</tr>
+							<tr>
+								<td class="td_list"></td>
+								<td class="td_list"></td>
+								<td> <t t-esc="status"/> </td>
+							</tr>
+						</table>
 					</div>
+					<t t-if="is_approver">
+						<div type="button" t-attf-value="{{quota.id}} "
+								class="quota_btn_change_quota btn btn-success col-md-2 col-xs-4 ml10 contract_usage_control">Change Quota
+						</div>
+					</t>
 					<t t-set="i" t-value="i+1"/>
+					<div style="clear:both">
+						<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
+					</div>
 				</t>
 			</t>
 		</t>

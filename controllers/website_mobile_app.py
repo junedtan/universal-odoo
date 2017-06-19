@@ -358,10 +358,11 @@ class website_mobile_app(http.Controller):
 	@http.route('/mobile_app/get_usage_control_list/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_get_usage_control_list(self, data, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		quota_list = handler_obj.search_all_au_contract_quota_usage(int(data))
+		allocation_unit_list = handler_obj.search_all_au_contract(int(data))
 		quota_from_arr = []
-		for quota in quota_list:
-			total_nominal, total_count = handler_obj.search_total_request_nominal_quota_changes(quota.customer_contract_id.id, quota.allocation_unit_id.id)
+		for au in allocation_unit_list:
+			total_nominal, total_count = handler_obj.search_total_request_nominal_count_quota_changes(au.header_id.id, au.id)
+			quota = handler_obj.search_au_contract_quota_usage(au.header_id.id, au.id)
 			plural = 'time'
 			status = 'OK'
 			response_user_group = self.mobile_app_get_user_group()
@@ -369,20 +370,22 @@ class website_mobile_app(http.Controller):
 			is_approver = False
 			if data_user_group['user_group'] == 'approver':
 				is_approver = True
-			if quota.current_usage > quota.red_limit:
-				status = 'Overlimit'
-			elif quota.current_usage > quota.yellow_limit:
-				status = 'Warning'
+			if quota:
+				if quota.current_usage > quota.red_limit:
+					status = 'Overlimit'
+				elif quota.current_usage > quota.yellow_limit:
+					status = 'Warning'
 			locale.setlocale( locale.LC_ALL, locale= "Indonesian")
 			if total_count > 1:
-				prural = 'times'
+				plural = 'times'
 			quota_from_arr.append({
-				'id': quota.id,
-				'allocation_unit_name': quota.allocation_unit_id.name,
-				'control_level' : quota.customer_contract_id.usage_control_level,
+				'id': quota.id if quota else 0,
+				'au_id' : au.id,
+				'allocation_unit_name': au.name,
+				'control_level' : au.header_id.usage_control_level,
 				'total_request_nominal' : locale.currency(total_nominal, grouping= True),
 				'total_request_count' : total_count,
-				'current_usage' : quota.current_usage,
+				'current_usage' : quota.current_usage if quota else 0,
 				'plural' : plural,
 				'status' : status,
 				'is_approver' : is_approver,
@@ -501,17 +504,26 @@ class website_mobile_app_handler(osv.osv):
 		finally:
 			return result
 	
-	def search_all_au_contract_quota_usage(self, cr, uid, id_contract, context={}):
+	def search_au_contract_quota_usage(self, cr, uid, contract_id, allocation_unit_id,context={}):
 		quota_obj = self.pool.get('foms.contract.quota')
-		quota_ids = quota_obj.search(cr, uid, [('customer_contract_id', '=', id_contract)])
-		return quota_obj.browse(cr, uid, quota_ids)
+		now = datetime.now()
+		period = "%02d/%04d" % (now.month ,now.year)
+		quota_id = quota_obj.search(cr, uid, [('customer_contract_id', '=', contract_id),
+											('allocation_unit_id', '=', allocation_unit_id),
+											('period', '=', period)], limit = 1)
+		return quota_obj.browse(cr, uid, quota_id)
+	
+	def search_all_au_contract(self, cr, uid, contract_id, context={}):
+		au_obj = self.pool.get('foms.contract.alloc.unit')
+		au_ids = au_obj.search(cr, uid, [('header_id', '=', contract_id)])
+		return au_obj.browse(cr, uid, au_ids)
 
 	def search_all_quota_changes(self, cr, uid, id_contract, context={}):
 		quota_obj = self.pool.get('foms.contract.quota.change.log')
 		quota_ids = quota_obj.search(cr, uid, [('customer_contract_id', '=', id_contract)])
 		return quota_obj.browse(cr, uid, quota_ids)
 	
-	def search_total_request_nominal_quota_changes(self, cr, uid, contract_id, allocation_unit_id, context={}):
+	def search_total_request_nominal_count_quota_changes(self, cr, uid, contract_id, allocation_unit_id, context={}):
 		quota_change_obj = self.pool.get('foms.contract.quota.change.log')
 		now = datetime.now()
 		period = "%02d/%04d" % (now.month ,now.year)

@@ -635,7 +635,7 @@
 					<tr>
 						<td class="td_list">Add Amount</td>
 						<td class="td_list">:</td>
-						<td class="td_list"><input type="number" class="form-control" id="amount_yellow_dialog"> </input></td>
+						<td class="td_list"><input type="number" class="form-control" id="amount_yellow_dialog" style="border:none"> </input></td>
 					</tr>
 					<tr>
 						<td class="td_list">New</td>
@@ -655,7 +655,7 @@
 					<tr>
 						<td class="td_list">Add Amount</td>
 						<td class="td_list">:</td>
-						<td class="td_list"><input type="number" class="form-control" id="amount_red_dialog"> </input></td>
+						<td class="td_list"><input type="number" class="form-control" id="amount_red_dialog" style="border:none"> </input></td>
 					</tr>
 					<tr>
 						<td class="td_list">New</td>
@@ -663,6 +663,8 @@
 						<td class="td_list">New</td>
 					</tr>
 				</table>
+				<div type="button"
+						class="dialog_quota_change_button_request btn btn-success col-md-12 col-xs-12 ml10">Request Changes</div>
 			</div>
 		  </div>
 		</div>

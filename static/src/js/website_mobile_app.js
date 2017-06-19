@@ -390,9 +390,9 @@ $(document).ready(function () {
 				$(".list_contract").click(function(event) {
 					var target = $(event.target);
 					self.index_click_contract =  target.attr("id_contract");
-					//$('#website_mobile_app_menu_info_contract').click();
 					$("#main_container", self).html(qweb.render('website_mobile_app_detail_contract'));
 					setOnClickButtonMenuDetailContract();
+					$('#website_mobile_app_menu_info_contract').click();
 				});
        		});
 	});

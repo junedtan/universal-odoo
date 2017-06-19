@@ -375,7 +375,7 @@
 			<t t-if="quota_list.length != 0">
 				<t t-set="i" t-value="0"/>
 				<t t-foreach="quota_list" t-as="quota">
-					<div class="div_list_quota_usage" t-attf-index_list_quota = "{{i}}">
+					<div class="list_quota_usage" t-attf-value="{{quota.id}}" t-attf-index_list_quota = "{{i}}">
 						<div class="list_title" style="pointer-events:none;">
 							<b><t t-esc="allocation_unit_name"/></b>
 						</div>
@@ -406,6 +406,113 @@
 					</div>
 				</t>
 			</t>
+		</t>
+	</t>
+
+	<t t-name="website_mobile_app_detail_control_usage">
+		<h4>Information</h4>
+		<table class="table">
+			<tr>
+				<th class="td_list">Total Usage</th>
+				<td class="td_list">:</td>
+				<td><t t-esc="total_usage"/></td>
+			</tr>
+			<tr>
+				<th class="td_list">Yellow Limit</th>
+				<td class="td_list">:</td>
+				<td><t t-esc="yellow_limit"/></td>
+			</tr>
+			<tr>
+				<th class="td_list">Red Limit</th>
+				<td class="td_list">:</td>
+				<td><t t-esc="red_limit"/></td>
+			</tr>
+			<tr>
+				<th class="td_list">Total Request Nominal</th>
+				<td class="td_list">:</td>
+				<td><t t-esc="total_request_nominal"/></td>
+			</tr>
+			<tr>
+				<th class="td_list">Total Request Time</th>
+				<td class="td_list">:</td>
+				<td><t t-esc="total_request_time"/></td>
+			</tr>
+		</table>
+
+		<h4>Limit Request History</h4>
+		<t t-if="limit_requests[classification_value].length == 0">
+			<div class="detail_container accordion_detail" >
+				<div class="col-xs-12" style="text-align: center; color: darkgray;">
+					<h4>Data Kosong</h4>
+				</div>
+			</div>
+		</t>
+		<t t-if="limit_requests[classification_value].length != 0">
+			<div class="detail_container accordion_detail" >
+				<t t-foreach="limit_requests[classification_value]" t-as="limit_request">
+					<div class="list_title">
+						<b><t t-esc="limit_request.request_date"/></b>
+					</div>
+					<table class="table">
+						<tr>
+							<td class="td_list">Request By</td>
+							<td class="td_list">:</td>
+							<td class="td_list"><t t-esc="limit_request.request_by"/></td>
+						</tr>
+						<tr>
+							<td class="td_list">Request Type</td>
+							<td class="td_list">:</td>
+							<td><t t-esc="limit_request.request_type"/></td>
+						</tr>
+						<tr>
+							<td class="td_list">Yellow Limit</td>
+							<td class="td_list">:</td>
+							<td class="td_list strike_through_text"><t t-esc="limit_request.yellow_limit_old"/></td>
+						</tr>
+						<tr>
+							<td class="td_list"></td>
+							<td class="td_list"></td>
+							<td class="td_list"><t t-esc="limit_request.yellow_limit_new"/></td>
+						</tr>
+						<tr>
+							<td class="td_list">Red Limit</td>
+							<td class="td_list">:</td>
+							<td class="td_list strike_through_text"><t t-esc="limit_request.red_limit_old"/></td>
+						</tr>
+						<tr>
+							<td class="td_list"></td>
+							<td class="td_list"></td>
+							<td class="td_list"><t t-esc="limit_request.red_limit_new"/></td>
+						</tr>
+						<t t-if="classification_value == 'history'">
+							<tr>
+								<td class="td_list">Respond Date</td>
+								<td class="td_list">:</td>
+								<td class="td_list"><t t-esc="limit_request.respond_date"/></td>
+							</tr>
+						</t>
+						<tr>
+							<td class="td_list">Status</td>
+							<td class="td_list">:</td>
+							<td class="td_list"><t t-esc="limit_request.state"/></td>
+						</tr>
+						<tr>
+							<td class="td_list">Reason</td>
+							<td class="td_list">:</td>
+							<td class="td_list"><t t-esc="limit_request.reason"/></td>
+						</tr>
+					</table>
+					<t t-if="classification_value == 'pending'">
+						<div>
+							<div type="button" t-attf-value="{{limit_request.id}}"
+								class="limit_request_btn_approve btn btn-success col-md-1 col-xs-3 ml10">Approve</div>
+							<div type="button" t-attf-value="{{limit_request.id}}"
+								class="limit_request_btn_reject btn btn-danger col-md-1 col-xs-3 ml10">Reject</div>
+						</div>
+					</t><br></br><br></br>
+					<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
+				</t>
+			</div>
 		</t>
 	</t>
 

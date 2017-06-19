@@ -393,6 +393,43 @@ class website_mobile_app(http.Controller):
 			'success' : True,
 		})
 	
+	@http.route('/mobile_app/fetch_contract_detail_usage_control_quota/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_fetch_contract_quota_changes(self, data, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		quota_id = int(data)
+		quota = handler_obj.get_quota_data(quota_id)
+		# Quota Changes by Pending/History
+		limit_request_pending_history = {
+			'pending': [], 'history': [],
+		}
+		for limit_request in quota.limit_requests:
+			classification = 'history'
+			if limit_request.state == 'draft':
+				classification = 'pending'
+			limit_request_pending_history[classification].append({
+				'id': limit_request.id,
+				'name': limit_request.allocation_unit_id.name,
+				'request_date': limit_request.request_date,
+				'request_by': limit_request.create_uid.name,
+				'request_type': dict(_REQUEST_LONGEVITY).get(limit_request.request_longevity, ''),
+				'yellow_limit_old': limit_request.old_yellow_limit,
+				'yellow_limit_new': limit_request.new_yellow_limit,
+				'red_limit_old': limit_request.old_red_limit,
+				'red_limit_new': limit_request.new_red_limit,
+				'respond_date': limit_request.confirm_date,
+				'state': limit_request.state,
+				'reason': limit_request.reject_reason,
+			})
+		quota_detail = {
+			'total_usage': quota.total_usage,
+			'yellow_limit': quota.yellow_limit,
+			'red_limit': quota.red_limit,
+			'total_request_nominal': quota.total_request_nominal,
+			'total_request_time': quota.total_request_time,
+			'limit_request': limit_request_pending_history,
+		}
+		return json.dumps(quota_detail)
+	
 	@http.route('/mobile_app/change_password/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_change_password(self, data, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
@@ -505,6 +542,25 @@ class website_mobile_app_handler(osv.osv):
 		quota_obj = self.pool.get('foms.contract.quota')
 		quota_ids = quota_obj.search(cr, uid, [('customer_contract_id', '=', id_contract)])
 		return quota_obj.browse(cr, uid, quota_ids)
+	
+	def get_quota_data(self, cr, uid, quota_id, context={}):
+		quota_obj = self.pool.get('foms.contract.quota')
+		quota_change_obj = self.pool.get('foms.contract.quota.change.log')
+		quota = quota_obj.browse(cr, uid, [quota_id])
+		au = quota.allocation_unit_id
+		quota_change_ids = quota_change_obj.search(cr, uid, [('allocation_unit_id', '=', au.id)])
+		quota_changes = quota_change_obj.browse(cr, uid, quota_change_ids)
+		total_nominal, total_count = \
+			self.search_total_request_nominal_quota_changes(quota.customer_contract_id.id, au.id)
+		return {
+			'total_usage': quota.current_usage,
+			'yellow_limit': quota.yellow_limit,
+			'red_limit': quota.red_limit,
+			'total_request_nominal': total_nominal,
+			'total_request_time': total_count,
+			'plural': 'time' if total_count > 1 else 'times',
+			'limit_request': quota_changes,
+		}
 
 	def search_all_quota_changes(self, cr, uid, id_contract, context={}):
 		quota_obj = self.pool.get('foms.contract.quota.change.log')

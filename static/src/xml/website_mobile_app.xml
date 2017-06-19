@@ -375,23 +375,23 @@
 			<t t-if="quota_list.length != 0">
 				<t t-set="i" t-value="0"/>
 				<t t-foreach="quota_list" t-as="quota">
-					<div class="div_list_quota_usage" t-attf-index_list_quota = "{{i}}">
+					<div class="list_quota_usage" t-attf-index_list_quota = "{{i}}">
 						<div class="list_title" style="pointer-events:none;">
 							<b><t t-esc="allocation_unit_name"/></b>
 						</div>
 						<t t-if="control_level == 'no_control'">
-							Quota changes requested <t t-esc="total_request_count"/> <t t-esc="prulal"/> with total of <t t-esc="total_request_nominal"/>
+							Quota changes requested <t t-esc="total_request_count"/> <t t-esc="plural"/> with total of <t t-esc="total_request_nominal"/>
 						</t>
 						<table class="table">
 							<tr>
-								<td class="td_list"> Usage </td>
-								<td class="td_list"> : </td>
-								<td> <t t-esc="current_usage"/> </td>
+								<td class="td_list">Usage</td>
+								<td class="td_list">:</td>
+								<td><t t-esc="current_usage"/></td>
 							</tr>
 							<tr>
 								<td class="td_list"></td>
 								<td class="td_list"></td>
-								<td> <t t-esc="status"/> </td>
+								<td><t t-esc="status"/></td>
 							</tr>
 						</table>
 					</div>

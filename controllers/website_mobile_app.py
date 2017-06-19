@@ -362,7 +362,7 @@ class website_mobile_app(http.Controller):
 		quota_from_arr = []
 		for quota in quota_list:
 			total_nominal, total_count = handler_obj.search_total_request_nominal_quota_changes(quota.customer_contract_id.id, quota.allocation_unit_id.id)
-			prural = 'time'
+			plural = 'time'
 			status = 'OK'
 			response_user_group = self.mobile_app_get_user_group()
 			data_user_group = json.loads(response_user_group.data)
@@ -383,7 +383,7 @@ class website_mobile_app(http.Controller):
 				'total_request_nominal' : locale.currency(total_nominal, grouping= True),
 				'total_request_count' : total_count,
 				'current_usage' : quota.current_usage,
-				'prulal' : prural,
+				'plural' : plural,
 				'status' : status,
 				'is_approver' : is_approver,
 			})

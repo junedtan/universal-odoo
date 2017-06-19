@@ -428,6 +428,9 @@ $(document).ready(function () {
 							$(".list_quota_usage").click(function(){
 								onclick_usage_control_quota($(this).attr("value"));
 							});
+							$(".quota_btn_request_change_quota").click(function(){
+								onclick_button_request_change_quota($(this).attr("value"));
+							});
 						}
 					} else {
 						alert('Server Unreachable.');
@@ -438,6 +441,7 @@ $(document).ready(function () {
 				} ,
 			});
         });
+
         function onclick_usage_control_quota(quota_id) {
         	if(parseInt(quota_id) === 0) {
         		alert('No quota usage control detail found.')
@@ -553,6 +557,22 @@ $(document).ready(function () {
 						alert_error(XMLHttpRequest);
 					} ,
 				});
+			}
+		};
+
+		function onclick_button_request_change_quota(au_id) {
+			$("#dialog_request_quota_container", self).html(qweb.render('dialog_request_change_quota'));
+			var modal = $("#myModalChangeQuota");
+			modal.css("display", "block");
+
+			$(".close_dialog").click(function(event) {
+            	modal.css("display", "none");
+			});
+
+			window.onclick = function(event) {
+				if (event.target == modal.get(0)) {
+					modal.css("display", "none");
+				}
 			}
 		};
 	};

@@ -395,11 +395,14 @@
 							</tr>
 						</table>
 					</div>
-					<t t-if="is_approver">
-						<div type="button" t-attf-value="{{quota.id}} "
-								class="quota_btn_change_quota btn btn-success col-md-2 col-xs-4 ml10 contract_usage_control">Change Quota
+					<!-- TODO -->
+					<!--<t t-if="is_approver">-->
+						<div type="button" t-attf-value="{{au_id}} "
+								class="quota_btn_request_change_quota btn btn-success col-md-2 col-xs-4 ml10 contract_usage_control">Change Quota
 						</div>
-					</t>
+
+						<div class="row dialog_request_quota" id="dialog_request_quota_container"/>
+					<!--</t>-->
 					<t t-set="i" t-value="i+1"/>
 					<div style="clear:both">
 						<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
@@ -605,4 +608,65 @@
 			</t>
 		</div>
 	</t>
+
+	<!-- Dialog Req Change Quota -->
+	<t t-name="dialog_request_change_quota">
+		<div id="myModalChangeQuota" class="modal">
+		  <!-- Modal content -->
+		  <div class="modal_request_change_quota">
+			<div class="modal-header">
+			  <span class="close_dialog">x</span>
+				<div class = "list_title">
+					Request Quota Changes
+				</div>
+			</div>
+			<div class="modal-body" style = "text-align: center">
+				<label class="radio-inline"><input type="radio" name="optradio">This Month Only</input></label>
+				<label class="radio-inline"><input type="radio" name="optradio">Permanent</input></label>
+				<div class = "list_title">
+					Yellow Limit
+				</div>
+				<table class="table">
+					<tr>
+						<td class="td_list">Old</td>
+						<td class="td_list">:</td>
+						<td class="td_list">Old</td>
+					</tr>
+					<tr>
+						<td class="td_list">Add Amount</td>
+						<td class="td_list">:</td>
+						<td class="td_list"><input type="number" class="form-control" id="amount_yellow_dialog"> </input></td>
+					</tr>
+					<tr>
+						<td class="td_list">New</td>
+						<td class="td_list">:</td>
+						<td class="td_list">New</td>
+					</tr>
+				</table>
+				<div class = "list_title">
+					Red Limit
+				</div>
+				<table class="table">
+					<tr>
+						<td class="td_list">Old</td>
+						<td class="td_list">:</td>
+						<td class="td_list">Old</td>
+					</tr>
+					<tr>
+						<td class="td_list">Add Amount</td>
+						<td class="td_list">:</td>
+						<td class="td_list"><input type="number" class="form-control" id="amount_red_dialog"> </input></td>
+					</tr>
+					<tr>
+						<td class="td_list">New</td>
+						<td class="td_list">:</td>
+						<td class="td_list">New</td>
+					</tr>
+				</table>
+			</div>
+		  </div>
+		</div>
+	</t>
+
+
 </templates>

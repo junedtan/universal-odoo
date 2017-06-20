@@ -443,41 +443,37 @@ $(document).ready(function () {
         });
 
         function onclick_usage_control_quota(quota_id) {
-        	if(parseInt(quota_id) === 0) {
-        		alert('No quota usage control detail found.')
-        	} else {
-				$.get('/mobile_app/fetch_contract_detail_usage_control_quota/' + quota_id, null, function(data){
-					var quota = JSON.parse(data)
-					classifications = {
-						'Pending': 'pending',
-						'History': 'history',
-					};
-					$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_detail_control_usage',{
-						'classifications': classifications,
-						'total_usage': quota.total_usage,
-						'yellow_limit': quota.yellow_limit,
-						'red_limit': quota.red_limit,
-						'total_request_nominal': quota.total_request_nominal,
-						'total_request_time': quota.total_request_time,
-						'limit_requests': quota.limit_requests,
-					}));
-					$(".accordion").click(function(event) {
-						$(this).toggleClass("active");
-						var detail = $(this).next();
-						if (detail.css("maxHeight") != "0px"){
-							detail.css("maxHeight", "0px");
-						} else {
-							detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
-						}
-					});
-					$(".limit_request_btn_approve").click(function(){
-						onclick_button_change_log_approve($(this).attr("value"));
-					});
-					$(".limit_request_btn_reject").click(function(){
-						onclick_button_change_log_reject($(this).attr("value"));
-					});
+			$.get('/mobile_app/fetch_contract_detail_usage_control_quota/' + quota_id, null, function(data){
+				var quota = JSON.parse(data)
+				classifications = {
+					'Pending': 'pending',
+					'History': 'history',
+				};
+				$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_detail_control_usage',{
+					'classifications': classifications,
+					'total_usage': quota.total_usage,
+					'yellow_limit': quota.yellow_limit,
+					'red_limit': quota.red_limit,
+					'total_request_nominal': quota.total_request_nominal,
+					'total_request_time': quota.total_request_time,
+					'limit_requests': quota.limit_requests,
+				}));
+				$(".accordion").click(function(event) {
+					$(this).toggleClass("active");
+					var detail = $(this).next();
+					if (detail.css("maxHeight") != "0px"){
+						detail.css("maxHeight", "0px");
+					} else {
+						detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
+					}
 				});
-        	}
+				$(".limit_request_btn_approve").click(function(){
+					onclick_button_change_log_approve($(this).attr("value"));
+				});
+				$(".limit_request_btn_reject").click(function(){
+					onclick_button_change_log_reject($(this).attr("value"));
+				});
+			});
 		};
 
         //Onclick menu quota changes

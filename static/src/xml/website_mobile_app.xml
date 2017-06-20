@@ -173,18 +173,18 @@
 							<!--<t t-esc="order.origin_location"/> - <t t-esc="order.dest_location"/>-->
 							<table class="table">
 								<tr>
-									<td class="td_list">Time</td>
-									<td class="td_list">:</td>
+									<td>Time</td>
+									<td>:</td>
 									<td><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
 								</tr>
 								<tr>
-									<td class="td_list">Driver</td>
-									<td class="td_list">:</td>
+									<td>Driver</td>
+									<td>:</td>
 									<td><t t-esc="order.assigned_driver_name"/></td>
 								</tr>
 								<tr>
-									<td class="td_list">Vehicle</td>
-									<td class="td_list">:</td>
+									<td>Vehicle</td>
+									<td>:</td>
 									<td><t t-esc="order.assigned_vehicle_name"/></td>
 								</tr>
 							</table>
@@ -260,21 +260,21 @@
 						</div>
 						<table class="table">
 							<tr>
-								<td class="td_list">Time</td>
-								<td class="td_list">:</td>
+								<td>Time</td>
+								<td>:</td>
 								<td>
 									<t t-esc="shuttle.departure_time"/>
 									<!-- - <t t-esc="shuttle.arrival_time"/>-->
 								</td>
 							</tr>
 							<tr>
-								<td class="td_list">Driver</td>
-								<td class="td_list">:</td>
+								<td>Driver</td>
+								<td>:</td>
 								<td><t t-esc="shuttle.assigned_driver_name"/></td>
 							</tr>
 							<tr>
-								<td class="td_list">Vehicle</td>
-								<td class="td_list">:</td>
+								<td>Vehicle</td>
+								<td>:</td>
 								<td><t t-esc="shuttle.assigned_vehicle_name"/></td>
 							</tr>
 						</table>
@@ -331,33 +331,33 @@
 		<div class="contract_info no_padding">
 			<table class="table">
 				<tr>
-					<td class="td_list">Status</td>
-					<td class="td_list">:</td>
+					<td>Status</td>
+					<td>:</td>
 					<td><t t-esc="state"/></td>
 				</tr>
 				<tr>
-					<td class="td_list">Period</td>
-					<td class="td_list">:</td>
+					<td>Period</td>
+					<td>:</td>
 					<td><t t-esc="start_date"/> / <t t-esc="end_date"/></td>
 				</tr>
 				<tr>
-					<td class="td_list">Service Type</td>
-					<td class="td_list">:</td>
+					<td>Service Type</td>
+					<td>:</td>
 					<td><t t-esc="service_type"/></td>
 				</tr>
 				<tr>
-					<td class="td_list">Max Order Time</td>
-					<td class="td_list">:</td>
+					<td>Max Order Time</td>
+					<td>:</td>
 					<td><t t-esc="by_order_minimum_minutes"/></td>
 				</tr>
 				<tr>
-					<td class="td_list">Max Start</td>
-					<td class="td_list">:</td>
+					<td>Max Start</td>
+					<td>:</td>
 					<td><t t-esc="min_start_minutes"/></td>
 				</tr>
 				<tr>
-					<td class="td_list">Max Delay</td>
-					<td class="td_list">:</td>
+					<td>Max Delay</td>
+					<td>:</td>
 					<td><t t-esc="max_delay_minutes"/></td>
 				</tr>
 			</table>
@@ -384,13 +384,13 @@
 						</t>
 						<table class="table">
 							<tr>
-								<td class="td_list">Usage</td>
-								<td class="td_list">:</td>
+								<td>Usage</td>
+								<td>:</td>
 								<td><t t-esc="current_usage"/></td>
 							</tr>
 							<tr>
-								<td class="td_list"></td>
-								<td class="td_list"></td>
+								<td></td>
+								<td></td>
 								<td><t t-esc="status"/></td>
 							</tr>
 						</table>
@@ -416,106 +416,111 @@
 		<h4>Information</h4>
 		<table class="table">
 			<tr>
-				<th class="td_list">Total Usage</th>
-				<td class="td_list">:</td>
+				<td>Total Usage</td>
+				<td>:</td>
 				<td><t t-esc="total_usage"/></td>
 			</tr>
 			<tr>
-				<th class="td_list">Yellow Limit</th>
-				<td class="td_list">:</td>
+				<td>Yellow Limit</td>
+				<td>:</td>
 				<td><t t-esc="yellow_limit"/></td>
 			</tr>
 			<tr>
-				<th class="td_list">Red Limit</th>
-				<td class="td_list">:</td>
+				<td>Red Limit</td>
+				<td>:</td>
 				<td><t t-esc="red_limit"/></td>
 			</tr>
 			<tr>
-				<th class="td_list">Total Request Nominal</th>
-				<td class="td_list">:</td>
+				<td>Total Request Nominal</td>
+				<td>:</td>
 				<td><t t-esc="total_request_nominal"/></td>
 			</tr>
 			<tr>
-				<th class="td_list">Total Request Time</th>
-				<td class="td_list">:</td>
+				<td>Total Request Time</td>
+				<td>:</td>
 				<td><t t-esc="total_request_time"/></td>
 			</tr>
 		</table>
 
 		<h4>Limit Request History</h4>
-		<t t-if="limit_requests[classification_value].length == 0">
-			<div class="detail_container accordion_detail" >
-				<div class="col-xs-12" style="text-align: center; color: darkgray;">
-					<h4>Data Kosong</h4>
-				</div>
+		<t t-foreach="classifications" t-as="classification">
+			<div class="row_hoverable accordion">
+				<h5><t t-esc="classification"/></h5>
 			</div>
-		</t>
-		<t t-if="limit_requests[classification_value].length != 0">
-			<div class="detail_container accordion_detail" >
-				<t t-foreach="limit_requests[classification_value]" t-as="limit_request">
-					<div class="list_title">
-						<b><t t-esc="limit_request.request_date"/></b>
+			<t t-if="limit_requests[classification_value].length == 0">
+				<div class="detail_container accordion_detail" >
+					<div class="col-xs-12" style="text-align: center; color: darkgray;">
+						<h4>Data Kosong</h4>
 					</div>
-					<table class="table">
-						<tr>
-							<td class="td_list">Request By</td>
-							<td class="td_list">:</td>
-							<td class="td_list"><t t-esc="limit_request.request_by"/></td>
-						</tr>
-						<tr>
-							<td class="td_list">Request Type</td>
-							<td class="td_list">:</td>
-							<td><t t-esc="limit_request.request_type"/></td>
-						</tr>
-						<tr>
-							<td class="td_list">Yellow Limit</td>
-							<td class="td_list">:</td>
-							<td class="td_list strike_through_text"><t t-esc="limit_request.yellow_limit_old"/></td>
-						</tr>
-						<tr>
-							<td class="td_list"></td>
-							<td class="td_list"></td>
-							<td class="td_list"><t t-esc="limit_request.yellow_limit_new"/></td>
-						</tr>
-						<tr>
-							<td class="td_list">Red Limit</td>
-							<td class="td_list">:</td>
-							<td class="td_list strike_through_text"><t t-esc="limit_request.red_limit_old"/></td>
-						</tr>
-						<tr>
-							<td class="td_list"></td>
-							<td class="td_list"></td>
-							<td class="td_list"><t t-esc="limit_request.red_limit_new"/></td>
-						</tr>
-						<t t-if="classification_value == 'history'">
-							<tr>
-								<td class="td_list">Respond Date</td>
-								<td class="td_list">:</td>
-								<td class="td_list"><t t-esc="limit_request.respond_date"/></td>
-							</tr>
-						</t>
-						<tr>
-							<td class="td_list">Status</td>
-							<td class="td_list">:</td>
-							<td class="td_list"><t t-esc="limit_request.state"/></td>
-						</tr>
-						<tr>
-							<td class="td_list">Reason</td>
-							<td class="td_list">:</td>
-							<td class="td_list"><t t-esc="limit_request.reason"/></td>
-						</tr>
-					</table>
-					<t t-if="classification_value == 'pending'">
-						<div>
-							<div type="button" t-attf-value="{{limit_request.id}}"
-								class="limit_request_btn_approve btn btn-success col-md-1 col-xs-3 ml10">Approve</div>
-							<div type="button" t-attf-value="{{limit_request.id}}"
-								class="limit_request_btn_reject btn btn-danger col-md-1 col-xs-3 ml10">Reject</div>
+				</div>
+			</t>
+			<t t-if="limit_requests[classification_value].length != 0">
+				<div class="detail_container accordion_detail" >
+					<t t-foreach="limit_requests[classification_value]" t-as="limit_request">
+						<div class="list_title">
+							<b><t t-esc="limit_request.request_date"/></b>
 						</div>
-					</t><br></br><br></br>
-					<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
-				</t>
-			</div>
+						<table class="table">
+							<tr>
+								<td>Request By</td>
+								<td>:</td>
+								<td><t t-esc="limit_request.request_by"/></td>
+							</tr>
+							<tr>
+								<td>Request Type</td>
+								<td>:</td>
+								<td><t t-esc="limit_request.request_type"/></td>
+							</tr>
+							<tr>
+								<td>Yellow Limit</td>
+								<td>:</td>
+								<td class="strike_through_text"><t t-esc="limit_request.yellow_limit_old"/></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td></td>
+								<td><t t-esc="limit_request.yellow_limit_new"/></td>
+							</tr>
+							<tr>
+								<td>Red Limit</td>
+								<td>:</td>
+								<td class="strike_through_text"><t t-esc="limit_request.red_limit_old"/></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td></td>
+								<td><t t-esc="limit_request.red_limit_new"/></td>
+							</tr>
+							<t t-if="classification_value == 'history'">
+								<tr>
+									<td>Respond Date</td>
+									<td>:</td>
+									<td><t t-esc="limit_request.respond_date"/></td>
+								</tr>
+							</t>
+							<tr>
+								<td>Status</td>
+								<td>:</td>
+								<td><t t-esc="limit_request.state"/></td>
+							</tr>
+							<tr>
+								<td>Reason</td>
+								<td>:</td>
+								<td><t t-esc="limit_request.reason"/></td>
+							</tr>
+						</table>
+						<t t-if="classification_value == 'pending'">
+							<div>
+								<div type="button" t-attf-value="{{limit_request.id}}"
+									class="limit_request_btn_approve btn btn-success col-md-1 col-xs-3 ml10">Approve</div>
+								<div type="button" t-attf-value="{{limit_request.id}}"
+									class="limit_request_btn_reject btn btn-danger col-md-1 col-xs-3 ml10">Reject</div>
+							</div>
+						</t><br></br><br></br>
+						<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
+					</t>
+				</div>
+			</t>
 		</t>
 	</t>
 
@@ -541,56 +546,56 @@
 							</div>
 							<table class="table">
 								<tr>
-									<td class="td_list">Request Date</td>
-									<td class="td_list">:</td>
-									<td class="td_list"><t t-esc="quota_change.request_date"/></td>
+									<td>Request Date</td>
+									<td>:</td>
+									<td><t t-esc="quota_change.request_date"/></td>
 								</tr>
 								<tr>
-									<td class="td_list">Request By</td>
-									<td class="td_list">:</td>
-									<td class="td_list"><t t-esc="quota_change.request_by"/></td>
+									<td>Request By</td>
+									<td>:</td>
+									<td><t t-esc="quota_change.request_by"/></td>
 								</tr>
 								<tr>
-									<td class="td_list">Request Type</td>
-									<td class="td_list">:</td>
+									<td>Request Type</td>
+									<td>:</td>
 									<td><t t-esc="quota_change.request_type"/></td>
 								</tr>
 								<tr>
-									<td class="td_list">Yellow Limit</td>
-									<td class="td_list">:</td>
-									<td class="td_list strike_through_text"><t t-esc="quota_change.yellow_limit_old"/></td>
+									<td>Yellow Limit</td>
+									<td>:</td>
+									<td class="strike_through_text"><t t-esc="quota_change.yellow_limit_old"/></td>
 								</tr>
 								<tr>
-									<td class="td_list"></td>
-									<td class="td_list"></td>
-									<td class="td_list"><t t-esc="quota_change.yellow_limit_new"/></td>
+									<td></td>
+									<td></td>
+									<td><t t-esc="quota_change.yellow_limit_new"/></td>
 								</tr>
 								<tr>
-									<td class="td_list">Red Limit</td>
-									<td class="td_list">:</td>
-									<td class="td_list strike_through_text"><t t-esc="quota_change.red_limit_old"/></td>
+									<td>Red Limit</td>
+									<td>:</td>
+									<td class="strike_through_text"><t t-esc="quota_change.red_limit_old"/></td>
 								</tr>
 								<tr>
-									<td class="td_list"></td>
-									<td class="td_list"></td>
-									<td class="td_list"><t t-esc="quota_change.red_limit_new"/></td>
+									<td></td>
+									<td></td>
+									<td><t t-esc="quota_change.red_limit_new"/></td>
 								</tr>
 								<t t-if="classification_value == 'history'">
 									<tr>
-										<td class="td_list">Respond Date</td>
-										<td class="td_list">:</td>
-										<td class="td_list"><t t-esc="quota_change.respond_date"/></td>
+										<td>Respond Date</td>
+										<td>:</td>
+										<td><t t-esc="quota_change.respond_date"/></td>
 									</tr>
 								</t>
 								<tr>
-									<td class="td_list">Status</td>
-									<td class="td_list">:</td>
-									<td class="td_list"><t t-esc="quota_change.state"/></td>
+									<td>Status</td>
+									<td>:</td>
+									<td><t t-esc="quota_change.state"/></td>
 								</tr>
 								<tr>
-									<td class="td_list">Reason</td>
-									<td class="td_list">:</td>
-									<td class="td_list"><t t-esc="quota_change.reason"/></td>
+									<td>Reason</td>
+									<td>:</td>
+									<td><t t-esc="quota_change.reason"/></td>
 								</tr>
 							</table>
 							<t t-if="classification_value == 'pending'">
@@ -628,19 +633,19 @@
 				</div>
 				<table class="table">
 					<tr>
-						<td class="td_list">Old</td>
-						<td class="td_list">:</td>
-						<td class="td_list">Old</td>
+						<td>Old</td>
+						<td>:</td>
+						<td>Old</td>
 					</tr>
 					<tr>
-						<td class="td_list">Add Amount</td>
-						<td class="td_list">:</td>
-						<td class="td_list"><input type="number" class="form-control" id="amount_yellow_dialog" style="border:none"> </input></td>
+						<td>Add Amount</td>
+						<td>:</td>
+						<td><input type="number" class="form-control" id="amount_yellow_dialog" style="border:none"> </input></td>
 					</tr>
 					<tr>
-						<td class="td_list">New</td>
-						<td class="td_list">:</td>
-						<td class="td_list">New</td>
+						<td>New</td>
+						<td>:</td>
+						<td>New</td>
 					</tr>
 				</table>
 				<div class = "list_title">
@@ -648,19 +653,19 @@
 				</div>
 				<table class="table">
 					<tr>
-						<td class="td_list">Old</td>
-						<td class="td_list">:</td>
-						<td class="td_list">Old</td>
+						<td>Old</td>
+						<td>:</td>
+						<td>Old</td>
 					</tr>
 					<tr>
-						<td class="td_list">Add Amount</td>
-						<td class="td_list">:</td>
-						<td class="td_list"><input type="number" class="form-control" id="amount_red_dialog" style="border:none"> </input></td>
+						<td>Add Amount</td>
+						<td>:</td>
+						<td><input type="number" class="form-control" id="amount_red_dialog" style="border:none"> </input></td>
 					</tr>
 					<tr>
-						<td class="td_list">New</td>
-						<td class="td_list">:</td>
-						<td class="td_list">New</td>
+						<td>New</td>
+						<td>:</td>
+						<td>New</td>
 					</tr>
 				</table>
 				<div type="button"

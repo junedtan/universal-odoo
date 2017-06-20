@@ -397,7 +397,7 @@ class website_mobile_app(http.Controller):
 		})
 	
 	@http.route('/mobile_app/fetch_contract_detail_usage_control_quota/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_fetch_contract_quota_changes(self, data, **kwargs):
+	def mobile_app_fetch_contract_detail_usage_control_quota(self, data, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		quota_id = int(data)
 		quota = handler_obj.get_quota_data(quota_id)
@@ -405,7 +405,7 @@ class website_mobile_app(http.Controller):
 		limit_request_pending_history = {
 			'pending': [], 'history': [],
 		}
-		for limit_request in quota.limit_requests:
+		for limit_request in quota['limit_requests']:
 			classification = 'history'
 			if limit_request.state == 'draft':
 				classification = 'pending'
@@ -424,12 +424,12 @@ class website_mobile_app(http.Controller):
 				'reason': limit_request.reject_reason,
 			})
 		quota_detail = {
-			'total_usage': quota.total_usage,
-			'yellow_limit': quota.yellow_limit,
-			'red_limit': quota.red_limit,
-			'total_request_nominal': quota.total_request_nominal,
-			'total_request_time': quota.total_request_time,
-			'limit_request': limit_request_pending_history,
+			'total_usage': quota['total_usage'],
+			'yellow_limit': quota['yellow_limit'],
+			'red_limit': quota['red_limit'],
+			'total_request_nominal': quota['total_request_nominal'],
+			'total_request_time': quota['total_request_time'],
+			'limit_requests': limit_request_pending_history,
 		}
 		return json.dumps(quota_detail)
 	
@@ -562,16 +562,20 @@ class website_mobile_app_handler(osv.osv):
 		au = quota.allocation_unit_id
 		quota_change_ids = quota_change_obj.search(cr, uid, [('allocation_unit_id', '=', au.id)])
 		quota_changes = quota_change_obj.browse(cr, uid, quota_change_ids)
-		total_nominal, total_count = \
-			self.search_total_request_nominal_quota_changes(quota.customer_contract_id.id, au.id)
+		if quota.customer_contract_id.id and au.id:
+			total_nominal, total_count = \
+				self.search_total_request_nominal_quota_changes(quota.customer_contract_id.id, au.id)
+		else:
+			total_nominal = 0
+			total_count = 0
 		return {
-			'total_usage': quota.current_usage,
-			'yellow_limit': quota.yellow_limit,
-			'red_limit': quota.red_limit,
-			'total_request_nominal': total_nominal,
-			'total_request_time': total_count,
+			'total_usage': quota.current_usage if quota.current_usage else '',
+			'yellow_limit': quota.yellow_limit if quota.yellow_limit else '',
+			'red_limit': quota.red_limit if quota.red_limit else '',
+			'total_request_nominal': total_nominal if total_nominal else '',
+			'total_request_time': total_count if total_count else '',
 			'plural': 'time' if total_count > 1 else 'times',
-			'limit_request': quota_changes,
+			'limit_requests': quota_changes if quota_changes else [],
 		}
 
 	def search_all_quota_changes(self, cr, uid, id_contract, context={}):

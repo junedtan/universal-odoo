@@ -302,6 +302,7 @@ class website_mobile_app(http.Controller):
 		quota_pending_history = {
 			'pending': [], 'history': [],
 		}
+		locale.setlocale( locale.LC_ALL, locale= "Indonesian")
 		for quota_change in quota_changes:
 			classification = 'history'
 			if quota_change.state == 'draft':
@@ -312,10 +313,10 @@ class website_mobile_app(http.Controller):
 				'request_date': quota_change.request_date,
 				'request_by': quota_change.create_uid.name,
 				'request_type': dict(_REQUEST_LONGEVITY).get(quota_change.request_longevity, ''),
-				'yellow_limit_old': quota_change.old_yellow_limit,
-				'yellow_limit_new': quota_change.new_yellow_limit,
-				'red_limit_old': quota_change.old_red_limit,
-				'red_limit_new': quota_change.new_red_limit,
+				'yellow_limit_old': locale.currency(quota_change.old_yellow_limit, grouping= True),
+				'yellow_limit_new': locale.currency(quota_change.new_yellow_limit, grouping= True),
+				'red_limit_old': locale.currency(quota_change.old_red_limit, grouping= True),
+				'red_limit_new': locale.currency(quota_change.new_red_limit, grouping= True),
 				'respond_date': quota_change.confirm_date,
 				'state': quota_change.state,
 				'reason': quota_change.reject_reason,

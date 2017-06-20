@@ -26,6 +26,7 @@ hr {
 
 .list_title {
 	font-size: large;
+	font-weight: bold;
 	margin-top: 10px;
 }
 
@@ -109,36 +110,37 @@ div.row_hoverable{
 	margin-left: auto;
 	margin-right: auto;
 	left: 0;
-	top: 20%;
+	top: 10%;
 	right: 0;
 	background-color: #fefefe;
-	width: 300px;
-	height: 355px;
+	width: 350px;
 	-webkit-animation-name: slideIn;
 	-webkit-animation-duration: 0.4s;
 	animation-name: slideIn;
 	animation-duration: 0.4s;
-	overflow: auto
 }
 
 /* The Close Button */
 .close_dialog {
-	color: black;
+	color: darkred;
 	float: right;
-	font-size: small;
+	font-size: medium;
 	font-weight: bold;
 }
 
 .close_dialog:hover,
 .close_dialog:focus {
-	color: white;
+	color: red;
 	text-decoration: none;
 	cursor: pointer;
 }
 
 .modal-header {
-	padding: 2px 16px;
-	background-color: #5cb85c;
+	padding-left: 5px;
+	padding-right: 5px;
+	padding-bottom: 5px;
+	padding-top: 1px;
+	background-color: #428bca;
 	color: white;
 }
 
@@ -152,4 +154,11 @@ div.row_hoverable{
 
 .progress-bar-grey {
 	background-color: darkgrey;
+}
+
+.input-number {
+	width:150px;
+	padding: 0px;
+	margin:0px;
+	text-align: right;
 }

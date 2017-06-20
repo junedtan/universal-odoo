@@ -425,6 +425,7 @@ $(document).ready(function () {
 							$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_list_control_usage',{
 								'quota_list': JSON.parse(response.quota_list),
                             }));
+                            quota_list = JSON.parse(response.quota_list)
 							$(".list_quota_usage").click(function(){
 								onclick_usage_control_quota($(this).attr("value"));
 							});
@@ -561,12 +562,34 @@ $(document).ready(function () {
 		};
 
 		function onclick_button_request_change_quota(au_id) {
-			$("#dialog_request_quota_container", self).html(qweb.render('dialog_request_change_quota'));
+			var red_limit = 0;
+			var yellow_limit = 0;
+			$.each(quota_list, function(index, quota){
+				if(quota['au_id'] == au_id){
+					red_limit = quota['red_limit'];
+					yellow_limit = quota['yellow_limit'];
+				}
+			});
+			$("#dialog_request_quota_container", self).html(qweb.render('dialog_request_change_quota',{
+				'red_limit' : red_limit,
+				'yellow_limit' : yellow_limit
+			}));
+
 			var modal = $("#myModalChangeQuota");
 			modal.css("display", "block");
 
 			$(".close_dialog").click(function(event) {
             	modal.css("display", "none");
+			});
+
+			$("#amount_yellow_dialog").change(function() {
+				old_amount = parseInt($("#old_amount_yellow").html());
+				$("#new_amount_yellow").html(parseInt($("#amount_yellow_dialog").val()) + old_amount)
+             });
+
+            $("#amount_red_dialog").change(function() {
+				old_amount = parseInt($("#old_amount_red").html());
+				$("#new_amount_red").html(parseInt($("#amount_red_dialog").val()) + old_amount)
 			});
 
 			window.onclick = function(event) {

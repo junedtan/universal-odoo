@@ -358,11 +358,12 @@ class website_mobile_app(http.Controller):
 	@http.route('/mobile_app/get_usage_control_list/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_get_usage_control_list(self, data, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		allocation_unit_list = handler_obj.search_all_au_contract(int(data))
+		allocation_unit_list, au_ids = handler_obj.search_all_au_contract(int(data))
 		quota_from_arr = []
+		dictionary_quota = handler_obj.search_au_contract_quota_usage(int(data), au_ids)
 		for au in allocation_unit_list:
 			total_nominal, total_count = handler_obj.search_total_request_nominal_count_quota_changes(au.header_id.id, au.id)
-			quota = handler_obj.search_au_contract_quota_usage(au.header_id.id, au.id)
+			quota = dictionary_quota.get(str(au.id), False)
 			plural = 'time'
 			status = 'OK'
 			response_user_group = self.mobile_app_get_user_group()
@@ -381,6 +382,8 @@ class website_mobile_app(http.Controller):
 			quota_from_arr.append({
 				'id': quota.id if quota else 0,
 				'au_id' : au.id,
+				'yellow_limit' : quota.yellow_limit if quota else 0,
+				'red_limit' : quota.red_limit if quota else 0,
 				'allocation_unit_name': au.name,
 				'control_level' : au.header_id.usage_control_level,
 				'total_request_nominal' : locale.currency(total_nominal, grouping= True),
@@ -541,19 +544,23 @@ class website_mobile_app_handler(osv.osv):
 		finally:
 			return result
 	
-	def search_au_contract_quota_usage(self, cr, uid, contract_id, allocation_unit_id,context={}):
+	def search_au_contract_quota_usage(self, cr, uid, contract_id, allocation_unit_ids,context={}):
 		quota_obj = self.pool.get('foms.contract.quota')
 		now = datetime.now()
 		period = "%02d/%04d" % (now.month ,now.year)
-		quota_id = quota_obj.search(cr, uid, [('customer_contract_id', '=', contract_id),
-											('allocation_unit_id', '=', allocation_unit_id),
-											('period', '=', period)], limit = 1)
-		return quota_obj.browse(cr, uid, quota_id)
+		quota_ids = quota_obj.search(cr, uid, [('customer_contract_id', '=', contract_id),
+											('allocation_unit_id', 'in', allocation_unit_ids),
+											('period', '=', period)])
+	# Bikin dictionary dengan key berupa allocation_id, dengan demikian untuk mencari quota dengan au id x tinggal lookup ke dictionary
+		res = {}
+		for quota in quota_obj.browse(cr, uid, quota_ids):
+			res[str(quota.allocation_unit_id.id)] = quota
+		return res
 	
 	def search_all_au_contract(self, cr, uid, contract_id, context={}):
 		au_obj = self.pool.get('foms.contract.alloc.unit')
 		au_ids = au_obj.search(cr, uid, [('header_id', '=', contract_id)])
-		return au_obj.browse(cr, uid, au_ids)
+		return au_obj.browse(cr, uid, au_ids), au_ids
 
 	def get_quota_data(self, cr, uid, quota_id, context={}):
 		quota_obj = self.pool.get('foms.contract.quota')

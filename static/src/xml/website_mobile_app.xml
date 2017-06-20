@@ -300,12 +300,14 @@
 			<t t-if="contract_datas.length != 0">
 				<t t-set="i" t-value="0"/>
 				<t t-foreach="contract_datas" t-as="contract">
-					<div class="list_contract contract_detail" t-attf-id_contract = "{{i}}">
-						<div class="list_title" style="pointer-events:none;">
-							<b><t t-esc="contract.name"/></b> - <t t-esc="contract.state"/>
+					<div class="list_contract clickable contract_detail" t-attf-id_contract = "{{i}}">
+						<div class="card_padding" style="pointer-events:none;">
+							<div class="list_title">
+								<b><t t-esc="contract.name"/></b> - <span class="grey_text"><t t-esc="contract.state"/></span>
+							</div>
+							<t t-esc="contract.start_date"/> / <t t-esc="contract.end_date"/><br></br>
+							Service Type: <t t-esc="contract.service_type"/><br></br>
 						</div>
-						<t t-esc="contract.start_date"/> / <t t-esc="contract.end_date"/><br></br>
-						Service Type: <t t-esc="contract.service_type"/><br></br><br></br>
 						<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
 					</div>
 					<t t-set="i" t-value="i+1"/>
@@ -378,7 +380,7 @@
 			<t t-if="quota_list.length != 0">
 				<t t-set="i" t-value="0"/>
 				<t t-foreach="quota_list" t-as="quota">
-					<div class="list_quota_usage" t-attf-value="{{quota.id}}" t-attf-index_list_quota = "{{i}}"
+					<div class="list_quota_usage clickable card_padding" t-attf-value="{{quota.id}}" t-attf-index_list_quota = "{{i}}"
 						t-attf-au_name="{{quota.allocation_unit_name}}">
 						<div class="list_title" style="pointer-events:none;">
 							<b><t t-esc="quota.allocation_unit_name"/></b>
@@ -386,7 +388,7 @@
 						<t t-if="quota.control_level == 'no_control'">
 							Quota changes requested <t t-esc="quota.total_request_count"/> <t t-esc="quota.plural"/> with total of <t t-esc="quota.total_request_nominal"/>
 						</t>
-						<table class="table">
+						<table class="table no_margin">
 							<tr>
 								<td class="td_list">Usage</td>
 								<td class="td_list">:</td>
@@ -398,49 +400,46 @@
 								<td><t t-esc="quota.status"/></td>
 							</tr>
 						</table>
-						<div class="progress_detail">
-							<t t-if="progress_exist == 'show'">
-								<t t-if="quota.status == 'OK'">
-									<div class="progress-bar progress-bar-success" role="progressbar"
-											t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
-										<span t-esc='quota.current_usage'/>
-									</div>
-									<div class="progress-bar progress-bar-grey" role="progressbar"
-											t-attf-style='width:{{100-(quota.current_usage*100.0/quota.red_limit)}}%'>
-										<span t-esc='quota.red_limit'/>
-									</div>
-								</t>
-								<t t-if="quota.status == 'Warning'">
-									<div class="progress-bar progress-bar-warning" role="progressbar"
-											t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
-										<span t-esc='quota.current_usage'/>
-									</div>
-								</t>
-								<t t-if="quota.status == 'Overlimit'">
-									<div class="progress-bar progress-bar-danger" role="progressbar"
-											t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
-										<span t-esc='quota.current_usage'/>
-									</div>
-								</t>
-							</t>
-							<t t-if="progress_exist == 'hide'">
+						<t t-if="progress_exist == 'show'">
+							<t t-if="quota.status == 'OK'">
+								<div class="progress-bar progress-bar-success" role="progressbar"
+										t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
+									<span t-esc='quota.current_usage'/>
+								</div>
 								<div class="progress-bar progress-bar-grey" role="progressbar"
-										t-attf-style='width:{{100}}%'>
-									<span t-esc='100'/>
+										t-attf-style='width:{{100-(quota.current_usage*100.0/quota.red_limit)}}%'>
+									<span t-esc='quota.red_limit'/>
 								</div>
 							</t>
-						</div>
-					</div>
-					<br/><br/>
-					<!-- TODO -->
-					<!--<t t-if="is_approver">-->
-						<div type="button" t-attf-au_id="{{quota.au_id}}" t-attf-contract_id="{{quota.contract_id}}"
-								class="quota_btn_request_change_quota btn btn-success col-md-2 col-xs-4 ml10 contract_usage_control">Change Quota
-						</div>
+							<t t-if="quota.status == 'Warning'">
+								<div class="progress-bar progress-bar-warning" role="progressbar"
+										t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
+									<span t-esc='quota.current_usage'/>
+								</div>
+							</t>
+							<t t-if="quota.status == 'Overlimit'">
+								<div class="progress-bar progress-bar-danger" role="progressbar"
+										t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
+									<span t-esc='quota.current_usage'/>
+								</div>
+							</t>
+						</t>
+						<t t-if="progress_exist == 'hide'">
+							<div class="progress-bar progress-bar-grey" role="progressbar"
+									t-attf-style='width:{{100}}%'>
+								<span t-esc='100'/>
+							</div>
+						</t>
+						<!-- TODO -->
+						<!--<t t-if="is_approver">-->
+							<div type="button" t-attf-au_id="{{quota.au_id}}" t-attf-contract_id="{{quota.contract_id}}"
+									class="quota_btn_request_change_quota btn btn-success col-md-2 col-xs-4 mt16 ml10 contract_usage_control">Change Quota
+							</div>
 
-						<div class="row dialog_request_quota" id="dialog_request_quota_container"/>
-					<!--</t>-->
-					<t t-set="i" t-value="i+1"/>
+							<div class="row dialog_request_quota" id="dialog_request_quota_container"/>
+						<!--</t>-->
+						<t t-set="i" t-value="i+1"/>
+					</div>
 					<div style="clear:both">
 						<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
 					</div>

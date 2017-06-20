@@ -390,7 +390,8 @@ $(document).ready(function () {
 				}));
 				$(".list_contract").click(function(event) {
 					var target = $(event.target);
-					self.index_click_contract =  target.attr("id_contract");
+					self.index_click_contract = target.attr("id_contract");
+					console.log(self.index_click_contract);
 					$("#main_container", self).html(qweb.render('website_mobile_app_detail_contract',{
 						'contract_name': self.contract_datas[self.index_click_contract].name
 					}));

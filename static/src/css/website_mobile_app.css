@@ -153,3 +153,15 @@ div.row_hoverable{
 .progress-bar-grey {
 	background-color: darkgrey;
 }
+
+.clickable:hover {
+	background-color: #F4F4F4;
+}
+
+.card_padding {
+	padding: 10px;
+}
+
+.grey_text {
+	color: grey;
+}

@@ -167,7 +167,7 @@
 					<div class="detail_container accordion_detail" >
 						<t t-foreach="order_datas[classification_value]" t-as="order">
 							<div class="list_title">
-								<b><t t-esc="order.name"/></b> - <t t-esc="order.state"/>
+								<b><t t-esc="order.name"/></b> - <span class="grey_text"><t t-esc="order.state"/></span>
 							</div>
 							Requested at: <t t-esc="order.request_date"/>
 							<!--<t t-esc="order.origin_location"/> - <t t-esc="order.dest_location"/>-->
@@ -187,6 +187,18 @@
 									<td>:</td>
 									<td><t t-esc="order.assigned_vehicle_name"/></td>
 								</tr>
+								<t t-if="order.service_type == 'by_order'">
+									<tr>
+										<td>From</td>
+										<td>:</td>
+										<td><t t-esc="order.origin_location"/></td>
+									</tr>
+									<tr>
+										<td>To</td>
+										<td>:</td>
+										<td><t t-esc="order.dest_location"/></td>
+									</tr>
+								</t>
 							</table>
 							<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
 						</t>

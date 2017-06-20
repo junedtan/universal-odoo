@@ -268,6 +268,7 @@ class website_mobile_app(http.Controller):
 				'assigned_driver_name': order_data.assigned_driver_id.name,
 				'origin_location': order_data.origin_location,
 				'dest_location': order_data.dest_location,
+				'service_type': order_data.service_type,
 			});
 		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
 		result['ready']   = sorted(result['ready'],   key=lambda order: order['request_date'], reverse=True)

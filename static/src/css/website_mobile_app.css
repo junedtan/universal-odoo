@@ -149,3 +149,7 @@ div.row_hoverable{
 	background-color: #5cb85c;
 	color: white;
 }
+
+.progress-bar-grey {
+	background-color: darkgrey;
+}

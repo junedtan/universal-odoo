@@ -316,6 +316,7 @@
 
 	<!-- DETAIL CONTRACT HEADER-->
 	<t t-name="website_mobile_app_detail_contract">
+		<h3 class="contract_detail"><b><t t-esc="contract_name"/></b></h3>
 		<div class="row contract_detail" id="menu_detail_contract_container">
 			<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
 				id="website_mobile_app_menu_info_contract">Info</div>
@@ -377,7 +378,8 @@
 			<t t-if="quota_list.length != 0">
 				<t t-set="i" t-value="0"/>
 				<t t-foreach="quota_list" t-as="quota">
-					<div class="list_quota_usage" t-attf-value="{{quota.id}}" t-attf-index_list_quota = "{{i}}">
+					<div class="list_quota_usage" t-attf-value="{{quota.id}}" t-attf-index_list_quota = "{{i}}"
+						t-attf-au_name="{{quota.allocation_unit_name}}">
 						<div class="list_title" style="pointer-events:none;">
 							<b><t t-esc="quota.allocation_unit_name"/></b>
 						</div>
@@ -448,6 +450,7 @@
 	</t>
 
 	<t t-name="website_mobile_app_detail_control_usage">
+		<h3><t t-esc="au_name"/></h3>
 		<h4>Information</h4>
 		<table class="table">
 			<tr>

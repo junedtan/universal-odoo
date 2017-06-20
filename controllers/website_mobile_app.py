@@ -629,11 +629,11 @@ class website_mobile_app_handler(osv.osv):
 			total_nominal = 0
 			total_count = 0
 		return {
-			'total_usage': quota.current_usage if quota.current_usage else '',
-			'yellow_limit': quota.yellow_limit if quota.yellow_limit else '',
-			'red_limit': quota.red_limit if quota.red_limit else '',
-			'total_request_nominal': total_nominal if total_nominal else '',
-			'total_request_time': total_count if total_count else '',
+			'total_usage': quota.current_usage if quota.current_usage else 0,
+			'yellow_limit': quota.yellow_limit if quota.yellow_limit else 0,
+			'red_limit': quota.red_limit if quota.red_limit else 0,
+			'total_request_nominal': total_nominal if total_nominal else 0,
+			'total_request_time': total_count if total_count else 0,
 			'plural': 'time' if total_count > 1 else 'times',
 			'limit_requests': quota_changes if quota_changes else [],
 		}

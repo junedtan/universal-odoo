@@ -161,6 +161,7 @@ div.row_hoverable{
 	padding: 0px;
 	margin:0px;
 	text-align: right;
+}
 
 .clickable:hover {
 	background-color: #F4F4F4;

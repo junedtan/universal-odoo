@@ -434,7 +434,8 @@ $(document).ready(function () {
 								self.current_au_name = $(this).attr("au_name");
 								onclick_usage_control_quota($(this).attr("value"));
 							});
-							$(".quota_btn_request_change_quota").click(function(){
+							$(".quota_btn_request_change_quota").click(function(event){
+								event.stopPropagation();
 								onclick_button_request_change_quota($(this).attr("au_id"), $(this).attr("contract_id"));
 							});
 						}

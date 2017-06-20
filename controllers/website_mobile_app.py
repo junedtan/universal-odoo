@@ -365,7 +365,7 @@ class website_mobile_app(http.Controller):
 			total_nominal, total_count = handler_obj.search_total_request_nominal_count_quota_changes(au.header_id.id, au.id)
 			quota = dictionary_quota.get(str(au.id), False)
 			plural = 'time'
-			status = 'N/A'
+			status = 'OK'
 			response_user_group = self.mobile_app_get_user_group()
 			data_user_group = json.loads(response_user_group.data)
 			is_approver = False
@@ -376,8 +376,6 @@ class website_mobile_app(http.Controller):
 					status = 'Overlimit'
 				elif quota.current_usage > quota.yellow_limit:
 					status = 'Warning'
-				else:
-					status = 'OK'
 			locale.setlocale( locale.LC_ALL, locale= "Indonesian")
 			if total_count > 1:
 				plural = 'times'
@@ -395,6 +393,7 @@ class website_mobile_app(http.Controller):
 				'red_limit' : quota.red_limit if quota and quota.red_limit else 0,
 				'plural' : plural,
 				'status' : status,
+				'progress_exist': 'show' if quota and quota.red_limit and quota.current_usage else 'hide',
 				'is_approver' : is_approver,
 			})
 		return json.dumps({
@@ -456,6 +455,32 @@ class website_mobile_app(http.Controller):
 				'info': _('Old Password is not correct.'),
 				'success' : False,
 			})
+	
+	@http.route('/mobile_app/request_quota_changes/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_request_quota_changes(self, data, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		try:
+			result = handler_obj.request_quota_change(json.loads(data))
+		except Exception, e:
+			response = {
+				'status': 'ok',
+				'info': str(e.value),
+				'success' : False,
+			}
+		else:
+			if result:
+				response = {
+					'status': 'ok',
+					'info': _('Quota Change Request Succeed'),
+					'success' : True,
+				}
+			else:
+				response = {
+					'status': 'ok',
+					'info': _('Quota Change Request Failed'),
+					'success' : False,
+				}
+		return json.dumps(response)
 
 class website_mobile_app_handler(osv.osv):
 	_name = 'universal.website.mobile_app.handler'
@@ -538,6 +563,30 @@ class website_mobile_app_handler(osv.osv):
 			'request_date': datetime.now(),
 		})
 	
+	def request_quota_change(self, cr, uid, domain, context={}):
+		change_log = self.pool.get('foms.contract.quota.change.log')
+		contract_id = domain.get('customer_contract_id', '')
+		contract_id = int(contract_id.encode('ascii', 'ignore'))
+		au_id = domain.get('allocation_unit_id', '')
+		au_id = int(au_id.encode('ascii', 'ignore'))
+		new_yellow_limit = domain.get('new_yellow_limit', '')
+		new_red_limit = domain.get('new_red_limit', '')
+		request_longevity = domain.get('request_longevity', '')
+		
+		now = datetime.now()
+		period = "%02d/%04d" % (now.month ,now.year)
+		
+		return change_log.create(cr, SUPERUSER_ID, {
+			'customer_contract_id': contract_id,
+			'allocation_unit_id': au_id,
+			'new_yellow_limit': new_yellow_limit,
+			'new_red_limit': new_red_limit,
+			'request_longevity': request_longevity,
+			'period': period,
+			'state': 'draft',
+			'request_date': now,
+		}, context = {'from_webservice' : 1})
+	
 	def change_password(self, cr, uid, domain, context={}):
 		user_obj = self.pool.get('res.users')
 		old_password = domain.get('old_password', '').encode('ascii', 'ignore')
@@ -580,11 +629,11 @@ class website_mobile_app_handler(osv.osv):
 			total_nominal = 0
 			total_count = 0
 		return {
-			'total_usage': quota.current_usage if quota.current_usage else '',
-			'yellow_limit': quota.yellow_limit if quota.yellow_limit else '',
-			'red_limit': quota.red_limit if quota.red_limit else '',
-			'total_request_nominal': total_nominal if total_nominal else '',
-			'total_request_time': total_count if total_count else '',
+			'total_usage': quota.current_usage if quota.current_usage else 0,
+			'yellow_limit': quota.yellow_limit if quota.yellow_limit else 0,
+			'red_limit': quota.red_limit if quota.red_limit else 0,
+			'total_request_nominal': total_nominal if total_nominal else 0,
+			'total_request_time': total_count if total_count else 0,
 			'plural': 'time' if total_count > 1 else 'times',
 			'limit_requests': quota_changes if quota_changes else [],
 		}

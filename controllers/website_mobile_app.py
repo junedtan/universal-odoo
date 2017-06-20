@@ -623,8 +623,7 @@ class website_mobile_app_handler(osv.osv):
 		quota_change_ids = quota_change_obj.search(cr, uid, [('allocation_unit_id', '=', au.id)])
 		quota_changes = quota_change_obj.browse(cr, uid, quota_change_ids)
 		if quota.customer_contract_id.id and au.id:
-			total_nominal, total_count = \
-				self.search_total_request_nominal_quota_changes(quota.customer_contract_id.id, au.id)
+			total_nominal, total_count = self.search_total_request_nominal_count_quota_changes(cr, uid, quota.customer_contract_id.id, au.id)
 		else:
 			total_nominal = 0
 			total_count = 0
@@ -653,9 +652,9 @@ class website_mobile_app_handler(osv.osv):
 												('period', '=', period)])
 		result_nominal = 0
 		for quota_change in quota_change_obj.browse(cr, uid, quota_change_log_ids):
-			if quota_change.new_red_limit != 0:
+			if quota_change.new_red_limit != 0 and quota_change.new_red_limit != quota_change.old_red_limit:
 				result_nominal += quota_change.new_red_limit - quota_change.old_red_limit
-			elif quota_change.new_yellow_limit != 0:
+			elif quota_change.new_yellow_limit != 0 and quota_change.new_yellow_limit != quota_change.old_yellow_limit:
 				result_nominal += quota_change.new_yellow_limit - quota_change.old_yellow_limit
 		return result_nominal, len(quota_change_log_ids)
 	

@@ -606,8 +606,8 @@ $(document).ready(function () {
 			$(".dialog_quota_change_button_request").click(function(event) {
 				oldYellow = parseInt($("#old_amount_yellow").html());
 				oldRed = parseInt($("#old_amount_red").html());
-				newYellow = parseInt($("#amount_yellow_dialog").val());
-				newRed = parseInt($("#amount_red_dialog").val());
+				newYellow = parseInt($("#new_amount_yellow").html());
+				newRed = parseInt($("#new_amount_red").html());
 
 				if (oldYellow === newYellow && oldRed === newRed) {
 					alert("Please Submit At Least One Request"); return;
@@ -626,44 +626,35 @@ $(document).ready(function () {
                     req_longevity = 'permanent';
                 }
 
-                var date_now = new Date($.now());
-                var month = date_now.getMonth()+1;
-                var year = date_now.getFullYear();
-                month = (month < 10) ? ("0" + month) : month;
-                var period = month + "/" + year;
-
 				// Buat Data Untuk Request Quota
 				var request_quota_json = {
 					'customer_contract_id': contract_id,
 					'allocation_unit_id': au_id,
-					'state': 'draft',
 					//'request_by': $('#create_order_info_unit').val(),
-					'period': period,
 					'request_longevity': req_longevity,
 					'new_yellow_limit': newYellow,
-					'new_red_limit': newRed,
-					'request_date': date_now,
+					'new_red_limit': newRed
 				};
 
-//				// Request DataBase untuk save
-//                $.ajax({
-//					dataType: "json",
-//					url: '/mobile_app/request_quota_changes/' + + JSON.stringify(request_quota_json,
-//					method: 'POST',
-//					success: function(response) {
-//						if (response.status) {
-//							alert(response.info);
-//							if(response.success){
-//								modal.css("display", "none");
-//							}
-//						} else {
-//							alert('Server Unreachable.');
-//						}
-//					},
-//					error: function(XMLHttpRequest, textStatus, errorThrown) {
-//						alert_error(XMLHttpRequest);
-//					},
-//				});
+				// Request DataBase untuk save
+                $.ajax({
+					dataType: "json",
+					url: '/mobile_app/request_quota_changes/' +  JSON.stringify(request_quota_json),
+					method: 'POST',
+					success: function(response) {
+						if (response.status) {
+							alert(response.info);
+							if(response.success){
+								modal.css("display", "none");
+							}
+						} else {
+							alert('Server Unreachable.');
+						}
+					},
+					error: function(XMLHttpRequest, textStatus, errorThrown) {
+						alert_error(XMLHttpRequest);
+					},
+				});
             });
 
 			// Jika Click Selain di Daerah dialog, maka tutup dialog

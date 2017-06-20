@@ -456,6 +456,32 @@ class website_mobile_app(http.Controller):
 				'info': _('Old Password is not correct.'),
 				'success' : False,
 			})
+	
+	@http.route('/mobile_app/request_quota_changes/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_request_quota_changes(self, data, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		try:
+			result = handler_obj.request_quota_change(json.loads(data))
+		except Exception, e:
+			response = {
+				'status': 'ok',
+				'info': str(e.value),
+				'success' : False,
+			}
+		else:
+			if result:
+				response = {
+					'status': 'ok',
+					'info': _('Quota Change Request Succeed'),
+					'success' : True,
+				}
+			else:
+				response = {
+					'status': 'ok',
+					'info': _('Quota Change Request Failed'),
+					'success' : False,
+				}
+		return json.dumps(response)
 
 class website_mobile_app_handler(osv.osv):
 	_name = 'universal.website.mobile_app.handler'
@@ -537,6 +563,30 @@ class website_mobile_app_handler(osv.osv):
 			'finish_planned_date': finish_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
 			'request_date': datetime.now(),
 		})
+	
+	def request_quota_change(self, cr, uid, domain, context={}):
+		change_log = self.pool.get('foms.contract.quota.change.log')
+		contract_id = domain.get('customer_contract_id', '')
+		contract_id = int(contract_id.encode('ascii', 'ignore'))
+		au_id = domain.get('allocation_unit_id', '')
+		au_id = int(au_id.encode('ascii', 'ignore'))
+		new_yellow_limit = domain.get('new_yellow_limit', '')
+		new_red_limit = domain.get('new_red_limit', '')
+		request_longevity = domain.get('request_longevity', '')
+		
+		now = datetime.now()
+		period = "%02d/%04d" % (now.month ,now.year)
+		
+		return change_log.create(cr, SUPERUSER_ID, {
+			'customer_contract_id': contract_id,
+			'allocation_unit_id': au_id,
+			'new_yellow_limit': new_yellow_limit,
+			'new_red_limit': new_red_limit,
+			'request_longevity': request_longevity,
+			'period': period,
+			'state': 'draft',
+			'request_date': now,
+		}, context = {'from_webservice' : 1})
 	
 	def change_password(self, cr, uid, domain, context={}):
 		user_obj = self.pool.get('res.users')

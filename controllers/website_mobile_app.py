@@ -384,6 +384,7 @@ class website_mobile_app(http.Controller):
 			quota_from_arr.append({
 				'id': quota.id if quota else 0,
 				'au_id' : au.id,
+				'contract_id' : au.header_id.id,
 				'yellow_limit' : quota.yellow_limit if quota else 0,
 				'red_limit' : quota.red_limit if quota else 0,
 				'allocation_unit_name': au.name,

@@ -427,7 +427,7 @@
 					</div><br/><br/>
 					<!-- TODO -->
 					<!--<t t-if="is_approver">-->
-						<div type="button" t-attf-value="{{quota.au_id}} "
+						<div type="button" t-attf-au_id="{{quota.au_id}}" t-attf-contract_id="{{quota.contract_id}}"
 								class="quota_btn_request_change_quota btn btn-success col-md-2 col-xs-4 ml10 contract_usage_control">Change Quota
 						</div>
 
@@ -656,8 +656,8 @@
 				</div>
 			</div>
 			<div class="modal-body" style = "text-align: center">
-				<label class="radio-inline"><input type="radio" name="optradio">This Month Only</input></label>
-				<label class="radio-inline"><input type="radio" name="optradio">Permanent</input></label>
+				<label class="radio-inline"><input type="radio" name="optradio" id = "longevity_month">This Month Only</input></label>
+				<label class="radio-inline"><input type="radio" name="optradio" id = "longevity_permanent">Permanent</input></label>
 				<div class = "list_title">
 					Yellow Limit
 				</div>

@@ -9,6 +9,7 @@ $(document).ready(function () {
 	var to_cities = [];
 	var user = {};
 	var index_click_contract;
+	var current_au_name;
 
 	function onclick_menu(id) {
 		$('#website_mobile_app_menu_book_vehicle').removeClass('active');
@@ -389,8 +390,11 @@ $(document).ready(function () {
 				}));
 				$(".list_contract").click(function(event) {
 					var target = $(event.target);
-					self.index_click_contract =  target.attr("id_contract");
-					$("#main_container", self).html(qweb.render('website_mobile_app_detail_contract'));
+					self.index_click_contract = target.attr("id_contract");
+					console.log(self.index_click_contract);
+					$("#main_container", self).html(qweb.render('website_mobile_app_detail_contract',{
+						'contract_name': self.contract_datas[self.index_click_contract].name
+					}));
 					setOnClickButtonMenuDetailContract();
 					$('#website_mobile_app_menu_info_contract').click();
 				});
@@ -427,9 +431,11 @@ $(document).ready(function () {
                             }));
                             quota_list = JSON.parse(response.quota_list)
 							$(".list_quota_usage").click(function(){
+								self.current_au_name = $(this).attr("au_name");
 								onclick_usage_control_quota($(this).attr("value"));
 							});
-							$(".quota_btn_request_change_quota").click(function(){
+							$(".quota_btn_request_change_quota").click(function(event){
+								event.stopPropagation();
 								onclick_button_request_change_quota($(this).attr("au_id"), $(this).attr("contract_id"));
 							});
 						}
@@ -452,6 +458,7 @@ $(document).ready(function () {
 				};
 				$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_detail_control_usage',{
 					'classifications': classifications,
+					'au_name': self.current_au_name,
 					'total_usage': quota.total_usage,
 					'yellow_limit': quota.yellow_limit,
 					'red_limit': quota.red_limit,

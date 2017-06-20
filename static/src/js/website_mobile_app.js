@@ -431,12 +431,16 @@ $(document).ready(function () {
                             }));
                             quota_list = JSON.parse(response.quota_list)
 							$(".list_quota_usage").click(function(){
+								event.stopPropagation();
 								self.current_au_name = $(this).attr("au_name");
 								onclick_usage_control_quota($(this).attr("value"));
 							});
 							$(".quota_btn_request_change_quota").click(function(event){
 								event.stopPropagation();
 								onclick_button_request_change_quota($(this).attr("au_id"), $(this).attr("contract_id"));
+							});
+							$('#dialog_request_quota_container').click(function(event){
+								event.stopPropagation();
 							});
 						}
 					} else {

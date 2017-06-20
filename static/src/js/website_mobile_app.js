@@ -284,7 +284,7 @@ $(document).ready(function () {
 // LIST SHUTTLE =============================================================================================================
 
 	$('#website_mobile_app_menu_list_shuttle').click(function() {
-		onclick_menu('#website_mobile_app_menu_list_shuttles');
+		onclick_menu('#website_mobile_app_menu_list_shuttle');
 		$.get('/mobile_app/fetch_contract_shuttles', null, function(data){
 			self.contract_datas = JSON.parse(data);
 			$("#main_container", self).html(qweb.render('website_mobile_app_list_shuttle',{

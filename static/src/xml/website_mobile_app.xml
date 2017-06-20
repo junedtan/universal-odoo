@@ -379,21 +379,21 @@
 				<t t-foreach="quota_list" t-as="quota">
 					<div class="list_quota_usage" t-attf-value="{{quota.id}}" t-attf-index_list_quota = "{{i}}">
 						<div class="list_title" style="pointer-events:none;">
-							<b><t t-esc="allocation_unit_name"/></b>
+							<b><t t-esc="quota.allocation_unit_name"/></b>
 						</div>
-						<t t-if="control_level == 'no_control'">
-							Quota changes requested <t t-esc="total_request_count"/> <t t-esc="plural"/> with total of <t t-esc="total_request_nominal"/>
+						<t t-if="quota.control_level == 'no_control'">
+							Quota changes requested <t t-esc="quota.total_request_count"/> <t t-esc="quota.plural"/> with total of <t t-esc="quota.total_request_nominal"/>
 						</t>
 						<table class="table">
 							<tr>
-								<td>Usage</td>
-								<td>:</td>
-								<td><t t-esc="current_usage"/></td>
+								<td class="td_list">Usage</td>
+								<td class="td_list">:</td>
+								<td><t t-esc="quota.current_usage"/></td>
 							</tr>
 							<tr>
-								<td></td>
-								<td></td>
-								<td><t t-esc="status"/></td>
+								<td class="td_list"></td>
+								<td class="td_list"></td>
+								<td><t t-esc="quota.status"/></td>
 							</tr>
 						</table>
 					</div>
@@ -429,7 +429,7 @@
 					</div><br/><br/>
 					<!-- TODO -->
 					<!--<t t-if="is_approver">-->
-						<div type="button" t-attf-value="{{au_id}} "
+						<div type="button" t-attf-au_id="{{quota.au_id}}" t-attf-contract_id="{{quota.contract_id}}"
 								class="quota_btn_request_change_quota btn btn-success col-md-2 col-xs-4 ml10 contract_usage_control">Change Quota
 						</div>
 
@@ -658,8 +658,8 @@
 				</div>
 			</div>
 			<div class="modal-body" style = "text-align: center">
-				<label class="radio-inline"><input type="radio" name="optradio">This Month Only</input></label>
-				<label class="radio-inline"><input type="radio" name="optradio">Permanent</input></label>
+				<label class="radio-inline"><input type="radio" name="optradio" id = "longevity_month">This Month Only</input></label>
+				<label class="radio-inline"><input type="radio" name="optradio" id = "longevity_permanent">Permanent</input></label>
 				<div class = "list_title">
 					Yellow Limit
 				</div>
@@ -667,7 +667,7 @@
 					<tr>
 						<td>Old</td>
 						<td>:</td>
-						<td>Old</td>
+						<td class="td_list" id = "old_amount_yellow"><t t-esc="yellow_limit"/></td>
 					</tr>
 					<tr>
 						<td>Add Amount</td>
@@ -677,7 +677,7 @@
 					<tr>
 						<td>New</td>
 						<td>:</td>
-						<td>New</td>
+						<td class="td_list" id = "new_amount_yellow"></td>
 					</tr>
 				</table>
 				<div class = "list_title">
@@ -687,7 +687,7 @@
 					<tr>
 						<td>Old</td>
 						<td>:</td>
-						<td>Old</td>
+						<td class="td_list" id = "old_amount_red"><t t-esc="red_limit"/></td>
 					</tr>
 					<tr>
 						<td>Add Amount</td>
@@ -697,7 +697,7 @@
 					<tr>
 						<td>New</td>
 						<td>:</td>
-						<td>New</td>
+						<td class="td_list" id = "new_amount_red"></td>
 					</tr>
 				</table>
 				<div type="button"

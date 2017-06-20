@@ -398,29 +398,31 @@
 						</table>
 					</div>
 					<div class="progress_detail">
-						<t t-if="quota.status == 'OK'">
-							<div class="progress-bar progress-bar-success" role="progressbar"
-									t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
-								<span t-esc='quota.current_usage'/>
-							</div>
-							<div class="progress-bar progress-bar-grey" role="progressbar"
-									t-attf-style='width:{{100-(quota.current_usage*100.0/quota.red_limit)}}%'>
-								<span t-esc='quota.red_limit'/>
-							</div>
+						<t t-if="progress_exist == 'show'">
+							<t t-if="quota.status == 'OK'">
+								<div class="progress-bar progress-bar-success" role="progressbar"
+										t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
+									<span t-esc='quota.current_usage'/>
+								</div>
+								<div class="progress-bar progress-bar-grey" role="progressbar"
+										t-attf-style='width:{{100-(quota.current_usage*100.0/quota.red_limit)}}%'>
+									<span t-esc='quota.red_limit'/>
+								</div>
+							</t>
+							<t t-if="quota.status == 'Warning'">
+								<div class="progress-bar progress-bar-warning" role="progressbar"
+										t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
+									<span t-esc='quota.current_usage'/>
+								</div>
+							</t>
+							<t t-if="quota.status == 'Overlimit'">
+								<div class="progress-bar progress-bar-danger" role="progressbar"
+										t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
+									<span t-esc='quota.current_usage'/>
+								</div>
+							</t>
 						</t>
-						<t t-if="quota.status == 'Warning'">
-							<div class="progress-bar progress-bar-warning" role="progressbar"
-									t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
-								<span t-esc='quota.current_usage'/>
-							</div>
-						</t>
-						<t t-if="quota.status == 'Overlimit'">
-							<div class="progress-bar progress-bar-danger" role="progressbar"
-									t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
-								<span t-esc='quota.current_usage'/>
-							</div>
-						</t>
-						<t t-if="quota.status == 'N/A'">
+						<t t-if="progress_exist == 'hide'">
 							<div class="progress-bar progress-bar-grey" role="progressbar"
 									t-attf-style='width:{{100}}%'>
 								<span t-esc='100'/>

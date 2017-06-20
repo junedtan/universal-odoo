@@ -365,7 +365,7 @@ class website_mobile_app(http.Controller):
 			total_nominal, total_count = handler_obj.search_total_request_nominal_count_quota_changes(au.header_id.id, au.id)
 			quota = dictionary_quota.get(str(au.id), False)
 			plural = 'time'
-			status = 'N/A'
+			status = 'OK'
 			response_user_group = self.mobile_app_get_user_group()
 			data_user_group = json.loads(response_user_group.data)
 			is_approver = False
@@ -376,8 +376,6 @@ class website_mobile_app(http.Controller):
 					status = 'Overlimit'
 				elif quota.current_usage > quota.yellow_limit:
 					status = 'Warning'
-				else:
-					status = 'OK'
 			locale.setlocale( locale.LC_ALL, locale= "Indonesian")
 			if total_count > 1:
 				plural = 'times'
@@ -395,6 +393,7 @@ class website_mobile_app(http.Controller):
 				'red_limit' : quota.red_limit if quota and quota.red_limit else 0,
 				'plural' : plural,
 				'status' : status,
+				'progress_exist': 'show' if quota and quota.red_limit and quota.current_usage else 'hide',
 				'is_approver' : is_approver,
 			})
 		return json.dumps({

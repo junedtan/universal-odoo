@@ -364,17 +364,19 @@ class website_mobile_app(http.Controller):
 			total_nominal, total_count = handler_obj.search_total_request_nominal_count_quota_changes(au.header_id.id, au.id)
 			quota = handler_obj.search_au_contract_quota_usage(au.header_id.id, au.id)
 			plural = 'time'
-			status = 'OK'
+			status = 'N/A'
 			response_user_group = self.mobile_app_get_user_group()
 			data_user_group = json.loads(response_user_group.data)
 			is_approver = False
 			if data_user_group['user_group'] == 'approver':
 				is_approver = True
-			if quota:
+			if quota and quota.red_limit and quota.current_usage:
 				if quota.current_usage > quota.red_limit:
 					status = 'Overlimit'
 				elif quota.current_usage > quota.yellow_limit:
 					status = 'Warning'
+				else:
+					status = 'OK'
 			locale.setlocale( locale.LC_ALL, locale= "Indonesian")
 			if total_count > 1:
 				plural = 'times'
@@ -385,7 +387,8 @@ class website_mobile_app(http.Controller):
 				'control_level' : au.header_id.usage_control_level,
 				'total_request_nominal' : locale.currency(total_nominal, grouping= True),
 				'total_request_count' : total_count,
-				'current_usage' : quota.current_usage if quota else 0,
+				'current_usage' : quota.current_usage if quota.current_usage else 0,
+				'red_limit' : quota.red_limit if quota.red_limit else 0,
 				'plural' : plural,
 				'status' : status,
 				'is_approver' : is_approver,

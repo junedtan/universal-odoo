@@ -459,6 +459,12 @@ class website_mobile_app(http.Controller):
 			locale.setlocale(locale.LC_ALL, locale= "Indonesian")
 			if total_count > 1:
 				plural = 'times'
+			button_change_exist = 'hide'
+			if data_user_group['user_group'] == 'approver' and au and \
+					au.header_id.service_type == 'by_order' and \
+					au.header_id.usage_allocation_maintained_by == 'customer' and \
+					au.header_id.usage_control_level == 'no_control':
+				button_change_exist = 'show'
 			quota_from_arr.append({
 				'user_group': data_user_group['user_group'],
 				'id': quota.id if quota else 0,
@@ -475,6 +481,7 @@ class website_mobile_app(http.Controller):
 				'plural': plural,
 				'status': status,
 				'progress_exist': 'show' if quota and quota.red_limit and quota.current_usage else 'hide',
+				'button_change_exist': button_change_exist,
 			})
 		return json.dumps({
 			'status': 'ok',

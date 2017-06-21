@@ -240,9 +240,9 @@
 								</t>
 								<t t-if="user_group != 'pic'">
 									<t t-if="classification_value == 'pending' || classification_value == 'ready'">
-										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_change_planned_start_time">Change Planned Start Time</button>
-										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_edit_order">Edit Order</button>
-										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_cancel_order">Cancel Order</button>
+										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_change_planned_start_time ml10">Change Planned Start Time</button>
+										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_edit_order ml10">Edit Order</button>
+										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_cancel_order ml10">Cancel Order</button>
 									</t>
 								</t>
 							</div>

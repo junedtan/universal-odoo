@@ -260,6 +260,7 @@
 										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_edit_order ml10">Edit Order</button>
 										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_cancel_order ml10">Cancel Order</button>
 									</t>
+									<div id="change_planned_start_time"/>
 								</t>
 							</div>
 							<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
@@ -268,6 +269,15 @@
 				</t>
 			</t>
 		</t>
+	</t>
+
+	<t t-name="website_mobile_app_change_planned_start_time">
+		<div class="mt16 ml10">
+			<label for="change_order_start_planned_new">New Start Planned</label>
+			<input id="change_order_start_planned_new" class="form-control" type="datetime-local" t-attf-value="{{planned_start_time_old}}"/>
+			<button type="button" t-attf-id_order = "{{order_id}}" class="btn btn-success btn_save_change_order mt16 ml10">Save</button>
+			<button type="button" t-attf-id_order = "{{order_id}}" class="btn btn-danger btn_cancel_change_order mt16 ml10">Cancel</button>
+		</div>
 	</t>
 
 	<!-- CHANGE PASSWORD -->

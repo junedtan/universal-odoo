@@ -42,11 +42,11 @@ $(document).ready(function () {
 			self.user['user_group'] = response['user_group'];
 			self.contract_datas = response['contract_datas'];
 
-			var fleet_vehicle_datas = [];
+			var fleet_type_datas = [];
 			var units = [];
 			var route_from = [];
 			if (self.contract_datas.length != 0) {
-				fleet_vehicle_datas = self.contract_datas[0].fleet_vehicle;
+				fleet_type_datas = self.contract_datas[0].fleet_type;
 				units = self.contract_datas[0].units;
 				route_from = self.contract_datas[0].route_from;
 			}
@@ -55,7 +55,7 @@ $(document).ready(function () {
 				'user_group': self.user['user_group'],
 				// Information
 				'contract_datas': self.contract_datas,
-				'fleet_vehicle_datas': fleet_vehicle_datas,
+				'fleet_type_datas': fleet_type_datas,
 				'units': units,
 				'order_types': order_type,
 				// Route
@@ -112,7 +112,7 @@ $(document).ready(function () {
 
 		create_order_json = {
 			'contract_id': $('#create_order_info_contract').val(),
-			'fleet_vehicle_id': $('#create_order_info_fleet_vehicle').val(),
+			'fleet_type_id': $('#create_order_info_fleet_type').val(),
 			'unit_id': $('#create_order_info_unit').val(),
 			'type_id': $('#create_order_info_type').val(),
 
@@ -131,7 +131,7 @@ $(document).ready(function () {
 		};
 		if (create_order_json['contract_id'] == null) {
 			alert('You have no Contract!'); return;
-		} else if (create_order_json['fleet_vehicle_id'] == null) {
+		} else if (create_order_json['fleet_type_id'] == null) {
 			alert('You have no Fleet!'); return;
 		} else if (!create_order_json['start_planned']) {
 			alert('Please input the start planned date correctly!'); return;
@@ -179,10 +179,10 @@ $(document).ready(function () {
 		$.each(self.contract_datas, function(index, contract_data) {
 			if (contract_data.id == contract_id) {
 				// Update fleet selection
-				$('#create_order_fleet_vehicle').empty();
-				$.each(contract_data.fleet_vehicle, function(index, fleet_vehicle_data) {
-					$('#create_order_fleet_vehicle').append(
-						'<option value=' + fleet_vehicle_data.id + '>' + fleet_vehicle_data.name + '</option>');
+				$('#create_order_fleet_type').empty();
+				$.each(contract_data.fleet_type, function(index, fleet_type_data) {
+					$('#create_order_fleet_type').append(
+						'<option value=' + fleet_type_data.id + '>' + fleet_type_data.name + '</option>');
 				});
 				// Update allocation unit selection
 				$('#create_order_info_unit').empty();

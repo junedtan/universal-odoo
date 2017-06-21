@@ -191,12 +191,20 @@
 									<tr>
 										<td>From</td>
 										<td>:</td>
-										<td><t t-esc="order.origin_location"/></td>
+										<td>
+											<t t-if="order.origin_location">
+												<t t-esc="order.origin_location"/>
+											</t>
+										</td>
 									</tr>
 									<tr>
 										<td>To</td>
 										<td>:</td>
-										<td><t t-esc="order.dest_location"/></td>
+										<td>
+											<t t-if="order.dest_location">
+												<t t-esc="order.dest_location"/>
+											</t>
+										</td>
 									</tr>
 								</t>
 							</table>
@@ -315,7 +323,17 @@
 					<div class="list_contract clickable contract_detail" t-attf-id_contract = "{{i}}">
 						<div class="card_padding" style="pointer-events:none;">
 							<div class="list_title">
-								<b><t t-esc="contract.name"/></b> - <span class="grey_text"><t t-esc="contract.state"/></span>
+								<b><t t-esc="contract.name"/></b>-
+								<t t-if="contract.state == 'active'">
+									<span class="green_text">
+										<t t-esc="contract.state"/>
+									</span>
+								</t>
+								<t t-if="contract.state != 'active'">
+									<span class="red_text">
+										<t t-esc="contract.state"/>
+									</span>
+								</t>
 							</div>
 							<t t-esc="contract.start_date"/> / <t t-esc="contract.end_date"/><br></br>
 							Service Type: <t t-esc="contract.service_type"/><br></br>
@@ -415,8 +433,8 @@
 								<td><t t-esc="quota.current_usage"/></td>
 							</tr>
 							<tr>
-								<td class="td_list"></td>
-								<td class="td_list"></td>
+								<td class="td_list">Status</td>
+								<td class="td_list">:</td>
 								<td><t t-esc="quota.status"/></td>
 							</tr>
 						</table>

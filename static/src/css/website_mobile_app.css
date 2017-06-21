@@ -67,8 +67,10 @@ div.row_hoverable{
 }
 
 .contract_detail {
-	margin-left: 10px;
+	padding-left: 25px;
 	margin-right: 10px;
+	margin-bottom:0px;
+	margin-top:0px;
 }
 
 .contract_info {
@@ -110,7 +112,7 @@ div.row_hoverable{
 	margin-left: auto;
 	margin-right: auto;
 	left: 0;
-	top: 10%;
+	top: 15%;
 	right: 0;
 	background-color: #fefefe;
 	width: 350px;
@@ -173,4 +175,12 @@ div.row_hoverable{
 
 .grey_text {
 	color: grey;
+}
+
+.green_text {
+	color: green;
+}
+
+.red_text {
+	color: red;
 }

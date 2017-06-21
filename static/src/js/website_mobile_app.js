@@ -382,17 +382,26 @@ $(document).ready(function () {
 		filtered_order_datas.push.apply(filtered_order_datas, order_datas['ready']);
 		$.each(filtered_order_datas, function(index, order_data) {
 			if(parseInt(order_data['id']) === parseInt(order_id)) {
-				$("#change_planned_start_time", self).html(qweb.render('website_mobile_app_change_planned_start_time',{
+				$("#change_planned_start_time", self).html(qweb.render('dialog_change_planned_start_time',{
 					'order_id': order_id,
 					'planned_start_time_old': new Date().addHours(1).toDatetimeString(),
 				}));
+				// Tampilkan Dialog
+				var modal = $("#dialog_change_planned_start_time");
+				modal.css("display", "block");
+
+				// Button Close Dialog
+				$(".close_dialog").click(function(event) {
+					modal.css("display", "none");
+				});
+
 				$('.btn_save_change_order').click(function(event) {
 					var target = $(event.target);
 					order_id = target.attr("id_order");
 					onclick_button_save_change_planned_start_time(order_id);
 				});
 				$('.btn_cancel_change_order').click(function(event) {
-					$('#change_planned_start_time').empty();
+					modal.css("display", "none");
 				});
 				return false;
 			}

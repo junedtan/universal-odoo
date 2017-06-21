@@ -281,9 +281,60 @@ $(document).ready(function () {
 					detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
 				}
 			});
+			$('#btn_approve_order').click(function(event) {
+				var target = $(event.target);
+				order_id = target.attr("id_order");
+				onclick_button_approve_order(order_id);
+			});
+			$('#btn_reject_order').click(function(event) {
+				var target = $(event.target);
+				order_id = target.attr("id_order");
+				onclick_button_reject_order(order_id);
+			});
 		});
 	});
 
+	function onclick_button_approve_order(order_id) {
+		$.ajax({
+			dataType: "json",
+			url: '/mobile_app/approve_order/' + order_id,
+			method: 'POST',
+			success: function(response) {
+				if (response.status) {
+					alert(response.info);
+					if(response.success){
+						$('#website_mobile_app_menu_list_orders').click();
+					} else {}
+				} else {
+					alert('Server Unreachable.');
+				}
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				alert_error(XMLHttpRequest);
+			} ,
+		});
+	};
+
+	function onclick_button_reject_order(order_id) {
+		$.ajax({
+			dataType: "json",
+			url: '/mobile_app/reject_order/' + order_id,
+			method: 'POST',
+			success: function(response) {
+				if (response.status) {
+					alert(response.info);
+					if(response.success){
+						$('#website_mobile_app_menu_list_orders').click();
+					} else {}
+				} else {
+					alert('Server Unreachable.');
+				}
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				alert_error(XMLHttpRequest);
+			} ,
+		});
+	};
 // LIST SHUTTLE =============================================================================================================
 
 	$('#website_mobile_app_menu_list_shuttle').click(function() {

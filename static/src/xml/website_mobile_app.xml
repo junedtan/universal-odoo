@@ -187,11 +187,13 @@
 									<td>:</td>
 									<td><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
 								</tr>
-								<tr>
-									<td>Fleet</td>
-									<td>:</td>
-									<td><t t-esc="order.assigned_driver_name"/> - <t t-esc="order.assigned_vehicle_name"/></td>
-								</tr>
+								<t t-if="order.assigned_vehicle_name">
+									<tr>
+										<td>Fleet</td>
+										<td>:</td>
+										<td><t t-esc="order.assigned_driver_name"/> - <t t-esc="order.assigned_vehicle_name"/></td>
+									</tr>
+								</t>
 								<t t-if="order.origin_location">
 									<tr>
 										<td>From</td>
@@ -211,6 +213,14 @@
 									</tr>
 								</t>
 							</table>
+							<div class="div_order_button">
+								<t t-if="order.user_group == 'approver'">
+									<t t-if="order.state == 'new'">
+										<button type="button" t-attf-id_order = "{{order.id}}" id="btn_approve_order" class="btn btn-success col-md-1 col-xs-4">Approve</button>
+										<button type="button" t-attf-id_order = "{{order.id}}" id="btn_reject_order" class="btn btn-danger col-md-1 col-xs-4 ml10">Reject</button>
+									</t>
+								</t>
+							</div>
 							<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
 						</t>
 					</div>

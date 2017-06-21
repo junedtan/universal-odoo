@@ -254,6 +254,9 @@ class website_mobile_app(http.Controller):
 			'running': [],
 			'history': [],
 		};
+		response_user_group = self.mobile_app_get_user_group()
+		data_user_group = json.loads(response_user_group.data)
+		user_group = data_user_group['user_group']
 		for order_data in order_datas:
 			if order_data.state in ['new', 'confirmed']:
 				classification = 'pending'
@@ -264,6 +267,7 @@ class website_mobile_app(http.Controller):
 			else:
 				classification = 'history'
 			result[classification].append({
+				'user_group': user_group,
 				'id': order_data.id,
 				'name': order_data.name,
 				'state': order_data.state,
@@ -286,6 +290,40 @@ class website_mobile_app(http.Controller):
 		result['history'] = sorted(result['history'], key=lambda order: order['request_date'], reverse=True)
 		return json.dumps(result)
 	
+	@http.route('/mobile_app/approve_order/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_approve_order(self, data, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		result = handler_obj.approve_order(int(data))
+		if result:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Order Approved'),
+				'success': True,
+			})
+		else:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Approving Order Failed'),
+				'success': False,
+			})
+	
+	@http.route('/mobile_app/reject_order/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_reject_order(self, data, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		result = handler_obj.reject_order(int(data))
+		if result:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Order Rejected'),
+				'success': True,
+			})
+		else:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Rejecting Order Failed'),
+				'success': False,
+			})
+		
 	@http.route('/mobile_app/fetch_contract_shuttles', type='http', auth="user", website=True)
 	def mobile_app_fetch_contract_shuttles(self, **kwargs):
 		response_fetch_contract = self.mobile_app_fetch_contracts()
@@ -686,3 +724,12 @@ class website_mobile_app_handler(osv.osv):
 			'confirm_date': datetime.now(),
 		}, context=context)
 	
+	def approve_order(self, cr, uid, order_id, context={}):
+		order_obj = self.pool.get('foms.order')
+		return order_obj.action_confirm(cr, uid, [order_id], context=context)
+	
+	def reject_order(self, cr, uid, order_id, context={}):
+		order_obj = self.pool.get('foms.order')
+		return order_obj.write(cr, uid, [order_id], {
+			'state': 'rejected',
+		}, context=context)

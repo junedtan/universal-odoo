@@ -188,3 +188,9 @@ div.row_hoverable{
 .orange_text {
 	color: orange;
 }
+
+.div_order_button {
+	margin-bottom: 10px;
+	margin-top: -15px;
+	overflow: hidden;
+}

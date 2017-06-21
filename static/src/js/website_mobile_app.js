@@ -355,10 +355,32 @@ $(document).ready(function () {
 
 	//Order Detail ===============================================================
 	function onclick_list_order_detail_order(index_order, classifications_order) {
-		order = self.order_datas[classifications_order][index_order];
+		order_data = self.order_datas[classifications_order][index_order];
 		//Render Dialog
 		$("#dialog_order_detail_container", self).html(qweb.render('dialog_order_detail',{
-			'order_name' : order.name,
+			'id': order_data.id,
+			'name': order_data.name,
+			'state': order_data.state,
+			'pin': order_data.pin,
+			'state_name': order_data.state_name,
+			'request_date':  order_data.request_date,
+			'start_planned_date': order_data.start_planned_date,
+			'finish_planned_date':  order_data.finish_planned_date,
+			'assigned_vehicle_name': order_data.assigned_vehicle_name,
+			'assigned_driver_name': order_data.assigned_driver_name,
+			'origin_location': order_data.origin_location,
+			'origin_area_name': order_data.origin_area_name,
+			'dest_location': order_data.dest_location,
+			'dest_area_name': order_data.dest_area_name,
+			'service_type': order_data.service_type,
+			'order_by_name': order_data.order_by_name,
+			'over_quota_status': order_data.over_quota_status,
+			'order_usage': order_data.alloc_unit_usage,
+			'red_limit': order_data.red_limit,
+			'yellow_limit': order_data.yellow_limit,
+			'maintained_by': order_data.maintained_by,
+			'au_id': order_data.au_id,
+			'contract_id': order_data.contract_id,
 		}));
 
 		// Tampilkan Dialog

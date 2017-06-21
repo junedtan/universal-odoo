@@ -891,11 +891,16 @@
 				</div>
 				<div class="modal-body">
 					<div class = "list_title">
-						<t t-esc="order_name"/>
+						<t t-esc="name"/>
 					</div>
 					<table class="table table-striped ">
 						<tr>
-							<td>Order Name</td>
+							<td>Route</td>
+						</tr>
+						<tr>
+							<td>From :</td>
+							<td><t t-esc="origin_location"/></td>
+							<td><t t-esc="origin_area_name"/></td>
 						</tr>
 					</table>
 				</div>

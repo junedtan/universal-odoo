@@ -296,6 +296,7 @@ $(document).ready(function () {
 			$('#list_shuttle_contract').change(function(){
 				onchange_list_shuttle_contract($(this).val());
 			});
+			$('#list_shuttle_contract').change();
 		});
 	});
 

@@ -6,11 +6,13 @@ $(document).ready(function () {
 	qweb.add_template('/universal/static/src/xml/website_mobile_app.xml');
 
 	var contract_datas = [];
+	var order_datas = [];
 	var to_cities = [];
 	var user = {
 		user_group: 'undefined',
 	};
 	var index_click_contract;
+	var index_click_order;
 	var current_au_name;
 
 	function onclick_menu(id) {
@@ -281,7 +283,7 @@ $(document).ready(function () {
 					'History': 'history',
 				}
 			}
-
+			self.order_datas = response['list_order'];
 			$("#main_container", self).html(qweb.render('website_mobile_app_list_order',{
 				'classifications': classifications,
 				'order_datas': response['list_order'],
@@ -297,16 +299,33 @@ $(document).ready(function () {
 					detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
 				}
 			});
+
 			$('.btn_approve_order').click(function(event) {
 				var target = $(event.target);
 				order_id = target.attr("id_order");
 				onclick_button_approve_order(order_id);
+				event.stopPropagation();
 			});
+
 			$('.btn_reject_order').click(function(event) {
 				var target = $(event.target);
 				order_id = target.attr("id_order");
 				onclick_button_reject_order(order_id);
+				event.stopPropagation();
 			});
+
+			$(".list_order").click(function(event) {
+				var target = $(event.target);
+				self.index_click_order = target.attr("index_order");
+				var classifications_order = target.attr("classification_order");
+				onclick_list_order_detail_order(self.index_click_order, classifications_order);
+				event.stopPropagation();
+			});
+
+			$('#dialog_order_detail_container').click(function(event){
+				event.stopPropagation();
+			})
+
 			$('.btn_add_quota').click(function(event) {
 				event.stopPropagation();
 				var target = $(event.target);
@@ -333,6 +352,31 @@ $(document).ready(function () {
 			});
 		});
 	});
+
+	//Order Detail ===============================================================
+	function onclick_list_order_detail_order(index_order, classifications_order) {
+		order = self.order_datas[classifications_order][index_order];
+		//Render Dialog
+		$("#dialog_order_detail_container", self).html(qweb.render('dialog_order_detail',{
+			'order_name' : order.name,
+		}));
+
+		// Tampilkan Dialog
+		var modal = $("#modalOrderDetail");
+		modal.css("display", "block");
+
+		// Button Close Dialog
+		$(".close_dialog").click(function(event) {
+			modal.css("display", "none");
+		});
+
+		// Jika Click Selain di Daerah dialog, maka tutup dialog
+		window.onclick = function(event) {
+			if (event.target == modal.get(0)) {
+				modal.css("display", "none");
+			}
+		}
+	};
 
 	function onclick_button_approve_order(order_id) {
 		$.ajax({
@@ -382,17 +426,26 @@ $(document).ready(function () {
 		filtered_order_datas.push.apply(filtered_order_datas, order_datas['ready']);
 		$.each(filtered_order_datas, function(index, order_data) {
 			if(parseInt(order_data['id']) === parseInt(order_id)) {
-				$("#change_planned_start_time", self).html(qweb.render('website_mobile_app_change_planned_start_time',{
+				$("#change_planned_start_time", self).html(qweb.render('dialog_change_planned_start_time',{
 					'order_id': order_id,
 					'planned_start_time_old': new Date().addHours(1).toDatetimeString(),
 				}));
+				// Tampilkan Dialog
+				var modal = $("#dialog_change_planned_start_time");
+				modal.css("display", "block");
+
+				// Button Close Dialog
+				$(".close_dialog").click(function(event) {
+					modal.css("display", "none");
+				});
+
 				$('.btn_save_change_order').click(function(event) {
 					var target = $(event.target);
 					order_id = target.attr("id_order");
 					onclick_button_save_change_planned_start_time(order_id);
 				});
 				$('.btn_cancel_change_order').click(function(event) {
-					$('#change_planned_start_time').empty();
+					modal.css("display", "none");
 				});
 				return false;
 			}
@@ -824,7 +877,7 @@ $(document).ready(function () {
 		$("#new_amount_red").html(red_limit);
 
 		// Tampilkan Dialog
-		var modal = $("#myModalChangeQuota");
+		var modal = $("#modalChangeQuota");
 		modal.css("display", "block");
 
 		// Button Close Dialog

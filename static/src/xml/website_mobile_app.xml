@@ -494,14 +494,14 @@
 						</div>
 						<div style="overflow:auto;">
 							<!-- TODO -->
-							<!--<t t-if="user_group == 'approver'">-->
+							<t t-if="button_change_exist == 'show'">
 								<div type="button" t-attf-au_id="{{quota.au_id}}" t-attf-contract_id="{{quota.contract_id}}"
 										class="quota_btn_request_change_quota btn btn-success col-md-2 col-xs-4 mt16 ml10 contract_usage_control">
 									Change Quota
 								</div>
 
 								<div class="row dialog_request_quota" id="dialog_request_quota_container" style="width:0px;height:0px;"/>
-							<!--</t>-->
+							</t>
 							<t t-set="i" t-value="i+1"/>
 						</div>
 					</div>

@@ -182,6 +182,17 @@
 							</div>
 							Requested at: <b><t t-esc="order.request_date"/></b> by <b><t t-esc="order.order_by_name"/></b>
 							<table class="table">
+								<t t-if="user_group == 'booker'">
+									<t t-if="classification_value != 'pending'">
+										<t t-if="order.pin">
+											<tr>
+												<td>Pin</td>
+												<td>:</td>
+												<td><t t-esc="order.pin"/></td>
+											</tr>
+										</t>
+									</t>
+								</t>
 								<tr>
 									<td>Time</td>
 									<td>:</td>
@@ -216,6 +227,13 @@
 							<div class="div_order_button">
 								<t t-if="user_group == 'approver'">
 									<t t-if="order.state == 'new'">
+										<t t-if="order.over_quota_status == 'warning'">
+											<div class="red_text">
+												Approving this order will lead to over quota by
+												<t t-esc="order.order_usage"/>
+												above <t t-esc="order.red_limit"/>
+											</div>
+										</t>
 										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_approve_order col-md-1 col-xs-4">Approve</button>
 										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_reject_order col-md-1 col-xs-4 ml10">Reject</button>
 									</t>

@@ -165,63 +165,68 @@
 				</t>
 				<t t-if="order_datas[classification_value].length != 0">
 					<div class="detail_container accordion_detail" >
+						<t t-set="i" t-value="0"/>
 						<t t-foreach="order_datas[classification_value]" t-as="order">
-							<div class="list_title">
-								<b><t t-esc="order.name"/></b> -
-								<t t-if="order.state == 'new' || order.state == 'confirmed' || order.state ==  'ready' ||
-								order.state == 'started' || order.state == 'start_confirmed' || order.state == 'resumed' ||
-								 order.state == 'finished' || order.state == 'finish_confirmed'">
-									<span class="green_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
-								</t>
-								<t t-if="order.state == 'rejected' || order.state == 'canceled'">
-									<span class="red_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
-								</t>
-								<t t-if="order.state == 'paused'">
-									<span class="orange_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
-								</t>
-							</div>
-							Requested at: <b><t t-esc="order.request_date"/></b> by <b><t t-esc="order.order_by_name"/></b>
-							<table class="table">
-								<tr>
-									<td>Time</td>
-									<td>:</td>
-									<td><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
-								</tr>
-								<t t-if="order.assigned_vehicle_name">
-									<tr>
-										<td>Fleet</td>
-										<td>:</td>
-										<td><t t-esc="order.assigned_driver_name"/> - <t t-esc="order.assigned_vehicle_name"/></td>
-									</tr>
-								</t>
-								<t t-if="order.origin_location">
-									<tr>
-										<td>From</td>
-										<td>:</td>
-										<td>
-											<t t-esc="order.origin_location"/> (<t t-esc="order.origin_area_name"/>)
-										</td>
-									</tr>
-								</t>
-								<t t-if="order.dest_location">
-									<tr>
-										<td>To</td>
-										<td>:</td>
-										<td>
-											<t t-esc="order.dest_location"/>  (<t t-esc="order.dest_area_name"/>)
-										</td>
-									</tr>
-								</t>
-							</table>
-							<div class="div_order_button">
-								<t t-if="user_group == 'approver'">
-									<t t-if="order.state == 'new'">
-										<button type="button" t-attf-id_order = "{{order.id}}" id="btn_approve_order" class="btn btn-success col-md-1 col-xs-4">Approve</button>
-										<button type="button" t-attf-id_order = "{{order.id}}" id="btn_reject_order" class="btn btn-danger col-md-1 col-xs-4 ml10">Reject</button>
+							<div class="list_order clickable" t-attf-index_order = "{{i}}" t-attf-classification_order = "{{classification_value}}">
+								<div class="list_title" style="pointer-events:none;">
+									<b><t t-esc="order.name"/></b> -
+									<t t-if="order.state == 'new' || order.state == 'confirmed' || order.state ==  'ready' ||
+									order.state == 'started' || order.state == 'start_confirmed' || order.state == 'resumed' ||
+									 order.state == 'finished' || order.state == 'finish_confirmed'">
+										<span class="green_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
 									</t>
-								</t>
+									<t t-if="order.state == 'rejected' || order.state == 'canceled'">
+										<span class="red_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
+									</t>
+									<t t-if="order.state == 'paused'">
+										<span class="orange_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
+									</t>
+								</div>
+								Requested at: <b><t t-esc="order.request_date"/></b> by <b><t t-esc="order.order_by_name"/></b>
+								<table class="table" style="pointer-events:none;">
+									<tr>
+										<td>Time</td>
+										<td>:</td>
+										<td><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
+									</tr>
+									<t t-if="order.assigned_vehicle_name">
+										<tr>
+											<td>Fleet</td>
+											<td>:</td>
+											<td><t t-esc="order.assigned_driver_name"/> - <t t-esc="order.assigned_vehicle_name"/></td>
+										</tr>
+									</t>
+									<t t-if="order.origin_location">
+										<tr>
+											<td>From</td>
+											<td>:</td>
+											<td>
+												<t t-esc="order.origin_location"/> (<t t-esc="order.origin_area_name"/>)
+											</td>
+										</tr>
+									</t>
+									<t t-if="order.dest_location">
+										<tr>
+											<td>To</td>
+											<td>:</td>
+											<td>
+												<t t-esc="order.dest_location"/>  (<t t-esc="order.dest_area_name"/>)
+											</td>
+										</tr>
+									</t>
+								</table>
+								<div class="div_order_button">
+									<t t-if="user_group == 'approver'">
+										<t t-if="order.state == 'new'">
+											<button type="button" t-attf-id_order = "{{order.id}}" id="btn_approve_order" class="btn btn-success col-md-1 col-xs-4">Approve</button>
+											<button type="button" t-attf-id_order = "{{order.id}}" id="btn_reject_order" class="btn btn-danger col-md-1 col-xs-4 ml10">Reject</button>
+										</t>
+									</t>
+								</div>
+								<div id="dialog_order_detail_container" style="width:0px;height:0px;"/>
+								<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
 							</div>
-							<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
+							<t t-set="i" t-value="i+1"/>
 						</t>
 					</div>
 				</t>
@@ -504,7 +509,7 @@
 									Change Quota
 								</div>
 
-								<div class="row dialog_request_quota" id="dialog_request_quota_container" style="width:0px;height:0px;"/>
+								<div id="dialog_request_quota_container" style="width:0px;height:0px;"/>
 							</t>
 							<t t-set="i" t-value="i+1"/>
 						</div>
@@ -726,7 +731,7 @@
 
 	<!-- Dialog Req Change Quota -->
 	<t t-name="dialog_request_change_quota">
-		<div id="myModalChangeQuota" class="modal">
+		<div id="modalChangeQuota" class="modal">
 		  <!-- Modal content -->
 			<div class="modal_request_change_quota">
 				<div class="modal-header">
@@ -786,5 +791,28 @@
 		</div>
 	</t>
 
-
+	<!-- Dialog Order Detail -->
+	<t t-name="dialog_order_detail">
+		<div id="modalOrderDetail" class="modal">
+		  <!-- Modal content -->
+			<div class="modal_detail_order">
+				<div class="modal-header">
+					<span class="close_dialog">x</span>
+					<div class = "list_title">
+						Detail Order
+					</div>
+				</div>
+				<div class="modal-body">
+					<div class = "list_title">
+						<t t-esc="order_name"/>
+					</div>
+					<table class="table table-striped ">
+						<tr>
+							<td>Order Name</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</t>
 </templates>

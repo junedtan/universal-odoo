@@ -445,53 +445,57 @@
 						<div class="list_title" style="pointer-events:none;">
 							<b><t t-esc="quota.allocation_unit_name"/></b>
 						</div>
-						<t t-if="quota.control_level == 'no_control'">
+						<t t-if="quota.control_level != 'no_control'">
 							Quota changes requested <t t-esc="quota.total_request_count"/> <t t-esc="quota.plural"/> with total of <t t-esc="quota.total_request_nominal"/>
 						</t>
 						<table class="table no_margin">
-							<tr>
-								<td class="td_list">Usage</td>
-								<td class="td_list">:</td>
-								<td><t t-esc="quota.current_usage"/></td>
-							</tr>
+							<t t-if="quota.control_level != 'no_control'">
+								<tr>
+									<td class="td_list">Usage</td>
+									<td class="td_list">:</td>
+									<td><t t-esc="quota.current_usage"/></td>
+								</tr>
+							</t>
 							<tr>
 								<td class="td_list">Status</td>
 								<td class="td_list">:</td>
 								<td><t t-esc="quota.status"/></td>
 							</tr>
 						</table>
-						<div id="current_usage_quota_progress" style="overflow:auto;">
-							<t t-if="progress_exist == 'show'">
-								<t t-if="quota.status == 'OK'">
-									<div class="progress-bar progress-bar-success" role="progressbar"
-											t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
-										<span t-esc='quota.current_usage'/>
-									</div>
+						<t t-if="quota.control_level != 'no_control'">
+							<div id="current_usage_quota_progress" style="overflow:auto;">
+								<t t-if="progress_exist == 'show'">
+									<t t-if="quota.status == 'OK'">
+										<div class="progress-bar progress-bar-success" role="progressbar"
+												t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
+											<span t-esc='quota.current_usage'/>
+										</div>
+										<div class="progress-bar progress-bar-grey" role="progressbar"
+												t-attf-style='width:{{100-(quota.current_usage*100.0/quota.red_limit)}}%'>
+											<span t-esc='quota.red_limit'/>
+										</div>
+									</t>
+									<t t-if="quota.status == 'Warning'">
+										<div class="progress-bar progress-bar-warning" role="progressbar"
+												t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
+											<span t-esc='quota.current_usage'/>
+										</div>
+									</t>
+									<t t-if="quota.status == 'Overlimit'">
+										<div class="progress-bar progress-bar-danger" role="progressbar"
+												t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
+											<span t-esc='quota.current_usage'/>
+										</div>
+									</t>
+								</t>
+								<t t-if="progress_exist == 'hide'">
 									<div class="progress-bar progress-bar-grey" role="progressbar"
-											t-attf-style='width:{{100-(quota.current_usage*100.0/quota.red_limit)}}%'>
-										<span t-esc='quota.red_limit'/>
+											t-attf-style='width:{{100}}%'>
+										<span t-esc='100'/>
 									</div>
 								</t>
-								<t t-if="quota.status == 'Warning'">
-									<div class="progress-bar progress-bar-warning" role="progressbar"
-											t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
-										<span t-esc='quota.current_usage'/>
-									</div>
-								</t>
-								<t t-if="quota.status == 'Overlimit'">
-									<div class="progress-bar progress-bar-danger" role="progressbar"
-											t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
-										<span t-esc='quota.current_usage'/>
-									</div>
-								</t>
-							</t>
-							<t t-if="progress_exist == 'hide'">
-								<div class="progress-bar progress-bar-grey" role="progressbar"
-										t-attf-style='width:{{100}}%'>
-									<span t-esc='100'/>
-								</div>
-							</t>
-						</div>
+							</div>
+						</t>
 						<div style="overflow:auto;">
 							<!-- TODO -->
 							<t t-if="button_change_exist == 'show'">

@@ -396,9 +396,11 @@ $(document).ready(function () {
 			$(".list_contract").click(function(event) {
 				var target = $(event.target);
 				self.index_click_contract = target.attr("id_contract");
+				console.log(self.contract_datas[self.index_click_contract].service_type)
 				$("#main_container", self).html(qweb.render('website_mobile_app_detail_contract',{
 					'contract_name': self.contract_datas[self.index_click_contract].name,
 					'user_group': self.user['user_group'],
+					'contract_service_type': self.contract_datas[self.index_click_contract].service_type,
 				}));
 				setOnClickButtonMenuDetailContract();
 				if(self.user['user_group'] === 'pic') {

@@ -336,11 +336,15 @@
 				<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
 					id="website_mobile_app_menu_info_contract">Info</div>
 			</t>
-			<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
-				id="website_mobile_app_menu_usage_control">Usage Control</div>
-			<t t-if="user_group == 'pic'">
+			<t t-if="contract_service_type == 'By Order'">
 				<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
-					id="website_mobile_app_menu_quota_changes">Quota Changes</div>
+					id="website_mobile_app_menu_usage_control">Usage Control</div>
+			</t>
+			<t t-if="user_group == 'pic'">
+				<t t-if="contract_service_type == 'By Order'">
+					<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
+						id="website_mobile_app_menu_quota_changes">Quota Changes</div>
+				</t>
 			</t>
 		</div>
 

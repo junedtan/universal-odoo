@@ -274,6 +274,7 @@ class website_mobile_app(http.Controller):
 				classification = 'running'
 			else:
 				classification = 'history'
+			yellow_limit = 0
 			red_limit = 0
 			if order_data.over_quota_status in ['warning','approval']:
 				quota_obj = http.request.env['foms.contract.quota']
@@ -285,6 +286,8 @@ class website_mobile_app(http.Controller):
 				if len(quota_ids) > 0:
 					quota_data = quota_obj.browse(quota_ids[0].id)
 					red_limit = quota_data.red_limit
+					yellow_limit = quota_data.yellow_limit
+			maintained_by = order_data.customer_contract_id.usage_allocation_maintained_by
 			result[classification].append({
 				'id': order_data.id,
 				'name': order_data.name,
@@ -305,6 +308,10 @@ class website_mobile_app(http.Controller):
 				'over_quota_status': order_data.over_quota_status,
 				'order_usage': order_data.alloc_unit_usage,
 				'red_limit': red_limit,
+				'yellow_limit': yellow_limit,
+				'maintained_by': maintained_by,
+				'au_id': order_data.alloc_unit_id.id,
+				'contract_id': order_data.customer_contract_id.id,
 			});
 		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
 		result['ready']   = sorted(result['ready'],   key=lambda order: order['request_date'], reverse=True)
@@ -542,7 +549,7 @@ class website_mobile_app(http.Controller):
 			if data_user_group['user_group'] == 'approver' and au and \
 					au.header_id.service_type == 'by_order' and \
 					au.header_id.usage_allocation_maintained_by == 'customer' and \
-					au.header_id.usage_control_level == 'no_control':
+					au.header_id.usage_control_level != 'no_control':
 				button_change_exist = 'show'
 			quota_from_arr.append({
 				'user_group': data_user_group['user_group'],

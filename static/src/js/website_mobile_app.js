@@ -307,6 +307,15 @@ $(document).ready(function () {
 				order_id = target.attr("id_order");
 				onclick_button_reject_order(order_id);
 			});
+			$('.btn_add_quota').click(function(event) {
+				event.stopPropagation();
+				var target = $(event.target);
+				au_id = target.attr("id_au");
+				contract_id = target.attr("id_contract");
+				yellow_limit = target.attr("yellow_limit");
+				red_limit = target.attr("red_limit");
+				onclick_button_request_change_quota(au_id, contract_id, yellow_limit, red_limit);
+			});
 			$('.btn_change_planned_start_time').click(function(event) {
 				var target = $(event.target);
 				order_id = target.attr("id_order");
@@ -628,7 +637,15 @@ $(document).ready(function () {
 							});
 							$(".quota_btn_request_change_quota").click(function(event){
 								event.stopPropagation();
-								onclick_button_request_change_quota($(this).attr("au_id"), $(this).attr("contract_id"));
+								var au_id = $(this).attr("au_id");
+								// Dapatkan Quota dari au_id
+								$.each(quota_list, function(index, quota){
+									if(quota['au_id'] == au_id){
+										red_limit = quota['red_limit'];
+										yellow_limit = quota['yellow_limit'];
+									}
+								});
+								onclick_button_request_change_quota(au_id, $(this).attr("contract_id"), yellow_limit, red_limit);
 							});
 							$('#dialog_request_quota_container').click(function(event){
 								event.stopPropagation();
@@ -793,113 +810,102 @@ $(document).ready(function () {
 				});
 			}
 		};
+	};
 
-		function onclick_button_request_change_quota(au_id, contract_id) {
-			var red_limit = 0;
-			var yellow_limit = 0;
+	function onclick_button_request_change_quota(au_id, contract_id, yellow_limit, red_limit) {
+		//Render Dialog
+		$("#dialog_request_quota_container", self).html(qweb.render('dialog_request_change_quota',{
+			'red_limit' : red_limit,
+			'yellow_limit' : yellow_limit
+		}));
 
-			// Dapatkan Quota dari au_id
-			$.each(quota_list, function(index, quota){
-				if(quota['au_id'] == au_id){
-					red_limit = quota['red_limit'];
-					yellow_limit = quota['yellow_limit'];
-				}
-			});
+		$("#longevity_month").prop('checked', true);
+		$("#new_amount_yellow").html(yellow_limit);
+		$("#new_amount_red").html(red_limit);
 
-			//Render Dialog
-			$("#dialog_request_quota_container", self).html(qweb.render('dialog_request_change_quota',{
-				'red_limit' : red_limit,
-				'yellow_limit' : yellow_limit
-			}));
+		// Tampilkan Dialog
+		var modal = $("#myModalChangeQuota");
+		modal.css("display", "block");
 
-			$("#longevity_month").prop('checked', true);
-			$("#new_amount_yellow").html(yellow_limit);
-			$("#new_amount_red").html(red_limit);
+		// Button Close Dialog
+		$(".close_dialog").click(function(event) {
+			modal.css("display", "none");
+		});
 
-			// Tampilkan Dialog
-			var modal = $("#myModalChangeQuota");
-			modal.css("display", "block");
+		// Onchange input amount yellow_limit, new = old + new_amount
+		$("#amount_yellow_dialog").change(function() {
+			old_amount = parseInt($("#old_amount_yellow").html());
+			new_amount = parseInt($("#amount_yellow_dialog").val());
+			$("#new_amount_yellow").html(new_amount + old_amount);
+		 });
 
-			// Button Close Dialog
-			$(".close_dialog").click(function(event) {
-            	modal.css("display", "none");
-			});
+		// Onchange input amount red_limit, new = old + new_amount
+		$("#amount_red_dialog").change(function() {
+			old_amount = parseInt($("#old_amount_red").html());
+			new_amount = parseInt($("#amount_red_dialog").val());
+			$("#new_amount_red").html(new_amount + old_amount);
+		});
 
-			// Onchange input amount yellow_limit, new = old + new_amount
-			$("#amount_yellow_dialog").change(function() {
-				old_amount = parseInt($("#old_amount_yellow").html());
-				new_amount = parseInt($("#amount_yellow_dialog").val());
-				$("#new_amount_yellow").html(new_amount + old_amount);
-             });
+		// Button Request Quota Dialog
+		$(".dialog_quota_change_button_request").click(function(event) {
+			oldYellow = parseInt($("#old_amount_yellow").html());
+			oldRed = parseInt($("#old_amount_red").html());
+			newYellow = parseInt($("#new_amount_yellow").html());
+			newRed = parseInt($("#new_amount_red").html());
 
-			// Onchange input amount red_limit, new = old + new_amount
-            $("#amount_red_dialog").change(function() {
-				old_amount = parseInt($("#old_amount_red").html());
-				new_amount = parseInt($("#amount_red_dialog").val());
-				$("#new_amount_red").html(new_amount + old_amount);
-			});
-
-			// Button Request Quota Dialog
-			$(".dialog_quota_change_button_request").click(function(event) {
-				oldYellow = parseInt($("#old_amount_yellow").html());
-				oldRed = parseInt($("#old_amount_red").html());
-				newYellow = parseInt($("#new_amount_yellow").html());
-				newRed = parseInt($("#new_amount_red").html());
-
-				if (oldYellow === newYellow && oldRed === newRed) {
-					alert("Please Submit At Least One Request"); return;
-				} else if (newYellow <= 0) {
-					alert("The new value of yellow limit can not be less nor equal zero"); return;
-				} else if (newRed <= 0) {
-					alert("The new value of red limit can not be less nor equal zero"); return;
-				} else if (newRed == newYellow) {
-					alert("Yellow and Red limit can\'t have same value"); return;
-				} else if (newRed < newYellow) {
-					alert("Red limit cannot be less than yellow limit"); return;
-				}
-
-				var req_longevity = 'temporary';
-				if ($("#longevity_permanent").is(":checked")) {
-                    req_longevity = 'permanent';
-                }
-
-				// Buat Data Untuk Request Quota
-				var request_quota_json = {
-					'customer_contract_id': contract_id,
-					'allocation_unit_id': au_id,
-					//'request_by': $('#create_order_info_unit').val(),
-					'request_longevity': req_longevity,
-					'new_yellow_limit': newYellow,
-					'new_red_limit': newRed
-				};
-
-				// Request DataBase untuk save
-                $.ajax({
-					dataType: "json",
-					url: '/mobile_app/request_quota_changes/' +  JSON.stringify(request_quota_json),
-					method: 'POST',
-					success: function(response) {
-						if (response.status) {
-							alert(response.info);
-							if(response.success){
-								modal.css("display", "none");
-							}
-						} else {
-							alert('Server Unreachable.');
-						}
-					},
-					error: function(XMLHttpRequest, textStatus, errorThrown) {
-						alert_error(XMLHttpRequest);
-					},
-				});
-            });
-
-			// Jika Click Selain di Daerah dialog, maka tutup dialog
-			window.onclick = function(event) {
-				if (event.target == modal.get(0)) {
-					modal.css("display", "none");
-				}
+			if (oldYellow === newYellow && oldRed === newRed) {
+				alert("Please Submit At Least One Request"); return;
+			} else if (newYellow <= 0) {
+				alert("The new value of yellow limit can not be less nor equal zero"); return;
+			} else if (newRed <= 0) {
+				alert("The new value of red limit can not be less nor equal zero"); return;
+			} else if (newRed == newYellow) {
+				alert("Yellow and Red limit can\'t have same value"); return;
+			} else if (newRed < newYellow) {
+				alert("Red limit cannot be less than yellow limit"); return;
 			}
-		};
+
+			var req_longevity = 'temporary';
+			if ($("#longevity_permanent").is(":checked")) {
+				req_longevity = 'permanent';
+			}
+
+			// Buat Data Untuk Request Quota
+			var request_quota_json = {
+				'customer_contract_id': contract_id,
+				'allocation_unit_id': au_id,
+				//'request_by': $('#create_order_info_unit').val(),
+				'request_longevity': req_longevity,
+				'new_yellow_limit': newYellow,
+				'new_red_limit': newRed
+			};
+
+			// Request DataBase untuk save
+			$.ajax({
+				dataType: "json",
+				url: '/mobile_app/request_quota_changes/' +  JSON.stringify(request_quota_json),
+				method: 'POST',
+				success: function(response) {
+					if (response.status) {
+						alert(response.info);
+						if(response.success){
+							modal.css("display", "none");
+						}
+					} else {
+						alert('Server Unreachable.');
+					}
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					alert_error(XMLHttpRequest);
+				},
+			});
+		});
+
+		// Jika Click Selain di Daerah dialog, maka tutup dialog
+		window.onclick = function(event) {
+			if (event.target == modal.get(0)) {
+				modal.css("display", "none");
+			}
+		}
 	};
 });

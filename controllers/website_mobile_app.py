@@ -129,7 +129,7 @@ class website_mobile_app(http.Controller):
 		
 		return json.dumps({
 			'user_group': data_user_group['user_group'],
-			'contract_datas': data_fetch_contract,
+			'contract_datas': data_fetch_contract['list_contract'],
 			'user': user,
 			'order_type': order_type_arr,
 			'route_to': route_city_arr,
@@ -286,7 +286,7 @@ class website_mobile_app(http.Controller):
 	def mobile_app_fetch_contract_shuttles(self, **kwargs):
 		response_fetch_contract = self.mobile_app_fetch_contracts()
 		data_fetch_contract = json.loads(response_fetch_contract.data)
-		contract_datas = data_fetch_contract
+		contract_datas = data_fetch_contract['list_contract']
 		for contract_data in contract_datas:
 			contract_shuttle_days = {
 				'0': [], '1': [], '2': [], '3': [], '4': [], '5': [], '6': [],

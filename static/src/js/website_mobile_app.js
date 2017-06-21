@@ -470,6 +470,7 @@ $(document).ready(function () {
 					'History': 'history',
 				};
 				$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_detail_control_usage',{
+					'user_group': self.user['user_group'],
 					'classifications': classifications,
 					'au_name': self.current_au_name,
 					'total_usage': quota.total_usage,
@@ -507,6 +508,7 @@ $(document).ready(function () {
 				};
 				$("#detail_contract_main_container", self).html(
 				qweb.render('website_mobile_app_detail_contract_quota_changes',{
+					'user_group': self.user['user_group'],
 					'classifications': classifications,
 					'quota_changes': JSON.parse(data),
 				}));

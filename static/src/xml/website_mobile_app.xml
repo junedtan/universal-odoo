@@ -568,12 +568,14 @@
 							</tr>
 						</table>
 						<t t-if="classification_value == 'pending'">
-							<div>
-								<div type="button" t-attf-value="{{limit_request.id}}"
-									class="limit_request_btn_approve btn btn-success col-md-1 col-xs-3 ml10">Approve</div>
-								<div type="button" t-attf-value="{{limit_request.id}}"
-									class="limit_request_btn_reject btn btn-danger col-md-1 col-xs-3 ml10">Reject</div>
-							</div>
+							<t t-if="user_group == 'pic'">
+								<div>
+									<div type="button" t-attf-value="{{limit_request.id}}"
+										class="limit_request_btn_approve btn btn-success col-md-1 col-xs-3 ml10">Approve</div>
+									<div type="button" t-attf-value="{{limit_request.id}}"
+										class="limit_request_btn_reject btn btn-danger col-md-1 col-xs-3 ml10">Reject</div>
+								</div>
+							</t>
 						</t><br></br><br></br>
 						<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
 					</t>
@@ -657,12 +659,14 @@
 								</tr>
 							</table>
 							<t t-if="classification_value == 'pending'">
-								<div>
-									<div type="button" t-attf-value="{{quota_change.id}}"
-										class="quota_change_btn_approve btn btn-success col-md-1 col-xs-3 ml10">Approve</div>
-									<div type="button" t-attf-value="{{quota_change.id}}"
-										class="quota_change_btn_reject btn btn-danger col-md-1 col-xs-3 ml10">Reject</div>
-								</div>
+								<t t-if="user_group == 'pic'">
+									<div>
+										<div type="button" t-attf-value="{{quota_change.id}}"
+											class="quota_change_btn_approve btn btn-success col-md-1 col-xs-3 ml10">Approve</div>
+										<div type="button" t-attf-value="{{quota_change.id}}"
+											class="quota_change_btn_reject btn btn-danger col-md-1 col-xs-3 ml10">Reject</div>
+									</div>
+								</t>
 							</t><br></br><br></br>
 							<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
 						</t>

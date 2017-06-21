@@ -297,15 +297,39 @@ $(document).ready(function () {
 					detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
 				}
 			});
-			$('#btn_approve_order').click(function(event) {
+			$('.btn_approve_order').click(function(event) {
 				var target = $(event.target);
 				order_id = target.attr("id_order");
 				onclick_button_approve_order(order_id);
 			});
-			$('#btn_reject_order').click(function(event) {
+			$('.btn_reject_order').click(function(event) {
 				var target = $(event.target);
 				order_id = target.attr("id_order");
 				onclick_button_reject_order(order_id);
+			});
+			$('.btn_add_quota').click(function(event) {
+				event.stopPropagation();
+				var target = $(event.target);
+				au_id = target.attr("id_au");
+				contract_id = target.attr("id_contract");
+				yellow_limit = target.attr("yellow_limit");
+				red_limit = target.attr("red_limit");
+				onclick_button_request_change_quota(au_id, contract_id);
+			});
+			$('.btn_change_planned_start_time').click(function(event) {
+				var target = $(event.target);
+				order_id = target.attr("id_order");
+				onclick_button_change_planned_start_time(order_id);
+			});
+			$('.btn_edit_order').click(function(event) {
+				var target = $(event.target);
+				order_id = target.attr("id_order");
+				onclick_button_edit_order(order_id);
+			});
+			$('.btn_cancel_order').click(function(event) {
+				var target = $(event.target);
+				order_id = target.attr("id_order");
+				onclick_button_cancel_order(order_id);
 			});
 		});
 	});
@@ -335,6 +359,80 @@ $(document).ready(function () {
 		$.ajax({
 			dataType: "json",
 			url: '/mobile_app/reject_order/' + order_id,
+			method: 'POST',
+			success: function(response) {
+				if (response.status) {
+					alert(response.info);
+					if(response.success){
+						$('#website_mobile_app_menu_list_orders').click();
+					} else {}
+				} else {
+					alert('Server Unreachable.');
+				}
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				alert_error(XMLHttpRequest);
+			} ,
+		});
+	};
+
+	function onclick_button_change_planned_start_time(order_id) {
+
+	};
+
+	function onclick_button_edit_order(order_id) {
+
+	};
+
+	function onclick_button_cancel_order(order_id) {
+		var confirmation = confirm('Are you sure to cancel this order?');
+		if(confirmation === true) {
+			$.ajax({
+				dataType: "json",
+				url: '/mobile_app/cancel_order/' + order_id,
+				method: 'POST',
+				success: function(response) {
+					if (response.status) {
+						alert(response.info);
+						if(response.success){
+							$('#website_mobile_app_menu_list_orders').click();
+						} else {}
+					} else {
+						alert('Server Unreachable.');
+					}
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					alert_error(XMLHttpRequest);
+				} ,
+			});
+		}
+	};
+
+	function onclick_button_save_change_planned_start_time(order_id) {
+		$.ajax({
+			dataType: "json",
+			url: '/mobile_app/change_planned_start_time/' + order_id,
+			method: 'POST',
+			success: function(response) {
+				if (response.status) {
+					alert(response.info);
+					if(response.success){
+						$('#website_mobile_app_menu_list_orders').click();
+					} else {}
+				} else {
+					alert('Server Unreachable.');
+				}
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				alert_error(XMLHttpRequest);
+			} ,
+		});
+	};
+
+	function onclick_button_save_edit_order(order_id) {
+		$.ajax({
+			dataType: "json",
+			url: '/mobile_app/edit_order/' + order_id,
 			method: 'POST',
 			success: function(response) {
 				if (response.status) {
@@ -517,7 +615,14 @@ $(document).ready(function () {
 							});
 							$(".quota_btn_request_change_quota").click(function(event){
 								event.stopPropagation();
-								onclick_button_request_change_quota($(this).attr("au_id"), $(this).attr("contract_id"));
+								// Dapatkan Quota dari au_id
+								$.each(quota_list, function(index, quota){
+									if(quota['au_id'] == au_id){
+										red_limit = quota['red_limit'];
+										yellow_limit = quota['yellow_limit'];
+									}
+								});
+								onclick_button_request_change_quota($(this).attr("au_id"), $(this).attr("contract_id"), yellow_limit, red_limit);
 							});
 							$('#dialog_request_quota_container').click(function(event){
 								event.stopPropagation();
@@ -682,113 +787,105 @@ $(document).ready(function () {
 				});
 			}
 		};
+	};
 
-		function onclick_button_request_change_quota(au_id, contract_id) {
-			var red_limit = 0;
-			var yellow_limit = 0;
+	function onclick_button_request_change_quota(au_id, contract_id, yellow_limit, red_limit) {
+		var red_limit = 0;
+		var yellow_limit = 0;
 
-			// Dapatkan Quota dari au_id
-			$.each(quota_list, function(index, quota){
-				if(quota['au_id'] == au_id){
-					red_limit = quota['red_limit'];
-					yellow_limit = quota['yellow_limit'];
-				}
-			});
+		//Render Dialog
+		$("#dialog_request_quota_container", self).html(qweb.render('dialog_request_change_quota',{
+			'red_limit' : red_limit,
+			'yellow_limit' : yellow_limit
+		}));
 
-			//Render Dialog
-			$("#dialog_request_quota_container", self).html(qweb.render('dialog_request_change_quota',{
-				'red_limit' : red_limit,
-				'yellow_limit' : yellow_limit
-			}));
+		$("#longevity_month").prop('checked', true);
+		$("#new_amount_yellow").html(yellow_limit);
+		$("#new_amount_red").html(red_limit);
 
-			$("#longevity_month").prop('checked', true);
-			$("#new_amount_yellow").html(yellow_limit);
-			$("#new_amount_red").html(red_limit);
+		// Tampilkan Dialog
+		var modal = $("#myModalChangeQuota");
+		modal.css("display", "block");
 
-			// Tampilkan Dialog
-			var modal = $("#myModalChangeQuota");
-			modal.css("display", "block");
+		// Button Close Dialog
+		$(".close_dialog").click(function(event) {
+			modal.css("display", "none");
+		});
 
-			// Button Close Dialog
-			$(".close_dialog").click(function(event) {
-            	modal.css("display", "none");
-			});
+		// Onchange input amount yellow_limit, new = old + new_amount
+		$("#amount_yellow_dialog").change(function() {
+			old_amount = parseInt($("#old_amount_yellow").html());
+			new_amount = parseInt($("#amount_yellow_dialog").val());
+			$("#new_amount_yellow").html(new_amount + old_amount);
+		 });
 
-			// Onchange input amount yellow_limit, new = old + new_amount
-			$("#amount_yellow_dialog").change(function() {
-				old_amount = parseInt($("#old_amount_yellow").html());
-				new_amount = parseInt($("#amount_yellow_dialog").val());
-				$("#new_amount_yellow").html(new_amount + old_amount);
-             });
+		// Onchange input amount red_limit, new = old + new_amount
+		$("#amount_red_dialog").change(function() {
+			old_amount = parseInt($("#old_amount_red").html());
+			new_amount = parseInt($("#amount_red_dialog").val());
+			$("#new_amount_red").html(new_amount + old_amount);
+		});
 
-			// Onchange input amount red_limit, new = old + new_amount
-            $("#amount_red_dialog").change(function() {
-				old_amount = parseInt($("#old_amount_red").html());
-				new_amount = parseInt($("#amount_red_dialog").val());
-				$("#new_amount_red").html(new_amount + old_amount);
-			});
+		// Button Request Quota Dialog
+		$(".dialog_quota_change_button_request").click(function(event) {
+			oldYellow = parseInt($("#old_amount_yellow").html());
+			oldRed = parseInt($("#old_amount_red").html());
+			newYellow = parseInt($("#new_amount_yellow").html());
+			newRed = parseInt($("#new_amount_red").html());
 
-			// Button Request Quota Dialog
-			$(".dialog_quota_change_button_request").click(function(event) {
-				oldYellow = parseInt($("#old_amount_yellow").html());
-				oldRed = parseInt($("#old_amount_red").html());
-				newYellow = parseInt($("#new_amount_yellow").html());
-				newRed = parseInt($("#new_amount_red").html());
-
-				if (oldYellow === newYellow && oldRed === newRed) {
-					alert("Please Submit At Least One Request"); return;
-				} else if (newYellow <= 0) {
-					alert("The new value of yellow limit can not be less nor equal zero"); return;
-				} else if (newRed <= 0) {
-					alert("The new value of red limit can not be less nor equal zero"); return;
-				} else if (newRed == newYellow) {
-					alert("Yellow and Red limit can\'t have same value"); return;
-				} else if (newRed < newYellow) {
-					alert("Red limit cannot be less than yellow limit"); return;
-				}
-
-				var req_longevity = 'temporary';
-				if ($("#longevity_permanent").is(":checked")) {
-                    req_longevity = 'permanent';
-                }
-
-				// Buat Data Untuk Request Quota
-				var request_quota_json = {
-					'customer_contract_id': contract_id,
-					'allocation_unit_id': au_id,
-					//'request_by': $('#create_order_info_unit').val(),
-					'request_longevity': req_longevity,
-					'new_yellow_limit': newYellow,
-					'new_red_limit': newRed
-				};
-
-				// Request DataBase untuk save
-                $.ajax({
-					dataType: "json",
-					url: '/mobile_app/request_quota_changes/' +  JSON.stringify(request_quota_json),
-					method: 'POST',
-					success: function(response) {
-						if (response.status) {
-							alert(response.info);
-							if(response.success){
-								modal.css("display", "none");
-							}
-						} else {
-							alert('Server Unreachable.');
-						}
-					},
-					error: function(XMLHttpRequest, textStatus, errorThrown) {
-						alert_error(XMLHttpRequest);
-					},
-				});
-            });
-
-			// Jika Click Selain di Daerah dialog, maka tutup dialog
-			window.onclick = function(event) {
-				if (event.target == modal.get(0)) {
-					modal.css("display", "none");
-				}
+			if (oldYellow === newYellow && oldRed === newRed) {
+				alert("Please Submit At Least One Request"); return;
+			} else if (newYellow <= 0) {
+				alert("The new value of yellow limit can not be less nor equal zero"); return;
+			} else if (newRed <= 0) {
+				alert("The new value of red limit can not be less nor equal zero"); return;
+			} else if (newRed == newYellow) {
+				alert("Yellow and Red limit can\'t have same value"); return;
+			} else if (newRed < newYellow) {
+				alert("Red limit cannot be less than yellow limit"); return;
 			}
-		};
+
+			var req_longevity = 'temporary';
+			if ($("#longevity_permanent").is(":checked")) {
+				req_longevity = 'permanent';
+			}
+
+			// Buat Data Untuk Request Quota
+			var request_quota_json = {
+				'customer_contract_id': contract_id,
+				'allocation_unit_id': au_id,
+				//'request_by': $('#create_order_info_unit').val(),
+				'request_longevity': req_longevity,
+				'new_yellow_limit': newYellow,
+				'new_red_limit': newRed
+			};
+
+			// Request DataBase untuk save
+			$.ajax({
+				dataType: "json",
+				url: '/mobile_app/request_quota_changes/' +  JSON.stringify(request_quota_json),
+				method: 'POST',
+				success: function(response) {
+					if (response.status) {
+						alert(response.info);
+						if(response.success){
+							modal.css("display", "none");
+						}
+					} else {
+						alert('Server Unreachable.');
+					}
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					alert_error(XMLHttpRequest);
+				},
+			});
+		});
+
+		// Jika Click Selain di Daerah dialog, maka tutup dialog
+		window.onclick = function(event) {
+			if (event.target == modal.get(0)) {
+				modal.css("display", "none");
+			}
+		}
 	};
 });

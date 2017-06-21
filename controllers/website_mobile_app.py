@@ -274,6 +274,7 @@ class website_mobile_app(http.Controller):
 				classification = 'running'
 			else:
 				classification = 'history'
+			yellow_limit = 0
 			red_limit = 0
 			if order_data.over_quota_status in ['warning','approval']:
 				quota_obj = http.request.env['foms.contract.quota']
@@ -285,6 +286,7 @@ class website_mobile_app(http.Controller):
 				if len(quota_ids) > 0:
 					quota_data = quota_obj.browse(quota_ids[0].id)
 					red_limit = quota_data.red_limit
+					yellow_limit = quota_data.yellow_limit
 			maintained_by = order_data.customer_contract_id.usage_allocation_maintained_by
 			result[classification].append({
 				'id': order_data.id,
@@ -306,7 +308,10 @@ class website_mobile_app(http.Controller):
 				'over_quota_status': order_data.over_quota_status,
 				'order_usage': order_data.alloc_unit_usage,
 				'red_limit': red_limit,
+				'yellow_limit': yellow_limit,
 				'maintained_by': maintained_by,
+				'au_id': order_data.alloc_unit_id.id,
+				'contract_id': order_data.customer_contract_id.id,
 			});
 		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
 		result['ready']   = sorted(result['ready'],   key=lambda order: order['request_date'], reverse=True)
@@ -352,6 +357,57 @@ class website_mobile_app(http.Controller):
 			return json.dumps({
 				'status': 'ok',
 				'info': _('Rejecting Order Failed'),
+				'success': False,
+			})
+	
+	@http.route('/mobile_app/change_planned_start_time/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_change_planned_start_time(self, data, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		result = handler_obj.change_planned_start_time(int(data))
+		if result:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Order Approved'),
+				'success': True,
+			})
+		else:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Approving Order Failed'),
+				'success': False,
+			})
+	
+	@http.route('/mobile_app/edit_order/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_approve_order(self, data, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		result = handler_obj.edit_order(int(data))
+		if result:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Order Approved'),
+				'success': True,
+			})
+		else:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Approving Order Failed'),
+				'success': False,
+			})
+	
+	@http.route('/mobile_app/cancel_order/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_cancel_order(self, data, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		result = handler_obj.cancel_order(int(data))
+		if result:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Order Approved'),
+				'success': True,
+			})
+		else:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Approving Order Failed'),
 				'success': False,
 			})
 		
@@ -800,6 +856,20 @@ class website_mobile_app_handler(osv.osv):
 		order_obj = self.pool.get('foms.order')
 		return order_obj.write(cr, uid, [order_id], {
 			'state': 'rejected',
+		}, context=context)
+	
+	def change_planned_start_time(self, cr, uid, order_id, context={}):
+		order_obj = self.pool.get('foms.order')
+		pass
+	
+	def edit_order(self, cr, uid, order_id, context={}):
+		order_obj = self.pool.get('foms.order')
+		pass
+	
+	def cancel_order(self, cr, uid, order_id, context={}):
+		order_obj = self.pool.get('foms.order')
+		return order_obj.write(cr, uid, [order_id], {
+			'state': 'canceled',
 		}, context=context)
 	
 	def get_shuttle_schedules(self, cr, uid, contract_id):

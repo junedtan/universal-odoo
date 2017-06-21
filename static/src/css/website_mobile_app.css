@@ -209,3 +209,8 @@ div.row_hoverable{
 	margin-top: -15px;
 	overflow: hidden;
 }
+
+#btn_add_passenger{
+display: block;
+margin: auto;
+}

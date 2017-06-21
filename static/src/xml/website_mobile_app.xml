@@ -6,7 +6,7 @@
 	<t t-name="website_mobile_app_create_order">
 		<div class="full_height container universal_website_mobile_app">
 			<!-- Information -->
-			<div class="col-md-6">
+			<div class="col-md-12 col-xs-12">
 				<t t-call="website_mobile_app_create_order_information_basic"/>
 				<t t-if="user_group == 'booker'">
 					<t t-call="website_mobile_app_create_order_information_other"/>
@@ -16,38 +16,28 @@
 				</t>
 			</div>
 			<!-- Route & Passenger -->
-			<t t-if="user_group == 'booker'">
-				<div class="col-md-6">
+			<t t-if="user_group == 'booker' || user_group == 'approver'">
+				<div class="col-md-12 col-xs-12">
 					<t t-call="website_mobile_app_create_order_route"/>
 				</div>
-				<div class="col-md-6">
-					<t t-call="website_mobile_app_create_order_passenger"/>
-				</div>
-			</t>
-			<t t-if="user_group == 'approver'">
-				<div class="col-md-6">
-					<t t-call="website_mobile_app_create_order_route"/>
-				</div>
-				<div class="col-md-6">
+				<div class="col-md-10 col-xs-12">
 					<t t-call="website_mobile_app_create_order_passenger"/>
 				</div>
 			</t>
 			<!-- Time -->
-			<div class="col-md-6">
+			<div class="col-md-12">
 				<t t-call="website_mobile_app_create_order_time"/>
 			</div>
 			<!-- Button -->
 			<div class="row ml10">
-				<div class="col-md-1 form-group">
-					<button type="button" id="btn_create_order" class="btn btn-success">Create Order</button>
-				</div>
+				<button type="button" id="btn_create_order" class="btn btn-success col-md-10 col-xs-12">Create Order</button>
 			</div>
 		</div>
 	</t>
 
 	<t t-name="website_mobile_app_create_order_information_basic">
 		<h2>Information</h2>
-		<div class="form-group ml10">
+		<div class="form-group ml10 col-md-5 col-xs-12">
 			<label for="create_order_info_contract">Contract</label>
 			<select id="create_order_info_contract" class="form-control">
 				<t t-foreach="contract_datas" t-as="contract_data">
@@ -55,7 +45,7 @@
 				</t>
 			</select>
 		</div>
-		<div class="form-group ml10">
+		<div class="form-group ml10 col-md-5 col-xs-12">
 			<label for="create_order_info_fleet_type">Vehicle</label>
 			<select id="create_order_info_fleet_type" class="form-control">
 				<t t-foreach="fleet_type_datas" t-as="fleet_type_data">
@@ -66,7 +56,7 @@
 	</t>
 
 	<t t-name="website_mobile_app_create_order_information_other">
-		<div class="form-group ml10">
+		<div class="form-group ml10 col-md-5 col-xs-12">
 			<label for="create_order_info_unit">Unit</label>
 			<select id="create_order_info_unit" class="form-control">
 				<t t-foreach="units" t-as="unit">
@@ -74,7 +64,7 @@
 				</t>
 			</select>
 		</div>
-		<div class="form-group ml10">
+		<div class="form-group ml10 col-md-5 col-xs-12">
 			<label for="create_order_info_type">Type</label>
 			<select id="create_order_info_type" class="form-control">
 				<t t-foreach="order_types" t-as="order_type">
@@ -86,9 +76,9 @@
 
 	<t t-name="website_mobile_app_create_order_route">
 		<h2>Route</h2>
-		<div class="form-group ml10">
+		<div class="form-group ml10 col-md-5 col-xs-12">
 			<label for="create_order_route_from">From</label>
-			<div id="create_order_route_from">
+			<div id="create_order_route_from" class="ml10">
 				<label class="no_bold" for="create_order_route_from_area">Area</label>
 				<select id="create_order_route_from_area" class="form-control">
 					<t t-foreach="from_areas" t-as="from_area">
@@ -99,9 +89,9 @@
 				<input id="create_order_route_from_location" class="form-control" type="text"/>
 			</div>
 		</div>
-		<div class="form-group ml10">
+		<div class="form-group ml10 col-md-5 col-xs-12">
 			<label for="create_order_route_to">To</label>
-			<div id="create_order_route_to">
+			<div id="create_order_route_to" class="ml10">
 				<label class="no_bold" for="create_order_route_to_city">City</label>
 				<select id="create_order_route_to_city" class="form-control">
 					<t t-foreach="to_cities" t-as="city">
@@ -138,11 +128,11 @@
 
 	<t t-name="website_mobile_app_create_order_time">
 		<h2>Time</h2>
-		<div class="form-group ml10">
+		<div class="form-group ml10 col-md-5 col-xs-11">
 			<label for="create_order_start_planned">Start Planned</label>
 			<input id="create_order_start_planned" class="form-control" type="datetime-local" t-attf-value="{{start_planned_default}}"/>
 		</div>
-		<div class="form-group ml10">
+		<div class="form-group ml10 col-md-5 col-xs-11">
 			<label for="create_order_finish_planned">Finish Planned</label>
 			<input id="create_order_finish_planned" class="form-control" type="datetime-local" t-attf-value="{{finish_planned_default}}"/>
 		</div>

@@ -271,6 +271,7 @@ class website_mobile_app(http.Controller):
 				'id': order_data.id,
 				'name': order_data.name,
 				'state': order_data.state,
+				'pin': order_data.pin,
 				'state_name': dict(_ORDER_STATE).get(order_data.state, ''),
 				'request_date':  datetime.strptime(order_data.request_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
 				'start_planned_date': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
@@ -283,6 +284,7 @@ class website_mobile_app(http.Controller):
 				'dest_area_name': order_data.dest_area_id.name,
 				'service_type': order_data.service_type,
 				'order_by_name': order_data.order_by.name,
+				'over_quota_status': order_data.over_quota_status,
 			});
 		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
 		result['ready']   = sorted(result['ready'],   key=lambda order: order['request_date'], reverse=True)

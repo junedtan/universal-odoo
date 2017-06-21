@@ -230,8 +230,8 @@
 										<t t-if="order.over_quota_status == 'warning'">
 											<div class="red_text">
 												Approving this order will lead to over quota by
-
-												above
+												<t t-esc="order.order_usage"/>
+												above <t t-esc="order.red_limit"/>
 											</div>
 										</t>
 										<button type="button" t-attf-id_order = "{{order.id}}" id="btn_approve_order" class="btn btn-success col-md-1 col-xs-4">Approve</button>

@@ -364,6 +364,7 @@ $(document).ready(function () {
 			'pin': order_data.pin,
 			'state_name': order_data.state_name,
 			'request_date':  order_data.request_date,
+			'order_by_name':  order_data.order_by_name,
 			'start_planned_date': order_data.start_planned_date,
 			'finish_planned_date':  order_data.finish_planned_date,
 			'assigned_vehicle_name': order_data.assigned_vehicle_name,
@@ -373,6 +374,7 @@ $(document).ready(function () {
 			'dest_location': order_data.dest_location,
 			'dest_area_name': order_data.dest_area_name,
 			'service_type': order_data.service_type,
+			'service_type_name': order_data.service_type_name,
 			'order_by_name': order_data.order_by_name,
 			'over_quota_status': order_data.over_quota_status,
 			'order_usage': order_data.alloc_unit_usage,
@@ -380,7 +382,11 @@ $(document).ready(function () {
 			'yellow_limit': order_data.yellow_limit,
 			'maintained_by': order_data.maintained_by,
 			'au_id': order_data.au_id,
+			'au_name': order_data.au_name,
+			'list_passenger' : order_data.list_passenger_name,
 			'contract_id': order_data.contract_id,
+			'contract_name': order_data.contract_name,
+			'type': order_data.type,
 		}));
 
 		// Tampilkan Dialog

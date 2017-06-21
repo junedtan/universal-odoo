@@ -884,13 +884,63 @@
 						<t t-esc="name"/>
 					</div>
 					<table class="table table-striped ">
+						<t t-if="origin_location || dest_location">
+							<tr> <td class = "header_detail_order">Route</td> </tr>
+						</t>
+						<t t-if="origin_location">
+							<tr>
+								<td>From :</td>
+								<td><t t-esc="origin_location"/> - <t t-esc="origin_area_name"/></td>
+							</tr>
+						</t>
+						<t t-if="dest_location">
+							<tr>
+								<td>To :</td>
+								<td><t t-esc="dest_location"/> - <t t-esc="dest_area_name"/></td>
+							</tr>
+						</t>
+						<t t-if="service_type != 'full_day'">
+							<tr> <td class = "header_detail_order">Passenger</td> </tr>
+							<t t-if="service_type == 'by_order'">
+								<tr>
+									<td>Unit</td>
+									<td><t t-esc="au_name"/></td>
+								</tr>
+							</t>
+							<tr>
+								<td>Passenger</td>
+							</tr>
+							<t t-foreach="list_passenger" t-as="passenger">
+								<tr> <t t-esc="passenger.name"/> <t t-if="passenger.phone"> - <t t-esc="passenger.phone"/></t> </tr>
+							</t>
+						</t>
+						<tr> <td class = "header_detail_order">Information</td> </tr>
 						<tr>
-							<td>Route</td>
+							<td>Contract</td>
+							<td><t t-esc="contract_name"/></td>
 						</tr>
 						<tr>
-							<td>From :</td>
-							<td><t t-esc="origin_location"/></td>
-							<td><t t-esc="origin_area_name"/></td>
+							<td>Service Type</td>
+							<td><t t-esc="service_type_name"/></td>
+						</tr>
+						<t t-if="type">
+							<tr>
+								<td>Type</td>
+								<td><t t-esc="type"/></td>
+							</tr>
+						</t>
+						<tr> <td class = "header_detail_order">Status</td> </tr>
+						<tr>
+							<td>State</td>
+							<td><t t-esc="state"/></td>
+						</tr>
+						<tr>
+							<td>Requested Date</td>
+							<td><t t-esc="request_date"/></td>
+						</tr>
+						<tr>
+							<td>Request By</td>
+							<td><t t-esc="order_by_name"/></td>
 						</tr>
 					</table>
 				</div>

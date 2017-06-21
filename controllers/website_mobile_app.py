@@ -288,6 +288,11 @@ class website_mobile_app(http.Controller):
 					red_limit = quota_data.red_limit
 					yellow_limit = quota_data.yellow_limit
 			maintained_by = order_data.customer_contract_id.usage_allocation_maintained_by
+			
+			list_passenger = []
+			for passenger in order_data.passengers:
+				list_passenger.append({'name':passenger.name, 'phone' : passenger.phone_no})
+			
 			result[classification].append({
 				'id': order_data.id,
 				'name': order_data.name,
@@ -295,6 +300,7 @@ class website_mobile_app(http.Controller):
 				'pin': order_data.pin,
 				'state_name': dict(_ORDER_STATE).get(order_data.state, ''),
 				'request_date':  datetime.strptime(order_data.request_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
+				'order_by_name': order_data.order_by.name,
 				'start_planned_date': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
 				'finish_planned_date':  datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
 				'assigned_vehicle_name': order_data.assigned_vehicle_id.name,
@@ -304,6 +310,7 @@ class website_mobile_app(http.Controller):
 				'dest_location': order_data.dest_location,
 				'dest_area_name': order_data.dest_area_id.name,
 				'service_type': order_data.service_type,
+				'service_type_name': dict(_SERVICE_TYPE).get(order_data.service_type, ''),
 				'order_by_name': order_data.order_by.name,
 				'over_quota_status': order_data.over_quota_status,
 				'order_usage': order_data.alloc_unit_usage,
@@ -311,7 +318,11 @@ class website_mobile_app(http.Controller):
 				'yellow_limit': yellow_limit,
 				'maintained_by': maintained_by,
 				'au_id': order_data.alloc_unit_id.id,
+				'au_name': order_data.alloc_unit_id.name,
+				'list_passenger' : list_passenger,
 				'contract_id': order_data.customer_contract_id.id,
+				'contract_name': order_data.customer_contract_id.name,
+				'type': order_data.order_type_by_order,
 			});
 		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
 		result['ready']   = sorted(result['ready'],   key=lambda order: order['request_date'], reverse=True)

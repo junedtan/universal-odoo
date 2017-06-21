@@ -210,6 +210,10 @@ div.row_hoverable{
 	overflow: hidden;
 }
 
+.header_detail_order{
+	color : blue
+}
+
 #btn_add_passenger{
 display: block;
 margin: auto;

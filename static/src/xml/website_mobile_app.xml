@@ -214,7 +214,7 @@
 								</t>
 							</table>
 							<div class="div_order_button">
-								<t t-if="order.user_group == 'approver'">
+								<t t-if="user_group == 'approver'">
 									<t t-if="order.state == 'new'">
 										<button type="button" t-attf-id_order = "{{order.id}}" id="btn_approve_order" class="btn btn-success col-md-1 col-xs-4">Approve</button>
 										<button type="button" t-attf-id_order = "{{order.id}}" id="btn_reject_order" class="btn btn-danger col-md-1 col-xs-4 ml10">Reject</button>

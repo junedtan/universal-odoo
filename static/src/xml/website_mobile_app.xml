@@ -225,7 +225,7 @@
 								</t>
 							</table>
 							<div class="div_order_button">
-								<t t-if="order.user_group == 'approver'">
+								<t t-if="user_group == 'approver'">
 									<t t-if="order.state == 'new'">
 										<t t-if="order.over_quota_status == 'warning'">
 											<div class="red_text">
@@ -353,21 +353,26 @@
 				<t t-foreach="contract_datas" t-as="contract">
 					<div class="list_contract clickable contract_detail" t-attf-id_contract = "{{i}}">
 						<div class="card_padding" style="pointer-events:none;">
-							<div class="list_title">
-								<b><t t-esc="contract.name"/></b>-
-								<t t-if="contract.state == 'active'">
-									<span class="green_text">
-										<t t-esc="contract.state"/>
-									</span>
-								</t>
-								<t t-if="contract.state != 'active'">
-									<span class="red_text">
-										<t t-esc="contract.state"/>
-									</span>
-								</t>
-							</div>
-							<t t-esc="contract.start_date"/> / <t t-esc="contract.end_date"/><br></br>
-							Service Type: <t t-esc="contract.service_type"/><br></br>
+							<t t-if="user_group == 'approver'">
+								<t t-esc="contract.name"/>
+							</t>
+							<t t-if="user_group != 'approver'">
+								<div class="list_title">
+									<b><t t-esc="contract.name"/></b>-
+									<t t-if="contract.state == 'active'">
+										<span class="green_text">
+											<t t-esc="contract.state"/>
+										</span>
+									</t>
+									<t t-if="contract.state != 'active'">
+										<span class="red_text">
+											<t t-esc="contract.state"/>
+										</span>
+									</t>
+								</div>
+								<t t-esc="contract.start_date"/> / <t t-esc="contract.end_date"/><br></br>
+								Service Type: <t t-esc="contract.service_type"/><br></br>
+							</t>
 						</div>
 						<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
 					</div>

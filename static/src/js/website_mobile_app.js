@@ -314,7 +314,7 @@ $(document).ready(function () {
 				contract_id = target.attr("id_contract");
 				yellow_limit = target.attr("yellow_limit");
 				red_limit = target.attr("red_limit");
-				onclick_button_request_change_quota(au_id, contract_id);
+				onclick_button_request_change_quota(au_id, contract_id, yellow_limit, red_limit);
 			});
 			$('.btn_change_planned_start_time').click(function(event) {
 				var target = $(event.target);
@@ -615,6 +615,7 @@ $(document).ready(function () {
 							});
 							$(".quota_btn_request_change_quota").click(function(event){
 								event.stopPropagation();
+								var au_id = $(this).attr("au_id");
 								// Dapatkan Quota dari au_id
 								$.each(quota_list, function(index, quota){
 									if(quota['au_id'] == au_id){
@@ -622,7 +623,7 @@ $(document).ready(function () {
 										yellow_limit = quota['yellow_limit'];
 									}
 								});
-								onclick_button_request_change_quota($(this).attr("au_id"), $(this).attr("contract_id"), yellow_limit, red_limit);
+								onclick_button_request_change_quota(au_id, $(this).attr("contract_id"), yellow_limit, red_limit);
 							});
 							$('#dialog_request_quota_container').click(function(event){
 								event.stopPropagation();
@@ -790,9 +791,6 @@ $(document).ready(function () {
 	};
 
 	function onclick_button_request_change_quota(au_id, contract_id, yellow_limit, red_limit) {
-		var red_limit = 0;
-		var yellow_limit = 0;
-
 		//Render Dialog
 		$("#dialog_request_quota_container", self).html(qweb.render('dialog_request_change_quota',{
 			'red_limit' : red_limit,

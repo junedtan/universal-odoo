@@ -234,8 +234,21 @@
 												above <t t-esc="order.red_limit"/>
 											</div>
 										</t>
-										<button type="button" t-attf-id_order = "{{order.id}}" id="btn_approve_order" class="btn btn-success col-md-1 col-xs-4">Approve</button>
-										<button type="button" t-attf-id_order = "{{order.id}}" id="btn_reject_order" class="btn btn-danger col-md-1 col-xs-4 ml10">Reject</button>
+										<t t-if="order.over_quota_status != 'approval'">
+											<button type="button" t-attf-id_order = "{{order.id}}" id="btn_approve_order" class="btn btn-success col-md-1 col-xs-4">Approve</button>
+											<button type="button" t-attf-id_order = "{{order.id}}" id="btn_reject_order" class="btn btn-danger col-md-1 col-xs-4 ml10">Reject</button>
+										</t>
+										<t t-if="order.over_quota_status == 'approval'">
+											<t t-if="order.maintained_by == 'customer'">
+												<button type="button" t-attf-id_order = "{{order.id}}" id="btn_reject_order" class="btn btn-danger col-md-1 col-xs-4 ml10">Reject</button>
+												<button type="button" t-attf-id_order = "{{order.id}}" id="btn_add_quota" class="btn btn-success col-md-1 col-xs-4 ml10">Add Quota</button>
+											</t>
+											<t t-if="order.maintained_by != 'customer'">
+												<div class="red_text">
+													Please contact PT Universal to add your quota
+												</div>
+											</t>
+										</t>
 									</t>
 								</t>
 								<t t-if="user_group != 'pic'">

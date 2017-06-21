@@ -285,6 +285,7 @@ class website_mobile_app(http.Controller):
 				if len(quota_ids) > 0:
 					quota_data = quota_obj.browse(quota_ids[0].id)
 					red_limit = quota_data.red_limit
+			maintained_by = order_data.customer_contract_id.usage_allocation_maintained_by
 			result[classification].append({
 				'id': order_data.id,
 				'name': order_data.name,
@@ -305,6 +306,7 @@ class website_mobile_app(http.Controller):
 				'over_quota_status': order_data.over_quota_status,
 				'order_usage': order_data.alloc_unit_usage,
 				'red_limit': red_limit,
+				'maintained_by': maintained_by,
 			});
 		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
 		result['ready']   = sorted(result['ready'],   key=lambda order: order['request_date'], reverse=True)

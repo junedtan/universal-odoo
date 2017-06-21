@@ -14,6 +14,16 @@ import locale
 import pytz
 from datetime import datetime, date
 
+_CONTRACT_STATE = [
+	('proposed','Proposed'),
+	('confirmed','Confirmed'),
+	('planned','Planned'),
+	('active','Active'),
+	('prolonged','Prolonged'),
+	('terminated','Terminated'),
+	('finished','Finished')
+]
+
 _ORDER_STATE = [
 	('new','New'),
 	('rejected','Rejected'),
@@ -197,6 +207,7 @@ class website_mobile_app(http.Controller):
 				'shuttle_schedules': shuttle_arr,
 				'route_from': route_from_arr,
 				'state': contract_data.state,
+				'state_name': dict(_CONTRACT_STATE).get(contract_data.state, ''),
 				'start_date': datetime.strptime(contract_data.start_date,'%Y-%m-%d').strftime('%d-%m-%Y'),
 				'end_date': datetime.strptime(contract_data.end_date,'%Y-%m-%d').strftime('%d-%m-%Y'),
 				'service_type': dict(_SERVICE_TYPE).get(contract_data.service_type, ''),

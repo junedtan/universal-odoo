@@ -343,12 +343,12 @@
 									<b><t t-esc="contract.name"/></b>-
 									<t t-if="contract.state == 'active'">
 										<span class="green_text">
-											<t t-esc="contract.state"/>
+											<t t-esc="contract.state_name"/>
 										</span>
 									</t>
 									<t t-if="contract.state != 'active'">
 										<span class="red_text">
-											<t t-esc="contract.state"/>
+											<t t-esc="contract.state_name"/>
 										</span>
 									</t>
 								</div>

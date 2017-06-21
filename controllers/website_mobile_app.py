@@ -355,18 +355,20 @@ class website_mobile_app(http.Controller):
 	
 	@http.route('/mobile_app/change_planned_start_time/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_change_planned_start_time(self, data, **kwargs):
+		order_data = json.loads(data)
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		result = handler_obj.change_planned_start_time(int(data))
+		new_start_date = datetime.strptime(order_data['new_planned_start_time'] if order_data['new_planned_start_time'] else '', '%Y-%m-%dT%H:%M:%S')
+		result = handler_obj.change_planned_start_time(int(order_data['order_id']), new_start_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT))
 		if result:
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Order Approved'),
+				'info': _('Planned Start Time Changed'),
 				'success': True,
 			})
 		else:
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Approving Order Failed'),
+				'info': _('Changing Planned Start Time Failed'),
 				'success': False,
 			})
 	
@@ -377,13 +379,13 @@ class website_mobile_app(http.Controller):
 		if result:
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Order Approved'),
+				'info': _('Order Edited'),
 				'success': True,
 			})
 		else:
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Approving Order Failed'),
+				'info': _('Editing Order Failed'),
 				'success': False,
 			})
 	
@@ -394,13 +396,13 @@ class website_mobile_app(http.Controller):
 		if result:
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Order Approved'),
+				'info': _('Order Canceled'),
 				'success': True,
 			})
 		else:
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Approving Order Failed'),
+				'info': _('Canceling Order Failed'),
 				'success': False,
 			})
 		
@@ -851,9 +853,11 @@ class website_mobile_app_handler(osv.osv):
 			'state': 'rejected',
 		}, context=context)
 	
-	def change_planned_start_time(self, cr, uid, order_id, context={}):
+	def change_planned_start_time(self, cr, uid, order_id, new_start_planned_date, context={}):
 		order_obj = self.pool.get('foms.order')
-		pass
+		return order_obj.write(cr, uid, [order_id], {
+			'start_planned_date': new_start_planned_date,
+		}, context=context)
 	
 	def edit_order(self, cr, uid, order_id, context={}):
 		order_obj = self.pool.get('foms.order')

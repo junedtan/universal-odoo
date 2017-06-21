@@ -310,7 +310,7 @@ $(document).ready(function () {
 			$('.btn_change_planned_start_time').click(function(event) {
 				var target = $(event.target);
 				order_id = target.attr("id_order");
-				onclick_button_change_planned_start_time(order_id);
+				onclick_button_change_planned_start_time(order_id, response['list_order']);
 			});
 			$('.btn_edit_order').click(function(event) {
 				var target = $(event.target);
@@ -367,8 +367,27 @@ $(document).ready(function () {
 		});
 	};
 
-	function onclick_button_change_planned_start_time(order_id) {
-
+	function onclick_button_change_planned_start_time(order_id, order_datas) {
+		filtered_order_datas = [];
+		filtered_order_datas.push.apply(filtered_order_datas, order_datas['pending']);
+		filtered_order_datas.push.apply(filtered_order_datas, order_datas['ready']);
+		$.each(filtered_order_datas, function(index, order_data) {
+			if(parseInt(order_data['id']) === parseInt(order_id)) {
+				$("#change_planned_start_time", self).html(qweb.render('website_mobile_app_change_planned_start_time',{
+					'order_id': order_id,
+					'planned_start_time_old': new Date().addHours(1).toDatetimeString(),
+				}));
+				$('.btn_save_change_order').click(function(event) {
+					var target = $(event.target);
+					order_id = target.attr("id_order");
+					onclick_button_save_change_planned_start_time(order_id);
+				});
+				$('.btn_cancel_change_order').click(function(event) {
+					$('#change_planned_start_time').empty();
+				});
+				return false;
+			}
+		});
 	};
 
 	function onclick_button_edit_order(order_id) {
@@ -400,9 +419,13 @@ $(document).ready(function () {
 	};
 
 	function onclick_button_save_change_planned_start_time(order_id) {
+		var new_planned_start_time = $('#change_order_start_planned_new').val();
 		$.ajax({
 			dataType: "json",
-			url: '/mobile_app/change_planned_start_time/' + order_id,
+			url: '/mobile_app/change_planned_start_time/' + JSON.stringify({
+				'order_id': order_id,
+				'new_planned_start_time': new_planned_start_time,
+			}),
 			method: 'POST',
 			success: function(response) {
 				if (response.status) {
@@ -554,7 +577,6 @@ $(document).ready(function () {
 			$(".list_contract").click(function(event) {
 				var target = $(event.target);
 				self.index_click_contract = target.attr("id_contract");
-				console.log(self.contract_datas[self.index_click_contract].service_type)
 				$("#main_container", self).html(qweb.render('website_mobile_app_detail_contract',{
 					'contract_name': self.contract_datas[self.index_click_contract].name,
 					'user_group': self.user['user_group'],

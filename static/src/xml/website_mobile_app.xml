@@ -167,10 +167,20 @@
 					<div class="detail_container accordion_detail" >
 						<t t-foreach="order_datas[classification_value]" t-as="order">
 							<div class="list_title">
-								<b><t t-esc="order.name"/></b> - <span class="grey_text"><t t-esc="order.state"/></span>
+								<b><t t-esc="order.name"/></b> -
+								<t t-if="order.state == 'new' || order.state == 'confirmed' || order.state ==  'ready' ||
+								order.state == 'started' || order.state == 'start_confirmed' || order.state == 'resumed' ||
+								 order.state == 'finished' || order.state == 'finish_confirmed'">
+									<span class="green_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
+								</t>
+								<t t-if="order.state == 'rejected' || order.state == 'canceled'">
+									<span class="red_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
+								</t>
+								<t t-if="order.state == 'paused'">
+									<span class="orange_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
+								</t>
 							</div>
-							Requested at: <t t-esc="order.request_date"/>
-							<!--<t t-esc="order.origin_location"/> - <t t-esc="order.dest_location"/>-->
+							Requested at: <b><t t-esc="order.request_date"/></b> by <b><t t-esc="order.order_by_name"/></b>
 							<table class="table">
 								<tr>
 									<td>Time</td>
@@ -187,23 +197,21 @@
 									<td>:</td>
 									<td><t t-esc="order.assigned_vehicle_name"/></td>
 								</tr>
-								<t t-if="order.service_type == 'by_order'">
+								<t t-if="order.origin_location">
 									<tr>
 										<td>From</td>
 										<td>:</td>
 										<td>
-											<t t-if="order.origin_location">
-												<t t-esc="order.origin_location"/>
-											</t>
+											<t t-esc="order.origin_location"/> - <t t-esc="order.origin_area_name"/>
 										</td>
 									</tr>
+								</t>
+								<t t-if="order.dest_location">
 									<tr>
 										<td>To</td>
 										<td>:</td>
 										<td>
-											<t t-if="order.dest_location">
-												<t t-esc="order.dest_location"/>
-											</t>
+											<t t-esc="order.dest_location"/> - <t t-esc="order.dest_area_name"/>
 										</td>
 									</tr>
 								</t>

@@ -266,15 +266,19 @@ class website_mobile_app(http.Controller):
 			result[classification].append({
 				'id': order_data.id,
 				'name': order_data.name,
-				'state': dict(_ORDER_STATE).get(order_data.state, ''),
+				'state': order_data.state,
+				'state_name': dict(_ORDER_STATE).get(order_data.state, ''),
 				'request_date':  datetime.strptime(order_data.request_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
 				'start_planned_date': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
 				'finish_planned_date':  datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
 				'assigned_vehicle_name': order_data.assigned_vehicle_id.name,
 				'assigned_driver_name': order_data.assigned_driver_id.name,
 				'origin_location': order_data.origin_location,
+				'origin_area_name': order_data.origin_area_id.name,
 				'dest_location': order_data.dest_location,
+				'dest_area_name': order_data.dest_area_id.name,
 				'service_type': order_data.service_type,
+				'order_by_name': order_data.order_by.name,
 			});
 		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
 		result['ready']   = sorted(result['ready'],   key=lambda order: order['request_date'], reverse=True)

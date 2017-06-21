@@ -450,6 +450,7 @@ $(document).ready(function () {
 			}
 			self.contract_datas = response['list_contract'];
 			$("#main_container", self).html(qweb.render('website_mobile_app_list_contract',{
+				'user_group': self.user['user_group'],
 				'contract_datas': self.contract_datas,
 			}));
 			$(".list_contract").click(function(event) {

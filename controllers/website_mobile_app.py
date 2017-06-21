@@ -205,7 +205,13 @@ class website_mobile_app(http.Controller):
 				'by_order_minimum_minutes' : contract_data.by_order_minimum_minutes,
 			});
 		result = sorted(result, key=lambda contract: contract['name'])
-		return json.dumps(result)
+		# User
+		response_user_group = self.mobile_app_get_user_group()
+		data_user_group = json.loads(response_user_group.data)
+		return json.dumps({
+			'user_group': data_user_group['user_group'],
+			'list_contract': result,
+		})
 	
 	@http.route('/mobile_app/create_order/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_create_order(self, data, **kwargs):
@@ -370,33 +376,30 @@ class website_mobile_app(http.Controller):
 			status = 'OK'
 			response_user_group = self.mobile_app_get_user_group()
 			data_user_group = json.loads(response_user_group.data)
-			is_approver = False
-			if data_user_group['user_group'] == 'approver':
-				is_approver = True
 			if quota and quota.red_limit and quota.current_usage:
 				if quota.current_usage > quota.red_limit:
 					status = 'Overlimit'
 				elif quota.current_usage > quota.yellow_limit:
 					status = 'Warning'
-			locale.setlocale( locale.LC_ALL, locale= "Indonesian")
+			locale.setlocale(locale.LC_ALL, locale= "Indonesian")
 			if total_count > 1:
 				plural = 'times'
 			quota_from_arr.append({
+				'user_group': data_user_group['user_group'],
 				'id': quota.id if quota else 0,
-				'au_id' : au.id,
-				'contract_id' : au.header_id.id,
-				'yellow_limit' : quota.yellow_limit if quota else 0,
-				'red_limit' : quota.red_limit if quota else 0,
+				'au_id': au.id,
+				'contract_id': au.header_id.id,
+				'yellow_limit': quota.yellow_limit if quota else 0,
+				'red_limit': quota.red_limit if quota else 0,
 				'allocation_unit_name': au.name,
-				'control_level' : au.header_id.usage_control_level,
-				'total_request_nominal' : locale.currency(total_nominal, grouping= True),
-				'total_request_count' : total_count,
-				'current_usage' : quota.current_usage if quota and quota.current_usage else 0,
-				'red_limit' : quota.red_limit if quota and quota.red_limit else 0,
-				'plural' : plural,
-				'status' : status,
+				'control_level': au.header_id.usage_control_level,
+				'total_request_nominal': locale.currency(total_nominal, grouping= True),
+				'total_request_count': total_count,
+				'current_usage': quota.current_usage if quota and quota.current_usage else 0,
+				'red_limit': quota.red_limit if quota and quota.red_limit else 0,
+				'plural': plural,
+				'status': status,
 				'progress_exist': 'show' if quota and quota.red_limit and quota.current_usage else 'hide',
-				'is_approver' : is_approver,
 			})
 		return json.dumps({
 			'status': 'ok',

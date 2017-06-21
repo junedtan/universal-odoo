@@ -332,12 +332,16 @@
 	<t t-name="website_mobile_app_detail_contract">
 		<h3 class="contract_detail"><b><t t-esc="contract_name"/></b></h3>
 		<div class="row contract_detail" id="menu_detail_contract_container">
-			<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
-				id="website_mobile_app_menu_info_contract">Info</div>
+			<t t-if="user_group == 'pic'">
+				<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
+					id="website_mobile_app_menu_info_contract">Info</div>
+			</t>
 			<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
 				id="website_mobile_app_menu_usage_control">Usage Control</div>
-			<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
-				id="website_mobile_app_menu_quota_changes">Quota Changes</div>
+			<t t-if="user_group == 'pic'">
+				<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
+					id="website_mobile_app_menu_quota_changes">Quota Changes</div>
+			</t>
 		</div>
 
 		<div class="row contract_detail" id="detail_contract_main_container"/>
@@ -446,7 +450,7 @@
 						</div>
 						<div style="overflow:auto;">
 							<!-- TODO -->
-							<!--<t t-if="is_approver">-->
+							<!--<t t-if="user_group == 'approver'">-->
 								<div type="button" t-attf-au_id="{{quota.au_id}}" t-attf-contract_id="{{quota.contract_id}}"
 										class="quota_btn_request_change_quota btn btn-success col-md-2 col-xs-4 mt16 ml10 contract_usage_control">
 									Change Quota

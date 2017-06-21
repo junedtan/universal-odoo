@@ -7,7 +7,9 @@ $(document).ready(function () {
 
 	var contract_datas = [];
 	var to_cities = [];
-	var user = {};
+	var user = {
+		user_group: 'undefined',
+	};
 	var index_click_contract;
 	var current_au_name;
 
@@ -382,23 +384,30 @@ $(document).ready(function () {
 
 	$('#website_mobile_app_menu_list_contract').click(function() {
 		onclick_menu('#website_mobile_app_menu_list_contract');
-			$.get('/mobile_app/fetch_contracts', null, function(data){
-				var response = JSON.parse(data);
-                self.contract_datas = response;
-				$("#main_container", self).html(qweb.render('website_mobile_app_list_contract',{
-					'contract_datas': JSON.parse(data),
+		$.get('/mobile_app/fetch_contracts', null, function(data){
+			var response = JSON.parse(data);
+			self.user = {
+				user_group: response['user_group']
+			}
+			self.contract_datas = response['list_contract'];
+			$("#main_container", self).html(qweb.render('website_mobile_app_list_contract',{
+				'contract_datas': self.contract_datas,
+			}));
+			$(".list_contract").click(function(event) {
+				var target = $(event.target);
+				self.index_click_contract = target.attr("id_contract");
+				$("#main_container", self).html(qweb.render('website_mobile_app_detail_contract',{
+					'contract_name': self.contract_datas[self.index_click_contract].name,
+					'user_group': self.user['user_group'],
 				}));
-				$(".list_contract").click(function(event) {
-					var target = $(event.target);
-					self.index_click_contract = target.attr("id_contract");
-					console.log(self.index_click_contract);
-					$("#main_container", self).html(qweb.render('website_mobile_app_detail_contract',{
-						'contract_name': self.contract_datas[self.index_click_contract].name
-					}));
-					setOnClickButtonMenuDetailContract();
+				setOnClickButtonMenuDetailContract();
+				if(self.user['user_group'] === 'pic') {
 					$('#website_mobile_app_menu_info_contract').click();
-				});
-       		});
+				} else {
+					$('#website_mobile_app_menu_usage_control').click();
+				}
+			});
+		});
 	});
 
 	function setOnClickButtonMenuDetailContract(){

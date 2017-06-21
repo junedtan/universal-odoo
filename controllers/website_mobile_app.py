@@ -547,7 +547,7 @@ class website_mobile_app(http.Controller):
 			if data_user_group['user_group'] == 'approver' and au and \
 					au.header_id.service_type == 'by_order' and \
 					au.header_id.usage_allocation_maintained_by == 'customer' and \
-					au.header_id.usage_control_level == 'no_control':
+					au.header_id.usage_control_level != 'no_control':
 				button_change_exist = 'show'
 			quota_from_arr.append({
 				'user_group': data_user_group['user_group'],

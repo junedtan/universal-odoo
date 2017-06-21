@@ -26,6 +26,7 @@ $(document).ready(function () {
 		$('#website_mobile_app_menu_info_contract').removeClass('active');
 		$('#website_mobile_app_menu_usage_control').removeClass('active');
 		$('#website_mobile_app_menu_quota_changes').removeClass('active');
+		$('#website_mobile_app_menu_shuttle').removeClass('active');
 		$(id).addClass('active');
     };
 
@@ -580,6 +581,39 @@ $(document).ready(function () {
 				});
 				$(".quota_change_btn_reject").click(function(){
 					onclick_button_change_log_reject($(this).attr("value"));
+				});
+			});
+		});
+
+		//Onclick menu shuttle
+		$('#website_mobile_app_menu_shuttle').click(function() {
+			$.get('/mobile_app/fetch_shuttle_schedules/' + JSON.stringify({
+				'from': 'contract',
+				'id': self.contract_datas[self.index_click_contract].id,
+			}), null, function(data){
+				onclick_detail_contract_menu('#website_mobile_app_menu_shuttle');
+				shuttle_schedules_by_days = JSON.parse(data);
+				days = {
+					'Monday': '0',
+					'Tuesday': '1',
+					'Wednesday': '2',
+					'Thursday': '3',
+					'Friday': '4',
+					'Saturday': '5',
+					'Sunday': '6',
+				}
+				$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_list_shuttle_schedules',{
+					'days': days,
+					'shuttle_datas': shuttle_schedules_by_days,
+				}));
+				$(".accordion").click(function(event) {
+					$(this).toggleClass("active");
+					var detail = $(this).next();
+					if (detail.css("maxHeight") != "0px"){
+						detail.css("maxHeight", "0px");
+					} else {
+						detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
+					}
 				});
 			});
 		});

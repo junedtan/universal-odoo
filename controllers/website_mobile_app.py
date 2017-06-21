@@ -304,6 +304,36 @@ class website_mobile_app(http.Controller):
 			contract_data['shuttle_schedules_by_days'] = contract_shuttle_days
 		return json.dumps(contract_datas)
 	
+	@http.route('/mobile_app/fetch_shuttle_schedules/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_fetch_shuttle_schedules(self, data, **kwargs):
+		parameters = json.loads(data)
+		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		shuttle_schedules = handler_obj.get_shuttle_schedules(parameters['id'])
+		contract_shuttle_days = {
+			'0': [], '1': [], '2': [], '3': [], '4': [], '5': [], '6': [],
+		};
+		for shuttle_schedule in shuttle_schedules:
+			driver_name = ''
+			for fleet_data in shuttle_schedule.header_id.car_drivers:
+				if fleet_data.fleet_vehicle_id.id == shuttle_schedule.fleet_vehicle_id.id:
+					driver_name = fleet_data.driver_id.name
+			shuttle_schedule_detail = {
+				'id': shuttle_schedule.id,
+				'name': shuttle_schedule.route_id.name,
+				'dayofweek': shuttle_schedule.dayofweek,
+				'departure_time': shuttle_schedule.departure_time,
+				# 'arrival_time': shuttle_schedule.arrival_time,
+				'assigned_driver_name': driver_name,
+				'assigned_vehicle_name': shuttle_schedule.fleet_vehicle_id.name,
+			}
+			if shuttle_schedule['dayofweek'] == 'A':
+				for day_number in contract_shuttle_days:
+					contract_shuttle_days[day_number].append(shuttle_schedule_detail)
+			else:
+				contract_shuttle_days[shuttle_schedule['dayofweek']].append(shuttle_schedule_detail)
+		return json.dumps(contract_shuttle_days)
+	
 	@http.route('/mobile_app/fetch_contract_quota_changes/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_fetch_contract_quota_changes(self, data, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
@@ -686,3 +716,7 @@ class website_mobile_app_handler(osv.osv):
 			'confirm_date': datetime.now(),
 		}, context=context)
 	
+	def get_shuttle_schedules(self, cr, uid, contract_id):
+		shuttle_schedule_obj = self.pool.get('foms.contract.shuttle.schedule')
+		shuttle_schedule_ids = shuttle_schedule_obj.search(cr, uid, [('header_id','=',contract_id)])
+		return shuttle_schedule_obj.browse(cr, uid, shuttle_schedule_ids)

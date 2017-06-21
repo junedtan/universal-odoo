@@ -188,21 +188,16 @@
 									<td><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
 								</tr>
 								<tr>
-									<td>Driver</td>
+									<td>Fleet</td>
 									<td>:</td>
-									<td><t t-esc="order.assigned_driver_name"/></td>
-								</tr>
-								<tr>
-									<td>Vehicle</td>
-									<td>:</td>
-									<td><t t-esc="order.assigned_vehicle_name"/></td>
+									<td><t t-esc="order.assigned_driver_name"/> - <t t-esc="order.assigned_vehicle_name"/></td>
 								</tr>
 								<t t-if="order.origin_location">
 									<tr>
 										<td>From</td>
 										<td>:</td>
 										<td>
-											<t t-esc="order.origin_location"/> - <t t-esc="order.origin_area_name"/>
+											<t t-esc="order.origin_location"/> (<t t-esc="order.origin_area_name"/>)
 										</td>
 									</tr>
 								</t>
@@ -211,7 +206,7 @@
 										<td>To</td>
 										<td>:</td>
 										<td>
-											<t t-esc="order.dest_location"/> - <t t-esc="order.dest_area_name"/>
+											<t t-esc="order.dest_location"/>  (<t t-esc="order.dest_area_name"/>)
 										</td>
 									</tr>
 								</t>

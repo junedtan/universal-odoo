@@ -216,15 +216,15 @@
 							<div class="div_order_button">
 								<t t-if="user_group == 'approver'">
 									<t t-if="order.state == 'new'">
-										<button type="button" t-attf-id_order = "{{order.id}}" id="btn_approve_order" class="btn btn-success col-md-1 col-xs-4">Approve</button>
-										<button type="button" t-attf-id_order = "{{order.id}}" id="btn_reject_order" class="btn btn-danger col-md-1 col-xs-4 ml10">Reject</button>
+										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_approve_order col-md-1 col-xs-4">Approve</button>
+										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_reject_order col-md-1 col-xs-4 ml10">Reject</button>
 									</t>
 								</t>
 								<t t-if="user_group != 'pic'">
 									<t t-if="classification_value == 'pending' || classification_value == 'ready'">
-										<button type="button" id="btn_change_planned_start_time" class="btn btn-success">Change Planned Start Time</button>
-										<button type="button" id="btn_edit_order" class="btn btn-success">Edit Order</button>
-										<button type="button" id="btn_cancel_order" class="btn btn-danger">Cancel Order</button>
+										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_change_planned_start_time">Change Planned Start Time</button>
+										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_edit_order">Edit Order</button>
+										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_cancel_order">Cancel Order</button>
 									</t>
 								</t>
 							</div>

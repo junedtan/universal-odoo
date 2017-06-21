@@ -297,15 +297,30 @@ $(document).ready(function () {
 					detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
 				}
 			});
-			$('#btn_approve_order').click(function(event) {
+			$('.btn_approve_order').click(function(event) {
 				var target = $(event.target);
 				order_id = target.attr("id_order");
 				onclick_button_approve_order(order_id);
 			});
-			$('#btn_reject_order').click(function(event) {
+			$('.btn_reject_order').click(function(event) {
 				var target = $(event.target);
 				order_id = target.attr("id_order");
 				onclick_button_reject_order(order_id);
+			});
+			$('.btn_change_planned_start_time').click(function(event) {
+				var target = $(event.target);
+				order_id = target.attr("id_order");
+				onclick_button_change_planned_start_time(order_id);
+			});
+			$('.btn_edit_order').click(function(event) {
+				var target = $(event.target);
+				order_id = target.attr("id_order");
+				onclick_button_edit_order(order_id);
+			});
+			$('.btn_cancel_order').click(function(event) {
+				var target = $(event.target);
+				order_id = target.attr("id_order");
+				onclick_button_cancel_order(order_id);
 			});
 		});
 	});
@@ -335,6 +350,80 @@ $(document).ready(function () {
 		$.ajax({
 			dataType: "json",
 			url: '/mobile_app/reject_order/' + order_id,
+			method: 'POST',
+			success: function(response) {
+				if (response.status) {
+					alert(response.info);
+					if(response.success){
+						$('#website_mobile_app_menu_list_orders').click();
+					} else {}
+				} else {
+					alert('Server Unreachable.');
+				}
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				alert_error(XMLHttpRequest);
+			} ,
+		});
+	};
+
+	function onclick_button_change_planned_start_time(order_id) {
+
+	};
+
+	function onclick_button_edit_order(order_id) {
+
+	};
+
+	function onclick_button_cancel_order(order_id) {
+		var confirmation = confirm('Are you sure to cancel this order?');
+		if(confirmation === true) {
+			$.ajax({
+				dataType: "json",
+				url: '/mobile_app/cancel_order/' + order_id,
+				method: 'POST',
+				success: function(response) {
+					if (response.status) {
+						alert(response.info);
+						if(response.success){
+							$('#website_mobile_app_menu_list_orders').click();
+						} else {}
+					} else {
+						alert('Server Unreachable.');
+					}
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					alert_error(XMLHttpRequest);
+				} ,
+			});
+		}
+	};
+
+	function onclick_button_save_change_planned_start_time(order_id) {
+		$.ajax({
+			dataType: "json",
+			url: '/mobile_app/change_planned_start_time/' + order_id,
+			method: 'POST',
+			success: function(response) {
+				if (response.status) {
+					alert(response.info);
+					if(response.success){
+						$('#website_mobile_app_menu_list_orders').click();
+					} else {}
+				} else {
+					alert('Server Unreachable.');
+				}
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				alert_error(XMLHttpRequest);
+			} ,
+		});
+	};
+
+	function onclick_button_save_edit_order(order_id) {
+		$.ajax({
+			dataType: "json",
+			url: '/mobile_app/edit_order/' + order_id,
 			method: 'POST',
 			success: function(response) {
 				if (response.status) {

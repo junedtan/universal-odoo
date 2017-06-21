@@ -337,6 +337,57 @@ class website_mobile_app(http.Controller):
 				'info': _('Rejecting Order Failed'),
 				'success': False,
 			})
+	
+	@http.route('/mobile_app/change_planned_start_time/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_change_planned_start_time(self, data, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		result = handler_obj.change_planned_start_time(int(data))
+		if result:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Order Approved'),
+				'success': True,
+			})
+		else:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Approving Order Failed'),
+				'success': False,
+			})
+	
+	@http.route('/mobile_app/edit_order/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_approve_order(self, data, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		result = handler_obj.edit_order(int(data))
+		if result:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Order Approved'),
+				'success': True,
+			})
+		else:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Approving Order Failed'),
+				'success': False,
+			})
+	
+	@http.route('/mobile_app/cancel_order/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_cancel_order(self, data, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		result = handler_obj.cancel_order(int(data))
+		if result:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Order Approved'),
+				'success': True,
+			})
+		else:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Approving Order Failed'),
+				'success': False,
+			})
 		
 	@http.route('/mobile_app/fetch_contract_shuttles', type='http', auth="user", website=True)
 	def mobile_app_fetch_contract_shuttles(self, **kwargs):
@@ -783,6 +834,20 @@ class website_mobile_app_handler(osv.osv):
 		order_obj = self.pool.get('foms.order')
 		return order_obj.write(cr, uid, [order_id], {
 			'state': 'rejected',
+		}, context=context)
+	
+	def change_planned_start_time(self, cr, uid, order_id, context={}):
+		order_obj = self.pool.get('foms.order')
+		pass
+	
+	def edit_order(self, cr, uid, order_id, context={}):
+		order_obj = self.pool.get('foms.order')
+		pass
+	
+	def cancel_order(self, cr, uid, order_id, context={}):
+		order_obj = self.pool.get('foms.order')
+		return order_obj.write(cr, uid, [order_id], {
+			'state': 'canceled',
 		}, context=context)
 	
 	def get_shuttle_schedules(self, cr, uid, contract_id):

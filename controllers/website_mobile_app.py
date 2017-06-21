@@ -157,17 +157,17 @@ class website_mobile_app(http.Controller):
 		result = [];
 		for contract_data in contract_datas:
 			# Fleet
-			fleet_vehicle_arr = []
+			fleet_type_arr = []
 			for fleet_data in contract_data.car_drivers:
-				if fleet_data.fullday_user_id.id == uid:
-					fleet_vehicle_arr.append({
-						'id': fleet_data.fleet_vehicle_id.id,
-						'name': fleet_data.fleet_vehicle_id.name,
+				if contract_data.service_type != 'full_day' or fleet_data.fullday_user_id.id == uid:
+					fleet_type_arr.append({
+						'id': fleet_data.fleet_type_id.id,
+						'name': fleet_data.fleet_type_id.name,
 					})
 			# Unit
 			unit_arr = []
 			for allocation_unit in contract_data.allocation_units:
-				if uid in allocation_unit.booker_ids.ids:
+				if uid in allocation_unit.booker_ids.ids or uid in allocation_unit.approver_ids.ids:
 					unit_arr.append({
 						'id': allocation_unit.id,
 						'name': allocation_unit.name,
@@ -202,7 +202,7 @@ class website_mobile_app(http.Controller):
 			result.append({
 				'id': contract_data.id,
 				'name': contract_data.name,
-				'fleet_vehicle': fleet_vehicle_arr,
+				'fleet_type': fleet_type_arr,
 				'units': unit_arr,
 				'shuttle_schedules': shuttle_arr,
 				'route_from': route_from_arr,
@@ -274,10 +274,25 @@ class website_mobile_app(http.Controller):
 				classification = 'running'
 			else:
 				classification = 'history'
+			yellow_limit = 0
+			red_limit = 0
+			if order_data.over_quota_status in ['warning','approval']:
+				quota_obj = http.request.env['foms.contract.quota']
+				quota_ids = quota_obj.search([
+					('customer_contract_id','=',order_data.customer_contract_id.id),
+					('allocation_unit_id','=',order_data.alloc_unit_id.id),
+					('period','=',datetime.strptime(order_data.request_date,'%Y-%m-%d %H:%M:%S').strftime('%m/%Y')),
+				])
+				if len(quota_ids) > 0:
+					quota_data = quota_obj.browse(quota_ids[0].id)
+					red_limit = quota_data.red_limit
+					yellow_limit = quota_data.yellow_limit
+			maintained_by = order_data.customer_contract_id.usage_allocation_maintained_by
 			result[classification].append({
 				'id': order_data.id,
 				'name': order_data.name,
 				'state': order_data.state,
+				'pin': order_data.pin,
 				'state_name': dict(_ORDER_STATE).get(order_data.state, ''),
 				'request_date':  datetime.strptime(order_data.request_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
 				'start_planned_date': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
@@ -290,6 +305,13 @@ class website_mobile_app(http.Controller):
 				'dest_area_name': order_data.dest_area_id.name,
 				'service_type': order_data.service_type,
 				'order_by_name': order_data.order_by.name,
+				'over_quota_status': order_data.over_quota_status,
+				'order_usage': order_data.alloc_unit_usage,
+				'red_limit': red_limit,
+				'yellow_limit': yellow_limit,
+				'maintained_by': maintained_by,
+				'au_id': order_data.alloc_unit_id.id,
+				'contract_id': order_data.customer_contract_id.id,
 			});
 		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
 		result['ready']   = sorted(result['ready'],   key=lambda order: order['request_date'], reverse=True)
@@ -335,6 +357,59 @@ class website_mobile_app(http.Controller):
 			return json.dumps({
 				'status': 'ok',
 				'info': _('Rejecting Order Failed'),
+				'success': False,
+			})
+	
+	@http.route('/mobile_app/change_planned_start_time/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_change_planned_start_time(self, data, **kwargs):
+		order_data = json.loads(data)
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		new_start_date = datetime.strptime(order_data['new_planned_start_time'] if order_data['new_planned_start_time'] else '', '%Y-%m-%dT%H:%M:%S')
+		result = handler_obj.change_planned_start_time(int(order_data['order_id']), new_start_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT))
+		if result:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Planned Start Time Changed'),
+				'success': True,
+			})
+		else:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Changing Planned Start Time Failed'),
+				'success': False,
+			})
+	
+	@http.route('/mobile_app/edit_order/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_approve_order(self, data, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		result = handler_obj.edit_order(int(data))
+		if result:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Order Edited'),
+				'success': True,
+			})
+		else:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Editing Order Failed'),
+				'success': False,
+			})
+	
+	@http.route('/mobile_app/cancel_order/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_cancel_order(self, data, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		result = handler_obj.cancel_order(int(data))
+		if result:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Order Canceled'),
+				'success': True,
+			})
+		else:
+			return json.dumps({
+				'status': 'ok',
+				'info': _('Canceling Order Failed'),
 				'success': False,
 			})
 		
@@ -474,7 +549,7 @@ class website_mobile_app(http.Controller):
 			if data_user_group['user_group'] == 'approver' and au and \
 					au.header_id.service_type == 'by_order' and \
 					au.header_id.usage_allocation_maintained_by == 'customer' and \
-					au.header_id.usage_control_level == 'no_control':
+					au.header_id.usage_control_level != 'no_control':
 				button_change_exist = 'show'
 			quota_from_arr.append({
 				'user_group': data_user_group['user_group'],
@@ -614,8 +689,8 @@ class website_mobile_app_handler(osv.osv):
 		order_obj = self.pool.get('foms.order')
 		contract_id = domain.get('contract_id', '')
 		contract_id = int(contract_id.encode('ascii', 'ignore'))
-		fleet_vehicle_id = domain.get('fleet_vehicle_id', '')
-		fleet_vehicle_id = int(fleet_vehicle_id.encode('ascii', 'ignore'))
+		fleet_type_id = domain.get('fleet_type_id', '')
+		fleet_type_id = int(fleet_type_id.encode('ascii', 'ignore'))
 		unit_id = domain.get('unit_id', '')
 		unit_id = int(unit_id.encode('ascii', 'ignore'))
 		type_id = domain.get('type_id', '')
@@ -643,7 +718,7 @@ class website_mobile_app_handler(osv.osv):
 		return order_obj.create(cr, SUPERUSER_ID, {
 			'customer_contract_id': contract_id,
 			'order_by': uid,
-			'assigned_vehicle_id': fleet_vehicle_id,
+			'fleet_type_id': fleet_type_id,
 			'alloc_unit_id': unit_id,
 			'order_type_by_order': type_id,
 			
@@ -783,6 +858,22 @@ class website_mobile_app_handler(osv.osv):
 		order_obj = self.pool.get('foms.order')
 		return order_obj.write(cr, uid, [order_id], {
 			'state': 'rejected',
+		}, context=context)
+	
+	def change_planned_start_time(self, cr, uid, order_id, new_start_planned_date, context={}):
+		order_obj = self.pool.get('foms.order')
+		return order_obj.write(cr, uid, [order_id], {
+			'start_planned_date': new_start_planned_date,
+		}, context=context)
+	
+	def edit_order(self, cr, uid, order_id, context={}):
+		order_obj = self.pool.get('foms.order')
+		pass
+	
+	def cancel_order(self, cr, uid, order_id, context={}):
+		order_obj = self.pool.get('foms.order')
+		return order_obj.write(cr, uid, [order_id], {
+			'state': 'canceled',
 		}, context=context)
 	
 	def get_shuttle_schedules(self, cr, uid, contract_id):

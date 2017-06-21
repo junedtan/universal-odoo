@@ -268,9 +268,15 @@ $(document).ready(function () {
 				'Running': 'running',
 				'History': 'history',
 			}
+			var response = JSON.parse(data);
+			self.user = {
+            	user_group: response['user_group']
+            }
+
 			$("#main_container", self).html(qweb.render('website_mobile_app_list_order',{
 				'classifications': classifications,
-				'order_datas': JSON.parse(data),
+				'order_datas': response['list_order'],
+				'user_group' : self.user['user_group']
 			}));
 
 			$(".accordion").click(function(event) {

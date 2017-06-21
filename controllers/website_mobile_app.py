@@ -157,17 +157,17 @@ class website_mobile_app(http.Controller):
 		result = [];
 		for contract_data in contract_datas:
 			# Fleet
-			fleet_vehicle_arr = []
+			fleet_type_arr = []
 			for fleet_data in contract_data.car_drivers:
-				if fleet_data.fullday_user_id.id == uid:
-					fleet_vehicle_arr.append({
-						'id': fleet_data.fleet_vehicle_id.id,
-						'name': fleet_data.fleet_vehicle_id.name,
+				if contract_data.service_type != 'full_day' or fleet_data.fullday_user_id.id == uid:
+					fleet_type_arr.append({
+						'id': fleet_data.fleet_type_id.id,
+						'name': fleet_data.fleet_type_id.name,
 					})
 			# Unit
 			unit_arr = []
 			for allocation_unit in contract_data.allocation_units:
-				if uid in allocation_unit.booker_ids.ids:
+				if uid in allocation_unit.booker_ids.ids or uid in allocation_unit.approver_ids.ids:
 					unit_arr.append({
 						'id': allocation_unit.id,
 						'name': allocation_unit.name,
@@ -202,7 +202,7 @@ class website_mobile_app(http.Controller):
 			result.append({
 				'id': contract_data.id,
 				'name': contract_data.name,
-				'fleet_vehicle': fleet_vehicle_arr,
+				'fleet_type': fleet_type_arr,
 				'units': unit_arr,
 				'shuttle_schedules': shuttle_arr,
 				'route_from': route_from_arr,
@@ -687,8 +687,8 @@ class website_mobile_app_handler(osv.osv):
 		order_obj = self.pool.get('foms.order')
 		contract_id = domain.get('contract_id', '')
 		contract_id = int(contract_id.encode('ascii', 'ignore'))
-		fleet_vehicle_id = domain.get('fleet_vehicle_id', '')
-		fleet_vehicle_id = int(fleet_vehicle_id.encode('ascii', 'ignore'))
+		fleet_type_id = domain.get('fleet_type_id', '')
+		fleet_type_id = int(fleet_type_id.encode('ascii', 'ignore'))
 		unit_id = domain.get('unit_id', '')
 		unit_id = int(unit_id.encode('ascii', 'ignore'))
 		type_id = domain.get('type_id', '')
@@ -716,7 +716,7 @@ class website_mobile_app_handler(osv.osv):
 		return order_obj.create(cr, SUPERUSER_ID, {
 			'customer_contract_id': contract_id,
 			'order_by': uid,
-			'assigned_vehicle_id': fleet_vehicle_id,
+			'fleet_type_id': fleet_type_id,
 			'alloc_unit_id': unit_id,
 			'order_type_by_order': type_id,
 			

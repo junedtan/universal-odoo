@@ -14,6 +14,16 @@ import locale
 import pytz
 from datetime import datetime, date
 
+_CONTRACT_STATE = [
+	('proposed','Proposed'),
+	('confirmed','Confirmed'),
+	('planned','Planned'),
+	('active','Active'),
+	('prolonged','Prolonged'),
+	('terminated','Terminated'),
+	('finished','Finished')
+]
+
 _ORDER_STATE = [
 	('new','New'),
 	('rejected','Rejected'),
@@ -197,6 +207,7 @@ class website_mobile_app(http.Controller):
 				'shuttle_schedules': shuttle_arr,
 				'route_from': route_from_arr,
 				'state': contract_data.state,
+				'state_name': dict(_CONTRACT_STATE).get(contract_data.state, ''),
 				'start_date': datetime.strptime(contract_data.start_date,'%Y-%m-%d').strftime('%d-%m-%Y'),
 				'end_date': datetime.strptime(contract_data.end_date,'%Y-%m-%d').strftime('%d-%m-%Y'),
 				'service_type': dict(_SERVICE_TYPE).get(contract_data.service_type, ''),
@@ -474,6 +485,12 @@ class website_mobile_app(http.Controller):
 			locale.setlocale(locale.LC_ALL, locale= "Indonesian")
 			if total_count > 1:
 				plural = 'times'
+			button_change_exist = 'hide'
+			if data_user_group['user_group'] == 'approver' and au and \
+					au.header_id.service_type == 'by_order' and \
+					au.header_id.usage_allocation_maintained_by == 'customer' and \
+					au.header_id.usage_control_level == 'no_control':
+				button_change_exist = 'show'
 			quota_from_arr.append({
 				'user_group': data_user_group['user_group'],
 				'id': quota.id if quota else 0,
@@ -490,6 +507,7 @@ class website_mobile_app(http.Controller):
 				'plural': plural,
 				'status': status,
 				'progress_exist': 'show' if quota and quota.red_limit and quota.current_usage else 'hide',
+				'button_change_exist': button_change_exist,
 			})
 		return json.dumps({
 			'status': 'ok',

@@ -262,16 +262,25 @@ $(document).ready(function () {
 	$('#website_mobile_app_menu_list_orders').click(function() {
 		onclick_menu('#website_mobile_app_menu_list_orders');
 		$.get('/mobile_app/fetch_orders', null, function(data){
-			classifications = {
+			var response = JSON.parse(data);
+			self.user = {
+            	user_group: response['user_group']
+            }
+
+            classifications = {
 				'Pending': 'pending',
 				'Ready': 'ready',
 				'Running': 'running',
 				'History': 'history',
 			}
-			var response = JSON.parse(data);
-			self.user = {
-            	user_group: response['user_group']
-            }
+
+			if (self.user['user_group'] === 'fullday_passenger') {
+				classifications = {
+					'Ready': 'ready',
+					'Running': 'running',
+					'History': 'history',
+				}
+			}
 
 			$("#main_container", self).html(qweb.render('website_mobile_app_list_order',{
 				'classifications': classifications,

@@ -34,7 +34,7 @@
 					<button type="button" id="btn_create_order" class="btn btn-success col-md-10 col-xs-12">Create Order</button>
 				</div>
 			</t>
-			<t t-if="create_mode == False">
+			<t t-if="create_mode == false">
 				<div class="row ml10">
 					<button type="button" t-attf-id_order = "{{order_id}}" class="btn btn-success btn_save_edit_order mt16 col-md-9 col-xs-6">Save</button>
 					<button type="button" t-attf-id_order = "{{order_id}}" class="btn btn-danger btn_cancel_edit_order mt16 ml10 col-md-1 col-xs-6">Cancel</button>

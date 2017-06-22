@@ -152,13 +152,13 @@ class website_mobile_app(http.Controller):
 		response_book_vehicle = self.mobile_app_get_required_book_vehicle()
 		data_book_vehicle = json.loads(response_book_vehicle.data)
 		# Get order current info
-		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		order_data = handler_obj.get_order(loaded_data['order_id'])
 		
 		passenger_arr = []
 		for passenger in order_data.passengers:
 			passenger_arr.append({
+				'id': passenger.id,
 				'name': passenger.name,
 				'phone_no': passenger.phone_no,
 				'is_orderer': passenger.is_orderer,
@@ -171,6 +171,7 @@ class website_mobile_app(http.Controller):
 			'order_type': data_book_vehicle['order_type'],
 			'route_to': data_book_vehicle['route_to'],
 			'order_data': {
+				'is_orderer_passenger': order_data.is_orderer_passenger,
 				'customer_contract_id': order_data.customer_contract_id.id,
 				'fleet_type_id': order_data.fleet_type_id.id,
 				'alloc_unit_id': order_data.alloc_unit_id.id,
@@ -766,7 +767,15 @@ class website_mobile_app_handler(osv.osv):
 		is_orderer_passenger = domain.get('i_am_passenger', '')
 		passengers = []
 		for passenger in domain.get('passengers', []):
-			passengers.append([0,False,passenger])
+			passenger_data = {
+				'name': passenger['name'],
+				'phone_no': passenger['phone_no'],
+				'is_orderer': passenger['is_orderer'],
+			}
+			if passenger.get('exist_id',False):
+				passengers.append([0, False, passenger_data])
+			else:
+				passengers.append([0, False, passenger_data])
 		
 		start_planned = domain.get('start_planned', '')
 		start_planned = datetime.strptime(start_planned, '%Y-%m-%dT%H:%M:%S')
@@ -841,7 +850,7 @@ class website_mobile_app_handler(osv.osv):
 			'period': period,
 			'state': 'draft',
 			'request_date': now,
-		}, context = {'from_webservice' : 1})
+		}, context = {'from_webservice': 1})
 	
 	def change_password(self, cr, uid, domain, context={}):
 		user_obj = self.pool.get('res.users')

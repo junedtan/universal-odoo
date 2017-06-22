@@ -14,6 +14,7 @@ $(document).ready(function () {
 	var index_click_contract;
 	var index_click_order;
 	var current_au_name;
+	var my_id;
 
 	function onclick_menu(id) {
 		$('#website_mobile_app_menu_book_vehicle').removeClass('active');
@@ -85,10 +86,10 @@ $(document).ready(function () {
 
 			var ckb_i_am_passenger = $('#ckb_i_am_passenger');
 			ckb_i_am_passenger.click(function(){
-				onclick_create_order_i_am_passenger();
+				onclick_create_order_i_am_passenger("");
 			});
 			ckb_i_am_passenger.click();
-			onclick_create_order_i_am_passenger();
+			onclick_create_order_i_am_passenger("");
 
 			$('#btn_add_passenger').click(function(){
 				onclick_create_order_add_passenger();
@@ -102,12 +103,23 @@ $(document).ready(function () {
 			var row = $(this);
 			var name = row.find('.tbl_name').val().trim();
 			var phone = row.find('.tbl_phone').val().trim();
+			var passenger_info;
 			if(name && phone) {
-				passengers.push({
+				passenger_info = {
 					'name': name,
-					'phone': phone,
-					'is_orderer': row.attr("id") ? true : false,
-				})
+					'phone_no': phone,
+				}
+				console.log(self.my_id);
+				console.log(row.attr("id"));
+				if(row.attr("id") === self.my_id) {
+					passenger_info['is_orderer'] = true;
+				} else {
+					passenger_info['is_orderer'] = false;
+				}
+				if(row.attr("exist_id").trim() !== false || row.attr("exist_id").trim() !== '') {
+					passenger_info['exist_id'] = row.attr("exist_id");
+				}
+				passengers.push(passenger_info);
 			} else {
 				alert('Please complete the passengers information, name and phone number are both required!'); return false;
 			}
@@ -219,21 +231,29 @@ $(document).ready(function () {
 		});
 	};
 
-	function onclick_create_order_i_am_passenger() {
+	function onclick_create_order_i_am_passenger(exist_id) {
 		var checkbox = $("#ckb_i_am_passenger");
-		my_id = "passenger_me";
+		self.my_id = "passenger_me";
 		if(checkbox.prop('checked')) {
 			var table_passengers = $("#passengers");
 			table_passengers.prepend(get_row_string_passenger(self.user.name,
-				self.user.phone === false ? '-' : self.user.phone, my_id, false));
+				self.user.phone === false ? '-' : self.user.phone, self.my_id, exist_id, false));
 		} else {
-			$("#"+my_id).remove();
+			$("#"+self.my_id).remove();
 		}
 	};
 
 	function onclick_create_order_add_passenger() {
 		var table_passengers = $("#passengers");
-		table_passengers.append(get_row_string_passenger("", "", "", true));
+		table_passengers.append(get_row_string_passenger("", "", "", "", true));
+		$(".btn_remove_passenger").click(function(){
+			onclick_create_order_remove_passenger(this);
+		});
+	};
+
+	function add_passenger_to_table(name, phone, exist_id) {
+		var table_passengers = $("#passengers");
+		table_passengers.append(get_row_string_passenger(name, phone, '', exist_id, true));
 		$(".btn_remove_passenger").click(function(){
 			onclick_create_order_remove_passenger(this);
 		});
@@ -243,11 +263,19 @@ $(document).ready(function () {
 		button_remove.closest('tr').remove();
 	};
 
-	function get_row_string_passenger(name, phone, id, removable) {
+	function get_row_string_passenger(name, phone, id, exist_id, removable) {
 		if(id === "") {
-			var row = '<tr>';
+			if(exist_id === "") {
+				var row = '<tr>';
+			} else {
+				var row = '<tr exist_id="' + exist_id + '">';
+			}
 		} else {
-			var row = '<tr id="' + id + '">';
+			if(exist_id === "") {
+				var row = '<tr id="' + id + '">';
+			} else {
+				var row = '<tr id="' + id + '" exist_id="' + exist_id + '">';
+			}
 		}
 		if(removable === true) {
 			row += '<td><input type="text" class="tbl_name form-control" value="' + name + '"/></td>' +
@@ -322,7 +350,6 @@ $(document).ready(function () {
 			$(".list_order").click(function(event) {
 				event.stopPropagation();
 				var target = $(event.target);
-				console.log(target)
 				self.index_click_order = target.attr("index_order");
 				var classifications_order = target.attr("classification_order");
 				onclick_list_order_detail_order(self.index_click_order, classifications_order);
@@ -529,41 +556,8 @@ $(document).ready(function () {
 				// Time
 				'start_planned_default': new Date().addHours(1).toDatetimeString(),
 				'finish_planned_default': new Date().addHours(2).toDatetimeString(),
-				'create_mode': true,
+				'create_mode': false,
 			}));
-
-
-//			var response = JSON.parse(data);
-//			var order_type = response['order_type'];
-//			self.user = response['user'];
-//			var response_contract_datas = response['contract_datas'];
-//
-//			var fleet_type_datas = [];
-//			var units = [];
-//			var route_from = [];
-//			if (response_contract_datas.length != 0) {
-//				fleet_type_datas = response_contract_datas[0].fleet_type;
-//				units = response_contract_datas[0].units;
-//				route_from = response_contract_datas[0].route_from;
-//			}
-//
-//			$("#main_container", self).html(qweb.render('website_mobile_app_create_order',{
-//            	'order_id': order_id,
-//				'user_group': response['user_group'],
-//				// Information
-//				'contract_datas': response_contract_datas,
-//				'fleet_type_datas': fleet_type_datas,
-//				'units': units,
-//				'order_types': order_type,
-//				// Route
-//				'from_areas': route_from,
-//				'to_cities': response['route_to'],
-//				'to_areas': response['route_to'][0].areas,
-//				// Passenger
-//				// Time
-//				'start_planned_default': new Date().addHours(1).toDatetimeString(),
-//				'finish_planned_default': new Date().addHours(2).toDatetimeString(),
-//			}));
 
 			$('#create_order_contract').change(function(){
 				onchange_create_order_contract($(this).val());
@@ -577,32 +571,11 @@ $(document).ready(function () {
 				onclick_create_order_button('create', 0);
 			});
 
-//			var ckb_i_am_passenger = $('#ckb_i_am_passenger');
-//			ckb_i_am_passenger.click(function(){
-//				onclick_create_order_i_am_passenger();
-//			});
-//			ckb_i_am_passenger.click();
-//			onclick_create_order_i_am_passenger();
-
 			$('#btn_add_passenger').click(function(){
 				onclick_create_order_add_passenger();
 			});
 
-//			// Tampilkan Dialog
-//			var modal = $("#dialog_edit_order");
-//			modal.css("display", "block");
-//
-//			// Button Close Dialog
-//			$(".close_dialog").click(function(event) {
-//				modal.css("display", "none");
-//			});
-//
-//			$('#dialog_edit_order').click(function(event){
-//				event.stopPropagation();
-//			})
-
 			var order_data = response['order_data'];
-			console.log(order_data.vehicle_id)
 			$('#create_order_contract').val(""+order_data.customer_contract_id).change();
 			$('#create_order_info_fleet_type').val(""+order_data.fleet_type_id).change();
 			$('#create_order_info_unit').val(""+order_data.alloc_unit_id).change();
@@ -612,40 +585,31 @@ $(document).ready(function () {
 			$('#create_order_route_to_city').val(""+order_data.dest_city_id).change();
 			$('#create_order_route_to_area').val(""+order_data.dest_area_id).change();
 			$('#create_order_route_to_location').val(""+order_data.dest_location).change();
-//			$('#passengers').val(order_data.passengers);
+
+			$.each(order_data.passengers, function(index, passenger) {
+				if(!passenger.is_orderer) {
+					add_passenger_to_table(passenger.name, passenger.phone_no, passenger.id);
+				} else {
+					if(order_data.is_orderer_passenger) {
+						var ckb_i_am_passenger = $('#ckb_i_am_passenger');
+						ckb_i_am_passenger.click(function(){
+							onclick_create_order_i_am_passenger(passenger.id);
+						});
+						ckb_i_am_passenger.click();
+						onclick_create_order_i_am_passenger(passenger.id);
+					}
+				}
+			});
 
 			$('.btn_save_edit_order').click(function(event) {
 				var target = $(event.target);
 				order_id = target.attr("id_order");
-				onclick_button_create_order('edit', order_id);
+				onclick_create_order_button('edit', order_id);
 			});
 			$('.btn_cancel_edit_order').click(function(event) {
 				$('#website_mobile_app_menu_list_orders').click();
 			});
 		});
-
-//		$("#list_order_edit_order", self).html(qweb.render('dialog_edit_order',{
-//			'order_id': order_id,
-//			'planned_start_time_old': new Date().addHours(1).toDatetimeString(),
-//		}));
-//
-//		// Tampilkan Dialog
-//		var modal = $("#dialog_edit_order");
-//		modal.css("display", "block");
-//
-//		// Button Close Dialog
-//		$(".close_dialog").click(function(event) {
-//			modal.css("display", "none");
-//		});
-//
-//		$('.btn_save_edit_order').click(function(event) {
-//			var target = $(event.target);
-//			order_id = target.attr("id_order");
-//			onclick_button_create_order('edit', order_id);
-//		});
-//		$('.btn_cancel_edit_order').click(function(event) {
-//			modal.css("display", "none");
-//		});
 	};
 
 	function onclick_button_cancel_order(order_id) {

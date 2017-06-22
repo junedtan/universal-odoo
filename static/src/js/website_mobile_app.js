@@ -365,6 +365,7 @@ $(document).ready(function () {
 	//Order Detail ===============================================================
 	function onclick_list_order_detail_order(index_order, classifications_order) {
 		order_data = self.order_datas[classifications_order][index_order];
+		console.log(order_data.list_passenger);
 		//Render Dialog
 		$("#dialog_order_detail_container", self).html(qweb.render('dialog_order_detail',{
 			'id': order_data.id,
@@ -392,7 +393,7 @@ $(document).ready(function () {
 			'maintained_by': order_data.maintained_by,
 			'au_id': order_data.au_id,
 			'au_name': order_data.au_name,
-			'list_passenger' : order_data.list_passenger_name,
+			'list_passenger' : order_data.list_passenger,
 			'contract_id': order_data.contract_id,
 			'contract_name': order_data.contract_name,
 			'type': order_data.type,

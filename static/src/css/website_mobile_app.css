@@ -131,10 +131,12 @@ div.row_hoverable{
 	right: 0;
 	background-color: #fefefe;
 	width: 350px;
+	height: 450px;
 	-webkit-animation-name: slideIn;
 	-webkit-animation-duration: 0.4s;
 	animation-name: slideIn;
 	animation-duration: 0.4s;
+	overflow: auto;
 }
 
 .modal_change_planned_start_time {

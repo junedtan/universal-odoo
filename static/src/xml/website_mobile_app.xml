@@ -216,29 +216,6 @@
 									</t>
 									<t t-if="order.dest_location">
 										<tr>
-											<td>Time</td>
-											<td>:</td>
-											<td><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
-										</tr>
-									</t>
-									<t t-if="order.assigned_vehicle_name">
-										<tr>
-											<td>Fleet</td>
-											<td>:</td>
-											<td><t t-esc="order.assigned_driver_name"/> - <t t-esc="order.assigned_vehicle_name"/></td>
-										</tr>
-									</t>
-									<t t-if="order.origin_location">
-										<tr>
-											<td>From</td>
-											<td>:</td>
-											<td>
-												<t t-esc="order.origin_location"/> (<t t-esc="order.origin_area_name"/>)
-											</td>
-										</tr>
-									</t>
-									<t t-if="order.dest_location">
-										<tr>
 											<td>To</td>
 											<td>:</td>
 											<td>
@@ -915,22 +892,26 @@
 					</div>
 					<table class="table table-striped ">
 						<t t-if="origin_location || dest_location">
-							<tr> <td class = "header_detail_order">Route</td> </tr>
+							<tr>
+								<td colspan="2" class="header_detail_order">Route</td>
+							</tr>
 						</t>
 						<t t-if="origin_location">
 							<tr>
-								<td>From :</td>
-								<td><t t-esc="origin_location"/> - <t t-esc="origin_area_name"/></td>
+								<td>From</td>
+								<td><t t-esc="origin_location"/> (<t t-esc="origin_area_name"/>)</td>
 							</tr>
 						</t>
 						<t t-if="dest_location">
 							<tr>
-								<td>To :</td>
-								<td><t t-esc="dest_location"/> - <t t-esc="dest_area_name"/></td>
+								<td>To</td>
+								<td><t t-esc="dest_location"/> (<t t-esc="dest_area_name"/>)</td>
 							</tr>
 						</t>
 						<t t-if="service_type != 'full_day'">
-							<tr> <td class = "header_detail_order">Passenger</td> </tr>
+							<tr>
+								<td colspan="2" class = "header_detail_order">Passenger</td>
+							</tr>
 							<t t-if="service_type == 'by_order'">
 								<tr>
 									<td>Unit</td>
@@ -938,10 +919,14 @@
 								</tr>
 							</t>
 							<tr>
-								<td>Passenger</td>
+								<td colspan="2">Passenger</td>
 							</tr>
 							<t t-foreach="list_passenger" t-as="passenger">
-								<tr> <t t-esc="passenger.name"/> <t t-if="passenger.phone"> - <t t-esc="passenger.phone"/></t> </tr>
+								<tr>
+									<td>
+										t t-esc="passenger.name"/> <t t-if="passenger.phone"> - <t t-esc="passenger.phone"/></t> 
+									</td><
+								</tr>
 							</t>
 						</t>
 						<tr> <td class = "header_detail_order">Information</td> </tr>

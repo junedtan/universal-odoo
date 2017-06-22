@@ -180,7 +180,8 @@
 										<span class="orange_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
 									</t>
 								</div>
-								Requested at: <b><t t-esc="order.request_date"/></b> by <b><t t-esc="order.order_by_name"/></b>
+								Requested at: <b style="pointer-events:none;"><t t-esc="order.request_date"/></b>
+								by <b style="pointer-events:none;"><t t-esc="order.order_by_name"/></b>
 								<table class="table" style="pointer-events:none;">
 									<t t-if="user_group == 'booker'">
 										<t t-if="classification_value != 'pending'">

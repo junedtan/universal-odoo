@@ -114,7 +114,7 @@ $(document).ready(function () {
 				} else {
 					passenger_info['is_orderer'] = false;
 				}
-				if(row.attr("exist_id").trim() !== false || row.attr("exist_id").trim() !== '') {
+				if(row.attr("exist_id") && (row.attr("exist_id").trim() !== false || row.attr("exist_id").trim() !== '')) {
 					passenger_info['exist_id'] = row.attr("exist_id");
 				}
 				passengers.push(passenger_info);
@@ -492,6 +492,7 @@ $(document).ready(function () {
 		filtered_order_datas.push.apply(filtered_order_datas, order_datas['ready']);
 		$.each(filtered_order_datas, function(index, order_data) {
 			if(parseInt(order_data['id']) === parseInt(order_id)) {
+				console.log(new Date().addHours(1).toDatetimeString())
 				$("#change_planned_start_time", self).html(qweb.render('dialog_change_planned_start_time',{
 					'order_id': order_id,
 					'planned_start_time_old': new Date().addHours(1).toDatetimeString(),

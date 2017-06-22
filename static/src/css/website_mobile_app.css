@@ -134,7 +134,7 @@ div.row_hoverable{
 	top: 15%;
 	right: 0;
 	background-color: #fefefe;
-	width: 350px;
+	width: 90%;
 	-webkit-animation-name: slideIn;
 	-webkit-animation-duration: 0.4s;
 	animation-name: slideIn;
@@ -165,7 +165,7 @@ div.row_hoverable{
 
 /* The Close Button */
 .close_dialog {
-	color: darkred;
+	color: MidnightBlue;
 	float: right;
 	font-size: medium;
 	font-weight: bold;
@@ -173,7 +173,7 @@ div.row_hoverable{
 
 .close_dialog:hover,
 .close_dialog:focus {
-	color: red;
+	color: MediumTurquoise;
 	text-decoration: none;
 	cursor: pointer;
 }
@@ -249,9 +249,10 @@ div.row_hoverable{
 
 .header_detail_order{
 	color : blue;
+	font-weight: bold;
 }
 
 #btn_add_passenger{
-display: block;
-margin: auto;
+	display: block;
+	margin: auto;
 }

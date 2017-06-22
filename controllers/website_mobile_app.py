@@ -423,7 +423,10 @@ class website_mobile_app(http.Controller):
 	def mobile_app_change_planned_start_time(self, data, **kwargs):
 		order_data = json.loads(data)
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		new_start_date = datetime.strptime(order_data['new_planned_start_time'] if order_data['new_planned_start_time'] else '', '%Y-%m-%dT%H:%M:%S')
+		datetime_format = '%Y-%m-%dT%H:%M:%S'
+		if order_data['new_planned_start_time'].count(':') == 1:
+			datetime_format = '%Y-%m-%dT%H:%M'
+		new_start_date = datetime.strptime(order_data['new_planned_start_time'], datetime_format)
 		result = handler_obj.change_planned_start_time(int(order_data['order_id']), new_start_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT))
 		if result:
 			return json.dumps({
@@ -778,9 +781,9 @@ class website_mobile_app_handler(osv.osv):
 			passengers.append([0, False, passenger_data])
 		
 		start_planned = domain.get('start_planned', '')
-		start_planned = datetime.strptime(start_planned, '%Y-%m-%dT%H:%M:%S')
+		start_planned = datetime.strptime(start_planned, '%Y-%m-%dT%H:%M' if start_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
 		finish_planned = domain.get('finish_planned', '')
-		finish_planned = datetime.strptime(finish_planned, '%Y-%m-%dT%H:%M:%S')
+		finish_planned = datetime.strptime(finish_planned, '%Y-%m-%dT%H:%M' if finish_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
 		
 		if mode == 'create':
 			return order_obj.create(cr, SUPERUSER_ID, {

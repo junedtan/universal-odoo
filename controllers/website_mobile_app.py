@@ -224,11 +224,11 @@ class website_mobile_app(http.Controller):
 			'list_contract': result,
 		})
 	
-	@http.route('/mobile_app/create_order/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_create_order(self, data, **kwargs):
+	@http.route('/mobile_app/create_edit_order/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_create_edit_order(self, data, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		try:
-			result = handler_obj.create_order(json.loads(data))
+			result = handler_obj.create_edit_order(json.loads(data))
 		except Exception, e:
 			response = {
 				'status': 'ok',
@@ -236,16 +236,19 @@ class website_mobile_app(http.Controller):
 				'success' : False,
 			}
 		else:
+			mode = data.get('mode_create_or_edit', '')
 			if result:
+				info = _('Create Order Success') if mode == 'create' else _('Edit Order Success')
 				response = {
 					'status': 'ok',
-					'info': _('Create Order Success'),
+					'info': info,
 					'success' : True,
 				}
 			else:
+				info = _('Create Order Failed') if mode == 'create' else _('Edit Order Failed')
 				response = {
 					'status': 'ok',
-					'info': _('Create Order Failed'),
+					'info': info,
 					'success' : False,
 				}
 		return json.dumps(response)
@@ -685,8 +688,9 @@ class website_mobile_app_handler(osv.osv):
 		contract_ids = contract_obj.search(cr, uid, [], context=param_context)
 		return contract_obj.browse(cr, uid, contract_ids)
 	
-	def create_order(self, cr, uid, domain, context={}):
+	def create_edit_order(self, cr, uid, domain, context={}):
 		order_obj = self.pool.get('foms.order')
+		mode = domain.get('mode_create_or_edit', '')
 		contract_id = domain.get('contract_id', '')
 		contract_id = int(contract_id.encode('ascii', 'ignore'))
 		fleet_type_id = domain.get('fleet_type_id', '')
@@ -715,26 +719,51 @@ class website_mobile_app_handler(osv.osv):
 		finish_planned = domain.get('finish_planned', '')
 		finish_planned = datetime.strptime(finish_planned, '%Y-%m-%dT%H:%M:%S')
 		
-		return order_obj.create(cr, SUPERUSER_ID, {
-			'customer_contract_id': contract_id,
-			'order_by': uid,
-			'fleet_type_id': fleet_type_id,
-			'alloc_unit_id': unit_id,
-			'order_type_by_order': type_id,
+		if mode == 'create':
+			return order_obj.create(cr, SUPERUSER_ID, {
+				'customer_contract_id': contract_id,
+				'order_by': uid,
+				'fleet_type_id': fleet_type_id,
+				'alloc_unit_id': unit_id,
+				'order_type_by_order': type_id,
+				
+				'origin_area_id': from_area_id,
+				'origin_location': from_location,
+				# 'dest_city_id': to_city_id,
+				'dest_area_id': to_area_id,
+				'dest_location': to_location,
+				
+				'is_orderer_passenger': is_orderer_passenger,
+				'passengers': passengers,
+				
+				'start_planned_date': start_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
+				'finish_planned_date': finish_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
+				'request_date': datetime.now(),
+			})
+		else:
+			order_id = domain.get('order_id', '')
+			order_id = int(order_id.encode('ascii', 'ignore'))
+			return order_obj.write(cr, SUPERUSER_ID, [order_id], {
+				'customer_contract_id': contract_id,
+				'order_by': uid,
+				'fleet_type_id': fleet_type_id,
+				'alloc_unit_id': unit_id,
+				'order_type_by_order': type_id,
+				
+				'origin_area_id': from_area_id,
+				'origin_location': from_location,
+				# 'dest_city_id': to_city_id,
+				'dest_area_id': to_area_id,
+				'dest_location': to_location,
+				
+				'is_orderer_passenger': is_orderer_passenger,
+				'passengers': passengers,
+				
+				'start_planned_date': start_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
+				'finish_planned_date': finish_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
+				'request_date': datetime.now(),
+			})
 			
-			'origin_area_id': from_area_id,
-			'origin_location': from_location,
-			# 'dest_city_id': to_city_id,
-			'dest_area_id': to_area_id,
-			'dest_location': to_location,
-			
-			'is_orderer_passenger': is_orderer_passenger,
-			'passengers': passengers,
-			
-			'start_planned_date': start_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
-			'finish_planned_date': finish_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
-			'request_date': datetime.now(),
-		})
 	
 	def request_quota_change(self, cr, uid, domain, context={}):
 		change_log = self.pool.get('foms.contract.quota.change.log')

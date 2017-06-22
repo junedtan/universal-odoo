@@ -77,7 +77,7 @@ $(document).ready(function () {
 			});
 
 			$('#btn_create_order').click(function(){
-				onclick_create_order_button();
+				onclick_create_order_button('create', 0);
 			});
 
 			var ckb_i_am_passenger = $('#ckb_i_am_passenger');
@@ -93,7 +93,7 @@ $(document).ready(function () {
 		});
 	});
 
-	function onclick_create_order_button() {
+	function onclick_create_order_button(mode, order_id) {
 		passengers = [];
 		$('#passengers > tbody > tr').each(function() {
 			var row = $(this);
@@ -111,6 +111,7 @@ $(document).ready(function () {
 		});
 
 		create_order_json = {
+			'mode': (mode === 'create') ? 'create' : 'edit',
 			'contract_id': $('#create_order_info_contract').val(),
 			'fleet_type_id': $('#create_order_info_fleet_type').val(),
 			'unit_id': $('#create_order_info_unit').val(),
@@ -129,6 +130,9 @@ $(document).ready(function () {
 			'start_planned': $('#create_order_start_planned').val(),
 			'finish_planned': $('#create_order_finish_planned').val(),
 		};
+		if(mode === 'edit') {
+			create_order_json['order_id'] = order_id;
+		}
 		if (create_order_json['contract_id'] == null) {
 			alert('You have no Contract!'); return;
 		} else if (create_order_json['fleet_type_id'] == null) {
@@ -157,7 +161,7 @@ $(document).ready(function () {
 
 		$.ajax({
 			dataType: "json",
-			url: '/mobile_app/create_order/' + JSON.stringify(create_order_json),
+			url: '/mobile_app/create_edit_order/' + JSON.stringify(create_order_json),
 			method: 'POST',
 			success: function(response) {
 				if (response.status) {
@@ -409,7 +413,105 @@ $(document).ready(function () {
 	};
 
 	function onclick_button_edit_order(order_id) {
+		$.get('/mobile_app/get_required_book_vehicle', null, function(data){
+			var response = JSON.parse(data);
+			var order_type = response['order_type'];
+			self.to_cities = response['route_to'];
+			self.user = response['user'];
+			self.user['user_group'] = response['user_group'];
+			self.contract_datas = response['contract_datas'];
 
+			var fleet_type_datas = [];
+			var units = [];
+			var route_from = [];
+			if (self.contract_datas.length != 0) {
+				fleet_type_datas = self.contract_datas[0].fleet_type;
+				units = self.contract_datas[0].units;
+				route_from = self.contract_datas[0].route_from;
+			}
+
+			$("#list_order_edit_order", self).html(qweb.render('dialog_edit_order',{
+            	'order_id': order_id,
+				'user_group': self.user['user_group'],
+				// Information
+				'contract_datas': self.contract_datas,
+				'fleet_type_datas': fleet_type_datas,
+				'units': units,
+				'order_types': order_type,
+				// Route
+				'from_areas': route_from,
+				'to_cities': self.to_cities,
+				'to_areas': self.to_cities[0].areas,
+				// Passenger
+				// Time
+				'start_planned_default': new Date().addHours(1).toDatetimeString(),
+				'finish_planned_default': new Date().addHours(2).toDatetimeString(),
+			}));
+
+			$('#create_order_contract').change(function(){
+				onchange_create_order_contract($(this).val());
+			});
+
+			$('#create_order_route_to_city').change(function(){
+				onchange_create_order_route_to_city($(this).val());
+			});
+
+			$('#btn_create_order').click(function(){
+				onclick_create_order_button('create', 0);
+			});
+
+			var ckb_i_am_passenger = $('#ckb_i_am_passenger');
+			ckb_i_am_passenger.click(function(){
+				onclick_create_order_i_am_passenger();
+			});
+			ckb_i_am_passenger.click();
+			onclick_create_order_i_am_passenger();
+
+			$('#btn_add_passenger').click(function(){
+				onclick_create_order_add_passenger();
+			});
+
+			// Tampilkan Dialog
+			var modal = $("#dialog_edit_order");
+			modal.css("display", "block");
+
+			// Button Close Dialog
+			$(".close_dialog").click(function(event) {
+				modal.css("display", "none");
+			});
+
+			$('.btn_save_edit_order').click(function(event) {
+				var target = $(event.target);
+				order_id = target.attr("id_order");
+				onclick_button_create_order('edit', order_id);
+			});
+			$('.btn_cancel_edit_order').click(function(event) {
+				modal.css("display", "none");
+			});
+		});
+
+//		$("#list_order_edit_order", self).html(qweb.render('dialog_edit_order',{
+//			'order_id': order_id,
+//			'planned_start_time_old': new Date().addHours(1).toDatetimeString(),
+//		}));
+//
+//		// Tampilkan Dialog
+//		var modal = $("#dialog_edit_order");
+//		modal.css("display", "block");
+//
+//		// Button Close Dialog
+//		$(".close_dialog").click(function(event) {
+//			modal.css("display", "none");
+//		});
+//
+//		$('.btn_save_edit_order').click(function(event) {
+//			var target = $(event.target);
+//			order_id = target.attr("id_order");
+//			onclick_button_create_order('edit', order_id);
+//		});
+//		$('.btn_cancel_edit_order').click(function(event) {
+//			modal.css("display", "none");
+//		});
 	};
 
 	function onclick_button_cancel_order(order_id) {
@@ -461,26 +563,6 @@ $(document).ready(function () {
 		});
 	};
 
-	function onclick_button_save_edit_order(order_id) {
-		$.ajax({
-			dataType: "json",
-			url: '/mobile_app/edit_order/' + order_id,
-			method: 'POST',
-			success: function(response) {
-				if (response.status) {
-					alert(response.info);
-					if(response.success){
-						$('#website_mobile_app_menu_list_orders').click();
-					} else {}
-				} else {
-					alert('Server Unreachable.');
-				}
-			},
-			error: function(XMLHttpRequest, textStatus, errorThrown) {
-				alert_error(XMLHttpRequest);
-			} ,
-		});
-	};
 // LIST SHUTTLE =============================================================================================================
 
 	$('#website_mobile_app_menu_list_shuttle').click(function() {

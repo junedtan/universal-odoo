@@ -689,11 +689,13 @@
 								<td>:</td>
 								<td><t t-esc="limit_request.state"/></td>
 							</tr>
-							<tr>
-								<td>Reason</td>
-								<td>:</td>
-								<td><t t-esc="limit_request.reason"/></td>
-							</tr>
+							<t t-if="classification_value != 'pending'">
+								<tr>
+									<td>Reason</td>
+									<td>:</td>
+									<td><t t-esc="limit_request.reason"/></td>
+								</tr>
+							</t>
 						</table>
 						<t t-if="classification_value == 'pending'">
 							<t t-if="user_group == 'pic'">
@@ -909,18 +911,20 @@
 							</tr>
 						</t>
 						<t t-if="service_type != 'full_day'">
-							<tr>
-								<td colspan="2" class = "header_detail_order">Passenger</td>
-							</tr>
-							<t t-foreach="list_passenger" t-as="passenger">
+							<t t-if="list_passenger.length != 0">
 								<tr>
-									<td>
-										<t t-esc="passenger.name"/>
-									</td>
-									<td>
-										<t t-if="passenger.phone"> <t t-esc="passenger.phone"/></t>
-									</td>
+									<td colspan="2" class = "header_detail_order">Passenger</td>
 								</tr>
+								<t t-foreach="list_passenger" t-as="passenger">
+									<tr>
+										<td>
+											<t t-esc="passenger.name"/>
+										</td>
+										<td>
+											<t t-if="passenger.phone"> <t t-esc="passenger.phone"/></t>
+										</td>
+									</tr>
+								</t>
 							</t>
 						</t>
 						<tr>

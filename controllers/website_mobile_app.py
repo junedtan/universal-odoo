@@ -745,6 +745,8 @@ class website_mobile_app_handler(osv.osv):
 	
 	def create_edit_order(self, cr, uid, domain, context={}):
 		order_obj = self.pool.get('foms.order')
+		order_passenger_obj = self.pool.get('foms.order.passenger')
+		
 		mode = domain.get('mode_create_or_edit', '')
 		contract_id = domain.get('contract_id', '')
 		contract_id = int(contract_id.encode('ascii', 'ignore'))
@@ -772,10 +774,7 @@ class website_mobile_app_handler(osv.osv):
 				'phone_no': passenger['phone_no'],
 				'is_orderer': passenger['is_orderer'],
 			}
-			if passenger.get('exist_id',False):
-				passengers.append([0, False, passenger_data])
-			else:
-				passengers.append([0, False, passenger_data])
+			passengers.append([0, False, passenger_data])
 		
 		start_planned = domain.get('start_planned', '')
 		start_planned = datetime.strptime(start_planned, '%Y-%m-%dT%H:%M:%S')
@@ -806,6 +805,7 @@ class website_mobile_app_handler(osv.osv):
 		else:
 			order_id = domain.get('order_id', '')
 			order_id = int(order_id.encode('ascii', 'ignore'))
+			order_passenger_obj.unlink(cr, uid, order_passenger_obj.search(cr, uid, [('header_id', '=', order_id)]))
 			return order_obj.write(cr, SUPERUSER_ID, [order_id], {
 				'customer_contract_id': contract_id,
 				'order_by': uid,
@@ -850,7 +850,7 @@ class website_mobile_app_handler(osv.osv):
 			'period': period,
 			'state': 'draft',
 			'request_date': now,
-		}, context = {'from_webservice': 1})
+		}, context = {'from_webservice' : 1})
 	
 	def change_password(self, cr, uid, domain, context={}):
 		user_obj = self.pool.get('res.users')

@@ -152,21 +152,6 @@ div.row_hoverable{
 	animation-duration: 0.4s;
 }
 
-.modal_edit_order {
-	position: fixed;
-	margin-left: auto;
-	margin-right: auto;
-	left: 0;
-	top: 15%;
-	right: 0;
-	background-color: #fefefe;
-	width: 80%;
-	-webkit-animation-name: slideIn;
-	-webkit-animation-duration: 0.4s;
-	animation-name: slideIn;
-	animation-duration: 0.4s;
-}
-
 /* The Close Button */
 .close_dialog {
 	color: darkred;

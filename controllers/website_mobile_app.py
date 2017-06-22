@@ -145,6 +145,48 @@ class website_mobile_app(http.Controller):
 			'route_to': route_city_arr,
 		})
 	
+	@http.route('/mobile_app/get_required_edit_order/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_get_required_edit_order(self, data, **kwargs):
+		loaded_data = json.loads(data)
+		# Required book vehicle
+		response_book_vehicle = self.mobile_app_get_required_book_vehicle()
+		data_book_vehicle = json.loads(response_book_vehicle.data)
+		# Get order current info
+		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		order_data = handler_obj.get_order(loaded_data['order_id'])
+		
+		passenger_arr = []
+		for passenger in order_data.passengers:
+			passenger_arr.append({
+				'name': passenger.name,
+				'phone_no': passenger.phone_no,
+				'is_orderer': passenger.is_orderer,
+			})
+		
+		return json.dumps({
+			'user_group': data_book_vehicle['user_group'],
+			'contract_datas': data_book_vehicle['contract_datas'],
+			'user': data_book_vehicle['user'],
+			'order_type': data_book_vehicle['order_type'],
+			'route_to': data_book_vehicle['route_to'],
+			'order_data': {
+				'customer_contract_id': order_data.customer_contract_id.id,
+				'fleet_type_id': order_data.fleet_type_id.id,
+				'alloc_unit_id': order_data.alloc_unit_id.id,
+				'order_type_by_order': order_data.order_type_by_order,
+				'origin_area_id': order_data.origin_area_id.id,
+				'origin_location': order_data.origin_location,
+				'dest_city_id': order_data.dest_area_id.homebase_id.id,
+				'dest_area_id': order_data.dest_area_id.id,
+				'dest_location': order_data.dest_location,
+				'passengers': passenger_arr,
+				'start_planned_date': order_data.start_planned_date,
+				'finish_planned_date': order_data.finish_planned_date,
+			},
+		})
+		
+	
 	@http.route('/mobile_app/fetch_contracts', type='http', auth="user", website=True)
 	def mobile_app_fetch_contracts(self, **kwargs):
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
@@ -227,8 +269,9 @@ class website_mobile_app(http.Controller):
 	@http.route('/mobile_app/create_edit_order/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_create_edit_order(self, data, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		loaded_data = json.loads(data)
 		try:
-			result = handler_obj.create_edit_order(json.loads(data))
+			result = handler_obj.create_edit_order(loaded_data)
 		except Exception, e:
 			response = {
 				'status': 'ok',
@@ -236,7 +279,7 @@ class website_mobile_app(http.Controller):
 				'success' : False,
 			}
 		else:
-			mode = data.get('mode_create_or_edit', '')
+			mode = loaded_data.get('mode_create_or_edit', '')
 			if result:
 				info = _('Create Order Success') if mode == 'create' else _('Edit Order Success')
 				response = {
@@ -906,9 +949,9 @@ class website_mobile_app_handler(osv.osv):
 			'start_planned_date': new_start_planned_date,
 		}, context=context)
 	
-	def edit_order(self, cr, uid, order_id, context={}):
+	def get_order(self, cr, uid, order_id, context={}):
 		order_obj = self.pool.get('foms.order')
-		pass
+		return order_obj.browse(cr, uid, order_id);
 	
 	def cancel_order(self, cr, uid, order_id, context={}):
 		order_obj = self.pool.get('foms.order')

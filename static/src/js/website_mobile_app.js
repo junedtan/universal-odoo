@@ -114,7 +114,7 @@ $(document).ready(function () {
 		});
 
 		create_order_json = {
-			'mode': (mode === 'create') ? 'create' : 'edit',
+			'mode_create_or_edit': (mode === 'create') ? 'create' : 'edit',
 			'contract_id': $('#create_order_info_contract').val(),
 			'fleet_type_id': $('#create_order_info_fleet_type').val(),
 			'unit_id': $('#create_order_info_unit').val(),
@@ -348,7 +348,6 @@ $(document).ready(function () {
 				onclick_button_change_planned_start_time(order_id, response['list_order']);
 			});
 			$('.btn_edit_order').click(function(event) {
-				console.log('heeeh')
 				event.stopPropagation();
 				var target = $(event.target);
 				order_id = target.attr("id_order");
@@ -495,7 +494,9 @@ $(document).ready(function () {
 	};
 
 	function onclick_button_edit_order(order_id) {
-		$.get('/mobile_app/get_required_book_vehicle', null, function(data){
+		$.get('/mobile_app/get_required_edit_order/' + JSON.stringify({
+			'order_id': parseInt(order_id),
+		}), null, function(data){
 			var response = JSON.parse(data);
 			var order_type = response['order_type'];
 			self.to_cities = response['route_to'];
@@ -512,8 +513,8 @@ $(document).ready(function () {
 				route_from = self.contract_datas[0].route_from;
 			}
 
-			$("#list_order_edit_order", self).html(qweb.render('dialog_edit_order',{
-            	'order_id': order_id,
+			$("#main_container", self).html(qweb.render('website_mobile_app_create_order',{
+				'order_id': order_id,
 				'user_group': self.user['user_group'],
 				// Information
 				'contract_datas': self.contract_datas,
@@ -528,7 +529,41 @@ $(document).ready(function () {
 				// Time
 				'start_planned_default': new Date().addHours(1).toDatetimeString(),
 				'finish_planned_default': new Date().addHours(2).toDatetimeString(),
+				'create_mode': true,
 			}));
+
+
+//			var response = JSON.parse(data);
+//			var order_type = response['order_type'];
+//			self.user = response['user'];
+//			var response_contract_datas = response['contract_datas'];
+//
+//			var fleet_type_datas = [];
+//			var units = [];
+//			var route_from = [];
+//			if (response_contract_datas.length != 0) {
+//				fleet_type_datas = response_contract_datas[0].fleet_type;
+//				units = response_contract_datas[0].units;
+//				route_from = response_contract_datas[0].route_from;
+//			}
+//
+//			$("#main_container", self).html(qweb.render('website_mobile_app_create_order',{
+//            	'order_id': order_id,
+//				'user_group': response['user_group'],
+//				// Information
+//				'contract_datas': response_contract_datas,
+//				'fleet_type_datas': fleet_type_datas,
+//				'units': units,
+//				'order_types': order_type,
+//				// Route
+//				'from_areas': route_from,
+//				'to_cities': response['route_to'],
+//				'to_areas': response['route_to'][0].areas,
+//				// Passenger
+//				// Time
+//				'start_planned_default': new Date().addHours(1).toDatetimeString(),
+//				'finish_planned_default': new Date().addHours(2).toDatetimeString(),
+//			}));
 
 			$('#create_order_contract').change(function(){
 				onchange_create_order_contract($(this).val());
@@ -542,29 +577,42 @@ $(document).ready(function () {
 				onclick_create_order_button('create', 0);
 			});
 
-			var ckb_i_am_passenger = $('#ckb_i_am_passenger');
-			ckb_i_am_passenger.click(function(){
-				onclick_create_order_i_am_passenger();
-			});
-			ckb_i_am_passenger.click();
-			onclick_create_order_i_am_passenger();
+//			var ckb_i_am_passenger = $('#ckb_i_am_passenger');
+//			ckb_i_am_passenger.click(function(){
+//				onclick_create_order_i_am_passenger();
+//			});
+//			ckb_i_am_passenger.click();
+//			onclick_create_order_i_am_passenger();
 
 			$('#btn_add_passenger').click(function(){
 				onclick_create_order_add_passenger();
 			});
 
-			// Tampilkan Dialog
-			var modal = $("#dialog_edit_order");
-			modal.css("display", "block");
+//			// Tampilkan Dialog
+//			var modal = $("#dialog_edit_order");
+//			modal.css("display", "block");
+//
+//			// Button Close Dialog
+//			$(".close_dialog").click(function(event) {
+//				modal.css("display", "none");
+//			});
+//
+//			$('#dialog_edit_order').click(function(event){
+//				event.stopPropagation();
+//			})
 
-			// Button Close Dialog
-			$(".close_dialog").click(function(event) {
-				modal.css("display", "none");
-			});
-
-			$('#dialog_edit_order').click(function(event){
-				event.stopPropagation();
-			})
+			var order_data = response['order_data'];
+			console.log(order_data.vehicle_id)
+			$('#create_order_contract').val(""+order_data.customer_contract_id).change();
+			$('#create_order_info_fleet_type').val(""+order_data.fleet_type_id).change();
+			$('#create_order_info_unit').val(""+order_data.alloc_unit_id).change();
+			$('#create_order_info_type').val(""+order_data.order_type_by_order).change();
+			$('#create_order_route_from_area').val(""+order_data.origin_area_id).change();
+			$('#create_order_route_from_location').val(""+order_data.origin_location).change();
+			$('#create_order_route_to_city').val(""+order_data.dest_city_id).change();
+			$('#create_order_route_to_area').val(""+order_data.dest_area_id).change();
+			$('#create_order_route_to_location').val(""+order_data.dest_location).change();
+//			$('#passengers').val(order_data.passengers);
 
 			$('.btn_save_edit_order').click(function(event) {
 				var target = $(event.target);
@@ -572,7 +620,7 @@ $(document).ready(function () {
 				onclick_button_create_order('edit', order_id);
 			});
 			$('.btn_cancel_edit_order').click(function(event) {
-				modal.css("display", "none");
+				$('#website_mobile_app_menu_list_orders').click();
 			});
 		});
 

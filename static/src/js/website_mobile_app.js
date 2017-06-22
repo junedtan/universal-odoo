@@ -6,11 +6,13 @@ $(document).ready(function () {
 	qweb.add_template('/universal/static/src/xml/website_mobile_app.xml');
 
 	var contract_datas = [];
+	var order_datas = [];
 	var to_cities = [];
 	var user = {
 		user_group: 'undefined',
 	};
 	var index_click_contract;
+	var index_click_order;
 	var current_au_name;
 
 	function onclick_menu(id) {
@@ -285,7 +287,7 @@ $(document).ready(function () {
 					'History': 'history',
 				}
 			}
-
+			self.order_datas = response['list_order'];
 			$("#main_container", self).html(qweb.render('website_mobile_app_list_order',{
 				'classifications': classifications,
 				'order_datas': response['list_order'],
@@ -301,16 +303,33 @@ $(document).ready(function () {
 					detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
 				}
 			});
+
 			$('.btn_approve_order').click(function(event) {
+				event.stopPropagation();
 				var target = $(event.target);
 				order_id = target.attr("id_order");
 				onclick_button_approve_order(order_id);
 			});
+
 			$('.btn_reject_order').click(function(event) {
+				event.stopPropagation();
 				var target = $(event.target);
 				order_id = target.attr("id_order");
 				onclick_button_reject_order(order_id);
 			});
+
+			$(".list_order").click(function(event) {
+				event.stopPropagation();
+				var target = $(event.target);
+				self.index_click_order = target.attr("index_order");
+				var classifications_order = target.attr("classification_order");
+				onclick_list_order_detail_order(self.index_click_order, classifications_order);
+			});
+
+			$('#dialog_order_detail_container').click(function(event){
+				event.stopPropagation();
+			})
+
 			$('.btn_add_quota').click(function(event) {
 				event.stopPropagation();
 				var target = $(event.target);
@@ -321,22 +340,78 @@ $(document).ready(function () {
 				onclick_button_request_change_quota(au_id, contract_id, yellow_limit, red_limit);
 			});
 			$('.btn_change_planned_start_time').click(function(event) {
+				event.stopPropagation();
 				var target = $(event.target);
 				order_id = target.attr("id_order");
 				onclick_button_change_planned_start_time(order_id, response['list_order']);
 			});
 			$('.btn_edit_order').click(function(event) {
+				event.stopPropagation();
 				var target = $(event.target);
 				order_id = target.attr("id_order");
 				onclick_button_edit_order(order_id);
 			});
 			$('.btn_cancel_order').click(function(event) {
+				event.stopPropagation();
 				var target = $(event.target);
 				order_id = target.attr("id_order");
 				onclick_button_cancel_order(order_id);
 			});
 		});
 	});
+
+	//Order Detail ===============================================================
+	function onclick_list_order_detail_order(index_order, classifications_order) {
+		order_data = self.order_datas[classifications_order][index_order];
+		//Render Dialog
+		$("#dialog_order_detail_container", self).html(qweb.render('dialog_order_detail',{
+			'id': order_data.id,
+			'name': order_data.name,
+			'state': order_data.state,
+			'pin': order_data.pin,
+			'state_name': order_data.state_name,
+			'request_date':  order_data.request_date,
+			'order_by_name':  order_data.order_by_name,
+			'start_planned_date': order_data.start_planned_date,
+			'finish_planned_date':  order_data.finish_planned_date,
+			'assigned_vehicle_name': order_data.assigned_vehicle_name,
+			'assigned_driver_name': order_data.assigned_driver_name,
+			'origin_location': order_data.origin_location,
+			'origin_area_name': order_data.origin_area_name,
+			'dest_location': order_data.dest_location,
+			'dest_area_name': order_data.dest_area_name,
+			'service_type': order_data.service_type,
+			'service_type_name': order_data.service_type_name,
+			'order_by_name': order_data.order_by_name,
+			'over_quota_status': order_data.over_quota_status,
+			'order_usage': order_data.alloc_unit_usage,
+			'red_limit': order_data.red_limit,
+			'yellow_limit': order_data.yellow_limit,
+			'maintained_by': order_data.maintained_by,
+			'au_id': order_data.au_id,
+			'au_name': order_data.au_name,
+			'list_passenger' : order_data.list_passenger_name,
+			'contract_id': order_data.contract_id,
+			'contract_name': order_data.contract_name,
+			'type': order_data.type,
+		}));
+
+		// Tampilkan Dialog
+		var modal = $("#modalOrderDetail");
+		modal.css("display", "block");
+
+		// Button Close Dialog
+		$(".close_dialog").click(function(event) {
+			modal.css("display", "none");
+		});
+
+		// Jika Click Selain di Daerah dialog, maka tutup dialog
+		window.onclick = function(event) {
+			if (event.target == modal.get(0)) {
+				modal.css("display", "none");
+			}
+		}
+	};
 
 	function onclick_button_approve_order(order_id) {
 		$.ajax({
@@ -915,7 +990,7 @@ $(document).ready(function () {
 		$("#new_amount_red").html(red_limit);
 
 		// Tampilkan Dialog
-		var modal = $("#myModalChangeQuota");
+		var modal = $("#modalChangeQuota");
 		modal.css("display", "block");
 
 		// Button Close Dialog

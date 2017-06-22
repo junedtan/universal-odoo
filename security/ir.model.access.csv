@@ -345,7 +345,6 @@ access_foms_contract_shuttle_schedule_passenger,foms.contract.shuttle.schedule p
 access_foms_contract_alloc_unit_booker,foms.contract.alloc.unit booker,universal.model_foms_contract_alloc_unit,universal.group_universal_booker,1,0,0,0
 access_foms_contract_booker,foms.contract booker,universal.model_foms_contract,universal.group_universal_booker,1,0,0,0
 access_foms_contract_fleet_booker,foms.contract.fleet booker,universal.model_foms_contract_fleet,universal.group_universal_booker,1,0,0,0
-access_foms_order_booker,foms.order booker,universal.model_foms_order,universal.group_universal_booker,1,0,0,0
 access_chjs_region_booker,chjs.region booker,chjs_region.model_chjs_region,universal.group_universal_booker,1,0,0,0
 access_foms_contract_shuttle_schedule_booker,foms.contract.shuttle.schedule booker,universal.model_foms_contract_shuttle_schedule,universal.group_universal_booker,1,0,0,0
 access_foms_contract_alloc_unit_customer_pic,foms.contract.alloc.unit customer_pic,universal.model_foms_contract_alloc_unit,universal.group_universal_customer_pic,1,0,0,0
@@ -357,4 +356,8 @@ access_foms_contract_shuttle_schedule_customer_pic,foms.contract.shuttle.schedul
 access_res_partner_route_customer_pic,res.partner.route customer_pic,universal.model_res_partner_route,universal.group_universal_customer_pic,1,1,1,1
 access_foms_contract_quota_change_log_customer_pic,foms.contract.quota.change.log customer_pic,universal.model_foms_contract_quota_change_log,universal.group_universal_customer_pic,1,1,1,0
 access_foms_contract_quota_customer_pic,foms.contract.quota customer_pic,universal.model_foms_contract_quota,universal.group_universal_customer_pic,1,1,1,0
-access_foms_order_booker,foms.order booker,universal.model_foms_order,universal.group_universal_booker,1,1,0,0
+access_foms_order_booker,foms.order booker,universal.model_foms_order,universal.group_universal_booker,1,1,1,1
+access_foms_order_booker,foms.order.passenger booker,universal.model_foms_order_passenger,universal.group_universal_booker,1,1,1,1
+access_foms_order_passenger,foms.order.passenger passenger,universal.model_foms_order_passenger,universal.group_universal_passenger,1,1,1,1
+access_foms_contract_alloc_unit_passenger,foms.contract.alloc.unit passenger,universal.model_foms_contract_alloc_unit,universal.group_universal_passenger,1,0,0,0
+access_chjs_region_passenger,chjs.region passenger,chjs_region.model_chjs_region,universal.group_universal_passenger,1,0,0,0

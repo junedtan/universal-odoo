@@ -122,6 +122,21 @@ div.row_hoverable{
 	animation-duration: 0.4s;
 }
 
+.modal_detail_order {
+	position: fixed;
+	margin-left: auto;
+	margin-right: auto;
+	left: 0;
+	top: 15%;
+	right: 0;
+	background-color: #fefefe;
+	width: 350px;
+	-webkit-animation-name: slideIn;
+	-webkit-animation-duration: 0.4s;
+	animation-name: slideIn;
+	animation-duration: 0.4s;
+}
+
 /* The Close Button */
 .close_dialog {
 	color: darkred;
@@ -193,4 +208,13 @@ div.row_hoverable{
 	margin-bottom: 10px;
 	margin-top: -15px;
 	overflow: hidden;
+}
+
+.header_detail_order{
+	color : blue
+}
+
+#btn_add_passenger{
+display: block;
+margin: auto;
 }

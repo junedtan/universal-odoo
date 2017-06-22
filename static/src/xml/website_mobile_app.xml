@@ -29,9 +29,11 @@
 				<t t-call="website_mobile_app_create_order_time"/>
 			</div>
 			<!-- Button -->
-			<div class="row ml10">
-				<button type="button" id="btn_create_order" class="btn btn-success col-md-10 col-xs-12">Create Order</button>
-			</div>
+			<t t-if="create_mode">
+				<div class="row ml10">
+					<button type="button" id="btn_create_order" class="btn btn-success col-md-10 col-xs-12">Create Order</button>
+				</div>
+			</t>
 		</div>
 	</t>
 
@@ -293,7 +295,7 @@
 	<t t-name="dialog_change_planned_start_time">
 		<div id="dialog_change_planned_start_time" class="modal">
 		  <!-- Modal content -->
-			<div class="modal_request_change_quota">
+			<div class="modal_change_planned_start_time">
 				<div class="modal-header">
 					<span class="close_dialog">x</span>
 					<div class = "list_title">
@@ -315,7 +317,7 @@
 	<t t-name="dialog_edit_order">
 		<div id="dialog_edit_order" class="modal">
 		  <!-- Modal content -->
-			<div class="modal_request_change_quota">
+			<div class="modal_edit_order">
 				<div class="modal-header">
 					<span class="close_dialog">x</span>
 					<div class = "list_title">
@@ -323,7 +325,7 @@
 					</div>
 				</div>
 				<div class="modal-body">
-					<t t-call="website_mobile_app_create_order"/>
+					<!--<t t-call="website_mobile_app_create_order"/>-->
 					<div style="width:100%" align="right">
 						<button type="button" t-attf-id_order = "{{order_id}}" class="btn btn-success btn_save_edit_order mt16 ml10">Save</button>
 						<button type="button" t-attf-id_order = "{{order_id}}" class="btn btn-danger btn_cancel_edit_order mt16 ml10">Cancel</button>

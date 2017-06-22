@@ -68,6 +68,7 @@ $(document).ready(function () {
 				// Time
 				'start_planned_default': new Date().addHours(1).toDatetimeString(),
 				'finish_planned_default': new Date().addHours(2).toDatetimeString(),
+				'create_mode': true,
 			}));
 
 			$('#create_order_contract').change(function(){
@@ -321,6 +322,7 @@ $(document).ready(function () {
 			$(".list_order").click(function(event) {
 				event.stopPropagation();
 				var target = $(event.target);
+				console.log(target)
 				self.index_click_order = target.attr("index_order");
 				var classifications_order = target.attr("classification_order");
 				onclick_list_order_detail_order(self.index_click_order, classifications_order);
@@ -328,7 +330,7 @@ $(document).ready(function () {
 
 			$('#dialog_order_detail_container').click(function(event){
 				event.stopPropagation();
-			})
+			});
 
 			$('.btn_add_quota').click(function(event) {
 				event.stopPropagation();
@@ -346,6 +348,7 @@ $(document).ready(function () {
 				onclick_button_change_planned_start_time(order_id, response['list_order']);
 			});
 			$('.btn_edit_order').click(function(event) {
+				console.log('heeeh')
 				event.stopPropagation();
 				var target = $(event.target);
 				order_id = target.attr("id_order");
@@ -474,6 +477,10 @@ $(document).ready(function () {
 					modal.css("display", "none");
 				});
 
+				$('#dialog_change_planned_start_time').click(function(event){
+					event.stopPropagation();
+				})
+
 				$('.btn_save_change_order').click(function(event) {
 					var target = $(event.target);
 					order_id = target.attr("id_order");
@@ -554,6 +561,10 @@ $(document).ready(function () {
 			$(".close_dialog").click(function(event) {
 				modal.css("display", "none");
 			});
+
+			$('#dialog_edit_order').click(function(event){
+				event.stopPropagation();
+			})
 
 			$('.btn_save_edit_order').click(function(event) {
 				var target = $(event.target);

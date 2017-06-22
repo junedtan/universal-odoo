@@ -98,51 +98,52 @@ $(document).ready(function () {
 	});
 
 	function onclick_create_order_button(mode, order_id) {
-		passengers = [];
-		$('#passengers > tbody > tr').each(function() {
-			var row = $(this);
-			var name = row.find('.tbl_name').val().trim();
-			var phone = row.find('.tbl_phone').val().trim();
-			var passenger_info;
-			if(name && phone) {
-				passenger_info = {
-					'name': name,
-					'phone_no': phone,
-				}
-				if(row.attr("id") === self.my_id) {
-					passenger_info['is_orderer'] = true;
-				} else {
-					passenger_info['is_orderer'] = false;
-				}
-				if(row.attr("exist_id") && (row.attr("exist_id").trim() !== false || row.attr("exist_id").trim() !== '')) {
-					passenger_info['exist_id'] = row.attr("exist_id");
-				}
-				passengers.push(passenger_info);
-			} else {
-				alert('Please complete the passengers information, name and phone number are both required!'); return false;
-			}
-		});
-
 		create_order_json = {
 			'mode_create_or_edit': (mode === 'create') ? 'create' : 'edit',
 			'contract_id': $('#create_order_info_contract').val(),
 			'fleet_type_id': $('#create_order_info_fleet_type').val(),
 			'unit_id': $('#create_order_info_unit').val(),
 			'type_id': $('#create_order_info_type').val(),
-
-			'from_area_id': $('#create_order_route_from_area').val(),
-			'from_location': $('#create_order_route_from_location').val().trim(),
-
-			'to_city_id': $('#create_order_route_to_city').val(),
-			'to_area_id': $('#create_order_route_to_area').val(),
-			'to_location': $('#create_order_route_to_location').val().trim(),
-
-			'i_am_passenger': $("#ckb_i_am_passenger").prop('checked'),
-			'passengers': passengers,
-
 			'start_planned': $('#create_order_start_planned').val(),
 			'finish_planned': $('#create_order_finish_planned').val(),
 		};
+		if(self.user['user_group'] !== 'fullday_passenger') {
+			passengers = [];
+			$('#passengers > tbody > tr').each(function() {
+				var row = $(this);
+				var name = row.find('.tbl_name').val().trim();
+				var phone = row.find('.tbl_phone').val().trim();
+				var passenger_info;
+				if(name && phone) {
+					passenger_info = {
+						'name': name,
+						'phone_no': phone,
+					}
+					if(row.attr("id") === self.my_id) {
+						passenger_info['is_orderer'] = true;
+					} else {
+						passenger_info['is_orderer'] = false;
+					}
+					if(row.attr("exist_id") && (row.attr("exist_id").trim() !== false || row.attr("exist_id").trim() !== '')) {
+						passenger_info['exist_id'] = row.attr("exist_id");
+					}
+					passengers.push(passenger_info);
+				} else {
+					alert('Please complete the passengers information, name and phone number are both required!'); return false;
+				}
+			});
+
+			create_order_json['from_area_id'] = $('#create_order_route_from_area').val();
+			create_order_json['from_location'] = $('#create_order_route_from_location').val().trim();
+	
+			create_order_json['to_city_id'] = $('#create_order_route_to_city').val();
+			create_order_json['to_area_id'] = $('#create_order_route_to_area').val();
+			create_order_json['to_location'] = $('#create_order_route_to_location').val().trim();
+	
+			create_order_json['i_am_passenger'] = $("#ckb_i_am_passenger").prop('checked');
+			create_order_json['passengers'] = passengers;
+		}
+
 		if(mode === 'edit') {
 			create_order_json['order_id'] = order_id;
 		}

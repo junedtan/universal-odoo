@@ -750,86 +750,74 @@ class website_mobile_app_handler(osv.osv):
 	def create_edit_order(self, cr, uid, domain, context={}):
 		order_obj = self.pool.get('foms.order')
 		order_passenger_obj = self.pool.get('foms.order.passenger')
+		user_obj = self.pool.get('res.users')
+		is_fullday_passenger = user_obj.has_group(cr, uid, 'universal.group_universal_passenger')
 		
 		mode = domain.get('mode_create_or_edit', '')
 		contract_id = domain.get('contract_id', '')
 		contract_id = int(contract_id.encode('ascii', 'ignore'))
 		fleet_type_id = domain.get('fleet_type_id', '')
 		fleet_type_id = int(fleet_type_id.encode('ascii', 'ignore'))
-		unit_id = domain.get('unit_id', '')
-		unit_id = int(unit_id.encode('ascii', 'ignore'))
-		type_id = domain.get('type_id', '')
-		
-		from_area_id = domain.get('from_area_id', '')
-		from_area_id = int(from_area_id.encode('ascii', 'ignore'))
-		from_location = domain.get('from_location', '')
-		
-		# to_city_id = domain.get('to_city_id', '')
-		# to_city_id = int(to_city_id.encode('ascii', 'ignore'))
-		to_area_id = domain.get('to_area_id', '')
-		to_area_id = int(to_area_id.encode('ascii', 'ignore'))
-		to_location = domain.get('to_location', '')
-		
-		is_orderer_passenger = domain.get('i_am_passenger', '')
-		passengers = []
-		for passenger in domain.get('passengers', []):
-			passenger_data = {
-				'name': passenger['name'],
-				'phone_no': passenger['phone_no'],
-				'is_orderer': passenger['is_orderer'],
-			}
-			passengers.append([0, False, passenger_data])
 		
 		start_planned = domain.get('start_planned', '')
 		start_planned = datetime.strptime(start_planned, '%Y-%m-%dT%H:%M' if start_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
 		finish_planned = domain.get('finish_planned', '')
 		finish_planned = datetime.strptime(finish_planned, '%Y-%m-%dT%H:%M' if finish_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
 		
+		order_data = {
+			'customer_contract_id': contract_id,
+			'order_by': uid,
+			'fleet_type_id': fleet_type_id,
+			
+			'start_planned_date': start_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
+			'finish_planned_date': finish_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
+			'request_date': datetime.now(),
+		}
+		
+		if not is_fullday_passenger:
+			unit_id = domain.get('unit_id', '')
+			unit_id = int(unit_id.encode('ascii', 'ignore'))
+			type_id = domain.get('type_id', '')
+			
+			from_area_id = domain.get('from_area_id', '')
+			from_area_id = int(from_area_id.encode('ascii', 'ignore'))
+			from_location = domain.get('from_location', '')
+			
+			# to_city_id = domain.get('to_city_id', '')
+			# to_city_id = int(to_city_id.encode('ascii', 'ignore'))
+			to_area_id = domain.get('to_area_id', '')
+			to_area_id = int(to_area_id.encode('ascii', 'ignore'))
+			to_location = domain.get('to_location', '')
+			
+			is_orderer_passenger = domain.get('i_am_passenger', '')
+			passengers = []
+			for passenger in domain.get('passengers', []):
+				passenger_data = {
+					'name': passenger['name'],
+					'phone_no': passenger['phone_no'],
+					'is_orderer': passenger['is_orderer'],
+				}
+				passengers.append([0, False, passenger_data])
+			
+			order_data['alloc_unit_id'] = unit_id
+			order_data['order_type_by_order'] = type_id
+			
+			order_data['origin_area_id'] = from_area_id
+			order_data['origin_location'] = from_location
+			# order_data['dest_city_id'] = to_city_id
+			order_data['dest_area_id'] = to_area_id
+			order_data['dest_location'] = to_location
+			
+			order_data['is_orderer_passenger'] = is_orderer_passenger
+			order_data['passengers'] = passengers
+		
 		if mode == 'create':
-			return order_obj.create(cr, SUPERUSER_ID, {
-				'customer_contract_id': contract_id,
-				'order_by': uid,
-				'fleet_type_id': fleet_type_id,
-				'alloc_unit_id': unit_id,
-				'order_type_by_order': type_id,
-				
-				'origin_area_id': from_area_id,
-				'origin_location': from_location,
-				# 'dest_city_id': to_city_id,
-				'dest_area_id': to_area_id,
-				'dest_location': to_location,
-				
-				'is_orderer_passenger': is_orderer_passenger,
-				'passengers': passengers,
-				
-				'start_planned_date': start_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
-				'finish_planned_date': finish_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
-				'request_date': datetime.now(),
-			})
+			return order_obj.create(cr, SUPERUSER_ID, order_data)
 		else:
 			order_id = domain.get('order_id', '')
 			order_id = int(order_id.encode('ascii', 'ignore'))
 			order_passenger_obj.unlink(cr, uid, order_passenger_obj.search(cr, uid, [('header_id', '=', order_id)]))
-			return order_obj.write(cr, SUPERUSER_ID, [order_id], {
-				'customer_contract_id': contract_id,
-				'order_by': uid,
-				'fleet_type_id': fleet_type_id,
-				'alloc_unit_id': unit_id,
-				'order_type_by_order': type_id,
-				
-				'origin_area_id': from_area_id,
-				'origin_location': from_location,
-				# 'dest_city_id': to_city_id,
-				'dest_area_id': to_area_id,
-				'dest_location': to_location,
-				
-				'is_orderer_passenger': is_orderer_passenger,
-				'passengers': passengers,
-				
-				'start_planned_date': start_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
-				'finish_planned_date': finish_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
-				'request_date': datetime.now(),
-			})
+			return order_obj.write(cr, SUPERUSER_ID, [order_id], order_data)
 			
 	
 	def request_quota_change(self, cr, uid, domain, context={}):

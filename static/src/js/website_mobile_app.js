@@ -492,7 +492,6 @@ $(document).ready(function () {
 		filtered_order_datas.push.apply(filtered_order_datas, order_datas['ready']);
 		$.each(filtered_order_datas, function(index, order_data) {
 			if(parseInt(order_data['id']) === parseInt(order_id)) {
-				console.log(new Date().addHours(1).toDatetimeString())
 				$("#change_planned_start_time", self).html(qweb.render('dialog_change_planned_start_time',{
 					'order_id': order_id,
 					'planned_start_time_old': new Date().addHours(1).toDatetimeString(),
@@ -589,20 +588,27 @@ $(document).ready(function () {
 			$('#create_order_route_to_area').val(""+order_data.dest_area_id).change();
 			$('#create_order_route_to_location').val(""+order_data.dest_location).change();
 
+			me_exist = false;
+			var ckb_i_am_passenger = $('#ckb_i_am_passenger');
 			$.each(order_data.passengers, function(index, passenger) {
 				if(!passenger.is_orderer) {
 					add_passenger_to_table(passenger.name, passenger.phone_no, passenger.id);
 				} else {
 					if(order_data.is_orderer_passenger) {
-						var ckb_i_am_passenger = $('#ckb_i_am_passenger');
 						ckb_i_am_passenger.click(function(){
-							onclick_create_order_i_am_passenger(passenger.id);
+							onclick_create_order_i_am_passenger("");
 						});
 						ckb_i_am_passenger.click();
 						onclick_create_order_i_am_passenger(passenger.id);
 					}
 				}
 			});
+
+			if(!me_exist) {
+				ckb_i_am_passenger.click(function(){
+					onclick_create_order_i_am_passenger("");
+				});
+			}
 
 			$('.btn_save_edit_order').click(function(event) {
 				var target = $(event.target);

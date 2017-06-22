@@ -2,6 +2,10 @@
 	margin-left: 10px;
 }
 
+.mt5 {
+	margin-top: 5px;
+}
+
 hr {
 	margin: 0px;
 	padding: 0px;
@@ -131,11 +135,15 @@ div.row_hoverable{
 	right: 0;
 	background-color: #fefefe;
 	width: 350px;
-	height: 450px;
 	-webkit-animation-name: slideIn;
 	-webkit-animation-duration: 0.4s;
 	animation-name: slideIn;
 	animation-duration: 0.4s;
+	overflow: hidden;
+}
+
+.modal_detail_order .modal-body{
+  	height: 400px;
 	overflow: auto;
 }
 
@@ -152,6 +160,7 @@ div.row_hoverable{
 	-webkit-animation-duration: 0.4s;
 	animation-name: slideIn;
 	animation-duration: 0.4s;
+	overflow: hidden;
 }
 
 /* The Close Button */
@@ -179,6 +188,12 @@ div.row_hoverable{
 }
 
 .modal-body {padding: 10px 16px;}
+
+.modal_change_planned_start_time .modal-body {
+	padding: 10px 16px;
+	overflow: hidden;
+	height: 150px;
+}
 
 .modal-footer {
 	padding: 2px 16px;
@@ -227,8 +242,13 @@ div.row_hoverable{
 	overflow: hidden;
 }
 
+.div_detail_order_button {
+	margin-bottom: 10px;
+	overflow: hidden;
+}
+
 .header_detail_order{
-	color : blue
+	color : blue;
 }
 
 #btn_add_passenger{

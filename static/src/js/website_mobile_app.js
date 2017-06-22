@@ -109,8 +109,6 @@ $(document).ready(function () {
 					'name': name,
 					'phone_no': phone,
 				}
-				console.log(self.my_id);
-				console.log(row.attr("id"));
 				if(row.attr("id") === self.my_id) {
 					passenger_info['is_orderer'] = true;
 				} else {
@@ -368,33 +366,16 @@ $(document).ready(function () {
 				red_limit = target.attr("red_limit");
 				onclick_button_request_change_quota(au_id, contract_id, yellow_limit, red_limit);
 			});
-			$('.btn_change_planned_start_time').click(function(event) {
-				event.stopPropagation();
-				var target = $(event.target);
-				order_id = target.attr("id_order");
-				onclick_button_change_planned_start_time(order_id, response['list_order']);
-			});
-			$('.btn_edit_order').click(function(event) {
-				event.stopPropagation();
-				var target = $(event.target);
-				order_id = target.attr("id_order");
-				onclick_button_edit_order(order_id);
-			});
-			$('.btn_cancel_order').click(function(event) {
-				event.stopPropagation();
-				var target = $(event.target);
-				order_id = target.attr("id_order");
-				onclick_button_cancel_order(order_id);
-			});
 		});
 	});
 
 	//Order Detail ===============================================================
 	function onclick_list_order_detail_order(index_order, classifications_order) {
 		order_data = self.order_datas[classifications_order][index_order];
-		console.log(order_data.list_passenger);
 		//Render Dialog
 		$("#dialog_order_detail_container", self).html(qweb.render('dialog_order_detail',{
+			'user_group': self.user['user_group'],
+			'classification_value': classifications_order,
 			'id': order_data.id,
 			'name': order_data.name,
 			'state': order_data.state,
@@ -424,6 +405,7 @@ $(document).ready(function () {
 			'contract_id': order_data.contract_id,
 			'contract_name': order_data.contract_name,
 			'type': order_data.type,
+			'type_name': order_data.type_name,
 		}));
 
 		// Tampilkan Dialog
@@ -433,6 +415,25 @@ $(document).ready(function () {
 		// Button Close Dialog
 		$(".close_dialog").click(function(event) {
 			modal.css("display", "none");
+		});
+
+		$('.btn_change_planned_start_time').click(function(event) {
+			event.stopPropagation();
+			var target = $(event.target);
+			order_id = target.attr("id_order");
+			onclick_button_change_planned_start_time(order_id, self.order_datas);
+		});
+		$('.btn_edit_order').click(function(event) {
+			event.stopPropagation();
+			var target = $(event.target);
+			order_id = target.attr("id_order");
+			onclick_button_edit_order(order_id);
+		});
+		$('.btn_cancel_order').click(function(event) {
+			event.stopPropagation();
+			var target = $(event.target);
+			order_id = target.attr("id_order");
+			onclick_button_cancel_order(order_id);
 		});
 
 		// Jika Click Selain di Daerah dialog, maka tutup dialog

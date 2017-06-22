@@ -216,29 +216,6 @@
 									</t>
 									<t t-if="order.dest_location">
 										<tr>
-											<td>Time</td>
-											<td>:</td>
-											<td><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
-										</tr>
-									</t>
-									<t t-if="order.assigned_vehicle_name">
-										<tr>
-											<td>Fleet</td>
-											<td>:</td>
-											<td><t t-esc="order.assigned_driver_name"/> - <t t-esc="order.assigned_vehicle_name"/></td>
-										</tr>
-									</t>
-									<t t-if="order.origin_location">
-										<tr>
-											<td>From</td>
-											<td>:</td>
-											<td>
-												<t t-esc="order.origin_location"/> (<t t-esc="order.origin_area_name"/>)
-											</td>
-										</tr>
-									</t>
-									<t t-if="order.dest_location">
-										<tr>
 											<td>To</td>
 											<td>:</td>
 											<td>
@@ -276,15 +253,6 @@
 												</t>
 											</t>
 										</t>
-									</t>
-									<t t-if="user_group != 'pic'">
-										<t t-if="classification_value == 'pending' || classification_value == 'ready'">
-											<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_change_planned_start_time ml10">Change Planned Start Time</button>
-											<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_edit_order ml10">Edit Order</button>
-											<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_cancel_order ml10">Cancel Order</button>
-										</t>
-										<div id="change_planned_start_time"/>
-										<div id="list_order_edit_order"/>
 									</t>
 								</div>
 							</div>
@@ -906,49 +874,68 @@
 				<div class="modal-header">
 					<span class="close_dialog">x</span>
 					<div class = "list_title">
-						Detail Order
+						<t t-esc="name"/>
 					</div>
 				</div>
 				<div class="modal-body">
-					<div class = "list_title">
-						<t t-esc="name"/>
+					<div class="div_detail_order_button">
+						<t t-if="user_group != 'pic'">
+							<t t-if="classification_value == 'pending' || classification_value == 'ready'">
+								<button type="button" t-attf-id_order = "{{id}}" class="btn btn-success btn_change_planned_start_time">Change Planned Start Time</button>
+								<button type="button" t-attf-id_order = "{{id}}" class="btn btn-success btn_edit_order">Edit Order</button>
+								<button type="button" t-attf-id_order = "{{id}}" class="btn btn-danger btn_cancel_order mt5">Cancel Order</button>
+							</t>
+							<div id="change_planned_start_time"/>
+							<div id="list_order_edit_order"/>
+						</t>
+
 					</div>
 					<table class="table table-striped ">
 						<t t-if="origin_location || dest_location">
-							<tr> <td class = "header_detail_order">Route</td> </tr>
+							<tr>
+								<td colspan="2" class="header_detail_order">Route</td>
+							</tr>
 						</t>
 						<t t-if="origin_location">
 							<tr>
-								<td>From :</td>
-								<td><t t-esc="origin_location"/> - <t t-esc="origin_area_name"/></td>
+								<td>From</td>
+								<td><t t-esc="origin_location"/> (<t t-esc="origin_area_name"/>)</td>
 							</tr>
 						</t>
 						<t t-if="dest_location">
 							<tr>
-								<td>To :</td>
-								<td><t t-esc="dest_location"/> - <t t-esc="dest_area_name"/></td>
+								<td>To</td>
+								<td><t t-esc="dest_location"/> (<t t-esc="dest_area_name"/>)</td>
 							</tr>
 						</t>
 						<t t-if="service_type != 'full_day'">
-							<tr> <td class = "header_detail_order">Passenger</td> </tr>
-							<t t-if="service_type == 'by_order'">
-								<tr>
-									<td>Unit</td>
-									<td><t t-esc="au_name"/></td>
-								</tr>
-							</t>
 							<tr>
-								<td>Passenger</td>
+								<td colspan="2" class = "header_detail_order">Passenger</td>
 							</tr>
 							<t t-foreach="list_passenger" t-as="passenger">
-								<tr> <t t-esc="passenger.name"/> <t t-if="passenger.phone"> - <t t-esc="passenger.phone"/></t> </tr>
+								<tr>
+									<td>
+										<t t-esc="passenger.name"/>
+									</td>
+									<td>
+										<t t-if="passenger.phone"> <t t-esc="passenger.phone"/></t>
+									</td>
+								</tr>
 							</t>
 						</t>
-						<tr> <td class = "header_detail_order">Information</td> </tr>
+						<tr>
+							<td colspan="2" class = "header_detail_order">Information</td>
+						</tr>
 						<tr>
 							<td>Contract</td>
 							<td><t t-esc="contract_name"/></td>
 						</tr>
+						<t t-if="service_type == 'by_order'">
+							<tr>
+								<td>Unit</td>
+								<td><t t-esc="au_name"/></td>
+							</tr>
+						</t>
 						<tr>
 							<td>Service Type</td>
 							<td><t t-esc="service_type_name"/></td>
@@ -956,13 +943,15 @@
 						<t t-if="type">
 							<tr>
 								<td>Type</td>
-								<td><t t-esc="type"/></td>
+								<td><t t-esc="type_name"/></td>
 							</tr>
 						</t>
-						<tr> <td class = "header_detail_order">Status</td> </tr>
+						<tr>
+							<td colspan="2" class = "header_detail_order">Status</td>
+						</tr>
 						<tr>
 							<td>State</td>
-							<td><t t-esc="state"/></td>
+							<td><t t-esc="state_name"/></td>
 						</tr>
 						<tr>
 							<td>Requested Date</td>

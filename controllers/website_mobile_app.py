@@ -370,6 +370,7 @@ class website_mobile_app(http.Controller):
 				'contract_id': order_data.customer_contract_id.id,
 				'contract_name': order_data.customer_contract_id.name,
 				'type': order_data.order_type_by_order,
+				'type_name': dict(_ORDER_TYPE).get(order_data.order_type_by_order, ''),
 			});
 		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
 		result['ready']   = sorted(result['ready'],   key=lambda order: order['request_date'], reverse=True)

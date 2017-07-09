@@ -1,0 +1,32 @@
+<openerp>
+	<data>
+		
+		<!-- GPS LOG -->
+		
+		<record model="ir.ui.view" id="foms_gps_sync_tree">
+			<field name="name">foms.gps.sync.tree</field>
+			<field name="model">foms.gps.sync</field>
+			<field name="arch" type="xml">
+				<tree version="7.0" create="false" edit="false" delete="false">
+					<field name="location_id" />
+					<field name="action_time" />
+					<field name="action" />
+					<field name="vehicle_id" />
+					<field name="km" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="foms_gps_sync_search">
+			<field name="name">foms.gps.sync.search</field>
+			<field name="model">foms.gps.sync</field>
+			<field name="arch" type="xml">
+				<search>
+					<field name="vehicle_id" />
+					<field name="location_id" />
+				</search>
+			</field>
+		</record>
+		
+	</data>
+</openerp>

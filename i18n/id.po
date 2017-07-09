@@ -20818,7 +20818,6 @@ msgstr "Params storage"
 
 #. modules: chjs_region, hr_employee_family, universal, hr_holidays, mail, hr_payroll
 #: field:chjs.region,parent_id:0
-#: selection:hr.employee.family,family_relationship:0
 #: field:hr.holidays,parent_id:0
 #: field:hr.payroll.structure,parent_id:0
 #: field:hr.salary.rule.category,parent_id:0
@@ -20828,6 +20827,7 @@ msgstr "Induk"
 
 #. modules: chjs_region, hr_employee_family, universal, hr_holidays, mail, hr_payroll
 #: selection:hr.applicant,family_contactable_relationship:0
+#: selection:hr.employee.family,family_relationship:0
 msgid "Parent"
 msgstr "Orang Tua"
 

@@ -279,6 +279,21 @@
 				</form>
 			</field>
 		</record>
-				
+
+		<record model="ir.ui.view" id="foms_order_try_cron_form">
+			<field name="name">foms.order.try.cron.form</field>	
+			<field name="model">foms.order.try.cron</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Try Crons">
+					<group>
+						<field name="cron" />
+					</group>
+					<footer>
+						<button type="object" name="action_execute" string="Execute" />
+					</footer>
+				</form>
+			</field>
+		</record>
+
 	</data>
 </openerp>

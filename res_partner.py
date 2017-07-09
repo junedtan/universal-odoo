@@ -72,14 +72,13 @@ class res_partner_location(osv.osv):
 	_columns = {
 		'header_id': fields.many2one('res.partner', 'Customer', ondelete='cascade'),
 		'name': fields.char('Location', required=True),
-		'google_map_coordinates': fields.text('Google Map Coordinates', required=True, help="Google Map coordinates based on Google Map API or other GPS system."),
-		'radius': fields.float('Radius', required=True)
+		'gps_system_id': fields.integer('GPS System ID', required=True, help="Geofence ID Number from GPS system."),
 	}
 	
 # CONSTRAINTS -------------------------------------------------------------------------------------------------------------------
 	
 	_sql_constraints = [
-		('unique_partner_location', 'UNIQUE(header_id,google_map_coordinates)', _('Please input unique coordinates for each location.')),
+		('unique_partner_location', 'UNIQUE(header_id,gps_system_id)', _('Please input unique coordinates for each location.')),
 	]	
 	
 

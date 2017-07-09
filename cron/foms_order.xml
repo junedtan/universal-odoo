@@ -78,5 +78,19 @@
 			<field eval="'cron_driver_attendances'" name="function" />
 			<field eval="" name="args" />
 		</record>
+
+		<record forcecreate="True" id="ir_cron_gps_sync" model="ir.cron">
+			<field name="name">Synchronize GPS data</field>
+			<field eval="True" name="active" />
+			<field name="user_id" ref="base.user_root" />
+			<field name="interval_number">10</field>
+			<field name="interval_type">minutes</field>
+			<field name="numbercall">-1</field>
+			<field name="active">1</field>
+			<field eval="'foms.gps.sync'" name="model" />
+			<field eval="'cron_sync_gps_data'" name="function" />
+			<field eval="" name="args" />
+		</record>
+
 	</data>
 </openerp>

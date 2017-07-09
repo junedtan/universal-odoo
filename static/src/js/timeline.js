@@ -48,6 +48,7 @@ openerp.universal = function(instance) {
 // METHODS ------------------------------------------------------------------------------------------------------------------
 
 		onclick_filter_button: function(){
+			alert($('#filter_date').val());
 			var filter_date = new Date($('#filter_date').val());
 			var year = filter_date.getFullYear();
 			var month = filter_date.getMonth()+1;

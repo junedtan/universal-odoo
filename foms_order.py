@@ -1507,8 +1507,10 @@ class foms_order(osv.osv):
 	# nanti dulu
 		holidays = []
 		for holiday in contract_data.working_time_id.leave_ids:
-			date_from = (datetime.strptime(holiday.date_from,"%Y-%m-%d %H:%M:%S")).replace(hour=0,minute=0,second=0)
-			date_to = (datetime.strptime(holiday.date_to,"%Y-%m-%d %H:%M:%S")).replace(hour=23,minute=59,second=59)
+			#date_from = (datetime.strptime(holiday.date_from,"%Y-%m-%d %H:%M:%S")).replace(hour=0,minute=0,second=0)
+			#date_to = (datetime.strptime(holiday.date_to,"%Y-%m-%d %H:%M:%S")).replace(hour=23,minute=59,second=59)
+			date_from = (datetime.strptime(holiday.date_from,"%Y-%m-%d %H:%M:%S") + timedelta(hours=SERVER_TIMEZONE)).replace(hour=0,minute=0,second=0)
+			date_to = (datetime.strptime(holiday.date_to,"%Y-%m-%d %H:%M:%S") + timedelta(hours=SERVER_TIMEZONE)).replace(hour=23,minute=59,second=59)
 			day = date_from
 			while day < date_to:
 				holidays.append(day)
@@ -1516,7 +1518,8 @@ class foms_order(osv.osv):
 		return working_days, holidays
 
 	def _next_workday(self, work_date, working_day_keys, holidays):
-		while work_date in holidays: work_date = work_date + timedelta(hours=24)
+		while work_date in holidays: 
+			work_date = work_date + timedelta(hours=24)
 		while work_date.weekday() not in working_day_keys: work_date = work_date + timedelta(hours=24)
 		return work_date
 	
@@ -1608,14 +1611,13 @@ class foms_order(osv.osv):
 			# tentukan first order date dan mau berapa banyak bikin ordernya
 				last_order_date = last_fullday_autogenerate or datetime.strptime('1970-01-01','%Y-%m-%d') + timedelta(hours=24)
 				if not contract.last_fullday_autogenerate_date or last_order_date < today:
-					first_order_date = max([contract_start_date, last_order_date, today])
+					#first_order_date = max([contract_start_date, last_order_date, today])
+					first_order_date = max([contract_start_date, last_order_date])
 					max_orders = 7
 				else:
 					first_order_date = last_order_date + timedelta(hours=24)
 					max_orders = 1 # kalo udah pernah autogenerate maka cukup generate satu hari berikutnya
 				first_order_date = self._next_workday(first_order_date, working_day_keys, holidays)
-				print first_order_date
-				print last_fullday_autogenerate
 			# kalo last generatenya masih kejauhan (lebih dari 7 hari) maka ngga usah generate dulu, bisi kebanyakan
 				if last_fullday_autogenerate and first_order_date > next7days:
 					print "No generate order for contract %s -------------------------------------" % contract.name
@@ -2234,3 +2236,24 @@ class foms_order_replace_driver(osv.osv):
 				'driver_id': replace_driver.replacement_driver_id.id,
 			})
 		
+class foms_order_try_cron(osv.osv_memory):
+
+	_name = 'foms.order.try.cron'
+	_description = 'Testing buat cron'
+
+	_columns = {
+		'cron': fields.selection((
+			('cron_autogenerate_fullday','Autogenerate fullday'),
+			('cron_sync_gps_data','Sync GPS data'),
+		), 'Cron Name')
+	}
+
+	def action_execute(self, cr, uid, ids, context={}):
+		form_data = self.browse(cr, uid, ids[0])
+		order_obj = self.pool.get('foms.order')
+		gps_obj = self.pool.get('foms.gps.sync')
+		if form_data.cron == 'cron_autogenerate_fullday':
+			order_obj.cron_autogenerate_fullday(cr, uid, context)
+			raise osv.except_osv('test','test')
+		elif form_data.cron == 'cron_sync_gps_data':
+			gps_obj.cron_sync_gps_data(cr, uid, context)

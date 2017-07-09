@@ -29,6 +29,12 @@ class fleet_vehicle(osv.osv):
 		# update deh
 				res[id] = rows[0]['contract_id']	
 		return res
+
+	def _license_plate_nospace(self, cr, uid, ids, field_name, arg, context):
+		result = {}
+		for data in self.browse(cr, uid, ids):
+			result[data.id] = data.license_plate.replace(" ","")
+		return result
 	
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
@@ -37,6 +43,7 @@ class fleet_vehicle(osv.osv):
 		'current_contract_id': fields.function(_get_current_contract, method=True, type='many2one', obj='foms.contract', string="Current Contract"),
 		'contract_ids': fields.one2many('foms.contract.fleet', 'fleet_vehicle_id', 'Contract Fleet'),
 		'state_change_ids': fields.one2many('fleet.vehicle.state.change.log', 'header_id', 'State Change Log'),
+		'license_plate_nospace': fields.function(_license_plate_nospace, method=True, type="char", store=True),
 	}
 	
 # DEFAULTS ----------------------------------------------------------------------------------------------------------------------

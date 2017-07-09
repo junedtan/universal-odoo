@@ -22,3 +22,9 @@
 	margin-left: 10px;
 	width: 100px;
 }
+
+.row.no-margin {
+	margin-left: 0px !important;
+	margin-right: 0px !important;
+}
+

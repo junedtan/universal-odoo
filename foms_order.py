@@ -1725,6 +1725,7 @@ class foms_order(osv.osv):
 							'customer_contract_id': contract.id,
 							'service_type': contract.service_type,
 							'request_date': counter_date,
+							'order_by': uid,
 							'assigned_vehicle_id': schedule['fleet_vehicle_id'],
 							'assigned_driver_id': fleet_drivers[schedule['fleet_vehicle_id']],
 							'start_planned_date': counter_date + timedelta(hours=schedule['departure_time']) - timedelta(hours=SERVER_TIMEZONE),
@@ -1910,7 +1911,8 @@ class foms_order_area(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'homebase_id': fields.many2one('chjs.region', 'Homebase', required=True, ondelete='restrict'),
+		'homebase_id': fields.many2one('chjs.region', 'Homebase', required=True, ondelete='restrict', domain=[('type','=','city')]),
+		'district_id': fields.many2one('chjs.region', 'District', required=True, ondelete='restrict'),
 		'name': fields.char('Area Name', required=True),
 	}
 
@@ -1949,6 +1951,74 @@ class foms_order_area_delay(osv.osv):
 		else:
 			delay_data = self.browse(cr, uid, delay_ids[0])
 			return delay_data.delay
+
+# ==========================================================================================================================
+
+class foms_order_area_set_delay_memory(osv.osv_memory):
+
+	_name = "foms.order.area.set.delay.memory"
+	_description = 'Set Order Area Delay Wizard'
+
+# COLUMNS ------------------------------------------------------------------------------------------------------------------
+
+	_columns = {
+		'homebase_id': fields.many2one('chjs.region', 'Homebase', required=True, domain=[('type','=','city')]),
+		'district_id': fields.many2one('chjs.region', 'District', required=True),
+		'area_from_id': fields.many2one('foms.order.area', 'From Area', required=True),
+		'delay_lines': fields.one2many('foms.order.area.set.delay.line.memory', 'header_id', 'Delays'),
+	}
+
+	def onchange_area_from(self, cr, uid, ids, area_from_id):
+		if not area_from_id: return {}
+	# ambil semua data yang area_from nya sesuai yang dipilih
+		area_delay_obj = self.pool.get('foms.order.area.delay')
+		area_delay_ids = area_delay_obj.search(cr, uid, [('area_from_id','=',area_from_id)])
+		if len(area_delay_ids) == 0: return {}
+		lines = []
+		for area_delay in area_delay_obj.browse(cr, uid, area_delay_ids):
+			lines.append([0,False,{
+				'delay_id': area_delay.id,
+				'area_to_id': area_delay.area_to_id.id,
+				'delay': area_delay.delay,
+				}])
+		return {
+			'value': {
+				'delay_lines': lines,
+			}
+		}
+
+	def action_set_delays(self, cr, uid, ids, context={}):
+		form_data = self.browse(cr, uid, ids[0])
+		area_delay_obj = self.pool.get('foms.order.area.delay')
+		for line in form_data.delay_lines:
+			if line.delay_id:
+				print "masuk write"
+				area_delay_obj.write(cr, uid, [line.delay_id.id], {
+					'area_to_id': line.area_to_id.id,
+					'delay': line.delay,
+					})
+			else:
+				print "masuk create"
+				area_delay_obj.create(cr, uid, {
+					'area_from_id': form_data.area_from_id.id,
+					'area_to_id': line.area_to_id.id,
+					'delay': line.delay,
+					})
+		return True
+
+class foms_order_area_set_delay_line_memory(osv.osv_memory):
+
+	_name = "foms.order.area.set.delay.line.memory"
+	_description = 'Set Order Area Delay Wizard Lines'
+
+# COLUMNS ------------------------------------------------------------------------------------------------------------------
+
+	_columns = {
+		'header_id': fields.many2one('foms.order.area.set.delay.memory', 'Header'),
+		'delay_id': fields.many2one('foms.order.area.delay', 'Existing Delay ID'),
+		'area_to_id': fields.many2one('foms.order.area', 'To Area', required=True),
+		'delay': fields.integer('Delay (minutes)', required=True),
+	}
 
 # ==========================================================================================================================
 

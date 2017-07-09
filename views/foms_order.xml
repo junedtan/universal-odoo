@@ -10,6 +10,7 @@
 				<form version="7.0" string="Order Area">
 					<group>
 						<field name="homebase_id" />
+						<field name="district_id" domain="[('parent_id','=',homebase_id)]" />
 						<field name="name" />
 					</group>
 				</form>
@@ -20,10 +21,11 @@
 			<field name="name">foms.order.area.tree</field>	
 			<field name="model">foms.order.area</field>
 			<field name="arch" type="xml">
-				<form version="7.0" string="Order Area">
+				<tree version="7.0" string="Order Area" editable="bottom">
 					<field name="homebase_id" />
+					<field name="district_id" domain="[('parent_id','=',homebase_id)]" />
 					<field name="name" />
-				</form>
+				</tree>
 			</field>
 		</record>
 				
@@ -33,11 +35,37 @@
 			<field name="name">foms.order.area.delay.tree</field>	
 			<field name="model">foms.order.area.delay</field>
 			<field name="arch" type="xml">
-				<tree version="7.0" string="Order Area Delay" editable="bottom">
+				<tree version="7.0" string="Order Area Delay" create="false">
 					<field name="area_from_id" />
 					<field name="area_to_id" />
 					<field name="delay" type="char" />
 				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="foms_order_area_set_delay_memory_form">
+			<field name="name">foms.order.area.set.delay.memory.form</field>	
+			<field name="model">foms.order.area.set.delay.memory</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Set Order Area Delay">
+					<group>
+						<field name="homebase_id" />
+						<field name="district_id" domain="[('parent_id','=',homebase_id)]" />
+						<field name="area_from_id" domain="[('district_id','=',district_id)]" on_change="onchange_area_from(area_from_id)" />
+						<field name="delay_lines" nolabel="1" colspan="4">
+							<tree version="7.0" delete="false" editable="bottom">
+								<field name="delay_id" invisible="1" />
+								<field name="area_to_id" />
+								<field name="delay" />
+							</tree>
+						</field>
+					</group>
+					<footer>
+						<button string="Set Delays" name="action_set_delays" type="object" class="oe_highlight" />
+						or
+						<button string="Cancel" special="cancel" />
+					</footer>
+				</form>
 			</field>
 		</record>
 				

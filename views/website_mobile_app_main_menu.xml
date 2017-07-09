@@ -6,11 +6,13 @@
 				<div class="container universal_website_mobile_app">
 					<div class="row" id="menu_container">
 						<t t-if="user_group == ''">
-							<div class="oe_callout oe_callout_danger">
-								<h4>Error</h4>
-								<p>
-									You must login as Fullday Passenger or Booker or PIC or Approver.
-								</p>
+							<div class="col-md-12 mb16 mt16">
+								<div class="oe_callout oe_callout_danger">
+									<h4>Error</h4>
+									<p>
+										You must login as Fullday Passenger or Booker or PIC or Approver.
+									</p>
+								</div>
 							</div>
 						</t>
 						<t t-if="user_group == 'fullday_passenger'">
@@ -44,8 +46,10 @@
 									id="website_mobile_app_menu_list_orders">Orders</div>
 						</t>
 					</div>
-					<hr/>
-					<div class="row" id="main_container"/>
+					<t t-if="user_group != ''">
+						<hr/>
+						<div class="row" id="main_container"/>
+					</t>
 				</div>
 			</t>
 		</template>

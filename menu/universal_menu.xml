@@ -37,7 +37,8 @@
 			<field name="res_model">chjs.region</field>
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
-			<field name="context">{'default_type':'province'}</field>
+			<field name="context">{'default_type':'city'}</field>
+			<field name="domain">[('type','in',['city'])]</field>
 		</record>
 		
 		<record id="universal_action_check_duplicate" model="ir.actions.act_window">
@@ -97,6 +98,13 @@
 			<field name="url">/hr/attendance</field>
 			<field name="parent_id" ref="website.main_menu"/>
 			<field name="sequence" type="int">50</field>
+		</record>
+
+		<record id="universal_menu_mobile_app" model="website.menu">
+			<field name="name">Mobile App</field>
+			<field name="url">/mobile_app</field>
+			<field name="parent_id" ref="website.main_menu"/>
+			<field name="sequence" type="int">51</field>
 		</record>
 
 		<record id="universal_action_attendance_mass" model="ir.actions.act_window">
@@ -246,7 +254,7 @@
 			<field name="name">Order Areas</field>	
 			<field name="res_model">foms.order.area</field>
 			<field name="view_type">form</field>
-			<field name="view_mode">tree,form</field>
+			<field name="view_mode">tree</field>
 		</record>
 
 		<record id="universal_action_order_area_delay" model="ir.actions.act_window">
@@ -254,6 +262,14 @@
 			<field name="res_model">foms.order.area.delay</field>
 			<field name="view_type">form</field>
 			<field name="view_mode">tree</field>
+		</record>
+
+		<record id="universal_action_set_order_area_delay" model="ir.actions.act_window">
+			<field name="name">Set Area Delays</field>	
+			<field name="res_model">foms.order.area.set.delay.memory</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">form</field>
+			<field name="target">new</field>
 		</record>
 
 		<record id="universal_action_change_driver_phone" model="ir.actions.act_window">
@@ -272,11 +288,39 @@
 			<field name="view_mode">tree,form</field>
 		</record>
 
+		<record id="universal_action_gps_log" model="ir.actions.act_window">
+			<field name="name">View GPS Log</field>
+			<field name="res_model">foms.gps.sync</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree</field>
+		</record>
+
 		<record id="universal_action_replace_driver" model="ir.actions.act_window">
 			<field name="name">Replace Driver</field>
 			<field name="res_model">foms.order.replace.driver</field>
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record id="universal_action_timeline_by_date" model="ir.actions.client">
+			<field name="name">Timeline by Date</field>
+			<field name="tag">universal.timeline_by_date</field>
+			<field name="context">{'hide_sidebar': 1}</field>
+		</record>
+
+		<record id="universal_action_timeline_by_driver" model="ir.actions.client">
+			<field name="name">Timeline by Driver</field>
+			<field name="tag">universal.timeline_by_driver</field>
+			<field name="context">{'hide_sidebar': 1}</field>
+		</record>
+
+
+		<record id="universal_action_try_cron" model="ir.actions.act_window">
+			<field name="name">Test Cron</field>
+			<field name="res_model">foms.order.try.cron</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">form</field>
+			<field name="target">new</field>
 		</record>
 
 		<menuitem parent="hr.menu_hr_configuration" sequence="3" id="universal_menu_job_position" action="universal_action_job_position"
@@ -325,6 +369,8 @@
 			groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver" />
 
 		<menuitem sequence="20" name="FOMS" id="universal_menu_foms" />
+		<menuitem sequence="21" name="Timeline by Date" id="universal_menu_timeline_by_date" action="universal_action_timeline_by_date" />
+		<menuitem sequence="22" name="Timeline by Driver" id="universal_menu_timeline_by_driver" action="universal_action_timeline_by_driver" />
 		
 		<menuitem sequence="1" parent="universal_menu_foms" name="Contract" id="universal_menu_foms_contract" />
 			<menuitem sequence="1" parent="universal_menu_foms_contract" action="universal_action_foms_contract" id="universal_menu_foms_contract1" groups="universal.group_universal_staff_marketing,universal.group_universal_staff_opr_kend,universal.group_universal_staff_opr_driv,universal.group_universal_dispatcher" />
@@ -350,18 +396,22 @@
 			<menuitem action="universal_action_replace_vehicle" id="universal_menu_replace_vehicle" parent="universal_menu_replacement_parent" groups="universal.group_universal_dispatcher" />
 			<menuitem action="universal_action_replace_driver" id="universal_menu_replace_driver" parent="universal_menu_replacement_parent" groups="universal.group_universal_dispatcher" />	
 
-		<menuitem sequence="6" parent="universal_menu_foms" name="Configuration" id="menu_universal_foms_config"/>
+		<menuitem sequence="6" parent="universal_menu_foms" name="GPS Data" id="menu_universal_foms_gps"/>
+			<menuitem action="universal_action_gps_log" id="universal_menu_gps_log" parent="menu_universal_foms_gps" />
+
+		<menuitem sequence="7" parent="universal_menu_foms" name="Configuration" id="menu_universal_foms_config"/>
 			<menuitem parent="menu_universal_foms_config" sequence="1" id="universal_menu_config_customer" action="base.action_partner_customer_form" groups="universal.group_universal_staff_marketing" />
 			<menuitem parent="menu_universal_foms_config" sequence="2" id="universal_menu_homebase" action="universal_action_homebase" 
 				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_marketing,universal.group_universal_admin_fleet"/>
 			<menuitem parent="menu_universal_foms_config" sequence="3" id="universal_menu_order_area" action="universal_action_order_area" groups="universal.group_universal_dispatcher" />
 			<menuitem parent="menu_universal_foms_config" sequence="4" id="universal_menu_order_area_delay" action="universal_action_order_area_delay" groups="universal.group_universal_dispatcher" />
-			<menuitem parent="menu_universal_foms_config" sequence="5" id="universal_menu_resource_calendar" action="resource.action_resource_calendar_form"
+			<menuitem parent="menu_universal_foms_config" sequence="5" id="universal_menu_set_order_area_delay" action="universal_action_set_order_area_delay" groups="universal.group_universal_dispatcher" />
+			<menuitem parent="menu_universal_foms_config" sequence="6" id="universal_menu_resource_calendar" action="resource.action_resource_calendar_form"
 				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_marketing,universal.group_universal_admin_fleet" />
-			<menuitem parent="menu_universal_foms_config" sequence="6" id="hr_overtime.hr_menu_overtime" action="hr_overtime.hr_action_overtime" 
+			<menuitem parent="menu_universal_foms_config" sequence="7" id="hr_overtime.hr_menu_overtime" action="hr_overtime.hr_action_overtime" 
 				groups="universal.group_universal_spv_hrd_staff,universal.group_universal_spv_hrd_driver,universal.group_universal_staff_marketing"/>
-			<menuitem parent="menu_universal_foms_config" sequence="7" id="universal_menu_order_cancel_reason" action="universal_action_order_cancel_reason" groups="universal.group_universal_dispatcher" />
-			<menuitem parent="menu_universal_foms_config" sequence="8" id="universal_menu_change_driver_phone" action="universal_action_change_driver_phone" groups="universal.group_universal_dispatcher" />
+			<menuitem parent="menu_universal_foms_config" sequence="8" id="universal_menu_order_cancel_reason" action="universal_action_order_cancel_reason" groups="universal.group_universal_dispatcher" />
+			<menuitem parent="menu_universal_foms_config" sequence="9" id="universal_menu_change_driver_phone" action="universal_action_change_driver_phone" groups="universal.group_universal_dispatcher" />
 
 		
 <!-- INHERIT -->
@@ -430,6 +480,8 @@
 		<menuitem action="fleet.fleet_vehicle_model_act" parent="fleet.fleet_configuration" id="fleet.fleet_vehicle_model_menu" groups="universal.group_universal_staff_opr_kend" />
 
 		<menuitem action="fleet.fleet_vehicle_model_brand_act" parent="fleet.fleet_configuration" id="fleet.fleet_vehicle_model_brand_menu" groups="universal.group_universal_staff_opr_kend" />
+
+		<menuitem action="universal_action_try_cron" parent="menu_universal_foms_config" id="universal_menu_try_cron" />
 
 	</data>
 </openerp>

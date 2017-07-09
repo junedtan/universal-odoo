@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates xml:space="preserve">
+
+	<t t-name="universal_timeline_by_date">
+		<div class="wrapper_universal_timeline_by_date">
+			<div class="row no-margin padding6 div_filter">
+				<form class="form-inline">
+  					<div class="form-group">
+						<label for="filter_date">Date: </label>
+						<input class="datepicker" id="filter_date" size="8" type="text" readonly=""/>
+					</div>
+					<div type="button" id="button_filter" class="btn btn-primary ml16">Filter</div>
+				</form>
+			</div>
+			<hr class="no-margin"/>
+			<div class="row no-margin" id="div_main">
+			</div>
+		</div>
+	</t>
+
+	<t t-name="universal_timeline_by_date_table">
+		<div class="wrapper_universal_timelie_by_date_table">
+			<table class="table table-condensed table-striped">
+				<tr>
+					<th>Driver</th>
+					<th>License Plate</th>
+					<t t-foreach="hours" t-as="hour">
+						<th>
+							<div class="vertical-line"></div>
+							<t t-esc='hour'/>
+						</th>
+					</t>
+				</tr>
+				<t t-foreach="drivers" t-as="driver">
+					<tr>
+						<td><t t-esc='driver.driver_name'/></td>
+						<td>
+							<t t-set="first" t-value="'True'"/>
+							<t t-foreach="driver.license_plates" t-as="license_plate">
+								<t t-if="first == 'False'">	/ </t>
+								<t t-esc='license_plate'/>
+								<t t-set= "first" t-value="'False'" />
+							</t>
+						</td>
+						<td colspan="24" style="padding:0px;">
+							<div class="progress">
+								<t t-foreach="driver.planned_orders" t-as="order">
+									<div class="progress-bar bg-none" role="progressbar"
+											t-attf-style='width:{{100.0*order.start/1440}}%'>
+									</div>
+									<div class="progress-bar bg-planned" role="progressbar"
+											t-attf-style='width:{{100.0*(order.finish)/1440}}%'>
+									</div>
+								</t>
+							</div>
+							<div class="progress" style="margin-top:-28px;">
+								<t t-foreach="driver.actual_orders" t-as="order">
+									<div class="progress-bar bg-none" role="progressbar"
+											t-attf-style='width:{{100.0*order.start/1440}}%'>
+									</div>
+									<div class="progress-bar bg-actual" role="progressbar"
+											t-attf-style='width:{{100.0*(order.finish)/1440}}%'>
+									</div>
+								</t>
+							</div>
+							<div class="progress" style="margin-top:-28px;">
+								<t t-foreach="driver.now_time" t-as="order">
+									<div class="progress-bar bg-none" role="progressbar"
+											t-attf-style='width:{{100.0*order.start/1440}}%'>
+									</div>
+									<div class="progress-bar bg-now" role="progressbar"
+											t-attf-style='width:{{100.0*(order.finish)/1440}}%'>
+									</div>
+								</t>
+							</div>
+						</td>
+					</tr>
+				</t>
+			</table>
+		</div>
+	</t>
+
+	<t t-name="universal_timeline_by_driver">
+		<div class="wrapper_universal_timeline_by_driver">
+			<div class="row no-margin padding6 div_filter">
+				<form class="form-inline">
+  					<div class="form-group">
+						<label for="filter_driver">Driver</label>
+						<input list="filter_driver_list" id="filter_driver">
+							<datalist id="filter_driver_list" >
+								<t t-foreach="drivers" t-as="driver">
+									<option t-att-id="driver.id" t-attf-value="{{driver.name}}"/>
+								</t>
+							</datalist>
+						</input>
+					</div>
+					<div class="form-group">
+						<label class="ml16" for="filter_start_date">Start Date</label>
+						<input class="datepicker" id="filter_start_date" size="8" type="text" readonly=""/>
+					</div>
+					<div class="form-group">
+						<label class="ml16" for="filter_end_date">End Date</label>
+						<input class="datepicker" id="filter_end_date" size="8" type="text" readonly=""/>
+					</div>
+					<div type="button" id="button_filter" class="btn btn-primary ml16">Filter</div>
+				</form>
+			</div>
+			<hr class="no-margin"/>
+			<div class="row no-margin" id="div_main">
+			</div>
+		</div>
+	</t>
+
+	<t t-name="universal_timeline_by_driver_table">
+		<div class="wrapper_universal_timelie_by_driver_table">
+			<table class="table table-condensed table-striped table-fixed">
+				<thead>
+					<tr>
+						<th>Date</th>
+						<t t-foreach="hours" t-as="hour">
+							<th>
+								<div class="vertical-line"></div>
+								<t t-esc='hour'/>
+							</th>
+						</t>
+					</tr>
+				</thead>
+				<tbody>
+					<t t-foreach="dates" t-as="date">
+						<tr>
+							<td><t t-esc='date.date_string'/></td>
+							<td colspan="24" style="padding:0px;">
+								<div class="progress">
+									<t t-foreach="date.planned_orders" t-as="order">
+										<div class="progress-bar bg-none" role="progressbar"
+												t-attf-style='width:{{100.0*order.start/1440}}%'>
+										</div>
+										<div class="progress-bar bg-planned" role="progressbar"
+												t-attf-style='width:{{100.0*(order.finish)/1440}}%'>
+										</div>
+									</t>
+								</div>
+								<div class="progress" style="margin-top:-28px;">
+									<t t-foreach="date.actual_orders" t-as="order">
+										<div class="progress-bar bg-none" role="progressbar"
+												t-attf-style='width:{{100.0*order.start/1440}}%'>
+										</div>
+										<div class="progress-bar bg-actual" role="progressbar"
+												t-attf-style='width:{{100.0*(order.finish)/1440}}%'>
+										</div>
+									</t>
+								</div>
+								<div class="progress" style="margin-top:-28px;">
+									<t t-foreach="date.now_time" t-as="order">
+										<div class="progress-bar bg-none" role="progressbar"
+												t-attf-style='width:{{100.0*order.start/1440}}%'>
+										</div>
+										<div class="progress-bar bg-now" role="progressbar"
+												t-attf-style='width:{{100.0*(order.finish)/1440}}%'>
+										</div>
+									</t>
+								</div>
+							</td>
+						</tr>
+					</t>
+				</tbody>
+			</table>
+		</div>
+	</t>
+
+</templates>

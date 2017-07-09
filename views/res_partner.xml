@@ -37,8 +37,7 @@
 							<field name="favorite_locations" nolabel="1">
 								<tree version="7.0" editable="bottom">
 									<field name="name" />
-									<field name="google_map_coordinates" />
-									<field name="radius" />
+									<field name="gps_system_id" />
 								</tree>
 							</field>
 						</group>

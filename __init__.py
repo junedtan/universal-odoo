@@ -91,6 +91,8 @@ DOMAIN_DUPLI_DICT = {
 	'name': 'ilike'
 }
 
+GPS_URL = "http://geo.u.utrack.co.id/geof/"
+
 SERVER_TIMEZONE = 7 # WIB
 
 """
@@ -142,3 +144,4 @@ import hr_payroll
 import hr_contract
 import foms_contract
 import foms_order
+import gps

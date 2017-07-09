@@ -313,3 +313,4 @@ class website_universal(http.Controller):
 				response['error'] = _('Error confirming start/finish. Please try again in a moment. If the trouble persists, please use paper attendance for now.')
 			return json.dumps(response)
 			
+			

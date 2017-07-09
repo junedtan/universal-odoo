@@ -10288,7 +10288,7 @@ msgstr "Kota"
 #. module: chjs_region
 #: selection:chjs.region,type:0
 msgid "City District"
-msgstr "Kecamatan"
+msgstr "Distrik"
 
 #. module: chjs_region
 #: selection:chjs.region,type:0
@@ -10298,7 +10298,7 @@ msgstr "Kelurahan"
 #. module: chjs_region
 #: selection:chjs.region,type:0
 msgid "City/Regency"
-msgstr "Kota/Kabupaten"
+msgstr "Homebase"
 
 #. module: base
 #: model:ir.module.module,shortdesc:base.module_claim_from_delivery
@@ -12853,7 +12853,7 @@ msgstr "Display your network of certified people on your website"
 #. module: chjs_region
 #: view:chjs.region:chjs_region.chjs_region_search
 msgid "District"
-msgstr "Kecamatan"
+msgstr "Distrik"
 
 #. modules: hr, universal, hr_employee_family
 #: selection:hr.employee,marital:0
@@ -20816,7 +20816,7 @@ msgstr "Parameters that are used by all resources."
 msgid "Params storage"
 msgstr "Params storage"
 
-#. modules: chjs_region, hr_employee_family, universal, hr_holidays, mail, hr_payroll
+#. modules: chjs_region, universal, hr_holidays, mail, hr_payroll
 #: field:chjs.region,parent_id:0
 #: field:hr.holidays,parent_id:0
 #: field:hr.payroll.structure,parent_id:0

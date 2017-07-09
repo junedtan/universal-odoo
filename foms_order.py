@@ -150,8 +150,11 @@ class foms_order(osv.osv):
 	def create(self, cr, uid, vals, context={}):
 		contract_obj = self.pool.get('foms.contract')
 		contract_data = contract_obj.browse(cr, uid, vals['customer_contract_id'])
-
-		service_type = vals.get('service_type', contract_data.service_type or False)
+		
+		service_type = vals.get('service_type', False)
+		if not service_type:
+			service_type = contract_data.service_type
+			vals['service_type'] = contract_data.service_type
 
 		user_obj = self.pool.get('res.users')
 		
@@ -219,9 +222,14 @@ class foms_order(osv.osv):
 		if service_type == 'full_day':
 			fleet_data = None
 			for fleet in new_data.customer_contract_id.car_drivers:
-				if fleet.fullday_user_id.id == new_data.order_by.id:
-					fleet_data = fleet
-					break
+				if vals.get('assigned_vehicle_id', False):
+					if fleet.fullday_user_id.id == new_data.order_by.id and fleet.fleet_vehicle_id.id == vals.get('assigned_vehicle_id', False):
+						fleet_data = fleet
+						break
+				else:
+					if fleet.fullday_user_id.id == new_data.order_by.id:
+						fleet_data = fleet
+						break
 			if fleet_data:
 				self.write(cr, uid, [new_id], {
 					'assigned_driver_id': fleet_data.driver_id.id,
@@ -967,9 +975,12 @@ class foms_order(osv.osv):
 
 	def _cek_request_date(self, cr, uid, request_date, contract_data):
 		book_in_hours = False
-		request_date_convert = datetime.strptime(request_date, "%Y-%m-%d %H:%M:%S")
-		order_day = request_date_convert.weekday()
-		order_time = request_date_convert.time()
+		if type(request_date) is unicode:
+			request_date = request_date.encode('ascii', 'ignore')
+		if type(request_date) is string or type(request_date) is str:
+			request_date = datetime.strptime(request_date, "%Y-%m-%d %H:%M:%S")
+		order_day = request_date.weekday()
+		order_time = request_date.time()
 		order_time = order_time.hour + (order_time.minute/60.0)
 		for order_hours in contract_data.order_hours:
 			if order_day == int(order_hours.dayofweek) and (order_time >= order_hours.time_from - SERVER_TIMEZONE and order_time <= order_hours.time_to - SERVER_TIMEZONE):
@@ -980,9 +991,7 @@ class foms_order(osv.osv):
 		if not contract_data.working_time_id:
 			raise osv.except_osv(_('Order Error'),_('Working time for this order\'s contract is not set. Please contact PT. Universal.'))
 		book_in_holiday = False
-		print request_date
 		for holiday in contract_data.working_time_id.leave_ids:
-			print holiday.date_from, holiday.date_to
 			if request_date >= holiday.date_from and request_date <= holiday.date_to:
 				book_in_holiday = True
 				break
@@ -1198,7 +1207,7 @@ class foms_order(osv.osv):
 	# 			# Jika first_clock_out <= first_clock_in
 	# 				if first_clock_out <= first_clock_in:
 	# 				# ambil start_planned nya si clock_out
-	# 					previous_start_planned_date = datetime.strptime(first_finished_order.start_planned_date, '%Y-%m-%d %H:%M:%S')
+# 					previous_start_planned_date = datetime.strptime(first_finished_order.start_planned_date, '%Y-%m-%d %H:%M:%S')
 	# 					previous_clock_out_id = attendance_obj.search(cr, uid, [
 	# 						('name', '>=', previous_start_planned_date.date().strftime('%Y-%m-%d 00:00:00')),
 	# 						('name', '<=', previous_start_planned_date.date().strftime('%Y-%m-%d 23:59:59')),
@@ -1498,8 +1507,10 @@ class foms_order(osv.osv):
 	# nanti dulu
 		holidays = []
 		for holiday in contract_data.working_time_id.leave_ids:
-			date_from = (datetime.strptime(holiday.date_from,"%Y-%m-%d %H:%M:%S")).replace(hour=0,minute=0,second=0)
-			date_to = (datetime.strptime(holiday.date_to,"%Y-%m-%d %H:%M:%S")).replace(hour=23,minute=59,second=59)
+			#date_from = (datetime.strptime(holiday.date_from,"%Y-%m-%d %H:%M:%S")).replace(hour=0,minute=0,second=0)
+			#date_to = (datetime.strptime(holiday.date_to,"%Y-%m-%d %H:%M:%S")).replace(hour=23,minute=59,second=59)
+			date_from = (datetime.strptime(holiday.date_from,"%Y-%m-%d %H:%M:%S") + timedelta(hours=SERVER_TIMEZONE)).replace(hour=0,minute=0,second=0)
+			date_to = (datetime.strptime(holiday.date_to,"%Y-%m-%d %H:%M:%S") + timedelta(hours=SERVER_TIMEZONE)).replace(hour=23,minute=59,second=59)
 			day = date_from
 			while day < date_to:
 				holidays.append(day)
@@ -1507,7 +1518,8 @@ class foms_order(osv.osv):
 		return working_days, holidays
 
 	def _next_workday(self, work_date, working_day_keys, holidays):
-		while work_date in holidays: work_date = work_date + timedelta(hours=24)
+		while work_date in holidays: 
+			work_date = work_date + timedelta(hours=24)
 		while work_date.weekday() not in working_day_keys: work_date = work_date + timedelta(hours=24)
 		return work_date
 	
@@ -1599,14 +1611,13 @@ class foms_order(osv.osv):
 			# tentukan first order date dan mau berapa banyak bikin ordernya
 				last_order_date = last_fullday_autogenerate or datetime.strptime('1970-01-01','%Y-%m-%d') + timedelta(hours=24)
 				if not contract.last_fullday_autogenerate_date or last_order_date < today:
-					first_order_date = max([contract_start_date, last_order_date, today])
+					#first_order_date = max([contract_start_date, last_order_date, today])
+					first_order_date = max([contract_start_date, last_order_date])
 					max_orders = 7
 				else:
 					first_order_date = last_order_date + timedelta(hours=24)
 					max_orders = 1 # kalo udah pernah autogenerate maka cukup generate satu hari berikutnya
 				first_order_date = self._next_workday(first_order_date, working_day_keys, holidays)
-				print first_order_date
-				print last_fullday_autogenerate
 			# kalo last generatenya masih kejauhan (lebih dari 7 hari) maka ngga usah generate dulu, bisi kebanyakan
 				if last_fullday_autogenerate and first_order_date > next7days:
 					print "No generate order for contract %s -------------------------------------" % contract.name
@@ -1714,6 +1725,7 @@ class foms_order(osv.osv):
 							'customer_contract_id': contract.id,
 							'service_type': contract.service_type,
 							'request_date': counter_date,
+							'order_by': uid,
 							'assigned_vehicle_id': schedule['fleet_vehicle_id'],
 							'assigned_driver_id': fleet_drivers[schedule['fleet_vehicle_id']],
 							'start_planned_date': counter_date + timedelta(hours=schedule['departure_time']) - timedelta(hours=SERVER_TIMEZONE),
@@ -1899,7 +1911,8 @@ class foms_order_area(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'homebase_id': fields.many2one('chjs.region', 'Homebase', required=True, ondelete='restrict'),
+		'homebase_id': fields.many2one('chjs.region', 'Homebase', required=True, ondelete='restrict', domain=[('type','=','city')]),
+		'district_id': fields.many2one('chjs.region', 'District', required=True, ondelete='restrict'),
 		'name': fields.char('Area Name', required=True),
 	}
 
@@ -1938,6 +1951,74 @@ class foms_order_area_delay(osv.osv):
 		else:
 			delay_data = self.browse(cr, uid, delay_ids[0])
 			return delay_data.delay
+
+# ==========================================================================================================================
+
+class foms_order_area_set_delay_memory(osv.osv_memory):
+
+	_name = "foms.order.area.set.delay.memory"
+	_description = 'Set Order Area Delay Wizard'
+
+# COLUMNS ------------------------------------------------------------------------------------------------------------------
+
+	_columns = {
+		'homebase_id': fields.many2one('chjs.region', 'Homebase', required=True, domain=[('type','=','city')]),
+		'district_id': fields.many2one('chjs.region', 'District', required=True),
+		'area_from_id': fields.many2one('foms.order.area', 'From Area', required=True),
+		'delay_lines': fields.one2many('foms.order.area.set.delay.line.memory', 'header_id', 'Delays'),
+	}
+
+	def onchange_area_from(self, cr, uid, ids, area_from_id):
+		if not area_from_id: return {}
+	# ambil semua data yang area_from nya sesuai yang dipilih
+		area_delay_obj = self.pool.get('foms.order.area.delay')
+		area_delay_ids = area_delay_obj.search(cr, uid, [('area_from_id','=',area_from_id)])
+		if len(area_delay_ids) == 0: return {}
+		lines = []
+		for area_delay in area_delay_obj.browse(cr, uid, area_delay_ids):
+			lines.append([0,False,{
+				'delay_id': area_delay.id,
+				'area_to_id': area_delay.area_to_id.id,
+				'delay': area_delay.delay,
+				}])
+		return {
+			'value': {
+				'delay_lines': lines,
+			}
+		}
+
+	def action_set_delays(self, cr, uid, ids, context={}):
+		form_data = self.browse(cr, uid, ids[0])
+		area_delay_obj = self.pool.get('foms.order.area.delay')
+		for line in form_data.delay_lines:
+			if line.delay_id:
+				print "masuk write"
+				area_delay_obj.write(cr, uid, [line.delay_id.id], {
+					'area_to_id': line.area_to_id.id,
+					'delay': line.delay,
+					})
+			else:
+				print "masuk create"
+				area_delay_obj.create(cr, uid, {
+					'area_from_id': form_data.area_from_id.id,
+					'area_to_id': line.area_to_id.id,
+					'delay': line.delay,
+					})
+		return True
+
+class foms_order_area_set_delay_line_memory(osv.osv_memory):
+
+	_name = "foms.order.area.set.delay.line.memory"
+	_description = 'Set Order Area Delay Wizard Lines'
+
+# COLUMNS ------------------------------------------------------------------------------------------------------------------
+
+	_columns = {
+		'header_id': fields.many2one('foms.order.area.set.delay.memory', 'Header'),
+		'delay_id': fields.many2one('foms.order.area.delay', 'Existing Delay ID'),
+		'area_to_id': fields.many2one('foms.order.area', 'To Area', required=True),
+		'delay': fields.integer('Delay (minutes)', required=True),
+	}
 
 # ==========================================================================================================================
 
@@ -2225,3 +2306,24 @@ class foms_order_replace_driver(osv.osv):
 				'driver_id': replace_driver.replacement_driver_id.id,
 			})
 		
+class foms_order_try_cron(osv.osv_memory):
+
+	_name = 'foms.order.try.cron'
+	_description = 'Testing buat cron'
+
+	_columns = {
+		'cron': fields.selection((
+			('cron_autogenerate_fullday','Autogenerate fullday'),
+			('cron_sync_gps_data','Sync GPS data'),
+		), 'Cron Name')
+	}
+
+	def action_execute(self, cr, uid, ids, context={}):
+		form_data = self.browse(cr, uid, ids[0])
+		order_obj = self.pool.get('foms.order')
+		gps_obj = self.pool.get('foms.gps.sync')
+		if form_data.cron == 'cron_autogenerate_fullday':
+			order_obj.cron_autogenerate_fullday(cr, uid, context)
+			raise osv.except_osv('test','test')
+		elif form_data.cron == 'cron_sync_gps_data':
+			gps_obj.cron_sync_gps_data(cr, uid, context)

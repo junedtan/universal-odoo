@@ -38,31 +38,34 @@ openerp.universal = function(instance) {
 		},
 
 		start: function() {
+		    var self = this;
 			this.$el.html(this.QWeb.render("universal_timeline_by_date"));
-			var today = new Date();
-			var date_string = this.pad(today.getFullYear(),4) + "-" + this.pad((today.getMonth()+1),2)  + "-" + this.pad(today.getDate(),2);
-			$('#filter_date').val(date_string);
+            $('.datepicker').datepicker();
+            var today = new Date();
+            var date_string = self.pad((today.getMonth()+1),2)  + "/" + self.pad(today.getDate(),2) + '/' + self.pad(today.getFullYear(),4);
+            $('#filter_date').val(date_string);
 			this.onclick_filter_button();
 		},
 
 // METHODS ------------------------------------------------------------------------------------------------------------------
 
 		onclick_filter_button: function(){
+			/*
 			alert($('#filter_date').val());
 			var filter_date = new Date($('#filter_date').val());
 			var year = filter_date.getFullYear();
 			var month = filter_date.getMonth()+1;
 			var day = filter_date.getDate();
 			this.render_table(day, month, year);
+			*/
+			this.render_table($('#filter_date').val());
 		},
 
-		render_table: function(day, month, year) {
+		render_table: function(date_string) {
 			var self = this;
 			new this.instance.web.Model('universal.timeline')
         		.call('get_timeline_by_date', {
-        			 'day' : day,
-        			 'month' : month,
-        			 'year': year,
+        			 'date_string' : date_string,
         		}).done(function(response) {
         			console.log(response);
         			if (response.status) {
@@ -124,8 +127,9 @@ openerp.universal = function(instance) {
 						self.$el.html(self.QWeb.render("universal_timeline_by_driver",{
 							'drivers': response.drivers,
 						}));
+						$('.datepicker').datepicker();
 						var today = new Date();
-						var date_string = self.pad(today.getFullYear(),4) + "-" + self.pad((today.getMonth()+1),2)  + "-" + self.pad(today.getDate(),2);
+						var date_string = self.pad((today.getMonth()+1),2)  + "/" + self.pad(today.getDate(),2) + '/' + self.pad(today.getFullYear(),4);
 						$('#filter_start_date').val(date_string);
 						$('#filter_end_date').val(date_string);
 
@@ -145,11 +149,7 @@ openerp.universal = function(instance) {
 
 		onclick_filter_button: function(){
 			var self = this;
-			var filter_start_date = new Date($('#filter_start_date').val());
-			var filter_end_date = new Date($('#filter_end_date').val());
-			var start_date = filter_start_date.getFullYear() + '-' + (filter_start_date.getMonth()+1) + '-' + filter_start_date.getDate();
-			var end_date = filter_end_date.getFullYear() + '-' + (filter_end_date.getMonth()+1) + '-' + filter_end_date.getDate();
-			this.render_table(self.driver_id, start_date, end_date);
+			this.render_table(self.driver_id, $('#filter_start_date').val(), $('#filter_end_date').val());
 		},
 
 		render_table: function(driver_id, start_date, end_date) {

@@ -2,6 +2,10 @@
 	margin-left: 10px;
 }
 
+.mt5 {
+	margin-top: 5px;
+}
+
 hr {
 	margin: 0px;
 	padding: 0px;
@@ -26,6 +30,7 @@ hr {
 
 .list_title {
 	font-size: large;
+	font-weight: bold;
 	margin-top: 10px;
 }
 
@@ -51,4 +56,203 @@ div.row_hoverable{
 		font-size: small;
 		font-weight: bold
 	}
+}
+
+.no_bold {
+	font-weight:normal;
+}
+
+.no_margin {
+	margin: 0px;
+}
+
+.no_padding {
+	padding: 0px;
+}
+
+.contract_detail {
+	margin-left: 25px;
+	margin-right: 10px;
+	margin-bottom:0px;
+	margin-top:0px;
+}
+
+.contract_info {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.contract_usage_control {
+	margin-bottom: 10px;
+}
+
+.strike_through_text {
+	text-decoration: line-through;
+	color: gray;
+}
+
+/* The Modal (background) */
+.modal {
+	display: none; /* Hidden by default */
+	position: fixed; /* Stay in place */
+	z-index: 1; /* Sit on top */
+	left: 0;
+	top: 0;
+	width: 100%; /* Full width */
+	height: 100%; /* Full height */
+	overflow: auto; /* Enable scroll if needed */
+	background-color: rgb(0,0,0); /* Fallback color */
+	background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+	-webkit-animation-name: fadeIn; /* Fade in the background */
+	-webkit-animation-duration: 0.4s;
+	animation-name: fadeIn;
+	animation-duration: 0.4s;
+	overflow: scroll;
+}
+
+/* Modal Content */
+.modal_request_change_quota {
+	position: fixed;
+	margin-left: auto;
+	margin-right: auto;
+	left: 0;
+	top: 15%;
+	right: 0;
+	background-color: #fefefe;
+	width: 350px;
+	-webkit-animation-name: slideIn;
+	-webkit-animation-duration: 0.4s;
+	animation-name: slideIn;
+	animation-duration: 0.4s;
+}
+
+.modal_detail_order {
+	position: fixed;
+	margin-left: auto;
+	margin-right: auto;
+	left: 0;
+	top: 15%;
+	right: 0;
+	background-color: #fefefe;
+	width: 90%;
+	-webkit-animation-name: slideIn;
+	-webkit-animation-duration: 0.4s;
+	animation-name: slideIn;
+	animation-duration: 0.4s;
+	overflow: hidden;
+}
+
+.modal_detail_order .modal-body{
+  	height: 400px;
+	overflow: auto;
+}
+
+.modal_change_planned_start_time {
+	position: fixed;
+	margin-left: auto;
+	margin-right: auto;
+	left: 0;
+	top: 15%;
+	right: 0;
+	background-color: #fefefe;
+	width: 70%;
+	-webkit-animation-name: slideIn;
+	-webkit-animation-duration: 0.4s;
+	animation-name: slideIn;
+	animation-duration: 0.4s;
+	overflow: hidden;
+}
+
+/* The Close Button */
+.close_dialog {
+	color: MidnightBlue;
+	float: right;
+	font-size: medium;
+	font-weight: bold;
+}
+
+.close_dialog:hover,
+.close_dialog:focus {
+	color: MediumTurquoise;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.modal-header {
+	padding-left: 5px;
+	padding-right: 5px;
+	padding-bottom: 5px;
+	padding-top: 1px;
+	background-color: #428bca;
+	color: white;
+}
+
+.modal-body {padding: 10px 16px;}
+
+.modal_change_planned_start_time .modal-body {
+	padding: 10px 16px;
+	overflow: hidden;
+	height: 150px;
+}
+
+.modal-footer {
+	padding: 2px 16px;
+	background-color: #5cb85c;
+	color: white;
+}
+
+.progress-bar-grey {
+	background-color: darkgrey;
+}
+
+.input-number {
+	width:150px;
+	padding: 0px;
+	margin:0px;
+	text-align: right;
+}
+
+.clickable:hover {
+	background-color: #F4F4F4;
+}
+
+.card_padding {
+	padding: 10px;
+}
+
+.grey_text {
+	color: grey;
+}
+
+.green_text {
+	color: green;
+}
+
+.red_text {
+	color: red;
+}
+
+.orange_text {
+	color: orange;
+}
+
+.div_order_button {
+	margin-bottom: 10px;
+	margin-top: -15px;
+	overflow: hidden;
+}
+
+.div_detail_order_button {
+	margin-bottom: 10px;
+	overflow: hidden;
+}
+
+.header_detail_order{
+	color : blue;
+	font-weight: bold;
+}
+
+#btn_add_passenger{
+	display: block;
+	margin: auto;
 }

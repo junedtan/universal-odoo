@@ -1912,7 +1912,7 @@ class foms_order_area(osv.osv):
 
 	_columns = {
 		'homebase_id': fields.many2one('chjs.region', 'Homebase', required=True, ondelete='restrict', domain=[('type','=','city')]),
-		'district_id': fields.many2one('chjs.region', 'District', required=True, ondelete='restrict'),
+		'district_id': fields.many2one('chjs.region', 'District', required=True, ondelete='restrict', domain=[('type','=','district')]),
 		'name': fields.char('Area Name', required=True),
 	}
 
@@ -1963,7 +1963,7 @@ class foms_order_area_set_delay_memory(osv.osv_memory):
 
 	_columns = {
 		'homebase_id': fields.many2one('chjs.region', 'Homebase', required=True, domain=[('type','=','city')]),
-		'district_id': fields.many2one('chjs.region', 'District', required=True),
+		'district_id': fields.many2one('chjs.region', 'District', required=True, domain=[('type','=','district')]),
 		'area_from_id': fields.many2one('foms.order.area', 'From Area', required=True),
 		'delay_lines': fields.one2many('foms.order.area.set.delay.line.memory', 'header_id', 'Delays'),
 	}

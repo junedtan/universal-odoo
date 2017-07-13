@@ -114,9 +114,17 @@
 									<field name="start_planned_date" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" />
 									<field name="finish_planned_date" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
 									<field name="origin_location" attrs="{'invisible': [('service_type','!=','by_order')], 'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" />
-									<field name="origin_area_id" options="{'no_create': 1}" attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')], 'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" />
+									<field name="origin_district_id" options="{'no_create': 1}"
+											on_change="onchange_origin_district_id(customer_contract_id,origin_district_id)"
+											attrs="{'invisible': [('service_type','!=','by_order')], 'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" />
+									<field name="origin_area_id" options="{'no_create': 1}"
+											attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')], 'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" />
 									<field name="dest_location" attrs="{'invisible': [('service_type','!=','by_order')], 'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" />
-									<field name="dest_area_id" options="{'no_create': 1}" attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')], 'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" />
+									<field name="dest_district_id" options="{'no_create': 1}"
+											on_change="onchange_dest_district_id(dest_district_id)"
+											attrs="{'invisible': [('service_type','!=','by_order')], 'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" />
+									<field name="dest_area_id" options="{'no_create': 1}"
+											attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')], 'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" />
 									<field name="route_id" attrs="{'invisible': [('service_type','!=','shuttle')]}" />
 								</group>
 								<group string="Assignments">

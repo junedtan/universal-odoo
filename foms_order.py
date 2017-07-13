@@ -87,8 +87,10 @@ class foms_order(osv.osv):
 		'alloc_unit_id': fields.many2one('foms.contract.alloc.unit', 'Unit', ondelete='restrict'),
 		'alloc_unit_usage': fields.float('Unit Usage'),
 		'route_id': fields.many2one('res.partner.route', 'Route', ondelete='set null'),
+		'origin_district_id': fields.many2one('chjs.region', 'Origin District', domain=[('type','=','district')]),
 		'origin_area_id': fields.many2one('foms.order.area', 'Origin Area', ondelete='set null'),
 		'origin_location': fields.char('Origin Location'),
+		'dest_district_id': fields.many2one('chjs.region', 'Destination District', domain=[('type','=','district')]),
 		'dest_area_id': fields.many2one('foms.order.area', 'Destination Area', ondelete='set null'),
 		'dest_location': fields.char('Destination Location'),
 		'order_type_by_order': fields.selection([
@@ -1753,7 +1755,10 @@ class foms_order(osv.osv):
 		fleet_type_ids = []
 		for fleet in contract_data.fleet_types:
 			fleet_type_ids.append(fleet.fleet_type_id.id)
-	# filter piliha order origin area
+	# filter pilihan order origin district
+		region_obj = self.pool.get('chjs.region')
+		district_ids = region_obj.search(cr, uid, [('parent_id','=',contract_data.homebase_id.id)])
+	# filter pilihan order origin area
 		area_obj = self.pool.get('foms.order.area')
 		area_ids = area_obj.search(cr, uid, [('homebase_id','=',contract_data.homebase_id.id)])
 	# filter pilihan allocation unit
@@ -1775,12 +1780,47 @@ class foms_order(osv.osv):
 			'value': value,
 			'domain': {
 				'fleet_type_id': [('id','in',fleet_type_ids)],
+				'origin_district_id': [('id','in',district_ids)],
 				'origin_area_id': [('id','in',area_ids)],
 				'alloc_unit_id': [('id','in',allocation_unit_ids)],
 				'assigned_vehicle_id': [('id','in',fleet_ids)],
 				'actual_vehicle_id': [('id','in',fleet_ids)],
 				'assigned_driver_id': [('id','in',driver_ids)],
 				'actual_driver_id': [('id','in',driver_ids)],
+			}
+		}
+	
+	def onchange_origin_district_id(self, cr, uid, ids, customer_contract_id, origin_district_id, context=None):
+		if not customer_contract_id: return {}
+		contract_obj = self.pool.get('foms.contract')
+		contract_data = contract_obj.browse(cr, uid, customer_contract_id)
+	# filter pilihan order origin area
+		area_obj = self.pool.get('foms.order.area')
+		if origin_district_id:
+			area_ids = area_obj.search(cr, uid, [
+				('homebase_id','=',contract_data.homebase_id.id),
+				('district_id','=',origin_district_id)
+			])
+		else:
+			area_ids = area_obj.search(cr, uid, [
+				('homebase_id','=',contract_data.homebase_id.id),
+			])
+		return {
+			'domain': {
+				'origin_area_id': [('id','in',area_ids)],
+			}
+		}
+	
+	def onchange_dest_district_id(self, cr, uid, ids, dest_district_id, context=None):
+	# filter pilihan order dest area
+		area_obj = self.pool.get('foms.order.area')
+		if not dest_district_id: return {}
+		area_ids = area_obj.search(cr, uid, [
+			('district_id','=',dest_district_id)
+		])
+		return {
+			'domain': {
+				'dest_area_id': [('id','in',area_ids)],
 			}
 		}
 

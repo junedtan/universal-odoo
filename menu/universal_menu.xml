@@ -93,12 +93,14 @@
 			<field name="domain">[('active','=',False)]</field>
 		</record>
 		
+		<!--
 		<record id="universal_menu_start_stop" model="website.menu">
 			<field name="name">Driver Attendance</field>
 			<field name="url">/hr/attendance</field>
 			<field name="parent_id" ref="website.main_menu"/>
 			<field name="sequence" type="int">50</field>
 		</record>
+		-->
 
 		<record id="universal_menu_mobile_app" model="website.menu">
 			<field name="name">Mobile App</field>

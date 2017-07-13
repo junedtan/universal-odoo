@@ -273,10 +273,10 @@ class website_mobile_app(http.Controller):
 		loaded_data = json.loads(data)
 		try:
 			result = handler_obj.create_edit_order(loaded_data)
-		except Exception, e:
+		except Exception as e:
 			response = {
 				'status': 'ok',
-				'info': str(e.value),
+				'info': _("Error: %s") % e,
 				'success' : False,
 			}
 		else:
@@ -724,28 +724,28 @@ class website_mobile_app_handler(osv.osv):
 	
 	def get_user_data(self, cr, uid, param_context):
 		user_obj = self.pool.get('res.users')
-		user = user_obj.browse(cr, uid, uid)
+		user = user_obj.browse(cr, SUPERUSER_ID, uid)
 		return user.partner_id
 	
 	def search_order(self, cr, uid, param_context):
 		order_obj = self.pool.get('foms.order');
-		order_ids = order_obj.search(cr, uid, [], context=param_context)
-		return order_obj.browse(cr, uid, order_ids)
+		order_ids = order_obj.search(cr, SUPERUSER_ID, [], context=param_context)
+		return order_obj.browse(cr, SUPERUSER_ID, order_ids)
 	
 	def search_order_area(self, cr, uid, param_context):
 		order_area_obj = self.pool.get('foms.order.area');
-		order_area_ids = order_area_obj.search(cr, uid, [('homebase_id', '=', param_context['homebase_id'])], context=param_context)
-		return order_area_obj.browse(cr, uid, order_area_ids)
+		order_area_ids = order_area_obj.search(cr, SUPERUSER_ID, [('homebase_id', '=', param_context['homebase_id'])], context=param_context)
+		return order_area_obj.browse(cr, SUPERUSER_ID, order_area_ids)
 	
 	def search_region(self, cr, uid, param_context):
 		region_obj = self.pool.get('chjs.region');
-		region_ids = region_obj.search(cr, uid, [])
-		return region_obj.browse(cr, uid, region_ids)
+		region_ids = region_obj.search(cr, SUPERUSER_ID, [])
+		return region_obj.browse(cr, SUPERUSER_ID, region_ids)
 	
 	def search_contract(self, cr, uid, param_context):
 		contract_obj = self.pool.get('foms.contract');
-		contract_ids = contract_obj.search(cr, uid, [], context=param_context)
-		return contract_obj.browse(cr, uid, contract_ids)
+		contract_ids = contract_obj.search(cr, SUPERUSER_ID, [], context=param_context)
+		return contract_obj.browse(cr, SUPERUSER_ID, contract_ids)
 	
 	def create_edit_order(self, cr, uid, domain, context={}):
 		order_obj = self.pool.get('foms.order')
@@ -763,15 +763,13 @@ class website_mobile_app_handler(osv.osv):
 		start_planned = datetime.strptime(start_planned, '%Y-%m-%dT%H:%M' if start_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
 		finish_planned = domain.get('finish_planned', '')
 		finish_planned = datetime.strptime(finish_planned, '%Y-%m-%dT%H:%M' if finish_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
-		
 		order_data = {
 			'customer_contract_id': contract_id,
 			'order_by': uid,
 			'fleet_type_id': fleet_type_id,
-			
 			'start_planned_date': start_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
 			'finish_planned_date': finish_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
-			'request_date': datetime.now(),
+			'request_date': datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT),
 		}
 		
 		if not is_fullday_passenger:
@@ -810,7 +808,6 @@ class website_mobile_app_handler(osv.osv):
 			
 			order_data['is_orderer_passenger'] = is_orderer_passenger
 			order_data['passengers'] = passengers
-		
 		if mode == 'create':
 			return order_obj.create(cr, SUPERUSER_ID, order_data)
 		else:
@@ -875,10 +872,10 @@ class website_mobile_app_handler(osv.osv):
 	def get_quota_data(self, cr, uid, quota_id, context={}):
 		quota_obj = self.pool.get('foms.contract.quota')
 		quota_change_obj = self.pool.get('foms.contract.quota.change.log')
-		quota = quota_obj.browse(cr, uid, [quota_id])
+		quota = quota_obj.browse(cr, SUPERUSER_ID, [quota_id])
 		au = quota.allocation_unit_id
-		quota_change_ids = quota_change_obj.search(cr, uid, [('allocation_unit_id', '=', au.id)])
-		quota_changes = quota_change_obj.browse(cr, uid, quota_change_ids)
+		quota_change_ids = quota_change_obj.search(cr, SUPERUSER_ID, [('allocation_unit_id', '=', au.id)])
+		quota_changes = quota_change_obj.browse(cr, SUPERUSER_ID, quota_change_ids)
 		if quota.customer_contract_id.id and au.id:
 			total_nominal, total_count = self.search_total_request_nominal_count_quota_changes(cr, uid, quota.customer_contract_id.id, au.id)
 		else:
@@ -896,14 +893,14 @@ class website_mobile_app_handler(osv.osv):
 
 	def search_all_quota_changes(self, cr, uid, id_contract, context={}):
 		quota_obj = self.pool.get('foms.contract.quota.change.log')
-		quota_ids = quota_obj.search(cr, uid, [('customer_contract_id', '=', id_contract)])
-		return quota_obj.browse(cr, uid, quota_ids)
+		quota_ids = quota_obj.search(cr, SUPERUSER_ID, [('customer_contract_id', '=', id_contract)])
+		return quota_obj.browse(cr, SUPERUSER_ID, quota_ids)
 	
 	def search_total_request_nominal_count_quota_changes(self, cr, uid, contract_id, allocation_unit_id, context={}):
 		quota_change_obj = self.pool.get('foms.contract.quota.change.log')
 		now = datetime.now()
 		period = "%02d/%04d" % (now.month ,now.year)
-		quota_change_log_ids = quota_change_obj.search(cr, uid, [('customer_contract_id', '=', contract_id),
+		quota_change_log_ids = quota_change_obj.search(cr, SUPERUSER_ID, [('customer_contract_id', '=', contract_id),
 												('allocation_unit_id', '=', allocation_unit_id),
 												('state', '=', 'approved'),
 												('period', '=', period)])
@@ -952,7 +949,7 @@ class website_mobile_app_handler(osv.osv):
 	
 	def get_order(self, cr, uid, order_id, context={}):
 		order_obj = self.pool.get('foms.order')
-		return order_obj.browse(cr, uid, order_id);
+		return order_obj.browse(cr, SUPERUSER_ID, order_id);
 	
 	def cancel_order(self, cr, uid, order_id, context={}):
 		order_obj = self.pool.get('foms.order')
@@ -962,5 +959,5 @@ class website_mobile_app_handler(osv.osv):
 	
 	def get_shuttle_schedules(self, cr, uid, contract_id):
 		shuttle_schedule_obj = self.pool.get('foms.contract.shuttle.schedule')
-		shuttle_schedule_ids = shuttle_schedule_obj.search(cr, uid, [('header_id','=',contract_id)])
-		return shuttle_schedule_obj.browse(cr, uid, shuttle_schedule_ids)
+		shuttle_schedule_ids = shuttle_schedule_obj.search(cr, SUPERUSER_ID, [('header_id','=',contract_id)])
+		return shuttle_schedule_obj.browse(cr, SUPERUSER_ID, shuttle_schedule_ids)

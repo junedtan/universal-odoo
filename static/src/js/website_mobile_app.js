@@ -643,9 +643,11 @@ $(document).ready(function () {
 			$('#create_order_info_fleet_type').val(""+order_data.fleet_type_id).change();
 			$('#create_order_info_unit').val(""+order_data.alloc_unit_id).change();
 			$('#create_order_info_type').val(""+order_data.order_type_by_order).change();
+			$('#create_order_route_from_district').val(""+order_data.origin_district_id).change();
 			$('#create_order_route_from_area').val(""+order_data.origin_area_id).change();
 			$('#create_order_route_from_location').val(""+order_data.origin_location).change();
 			$('#create_order_route_to_city').val(""+order_data.dest_city_id).change();
+			$('#create_order_route_to_district').val(""+order_data.dest_district_id).change();
 			$('#create_order_route_to_area').val(""+order_data.dest_area_id).change();
 			$('#create_order_route_to_location').val(""+order_data.dest_location).change();
 

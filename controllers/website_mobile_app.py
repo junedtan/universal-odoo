@@ -951,7 +951,7 @@ class website_mobile_app_handler(osv.osv):
 	
 	def approve_quota_change(self, cr, uid, change_log_id, context={}):
 		quota_obj = self.pool.get('foms.contract.quota.change.log')
-		return quota_obj.write(cr, uid, [change_log_id], {
+		return quota_obj.write(cr, SUPERUSER_ID, [change_log_id], {
 			'state': 'approved',
 			'confirm_by': uid,
 			'confirm_date': datetime.now(),
@@ -961,7 +961,7 @@ class website_mobile_app_handler(osv.osv):
 		quota_obj = self.pool.get('foms.contract.quota.change.log')
 		change_log_id = int(domain.get('change_log_id', '').encode('ascii', 'ignore'))
 		reject_reason = domain.get('reject_reason', '').encode('ascii', 'ignore')
-		return quota_obj.write(cr, uid, [change_log_id], {
+		return quota_obj.write(cr, SUPERUSER_ID, [change_log_id], {
 			'state': 'rejected',
 			'reject_reason': reject_reason,
 			'confirm_by': uid,
@@ -970,17 +970,17 @@ class website_mobile_app_handler(osv.osv):
 	
 	def approve_order(self, cr, uid, order_id, context={}):
 		order_obj = self.pool.get('foms.order')
-		return order_obj.action_confirm(cr, uid, [order_id], context=context)
+		return order_obj.action_confirm(cr, SUPERUSER_ID, [order_id], context=context)
 	
 	def reject_order(self, cr, uid, order_id, context={}):
 		order_obj = self.pool.get('foms.order')
-		return order_obj.write(cr, uid, [order_id], {
+		return order_obj.write(cr, SUPERUSER_ID, [order_id], {
 			'state': 'rejected',
 		}, context=context)
 	
 	def change_planned_start_time(self, cr, uid, order_id, new_start_planned_date, context={}):
 		order_obj = self.pool.get('foms.order')
-		return order_obj.write(cr, uid, [order_id], {
+		return order_obj.write(cr, SUPERUSER_ID, [order_id], {
 			'start_planned_date': new_start_planned_date,
 		}, context=context)
 	
@@ -990,7 +990,7 @@ class website_mobile_app_handler(osv.osv):
 	
 	def cancel_order(self, cr, uid, order_id, context={}):
 		order_obj = self.pool.get('foms.order')
-		return order_obj.write(cr, uid, [order_id], {
+		return order_obj.write(cr, SUPERUSER_ID, [order_id], {
 			'state': 'canceled',
 		}, context=context)
 	

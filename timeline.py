@@ -4,6 +4,8 @@ from openerp.osv import osv
 from openerp import SUPERUSER_ID
 from openerp.tools.translate import _, translate
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
+from . import SERVER_TIMEZONE
+
 
 class universal_timeline(osv.osv):
 	_name = 'universal.timeline'
@@ -33,24 +35,24 @@ class universal_timeline(osv.osv):
 			planned_order_ids = order_obj.search(cr, uid, [
 				('state', 'not in', ['canceled', 'rejected']),
 				('assigned_driver_id.user_id', '=', driver_data.id),
-				('start_planned_date', '<', (tomorrow_date - timedelta(hours=7)).strftime("%Y-%m-%d %H:%M:%S")),
-				('finish_planned_date', '>=', (date - timedelta(hours=7)).strftime("%Y-%m-%d %H:%M:%S")),
+				('start_planned_date', '<', (tomorrow_date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
+				('finish_planned_date', '>=', (date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
 			], order='start_planned_date ASC')
 			actual_order_ids = order_obj.search(cr, uid, [
 				('state', 'not in', ['canceled', 'rejected']),
 				('actual_driver_id.user_id', '=', driver_data.id),
-				('start_date', '<', (tomorrow_date - timedelta(hours=7)).strftime("%Y-%m-%d %H:%M:%S")),
-				'|',('finish_date', '>=', (date - timedelta(hours=7)).strftime("%Y-%m-%d %H:%M:%S")), ('finish_date', '=', False),
+				('start_date', '<', (tomorrow_date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
+				'|',('finish_date', '>=', (date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")), ('finish_date', '=', False),
 			], order='start_date ASC')
 		# ACTUAL ORDER
 			actual_orders = []
 			finish_before = 0
 			for order_actual in order_obj.browse(cr, uid, actual_order_ids):
-				start = datetime.strptime(order_actual.start_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
+				start = datetime.strptime(order_actual.start_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=SERVER_TIMEZONE)
 				if order_actual.finish_date:
-					finish = datetime.strptime(order_actual.finish_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
+					finish = datetime.strptime(order_actual.finish_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=SERVER_TIMEZONE)
 				else:
-					now = datetime.now()
+					now = datetime.now() + timedelta(hours=SERVER_TIMEZONE)
 					if now >= date and now <= tomorrow_date:
 						finish = now
 					elif now >= tomorrow_date:
@@ -73,8 +75,8 @@ class universal_timeline(osv.osv):
 			planned_orders = []
 			finish_before = 0
 			for order_planned in order_obj.browse(cr, uid, planned_order_ids):
-				start = datetime.strptime(order_planned.start_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
-				finish = datetime.strptime(order_planned.finish_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
+				start = datetime.strptime(order_planned.start_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=SERVER_TIMEZONE)
+				finish = datetime.strptime(order_planned.finish_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=SERVER_TIMEZONE)
 				start_minute = 0
 				finish_minute = 24 * 60
 				if start > date:
@@ -88,7 +90,7 @@ class universal_timeline(osv.osv):
 					})
 				finish_before = finish_minute
 		# NOW
-			now = datetime.now()
+			now = datetime.now() + timedelta(hours=SERVER_TIMEZONE)
 			now_time = []
 			if now >= date and now <= tomorrow_date:
 				now_time.append({
@@ -129,31 +131,32 @@ class universal_timeline(osv.osv):
 			planned_order_ids = order_obj.search(cr, uid, [
 				('state', 'not in', ['canceled', 'rejected']),
 				('assigned_driver_id.user_id', '=', driver_data.id),
-				('start_planned_date', '<', (tomorrow_date - timedelta(hours=7)).strftime("%Y-%m-%d %H:%M:%S")),
-				('finish_planned_date', '>=', (start_date - timedelta(hours=7)).strftime("%Y-%m-%d %H:%M:%S")),
+				('start_planned_date', '<', (tomorrow_date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
+				('finish_planned_date', '>=', (start_date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
 			], order='start_planned_date ASC')
 			actual_order_ids = order_obj.search(cr, uid, [
 				('state', 'not in', ['canceled', 'rejected']),
 				('actual_driver_id.user_id', '=', driver_data.id),
-				('start_date', '<', (tomorrow_date - timedelta(hours=7)).strftime("%Y-%m-%d %H:%M:%S")),
-				'|',('finish_date', '>=', (start_date - timedelta(hours=7)).strftime("%Y-%m-%d %H:%M:%S")), ('finish_date', '=', False),
+				('start_date', '<', (tomorrow_date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
+				'|',('finish_date', '>=', (start_date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")), ('finish_date', '=', False),
 			], order='start_date ASC')
 		# ACTUAL ORDER
 			actual_orders = []
 			finish_before = 0
+			now = datetime.now() + timedelta(hours=SERVER_TIMEZONE)
 			for order_actual in order_obj.browse(cr, uid, actual_order_ids):
-				start = datetime.strptime(order_actual.start_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
+				start = datetime.strptime(order_actual.start_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=SERVER_TIMEZONE)
 				if order_actual.finish_date:
-					finish = datetime.strptime(order_actual.finish_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
+					finish = datetime.strptime(order_actual.finish_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=SERVER_TIMEZONE)
 				else:
-					finish = datetime.now()
+					finish = now
 				start_minute = 0
 				finish_minute = 24 * 60
 				if start > start_date:
 					start_minute = start.hour * 60 + start.minute
 				if finish < tomorrow_date:
 					finish_minute = finish.hour * 60 + finish.minute
-				if start_date > datetime.now():
+				if start_date > now:
 					finish_minute = 0
 				if finish_minute - start_minute != 0:
 					actual_orders.append({
@@ -165,8 +168,8 @@ class universal_timeline(osv.osv):
 			planned_orders = []
 			finish_before = 0
 			for order_planned in order_obj.browse(cr, uid, planned_order_ids):
-				start = datetime.strptime(order_planned.start_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
-				finish = datetime.strptime(order_planned.finish_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
+				start = datetime.strptime(order_planned.start_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=SERVER_TIMEZONE)
+				finish = datetime.strptime(order_planned.finish_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=SERVER_TIMEZONE)
 				start_minute = 0
 				finish_minute = 24 * 60
 				if start > start_date:
@@ -180,7 +183,7 @@ class universal_timeline(osv.osv):
 					})
 				finish_before = finish_minute
 		# NOW
-			now = datetime.now()
+			now = datetime.now() + timedelta(hours=SERVER_TIMEZONE)
 			now_time = []
 			if now >= start_date and now <= tomorrow_date:
 				now_time.append({

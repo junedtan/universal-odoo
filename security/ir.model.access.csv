@@ -363,3 +363,5 @@ access_foms_order_booker,foms.order booker,universal.model_foms_order,universal.
 access_foms_order_passenger_booker,foms.order.passenger booker,universal.model_foms_order_passenger,universal.group_universal_booker,1,1,1,1
 access_foms_order_passenger_customer_pic,foms.order.passenger customer_pic,universal.model_foms_order_passenger,universal.group_universal_customer_pic,1,1,1,1
 access_fleet_vehicle_model_customer_pic,fleet.vehicle.model customer_pic,fleet.model_fleet_vehicle_model,universal.group_universal_customer_pic,1,0,0,0
+access_ir_ui_menu_all,ir.ui.menu all,base.model_ir_ui_menu,,1,0,0,0
+access_resource_resource_all,resource.resource all,resource.model_resource_resource,,1,0,0,0

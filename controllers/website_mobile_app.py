@@ -751,7 +751,7 @@ class website_mobile_app_handler(osv.osv):
 		order_obj = self.pool.get('foms.order')
 		order_passenger_obj = self.pool.get('foms.order.passenger')
 		user_obj = self.pool.get('res.users')
-		is_fullday_passenger = user_obj.has_group(cr, uid, 'universal.group_universal_passenger')
+		is_fullday_passenger = user_obj.has_group(cr, SUPERUSER_ID, 'universal.group_universal_passenger')
 		
 		mode = domain.get('mode_create_or_edit', '')
 		contract_id = domain.get('contract_id', '')
@@ -813,7 +813,7 @@ class website_mobile_app_handler(osv.osv):
 		else:
 			order_id = domain.get('order_id', '')
 			order_id = int(order_id.encode('ascii', 'ignore'))
-			order_passenger_obj.unlink(cr, uid, order_passenger_obj.search(cr, uid, [('header_id', '=', order_id)]))
+			order_passenger_obj.unlink(cr, uid, order_passenger_obj.search(cr, SUPERUSER_ID, [('header_id', '=', order_id)]))
 			return order_obj.write(cr, SUPERUSER_ID, [order_id], order_data)
 			
 	
@@ -855,19 +855,19 @@ class website_mobile_app_handler(osv.osv):
 		quota_obj = self.pool.get('foms.contract.quota')
 		now = datetime.now()
 		period = "%02d/%04d" % (now.month ,now.year)
-		quota_ids = quota_obj.search(cr, uid, [('customer_contract_id', '=', contract_id),
+		quota_ids = quota_obj.search(cr, SUPERUSER_ID, [('customer_contract_id', '=', contract_id),
 											('allocation_unit_id', 'in', allocation_unit_ids),
 											('period', '=', period)])
 	# Bikin dictionary dengan key berupa allocation_id, dengan demikian untuk mencari quota dengan au id x tinggal lookup ke dictionary
 		res = {}
-		for quota in quota_obj.browse(cr, uid, quota_ids):
+		for quota in quota_obj.browse(cr, SUPERUSER_ID, quota_ids):
 			res[str(quota.allocation_unit_id.id)] = quota
 		return res
 	
 	def search_all_au_contract(self, cr, uid, contract_id, context={}):
 		au_obj = self.pool.get('foms.contract.alloc.unit')
-		au_ids = au_obj.search(cr, uid, [('header_id', '=', contract_id)])
-		return au_obj.browse(cr, uid, au_ids), au_ids
+		au_ids = au_obj.search(cr, SUPERUSER_ID, [('header_id', '=', contract_id)])
+		return au_obj.browse(cr, SUPERUSER_ID, au_ids), au_ids
 
 	def get_quota_data(self, cr, uid, quota_id, context={}):
 		quota_obj = self.pool.get('foms.contract.quota')
@@ -905,7 +905,7 @@ class website_mobile_app_handler(osv.osv):
 												('state', '=', 'approved'),
 												('period', '=', period)])
 		result_nominal = 0
-		for quota_change in quota_change_obj.browse(cr, uid, quota_change_log_ids):
+		for quota_change in quota_change_obj.browse(cr, SUPERUSER_ID, quota_change_log_ids):
 			if quota_change.new_red_limit != 0 and quota_change.new_red_limit != quota_change.old_red_limit:
 				result_nominal += quota_change.new_red_limit - quota_change.old_red_limit
 			elif quota_change.new_yellow_limit != 0 and quota_change.new_yellow_limit != quota_change.old_yellow_limit:

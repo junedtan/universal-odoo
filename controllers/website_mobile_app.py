@@ -349,14 +349,9 @@ class website_mobile_app(http.Controller):
 			yellow_limit = 0
 			red_limit = 0
 			if order_data.over_quota_status in ['warning','approval']:
-				quota_obj = http.request.env['foms.contract.quota']
-				quota_ids = quota_obj.search([
-					('customer_contract_id','=',order_data.customer_contract_id.id),
-					('allocation_unit_id','=',order_data.alloc_unit_id.id),
-					('period','=',datetime.strptime(order_data.request_date,'%Y-%m-%d %H:%M:%S').strftime('%m/%Y')),
-				])
-				if len(quota_ids) > 0:
-					quota_data = quota_obj.browse(quota_ids[0].id)
+				dictionary_quota = handler_obj.search_au_contract_quota_usage(order_data.customer_contract_id.id, [order_data.alloc_unit_id.id])
+				if len(dictionary_quota) > 0:
+					quota_data = dictionary_quota.get(str(order_data.alloc_unit_id.id), False)
 					red_limit = quota_data.red_limit
 					yellow_limit = quota_data.yellow_limit
 			maintained_by = order_data.customer_contract_id.usage_allocation_maintained_by
@@ -755,6 +750,13 @@ class website_mobile_app_handler(osv.osv):
 	def search_order(self, cr, uid, param_context):
 		order_obj = self.pool.get('foms.order');
 		order_ids = order_obj.search(cr, SUPERUSER_ID, [], context=param_context)
+		return order_obj.browse(cr, SUPERUSER_ID, order_ids)
+	
+	def search_quota(self, cr, uid, param_context):
+		order_obj = self.pool.get('foms.order');
+		order_ids = order_obj.search(cr, SUPERUSER_ID, [
+		
+		], context=param_context)
 		return order_obj.browse(cr, SUPERUSER_ID, order_ids)
 	
 	def search_order_district(self, cr, uid, param_context):

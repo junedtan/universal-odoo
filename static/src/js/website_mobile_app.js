@@ -53,7 +53,13 @@ $(document).ready(function () {
 				fleet_type_datas = self.contract_datas[0].fleet_type;
 				units = self.contract_datas[0].units;
 				district_from = self.contract_datas[0].districts;
-				route_from = self.contract_datas[0].districts[0].areas;
+				if (self.contract_datas[0].districts.length != 0) {
+					route_from = self.contract_datas[0].districts[0].areas;
+				}
+			}
+			var to_areas = [];
+			if (self.to_cities[0].districts.length != 0) {
+				to_areas = self.to_cities[0].districts[0].areas;
 			}
 
 			$("#main_container", self).html(qweb.render('website_mobile_app_create_order',{
@@ -68,7 +74,7 @@ $(document).ready(function () {
 				'from_areas': route_from,
 				'to_cities': self.to_cities,
 				'to_districts': self.to_cities[0].districts,
-				'to_areas': self.to_cities[0].districts[0].areas,
+				'to_areas': to_areas,
 				// Passenger
 				// Time
 				'start_planned_default': new Date().addHours(1).toDatetimeString(),
@@ -590,7 +596,13 @@ $(document).ready(function () {
 				fleet_type_datas = self.contract_datas[0].fleet_type;
 				units = self.contract_datas[0].units;
 				district_from = self.contract_datas[0].districts;
-				route_from = self.contract_datas[0].districts[0].areas;
+				if (self.contract_datas[0].districts.length != 0) {
+					route_from = self.contract_datas[0].districts[0].areas;
+				}
+			}
+			var to_areas = [];
+			if (self.to_cities[0].districts.length != 0) {
+				to_areas = self.to_cities[0].districts[0].areas;
 			}
 
 			$("#main_container", self).html(qweb.render('website_mobile_app_create_order',{
@@ -606,7 +618,7 @@ $(document).ready(function () {
 				'from_areas': route_from,
 				'to_cities': self.to_cities,
 				'to_districts': self.to_cities[0].districts,
-				'to_areas': self.to_cities[0].districts[0].areas,
+				'to_areas': to_areas,
 				// Passenger
 				// Time
 				'start_planned_default': new Date().addHours(1).toDatetimeString(),

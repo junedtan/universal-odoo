@@ -254,7 +254,7 @@
 			<field name="name">Order Areas</field>	
 			<field name="res_model">foms.order.area</field>
 			<field name="view_type">form</field>
-			<field name="view_mode">tree</field>
+			<field name="view_mode">tree,form</field>
 		</record>
 
 		<record id="universal_action_order_area_delay" model="ir.actions.act_window">

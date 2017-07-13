@@ -122,19 +122,30 @@ class website_mobile_app(http.Controller):
 		route_city_arr = []
 		regions = handler_obj.search_region({})
 		for region in regions:
-			areas = handler_obj.search_order_area({
+			districts = handler_obj.search_order_district({
 				'homebase_id': region.id
 			})
-			route_area_arr = []
-			for area in areas:
-				route_area_arr.append({
-					'id': area.id,
-					'name': area.name,
+			route_district_arr = []
+			for district in districts:
+				areas = handler_obj.search_order_area({
+					'homebase_id': region.id,
+					'district_id': district.id
+				})
+				route_area_arr = []
+				for area in areas:
+					route_area_arr.append({
+						'id': area.id,
+						'name': area.name,
+					})
+				route_district_arr.append({
+					'id': district.id,
+					'name': district.name,
+					'areas': route_area_arr,
 				})
 			route_city_arr.append({
 				'id': region.id,
 				'name': region.name,
-				'areas': route_area_arr,
+				'districts': route_district_arr,
 			})
 		
 		return json.dumps({
@@ -215,15 +226,26 @@ class website_mobile_app(http.Controller):
 						'id': allocation_unit.id,
 						'name': allocation_unit.name,
 					})
-			# Order Area From
-			order_areas = handler_obj.search_order_area({
-				'homebase_id': contract_data.homebase_id.id,
+			# Order District and Area From
+			districts = handler_obj.search_order_district({
+				'homebase_id': contract_data.homebase_id.id
 			})
-			route_from_arr = []
-			for area in order_areas:
-				route_from_arr.append({
-					'id': area.id,
-					'name': area.name,
+			district_from_arr = []
+			for district in districts:
+				areas = handler_obj.search_order_area({
+					'homebase_id': contract_data.homebase_id.id,
+					'district_id': district.id
+				})
+				route_from_arr = []
+				for area in areas:
+					route_from_arr.append({
+						'id': area.id,
+						'name': area.name,
+					})
+				district_from_arr.append({
+					'id': district.id,
+					'name': district.name,
+					'areas': route_from_arr,
 				})
 			# Shuttle
 			shuttle_arr = []
@@ -248,7 +270,8 @@ class website_mobile_app(http.Controller):
 				'fleet_type': fleet_type_arr,
 				'units': unit_arr,
 				'shuttle_schedules': shuttle_arr,
-				'route_from': route_from_arr,
+				'districts': district_from_arr,
+				# 'route_from': route_from_arr,
 				'state': contract_data.state,
 				'state_name': dict(_CONTRACT_STATE).get(contract_data.state, ''),
 				'start_date': datetime.strptime(contract_data.start_date,'%Y-%m-%d').strftime('%d-%m-%Y'),
@@ -732,14 +755,24 @@ class website_mobile_app_handler(osv.osv):
 		order_ids = order_obj.search(cr, SUPERUSER_ID, [], context=param_context)
 		return order_obj.browse(cr, SUPERUSER_ID, order_ids)
 	
+	def search_order_district(self, cr, uid, param_context):
+		region_obj = self.pool.get('chjs.region');
+		district_ids = region_obj.search(cr, SUPERUSER_ID, [
+			('parent_id', '=', param_context['homebase_id'])
+		], context=param_context)
+		return region_obj.browse(cr, SUPERUSER_ID, district_ids)
+	
 	def search_order_area(self, cr, uid, param_context):
 		order_area_obj = self.pool.get('foms.order.area');
-		order_area_ids = order_area_obj.search(cr, SUPERUSER_ID, [('homebase_id', '=', param_context['homebase_id'])], context=param_context)
+		order_area_ids = order_area_obj.search(cr, SUPERUSER_ID, [
+			('homebase_id', '=', param_context['homebase_id']),
+			('district_id', '=', param_context['district_id'])
+		], context=param_context)
 		return order_area_obj.browse(cr, SUPERUSER_ID, order_area_ids)
 	
 	def search_region(self, cr, uid, param_context):
 		region_obj = self.pool.get('chjs.region');
-		region_ids = region_obj.search(cr, SUPERUSER_ID, [])
+		region_ids = region_obj.search(cr, SUPERUSER_ID, [('type','=','city')])
 		return region_obj.browse(cr, SUPERUSER_ID, region_ids)
 	
 	def search_contract(self, cr, uid, param_context):

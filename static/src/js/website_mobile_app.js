@@ -47,11 +47,19 @@ $(document).ready(function () {
 
 			var fleet_type_datas = [];
 			var units = [];
+			var district_from = [];
 			var route_from = [];
 			if (self.contract_datas.length != 0) {
 				fleet_type_datas = self.contract_datas[0].fleet_type;
 				units = self.contract_datas[0].units;
-				route_from = self.contract_datas[0].route_from;
+				district_from = self.contract_datas[0].districts;
+				if (self.contract_datas[0].districts.length != 0) {
+					route_from = self.contract_datas[0].districts[0].areas;
+				}
+			}
+			var to_areas = [];
+			if (self.to_cities[0].districts.length != 0) {
+				to_areas = self.to_cities[0].districts[0].areas;
 			}
 
 			$("#main_container", self).html(qweb.render('website_mobile_app_create_order',{
@@ -62,9 +70,11 @@ $(document).ready(function () {
 				'units': units,
 				'order_types': order_type,
 				// Route
+				'from_districts': district_from,
 				'from_areas': route_from,
 				'to_cities': self.to_cities,
-				'to_areas': self.to_cities[0].areas,
+				'to_districts': self.to_cities[0].districts,
+				'to_areas': to_areas,
 				// Passenger
 				// Time
 				'start_planned_default': new Date().addHours(1).toDatetimeString(),
@@ -76,8 +86,16 @@ $(document).ready(function () {
 				onchange_create_order_contract($(this).val());
 			});
 
+			$('#create_order_route_from_district').change(function(){
+				onchange_create_order_route_from_district($(this).val());
+			});
+
 			$('#create_order_route_to_city').change(function(){
 				onchange_create_order_route_to_city($(this).val());
+			});
+
+			$('#create_order_route_to_district').change(function(){
+				onchange_create_order_route_to_district($(this).val());
 			});
 
 			$('#btn_create_order').click(function(){
@@ -218,13 +236,49 @@ $(document).ready(function () {
 		});
 	};
 
+	function onchange_create_order_route_from_district(district_id) {
+		var contract_id = $('#create_order_info_contract').val();
+		$.each(self.contract_datas, function(index, contract_data) {
+			if (contract_data.id == contract_id) {
+				$.each(contract_data.districts, function(index, district) {
+					if (district.id == district_id) {
+						$('#create_order_route_from_area').empty();
+						$.each(district.areas, function(index, area) {
+							$('#create_order_route_from_area').append(
+								'<option value=' + area.id + '>' + area.name + '</option>');
+						});
+					}
+				});
+			}
+		});
+	};
+
 	function onchange_create_order_route_to_city(city_id) {
 		$.each(self.to_cities, function(index, city) {
 			if (city.id == city_id) {
+				$('#create_order_route_to_district').empty();
 				$('#create_order_route_to_area').empty();
-				$.each(city.areas, function(index, area) {
-					$('#create_order_route_to_area').append(
-						'<option value=' + area.id + '>' + area.name + '</option>');
+				$.each(city.districts, function(index, district) {
+					$('#create_order_route_to_district').append(
+						'<option value=' + district.id + '>' + district.name + '</option>');
+				});
+				$('#create_order_route_to_district').change();
+			}
+		});
+	};
+
+	function onchange_create_order_route_to_district(district_id) {
+		city_id = $('#create_order_route_to_city').val();
+		$.each(self.to_cities, function(index, city) {
+			if (city.id == city_id) {
+				$.each(city.districts, function(index, district) {
+					if (district.id == district_id) {
+						$('#create_order_route_to_area').empty();
+						$.each(district.areas, function(index, area) {
+							$('#create_order_route_to_area').append(
+								'<option value=' + area.id + '>' + area.name + '</option>');
+						});
+					}
 				});
 			}
 		});
@@ -536,11 +590,19 @@ $(document).ready(function () {
 
 			var fleet_type_datas = [];
 			var units = [];
+			var district_from = [];
 			var route_from = [];
 			if (self.contract_datas.length != 0) {
 				fleet_type_datas = self.contract_datas[0].fleet_type;
 				units = self.contract_datas[0].units;
-				route_from = self.contract_datas[0].route_from;
+				district_from = self.contract_datas[0].districts;
+				if (self.contract_datas[0].districts.length != 0) {
+					route_from = self.contract_datas[0].districts[0].areas;
+				}
+			}
+			var to_areas = [];
+			if (self.to_cities[0].districts.length != 0) {
+				to_areas = self.to_cities[0].districts[0].areas;
 			}
 
 			$("#main_container", self).html(qweb.render('website_mobile_app_create_order',{
@@ -552,9 +614,11 @@ $(document).ready(function () {
 				'units': units,
 				'order_types': order_type,
 				// Route
+				'from_districts': district_from,
 				'from_areas': route_from,
 				'to_cities': self.to_cities,
-				'to_areas': self.to_cities[0].areas,
+				'to_districts': self.to_cities[0].districts,
+				'to_areas': to_areas,
 				// Passenger
 				// Time
 				'start_planned_default': new Date().addHours(1).toDatetimeString(),
@@ -566,8 +630,16 @@ $(document).ready(function () {
 				onchange_create_order_contract($(this).val());
 			});
 
+			$('#create_order_route_from_district').change(function(){
+				onchange_create_order_route_from_district($(this).val());
+			});
+
 			$('#create_order_route_to_city').change(function(){
 				onchange_create_order_route_to_city($(this).val());
+			});
+
+			$('#create_order_route_to_district').change(function(){
+				onchange_create_order_route_to_district($(this).val());
 			});
 
 			$('#btn_create_order').click(function(){
@@ -583,9 +655,11 @@ $(document).ready(function () {
 			$('#create_order_info_fleet_type').val(""+order_data.fleet_type_id).change();
 			$('#create_order_info_unit').val(""+order_data.alloc_unit_id).change();
 			$('#create_order_info_type').val(""+order_data.order_type_by_order).change();
+			$('#create_order_route_from_district').val(""+order_data.origin_district_id).change();
 			$('#create_order_route_from_area').val(""+order_data.origin_area_id).change();
 			$('#create_order_route_from_location').val(""+order_data.origin_location).change();
 			$('#create_order_route_to_city').val(""+order_data.dest_city_id).change();
+			$('#create_order_route_to_district').val(""+order_data.dest_district_id).change();
 			$('#create_order_route_to_area').val(""+order_data.dest_area_id).change();
 			$('#create_order_route_to_location').val(""+order_data.dest_location).change();
 

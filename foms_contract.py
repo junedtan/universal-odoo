@@ -374,6 +374,7 @@ class foms_contract(osv.osv):
 					'id': homebase.id,
 					'name': homebase.name,
 					'code': homebase.code,
+					'parent_id': homebase.parent_id.id,
 					'type' : homebase.type,
 					'emergency_number': homebase.emergency_number,
 					})

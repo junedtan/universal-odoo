@@ -1004,7 +1004,6 @@ class foms_order(osv.osv):
 
 	def _cek_min_hour_for_type_by_order(self, cr, uid, start_date, order_minimum_minutes , context=None):
 		now = datetime.now()
-		start_date = start_date + timedelta(hours = 7)
 		delta = float((start_date - now).days * 86400 + (start_date - now).seconds) / 60
 		if delta < order_minimum_minutes:
 			raise osv.except_osv(_('Order Error'),_('Start date is too close to current time, or is in the past. There must be at least %s minutes between now and start date.' % order_minimum_minutes))

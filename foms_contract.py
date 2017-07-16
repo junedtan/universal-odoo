@@ -28,7 +28,7 @@ class foms_contract(osv.osv):
 	# BASIC INFORMATION
 		'name': fields.char('Empire No.', required=True, copy=False),
 		'contract_date': fields.date('Contract Date'),
-		'homebase_id' : fields.many2one('chjs.region', 'Homebase'),
+		'homebase_id' : fields.many2one('chjs.region', 'Homebase', domain=[('type','=','city')]),
 		'customer_id' : fields.many2one('res.partner', 'Customer', required=True, domain=[('customer','=',True),('is_company','=',True)], ondelete='restrict'),
 		'customer_contact_id' : fields.many2one('res.partner', 'Customer PIC', required=True, domain=[('customer','=',True),('is_company','=',False)], ondelete='restrict'),
 		'is_order_replacement_vehicle': fields.boolean('Can Have Replacement?'),
@@ -374,6 +374,7 @@ class foms_contract(osv.osv):
 					'id': homebase.id,
 					'name': homebase.name,
 					'code': homebase.code,
+					'type' : homebase.type,
 					'emergency_number': homebase.emergency_number,
 					})
 		return result

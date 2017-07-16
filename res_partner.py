@@ -158,7 +158,7 @@ class res_partner_gapok_fee(osv.osv):
 
 	_columns = {
 		'header_id': fields.many2one('res.partner', 'Partner', ondelete='cascade'),
-		'homebase_id': fields.many2one('chjs.region', 'Homebase'),
+		'homebase_id': fields.many2one('chjs.region', 'Homebase', domain=[('type','=','city')]),
 		'gapok_fee': fields.float('Gapok', required=True),
 	}
 

@@ -40,7 +40,7 @@ class hr_employee(osv.osv):
 		'start_working': fields.date('Start Working', required=True),
 		'work_year': fields.float('Work Year(s)'),
 		'driver_company_id': fields.many2one('res.partner','Current Client', domain=[('customer','=',True)]),
-		'homebase_id': fields.many2one('chjs.region', 'Homebase'),
+		'homebase_id': fields.many2one('chjs.region', 'Homebase', domain=[('type','=','city')]),
 		'verbal_ids': fields.one2many('universal.verbal.warning', 'employee_id', 'Verbal Warnings'),
 		'cron_leaves': fields.boolean('Cron Leaves'),
 	}

@@ -87,6 +87,12 @@
 		<div class="form-group ml10 col-md-5 col-xs-12">
 			<label for="create_order_route_from">From</label>
 			<div id="create_order_route_from" class="ml10">
+				<label class="no_bold" for="create_order_route_from_district">District</label>
+				<select id="create_order_route_from_district" class="form-control">
+					<t t-foreach="from_districts" t-as="from_district">
+						<option t-attf-value="{{from_district.id}}"><t t-esc="from_district.name"/></option>
+					</t>
+				</select>
 				<label class="no_bold" for="create_order_route_from_area">Area</label>
 				<select id="create_order_route_from_area" class="form-control">
 					<t t-foreach="from_areas" t-as="from_area">
@@ -104,6 +110,12 @@
 				<select id="create_order_route_to_city" class="form-control">
 					<t t-foreach="to_cities" t-as="city">
 						<option t-attf-value="{{city.id}}"><t t-esc="city.name"/></option>
+					</t>
+				</select>
+				<label class="no_bold" for="create_order_route_to_district">District</label>
+				<select id="create_order_route_to_district" class="form-control">
+					<t t-foreach="to_districts" t-as="to_district">
+						<option t-attf-value="{{to_district.id}}"><t t-esc="to_district.name"/></option>
 					</t>
 				</select>
 				<label class="no_bold" for="create_order_route_to_area">Area</label>

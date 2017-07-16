@@ -122,19 +122,30 @@ class website_mobile_app(http.Controller):
 		route_city_arr = []
 		regions = handler_obj.search_region({})
 		for region in regions:
-			areas = handler_obj.search_order_area({
+			districts = handler_obj.search_order_district({
 				'homebase_id': region.id
 			})
-			route_area_arr = []
-			for area in areas:
-				route_area_arr.append({
-					'id': area.id,
-					'name': area.name,
+			route_district_arr = []
+			for district in districts:
+				areas = handler_obj.search_order_area({
+					'homebase_id': region.id,
+					'district_id': district.id
+				})
+				route_area_arr = []
+				for area in areas:
+					route_area_arr.append({
+						'id': area.id,
+						'name': area.name,
+					})
+				route_district_arr.append({
+					'id': district.id,
+					'name': district.name,
+					'areas': route_area_arr,
 				})
 			route_city_arr.append({
 				'id': region.id,
 				'name': region.name,
-				'areas': route_area_arr,
+				'districts': route_district_arr,
 			})
 		
 		return json.dumps({
@@ -176,9 +187,11 @@ class website_mobile_app(http.Controller):
 				'fleet_type_id': order_data.fleet_type_id.id,
 				'alloc_unit_id': order_data.alloc_unit_id.id,
 				'order_type_by_order': order_data.order_type_by_order,
+				'origin_district_id': order_data.origin_area_id.district_id.id,
 				'origin_area_id': order_data.origin_area_id.id,
 				'origin_location': order_data.origin_location,
 				'dest_city_id': order_data.dest_area_id.homebase_id.id,
+				'dest_district_id': order_data.dest_area_id.district_id.id,
 				'dest_area_id': order_data.dest_area_id.id,
 				'dest_location': order_data.dest_location,
 				'passengers': passenger_arr,
@@ -215,15 +228,26 @@ class website_mobile_app(http.Controller):
 						'id': allocation_unit.id,
 						'name': allocation_unit.name,
 					})
-			# Order Area From
-			order_areas = handler_obj.search_order_area({
-				'homebase_id': contract_data.homebase_id.id,
+			# Order District and Area From
+			districts = handler_obj.search_order_district({
+				'homebase_id': contract_data.homebase_id.id
 			})
-			route_from_arr = []
-			for area in order_areas:
-				route_from_arr.append({
-					'id': area.id,
-					'name': area.name,
+			district_from_arr = []
+			for district in districts:
+				areas = handler_obj.search_order_area({
+					'homebase_id': contract_data.homebase_id.id,
+					'district_id': district.id
+				})
+				route_from_arr = []
+				for area in areas:
+					route_from_arr.append({
+						'id': area.id,
+						'name': area.name,
+					})
+				district_from_arr.append({
+					'id': district.id,
+					'name': district.name,
+					'areas': route_from_arr,
 				})
 			# Shuttle
 			shuttle_arr = []
@@ -248,7 +272,8 @@ class website_mobile_app(http.Controller):
 				'fleet_type': fleet_type_arr,
 				'units': unit_arr,
 				'shuttle_schedules': shuttle_arr,
-				'route_from': route_from_arr,
+				'districts': district_from_arr,
+				# 'route_from': route_from_arr,
 				'state': contract_data.state,
 				'state_name': dict(_CONTRACT_STATE).get(contract_data.state, ''),
 				'start_date': datetime.strptime(contract_data.start_date,'%Y-%m-%d').strftime('%d-%m-%Y'),
@@ -273,10 +298,10 @@ class website_mobile_app(http.Controller):
 		loaded_data = json.loads(data)
 		try:
 			result = handler_obj.create_edit_order(loaded_data)
-		except Exception, e:
+		except Exception as e:
 			response = {
 				'status': 'ok',
-				'info': str(e.value),
+				'info': _("Error: %s") % e,
 				'success' : False,
 			}
 		else:
@@ -324,14 +349,9 @@ class website_mobile_app(http.Controller):
 			yellow_limit = 0
 			red_limit = 0
 			if order_data.over_quota_status in ['warning','approval']:
-				quota_obj = http.request.env['foms.contract.quota']
-				quota_ids = quota_obj.search([
-					('customer_contract_id','=',order_data.customer_contract_id.id),
-					('allocation_unit_id','=',order_data.alloc_unit_id.id),
-					('period','=',datetime.strptime(order_data.request_date,'%Y-%m-%d %H:%M:%S').strftime('%m/%Y')),
-				])
-				if len(quota_ids) > 0:
-					quota_data = quota_obj.browse(quota_ids[0].id)
+				dictionary_quota = handler_obj.search_au_contract_quota_usage(order_data.customer_contract_id.id, [order_data.alloc_unit_id.id])
+				if len(dictionary_quota) > 0:
+					quota_data = dictionary_quota.get(str(order_data.alloc_unit_id.id), False)
 					red_limit = quota_data.red_limit
 					yellow_limit = quota_data.yellow_limit
 			maintained_by = order_data.customer_contract_id.usage_allocation_maintained_by
@@ -724,34 +744,51 @@ class website_mobile_app_handler(osv.osv):
 	
 	def get_user_data(self, cr, uid, param_context):
 		user_obj = self.pool.get('res.users')
-		user = user_obj.browse(cr, uid, uid)
+		user = user_obj.browse(cr, SUPERUSER_ID, uid)
 		return user.partner_id
 	
 	def search_order(self, cr, uid, param_context):
 		order_obj = self.pool.get('foms.order');
-		order_ids = order_obj.search(cr, uid, [], context=param_context)
-		return order_obj.browse(cr, uid, order_ids)
+		order_ids = order_obj.search(cr, SUPERUSER_ID, [], context=param_context)
+		return order_obj.browse(cr, SUPERUSER_ID, order_ids)
+	
+	def search_quota(self, cr, uid, param_context):
+		order_obj = self.pool.get('foms.order');
+		order_ids = order_obj.search(cr, SUPERUSER_ID, [
+		
+		], context=param_context)
+		return order_obj.browse(cr, SUPERUSER_ID, order_ids)
+	
+	def search_order_district(self, cr, uid, param_context):
+		region_obj = self.pool.get('chjs.region');
+		district_ids = region_obj.search(cr, SUPERUSER_ID, [
+			('parent_id', '=', param_context['homebase_id'])
+		], context=param_context)
+		return region_obj.browse(cr, SUPERUSER_ID, district_ids)
 	
 	def search_order_area(self, cr, uid, param_context):
 		order_area_obj = self.pool.get('foms.order.area');
-		order_area_ids = order_area_obj.search(cr, uid, [('homebase_id', '=', param_context['homebase_id'])], context=param_context)
-		return order_area_obj.browse(cr, uid, order_area_ids)
+		order_area_ids = order_area_obj.search(cr, SUPERUSER_ID, [
+			('homebase_id', '=', param_context['homebase_id']),
+			('district_id', '=', param_context['district_id'])
+		], context=param_context)
+		return order_area_obj.browse(cr, SUPERUSER_ID, order_area_ids)
 	
 	def search_region(self, cr, uid, param_context):
 		region_obj = self.pool.get('chjs.region');
-		region_ids = region_obj.search(cr, uid, [])
-		return region_obj.browse(cr, uid, region_ids)
+		region_ids = region_obj.search(cr, SUPERUSER_ID, [('type','=','city')])
+		return region_obj.browse(cr, SUPERUSER_ID, region_ids)
 	
 	def search_contract(self, cr, uid, param_context):
 		contract_obj = self.pool.get('foms.contract');
-		contract_ids = contract_obj.search(cr, uid, [], context=param_context)
-		return contract_obj.browse(cr, uid, contract_ids)
+		contract_ids = contract_obj.search(cr, SUPERUSER_ID, [], context=param_context)
+		return contract_obj.browse(cr, SUPERUSER_ID, contract_ids)
 	
-	def create_edit_order(self, cr, uid, domain, context={}):
+	def  create_edit_order(self, cr, uid, domain, context={}):
 		order_obj = self.pool.get('foms.order')
 		order_passenger_obj = self.pool.get('foms.order.passenger')
 		user_obj = self.pool.get('res.users')
-		is_fullday_passenger = user_obj.has_group(cr, uid, 'universal.group_universal_passenger')
+		is_fullday_passenger = user_obj.has_group(cr, SUPERUSER_ID, 'universal.group_universal_passenger')
 		
 		mode = domain.get('mode_create_or_edit', '')
 		contract_id = domain.get('contract_id', '')
@@ -763,15 +800,13 @@ class website_mobile_app_handler(osv.osv):
 		start_planned = datetime.strptime(start_planned, '%Y-%m-%dT%H:%M' if start_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
 		finish_planned = domain.get('finish_planned', '')
 		finish_planned = datetime.strptime(finish_planned, '%Y-%m-%dT%H:%M' if finish_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
-		
 		order_data = {
 			'customer_contract_id': contract_id,
 			'order_by': uid,
 			'fleet_type_id': fleet_type_id,
-			
 			'start_planned_date': start_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
 			'finish_planned_date': finish_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
-			'request_date': datetime.now(),
+			'request_date': datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT),
 		}
 		
 		if not is_fullday_passenger:
@@ -810,13 +845,12 @@ class website_mobile_app_handler(osv.osv):
 			
 			order_data['is_orderer_passenger'] = is_orderer_passenger
 			order_data['passengers'] = passengers
-		
 		if mode == 'create':
 			return order_obj.create(cr, SUPERUSER_ID, order_data)
 		else:
 			order_id = domain.get('order_id', '')
 			order_id = int(order_id.encode('ascii', 'ignore'))
-			order_passenger_obj.unlink(cr, uid, order_passenger_obj.search(cr, uid, [('header_id', '=', order_id)]))
+			order_passenger_obj.unlink(cr, uid, order_passenger_obj.search(cr, SUPERUSER_ID, [('header_id', '=', order_id)]))
 			return order_obj.write(cr, SUPERUSER_ID, [order_id], order_data)
 			
 	
@@ -858,27 +892,27 @@ class website_mobile_app_handler(osv.osv):
 		quota_obj = self.pool.get('foms.contract.quota')
 		now = datetime.now()
 		period = "%02d/%04d" % (now.month ,now.year)
-		quota_ids = quota_obj.search(cr, uid, [('customer_contract_id', '=', contract_id),
+		quota_ids = quota_obj.search(cr, SUPERUSER_ID, [('customer_contract_id', '=', contract_id),
 											('allocation_unit_id', 'in', allocation_unit_ids),
 											('period', '=', period)])
 	# Bikin dictionary dengan key berupa allocation_id, dengan demikian untuk mencari quota dengan au id x tinggal lookup ke dictionary
 		res = {}
-		for quota in quota_obj.browse(cr, uid, quota_ids):
+		for quota in quota_obj.browse(cr, SUPERUSER_ID, quota_ids):
 			res[str(quota.allocation_unit_id.id)] = quota
 		return res
 	
 	def search_all_au_contract(self, cr, uid, contract_id, context={}):
 		au_obj = self.pool.get('foms.contract.alloc.unit')
-		au_ids = au_obj.search(cr, uid, [('header_id', '=', contract_id)])
-		return au_obj.browse(cr, uid, au_ids), au_ids
+		au_ids = au_obj.search(cr, SUPERUSER_ID, [('header_id', '=', contract_id)])
+		return au_obj.browse(cr, SUPERUSER_ID, au_ids), au_ids
 
 	def get_quota_data(self, cr, uid, quota_id, context={}):
 		quota_obj = self.pool.get('foms.contract.quota')
 		quota_change_obj = self.pool.get('foms.contract.quota.change.log')
-		quota = quota_obj.browse(cr, uid, [quota_id])
+		quota = quota_obj.browse(cr, SUPERUSER_ID, [quota_id])
 		au = quota.allocation_unit_id
-		quota_change_ids = quota_change_obj.search(cr, uid, [('allocation_unit_id', '=', au.id)])
-		quota_changes = quota_change_obj.browse(cr, uid, quota_change_ids)
+		quota_change_ids = quota_change_obj.search(cr, SUPERUSER_ID, [('allocation_unit_id', '=', au.id)])
+		quota_changes = quota_change_obj.browse(cr, SUPERUSER_ID, quota_change_ids)
 		if quota.customer_contract_id.id and au.id:
 			total_nominal, total_count = self.search_total_request_nominal_count_quota_changes(cr, uid, quota.customer_contract_id.id, au.id)
 		else:
@@ -896,19 +930,19 @@ class website_mobile_app_handler(osv.osv):
 
 	def search_all_quota_changes(self, cr, uid, id_contract, context={}):
 		quota_obj = self.pool.get('foms.contract.quota.change.log')
-		quota_ids = quota_obj.search(cr, uid, [('customer_contract_id', '=', id_contract)])
-		return quota_obj.browse(cr, uid, quota_ids)
+		quota_ids = quota_obj.search(cr, SUPERUSER_ID, [('customer_contract_id', '=', id_contract)])
+		return quota_obj.browse(cr, SUPERUSER_ID, quota_ids)
 	
 	def search_total_request_nominal_count_quota_changes(self, cr, uid, contract_id, allocation_unit_id, context={}):
 		quota_change_obj = self.pool.get('foms.contract.quota.change.log')
 		now = datetime.now()
 		period = "%02d/%04d" % (now.month ,now.year)
-		quota_change_log_ids = quota_change_obj.search(cr, uid, [('customer_contract_id', '=', contract_id),
+		quota_change_log_ids = quota_change_obj.search(cr, SUPERUSER_ID, [('customer_contract_id', '=', contract_id),
 												('allocation_unit_id', '=', allocation_unit_id),
 												('state', '=', 'approved'),
 												('period', '=', period)])
 		result_nominal = 0
-		for quota_change in quota_change_obj.browse(cr, uid, quota_change_log_ids):
+		for quota_change in quota_change_obj.browse(cr, SUPERUSER_ID, quota_change_log_ids):
 			if quota_change.new_red_limit != 0 and quota_change.new_red_limit != quota_change.old_red_limit:
 				result_nominal += quota_change.new_red_limit - quota_change.old_red_limit
 			elif quota_change.new_yellow_limit != 0 and quota_change.new_yellow_limit != quota_change.old_yellow_limit:
@@ -917,7 +951,7 @@ class website_mobile_app_handler(osv.osv):
 	
 	def approve_quota_change(self, cr, uid, change_log_id, context={}):
 		quota_obj = self.pool.get('foms.contract.quota.change.log')
-		return quota_obj.write(cr, uid, [change_log_id], {
+		return quota_obj.write(cr, SUPERUSER_ID, [change_log_id], {
 			'state': 'approved',
 			'confirm_by': uid,
 			'confirm_date': datetime.now(),
@@ -927,7 +961,7 @@ class website_mobile_app_handler(osv.osv):
 		quota_obj = self.pool.get('foms.contract.quota.change.log')
 		change_log_id = int(domain.get('change_log_id', '').encode('ascii', 'ignore'))
 		reject_reason = domain.get('reject_reason', '').encode('ascii', 'ignore')
-		return quota_obj.write(cr, uid, [change_log_id], {
+		return quota_obj.write(cr, SUPERUSER_ID, [change_log_id], {
 			'state': 'rejected',
 			'reject_reason': reject_reason,
 			'confirm_by': uid,
@@ -936,31 +970,31 @@ class website_mobile_app_handler(osv.osv):
 	
 	def approve_order(self, cr, uid, order_id, context={}):
 		order_obj = self.pool.get('foms.order')
-		return order_obj.action_confirm(cr, uid, [order_id], context=context)
+		return order_obj.action_confirm(cr, SUPERUSER_ID, [order_id], context=context)
 	
 	def reject_order(self, cr, uid, order_id, context={}):
 		order_obj = self.pool.get('foms.order')
-		return order_obj.write(cr, uid, [order_id], {
+		return order_obj.write(cr, SUPERUSER_ID, [order_id], {
 			'state': 'rejected',
 		}, context=context)
 	
 	def change_planned_start_time(self, cr, uid, order_id, new_start_planned_date, context={}):
 		order_obj = self.pool.get('foms.order')
-		return order_obj.write(cr, uid, [order_id], {
+		return order_obj.write(cr, SUPERUSER_ID, [order_id], {
 			'start_planned_date': new_start_planned_date,
 		}, context=context)
 	
 	def get_order(self, cr, uid, order_id, context={}):
 		order_obj = self.pool.get('foms.order')
-		return order_obj.browse(cr, uid, order_id);
+		return order_obj.browse(cr, SUPERUSER_ID, order_id);
 	
 	def cancel_order(self, cr, uid, order_id, context={}):
 		order_obj = self.pool.get('foms.order')
-		return order_obj.write(cr, uid, [order_id], {
+		return order_obj.write(cr, SUPERUSER_ID, [order_id], {
 			'state': 'canceled',
 		}, context=context)
 	
 	def get_shuttle_schedules(self, cr, uid, contract_id):
 		shuttle_schedule_obj = self.pool.get('foms.contract.shuttle.schedule')
-		shuttle_schedule_ids = shuttle_schedule_obj.search(cr, uid, [('header_id','=',contract_id)])
-		return shuttle_schedule_obj.browse(cr, uid, shuttle_schedule_ids)
+		shuttle_schedule_ids = shuttle_schedule_obj.search(cr, SUPERUSER_ID, [('header_id','=',contract_id)])
+		return shuttle_schedule_obj.browse(cr, SUPERUSER_ID, shuttle_schedule_ids)

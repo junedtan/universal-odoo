@@ -766,6 +766,7 @@ class foms_order(osv.osv):
 				result.append({
 					'id': area.id,
 					'homebase_id': area.homebase_id.id,
+					'district_id': area.district_id.id,
 					'name': area.name,
 				})
 		return result

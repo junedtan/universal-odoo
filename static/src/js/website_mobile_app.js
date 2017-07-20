@@ -17,12 +17,14 @@ $(document).ready(function () {
 	var my_id;
 
 	function onclick_menu(id) {
-		$('#website_mobile_app_menu_book_vehicle').removeClass('active');
-		$('#website_mobile_app_menu_list_orders').removeClass('active');
-		$('#website_mobile_app_menu_change_password').removeClass('active');
-		$('#website_mobile_app_menu_list_contract').removeClass('active');
-		$('#website_mobile_app_menu_list_shuttle').removeClass('active');
-		$(id).addClass('active');
+		$('#menu_container').hide();
+		$('#main_container').show();
+//		$('#website_mobile_app_menu_book_vehicle').removeClass('active');
+//		$('#website_mobile_app_menu_list_orders').removeClass('active');
+//		$('#website_mobile_app_menu_change_password').removeClass('active');
+//		$('#website_mobile_app_menu_list_contract').removeClass('active');
+//		$('#website_mobile_app_menu_list_shuttle').removeClass('active');
+//		$(id).addClass('active');
 	};
 
 	function onclick_detail_contract_menu(id) {
@@ -42,6 +44,11 @@ $(document).ready(function () {
     };
 
 // BOOK VEHICLE =============================================================================================================
+
+	$('#button_back').click(function() {
+		$('#menu_container').show();
+		$('#main_container').hide();
+	});
 
 	$('#website_mobile_app_menu_book_vehicle').click(function() {
 		onclick_menu('#website_mobile_app_menu_book_vehicle');

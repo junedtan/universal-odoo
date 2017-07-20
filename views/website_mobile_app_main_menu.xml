@@ -16,38 +16,61 @@
 							</div>
 						</t>
 						<t t-if="user_group == 'fullday_passenger'">
-							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
-									id="website_mobile_app_menu_book_vehicle">Book Vehicle</div>
-							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
-									id="website_mobile_app_menu_list_orders">Orders</div>
-							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
-									id="website_mobile_app_menu_change_password">Change Password</div>
+							<table class="table table-hover">
+								<tbody>
+									<tr>
+										<td id="website_mobile_app_menu_book_vehicle" class = "td_menu" style = "border-right:1px solid; border-color:lightgray">
+										<span class="glyphicon glyphicon-plus" style="margin-right:16px"></span>Book Vehicle</td>
+										<td id="website_mobile_app_menu_list_orders" class = "td_menu" style = "border-right:1px solid; border-color:lightgray">
+										<span class="glyphicon glyphicon-align-justify" style="margin-right:16px"></span>Orders</td>
+										<td id="website_mobile_app_menu_change_password" class = "td_menu">
+										<span class="glyphicon glyphicon-edit" style="margin-right:16px"></span>Change Password</td>
+									</tr>
+								</tbody>
+							</table>
 						</t>
 						<t t-if="user_group == 'booker'">
-							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
-									id="website_mobile_app_menu_book_vehicle">Book Vehicle</div>
-							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
-									id="website_mobile_app_menu_list_orders">Orders</div>
+							<table class="table table-hover">
+								<tbody>
+									<tr>
+										<td id="website_mobile_app_menu_book_vehicle" class = "td_menu" style = "border-right:1px solid; border-color:lightgray">
+										<span class="glyphicon glyphicon-plus" style="margin-right:16px"></span>Book Vehicle</td>
+										<td id="website_mobile_app_menu_list_orders" class = "td_menu">
+										<span class="glyphicon glyphicon-align-justify" style="margin-right:16px"></span>Orders</td>
+									</tr>
+								</tbody>
+							</table>
 						</t>
 						<t t-if="user_group == 'pic'">
-							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
-									id="website_mobile_app_menu_list_contract">Contract</div>
-							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
-									id="website_mobile_app_menu_list_shuttle">Shuttle</div>
-							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
-									id="website_mobile_app_menu_list_orders">Orders</div>
+							<table class="table table-hover">
+								<tbody>
+									<tr>
+										<td id="website_mobile_app_menu_list_contract" class = "td_menu" style = "border-right:1px solid; border-color:lightgray">
+										<span class="glyphicon glyphicon-credit-card" style="margin-right:16px"></span>Contract</td>
+										<td id="website_mobile_app_menu_list_shuttle" class = "td_menu" style = "border-right:1px solid; border-color:lightgray">
+										<span class="fa fa-bus" style="margin-right:16px"></span>Shuttle</td>
+										<td id="website_mobile_app_menu_list_orders" class = "td_menu">
+										<span class="glyphicon glyphicon-align-justify" style="margin-right:16px"></span>Orders</td>
+									</tr>
+								</tbody>
+							</table>
 						</t>
 						<t t-if="user_group == 'approver'">
-							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
-									id="website_mobile_app_menu_list_contract">Contract</div>
-							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
-									id="website_mobile_app_menu_book_vehicle">Book Vehicle</div>
-							<div type="button" class="btn btn-primary col-md-2 col-xs-5 mb16 mt16 ml10"
-									id="website_mobile_app_menu_list_orders">Orders</div>
+							<table class="table table-hover">
+								<tbody>
+									<tr>
+										<td id="website_mobile_app_menu_list_contract" class = "td_menu" style = "border-right:1px solid; border-color:lightgray">
+										<span class="glyphicon glyphicon-credit-card" style="margin-right:16px"></span>Contract</td>
+										<td id="website_mobile_app_menu_book_vehicle" class = "td_menu" style = "border-right:1px solid; border-color:lightgray">
+										<span class="glyphicon glyphicon-plus" style="margin-right:16px"></span>Book Vehicle</td>
+										<td id="website_mobile_app_menu_list_orders" class = "td_menu">
+										<span class="glyphicon glyphicon-align-justify" style="margin-right:16px"></span>Orders</td>
+									</tr>
+								</tbody>
+							</table>
 						</t>
 					</div>
 					<t t-if="user_group != ''">
-						<hr/>
 						<div class="row" id="main_container"/>
 					</t>
 				</div>

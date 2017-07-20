@@ -462,7 +462,7 @@ class website_mobile_app(http.Controller):
 			})
 	
 	@http.route('/mobile_app/edit_order/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_approve_order(self, data, **kwargs):
+	def mobile_app_edit_order(self, data, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		result = handler_obj.edit_order(int(data))
 		if result:

@@ -978,45 +978,61 @@ $(document).ready(function () {
 					alert_error(XMLHttpRequest);
 				} ,
 			});
-        });
+		});
 
-        function onclick_usage_control_quota(quota_id) {
+		function onclick_usage_control_quota(quota_id) {
 			$.get('/mobile_app/fetch_contract_detail_usage_control_quota/' + quota_id, null, function(data){
 				var quota = JSON.parse(data)
 				classifications = {
 					'Pending': 'pending',
 					'History': 'history',
 				};
-				$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_detail_control_usage',{
-					'user_group': self.user['user_group'],
-					'classifications': classifications,
-					'au_name': self.current_au_name,
-					'total_usage': quota.total_usage,
-					'yellow_limit': quota.yellow_limit,
-					'red_limit': quota.red_limit,
-					'total_request_nominal': quota.total_request_nominal,
-					'total_request_time': quota.total_request_time,
-					'limit_requests': quota.limit_requests,
-				}));
-				$(".accordion").click(function(event) {
-					$(this).toggleClass("active");
-					var detail = $(this).next();
-					if (detail.css("maxHeight") != "0px"){
-						detail.css("maxHeight", "0px");
-					} else {
-						detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
-					}
+				
+				$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_detail_control_usage'));
+				
+				$("#website_mobile_app_tab_usage_control_information", self).click(function(event) {
+					$(".usage_control_container", self).html(qweb.render('website_mobile_app_usage_control_information',{
+						'au_name': self.current_au_name,
+						'total_usage': quota.total_usage,
+						'yellow_limit': quota.yellow_limit,
+						'red_limit': quota.red_limit,
+						'total_request_nominal': quota.total_request_nominal,
+						'total_request_time': quota.total_request_time,
+						}));
 				});
-				$(".limit_request_btn_approve").click(function(){
-					onclick_button_change_log_approve($(this).attr("value"));
+				
+				$("#website_mobile_app_tab_usage_control_request_history", self).click(function(event) {
+					console.log(quota.limit_requests);
+					$(".usage_control_container", self).html(qweb.render('website_mobile_app_detail_contract_quota_changes',{
+						'user_group': self.user['user_group'],
+						'classifications': classifications,
+						'limit_requests': quota.limit_requests,
+					}));
+					event_limit_request_list();
 				});
-				$(".limit_request_btn_reject").click(function(){
-					onclick_button_change_log_reject($(this).attr("value"));
-				});
+
 			});
 		};
+		
+		function event_limit_request_list() {
+			$(".accordion").click(function(event) {
+				$(this).toggleClass("active");
+				var detail = $(this).next();
+				if (detail.css("maxHeight") != "0px"){
+					detail.css("maxHeight", "0px");
+				} else {
+					detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
+				}
+			});
+			$(".limit_request_btn_approve").click(function(){
+				onclick_button_change_log_approve($(this).attr("value"));
+			});
+			$(".limit_request_btn_reject").click(function(){
+				onclick_button_change_log_reject($(this).attr("value"));
+			});
+		}
 
-        //Onclick menu quota changes
+		//Onclick menu quota changes
 		$('#website_mobile_app_menu_quota_changes').click(function() {
 			onclick_detail_contract_menu('#website_mobile_app_menu_quota_changes');
 			$.get('/mobile_app/fetch_contract_quota_changes/' + JSON.stringify(self.contract_datas[self.index_click_contract].id), null, function(data){

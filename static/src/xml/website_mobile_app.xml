@@ -162,123 +162,145 @@
 
 	<t t-name="website_mobile_app_list_order">
 		<t class="full_height container universal_website_mobile_app">
-			<t t-foreach="classifications" t-as="classification">
-				<div class="row_hoverable accordion">
-					<h5><t t-esc="classification"/></h5>
-				</div>
-				<t t-if="order_datas[classification_value].length == 0">
-					<div class="detail_container accordion_detail" >
-						<div class="col-xs-12" style="text-align: center; color: darkgray;">
-							<h4>Data Kosong</h4>
-						</div>
-					</div>
-				</t>
-				<t t-if="order_datas[classification_value].length != 0">
-					<div class="detail_container accordion_detail" >
-						<t t-set="i" t-value="0"/>
-						<t t-foreach="order_datas[classification_value]" t-as="order">
-							<div class="list_order clickable" t-attf-index_order = "{{i}}" t-attf-classification_order = "{{classification_value}}">
-								<div class="list_title" style="pointer-events:none;">
-									<b><t t-esc="order.name"/></b> -
-									<t t-if="order.state == 'new' || order.state == 'confirmed' || order.state ==  'ready' ||
-									order.state == 'started' || order.state == 'start_confirmed' || order.state == 'resumed' ||
-									 order.state == 'finished' || order.state == 'finish_confirmed'">
-										<span class="green_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
-									</t>
-									<t t-if="order.state == 'rejected' || order.state == 'canceled'">
-										<span class="red_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
-									</t>
-									<t t-if="order.state == 'paused'">
-										<span class="orange_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
-									</t>
-								</div>
-								Requested at: <b style="pointer-events:none;"><t t-esc="order.request_date"/></b>
-								by <b style="pointer-events:none;"><t t-esc="order.order_by_name"/></b>
-								<table class="table" style="pointer-events:none;">
-									<t t-if="user_group == 'booker'">
-										<t t-if="classification_value != 'pending'">
-											<t t-if="order.pin">
-												<tr>
-													<td>Pin</td>
-													<td>:</td>
-													<td><t t-esc="order.pin"/></td>
-												</tr>
-											</t>
-										</t>
-									</t>
-									<tr>
-										<td>Time</td>
-										<td>:</td>
-										<td><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
-									</tr>
-									<t t-if="order.assigned_vehicle_name">
-										<tr>
-											<td>Fleet</td>
-											<td>:</td>
-											<td><t t-esc="order.assigned_driver_name"/> - <t t-esc="order.assigned_vehicle_name"/></td>
-										</tr>
-									</t>
-									<t t-if="order.origin_location">
-										<tr>
-											<td>From</td>
-											<td>:</td>
-											<td>
-												<t t-esc="order.origin_location"/> (<t t-esc="order.origin_area_name"/>)
-											</td>
-										</tr>
-									</t>
-									<t t-if="order.dest_location">
-										<tr>
-											<td>To</td>
-											<td>:</td>
-											<td>
-												<t t-esc="order.dest_location"/>  (<t t-esc="order.dest_area_name"/>)
-											</td>
-										</tr>
-									</t>
-								</table>
-								<div class="div_order_button">
-									<t t-if="user_group == 'approver'">
-										<t t-if="order.state == 'new'">
-											<t t-if="order.over_quota_status == 'warning'">
-												<div class="red_text">
-													Approving this order will lead to over quota by
-													<t t-esc="order.order_usage"/>
-													above <t t-esc="order.red_limit"/>
-												</div>
-											</t>
-											<t t-if="order.over_quota_status != 'approval'">
-											<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_approve_order col-md-1 col-xs-4">Approve</button>
-											<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_reject_order col-md-1 col-xs-4 ml10">Reject</button>
-											</t>
-											<t t-if="order.over_quota_status == 'approval'">
-												<t t-if="order.maintained_by == 'customer'">
-													<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_reject_order col-md-1 col-xs-4 ml10">Reject</button>
-													<button type="button" t-attf-id_au = "{{order.au_id}}" t-attf-id_contract = "{{order.contract_id}}"
-															t-attf-yellow_limit = "{{order.yellow_limit}}" t-attf-red_limit = "{{order.red_limit}}"
-															class="btn btn-success btn_add_quota col-md-1 col-xs-4 ml10">Add Quota</button>
-													<div class="row dialog_request_quota" id="dialog_request_quota_container" style="width:0px;height:0px;"/>
-												</t>
-												<t t-if="order.maintained_by != 'customer'">
-													<div class="red_text">
-														Please contact PT Universal to add your quota
-													</div>
-												</t>
-											</t>
-										</t>
-									</t>
-								</div>
-							</div>
-							<div id="dialog_order_detail_container" style="width:0px;height:0px;"/>
-							<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
-							<t t-set="i" t-value="i+1"/>
-						</t>
-					</div>
-				</t>
-			</t>
+			<t t-call="website_mobile_app_tab_order"/>
+			<div id="container_order_list"></div>
 		</t>
 	</t>
-
+	
+	<!-- TAB ORDER-->
+	<t t-name="website_mobile_app_tab_order">
+		<table class="table table-hover">
+			<tbody>
+				<tr>
+					<t t-if="user_group != 'fullday_passenger'">
+						<td class = "td_tab_order" id="website_mobile_app_tab_pending_order" style = "border-right:1px solid; border-color:lightgray">
+							Pending
+						</td>
+					</t>
+					<td class = "td_tab_order" id="website_mobile_app_tab_ready_order" style = "border-right:1px solid; border-color:lightgray">
+						Ready
+					</td>
+					<td class = "td_tab_order" id="website_mobile_app_tab_running_order" style = "border-right:1px solid; border-color:lightgray">
+						Running
+					</td>
+					<td class = "td_tab_order" id="website_mobile_app_tab_history_order" style = "border-right:1px solid; border-color:lightgray">
+						History
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</t>
+	
+	<t t-name="website_mobile_app_list_order_classification">
+		<t t-if="order_datas.length == 0">
+			<div class="col-xs-12" style="text-align: center; color: darkgray;">
+				<h4>Data Kosong</h4>
+			</div>
+		</t>
+		<t t-if="order_datas.length != 0">
+			<div class="detail_container" >
+				<t t-set="i" t-value="0"/>
+				<t t-foreach="order_datas" t-as="order">
+					<div class="list_order clickable" t-attf-index_order = "{{i}}" t-attf-classification_order = "{{classifications}}">
+						<div class="list_title" style="pointer-events:none;">
+							<b><t t-esc="order.name"/></b> -
+							<t t-if="order.state == 'new' || order.state == 'confirmed' || order.state ==  'ready' ||
+							order.state == 'started' || order.state == 'start_confirmed' || order.state == 'resumed' ||
+							 order.state == 'finished' || order.state == 'finish_confirmed'">
+								<span class="green_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
+							</t>
+							<t t-if="order.state == 'rejected' || order.state == 'canceled'">
+								<span class="red_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
+							</t>
+							<t t-if="order.state == 'paused'">
+								<span class="orange_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
+							</t>
+						</div>
+						Requested at: <b style="pointer-events:none;"><t t-esc="order.request_date"/></b>
+						by <b style="pointer-events:none;"><t t-esc="order.order_by_name"/></b>
+						<table class="table" style="pointer-events:none;">
+							<t t-if="user_group == 'booker'">
+								<t t-if="classification_value != 'pending'">
+									<t t-if="order.pin">
+										<tr>
+											<td>Pin</td>
+											<td>:</td>
+											<td><t t-esc="order.pin"/></td>
+										</tr>
+									</t>
+								</t>
+							</t>
+							<tr>
+								<td>Time</td>
+								<td>:</td>
+								<td><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
+							</tr>
+							<t t-if="order.assigned_vehicle_name">
+								<tr>
+									<td>Fleet</td>
+									<td>:</td>
+									<td><t t-esc="order.assigned_driver_name"/> - <t t-esc="order.assigned_vehicle_name"/></td>
+								</tr>
+							</t>
+							<t t-if="order.origin_location">
+								<tr>
+									<td>From</td>
+									<td>:</td>
+									<td>
+										<t t-esc="order.origin_location"/> (<t t-esc="order.origin_area_name"/>)
+									</td>
+								</tr>
+							</t>
+							<t t-if="order.dest_location">
+								<tr>
+									<td>To</td>
+									<td>:</td>
+									<td>
+										<t t-esc="order.dest_location"/>  (<t t-esc="order.dest_area_name"/>)
+									</td>
+								</tr>
+							</t>
+						</table>
+						<div class="div_order_button">
+							<t t-if="user_group == 'approver'">
+								<t t-if="order.state == 'new'">
+									<t t-if="order.over_quota_status == 'warning'">
+										<div class="red_text">
+											Approving this order will lead to over quota by
+											<t t-esc="order.order_usage"/>
+											above <t t-esc="order.red_limit"/>
+										</div>
+									</t>
+									<t t-if="order.over_quota_status != 'approval'">
+									<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_approve_order col-md-1 col-xs-4">Approve</button>
+									<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_reject_order col-md-1 col-xs-4 ml10">Reject</button>
+									</t>
+									<t t-if="order.over_quota_status == 'approval'">
+										<t t-if="order.maintained_by == 'customer'">
+											<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_reject_order col-md-1 col-xs-4 ml10">Reject</button>
+											<button type="button" t-attf-id_au = "{{order.au_id}}" t-attf-id_contract = "{{order.contract_id}}"
+													t-attf-yellow_limit = "{{order.yellow_limit}}" t-attf-red_limit = "{{order.red_limit}}"
+													class="btn btn-success btn_add_quota col-md-1 col-xs-4 ml10">Add Quota</button>
+											<div class="row dialog_request_quota" id="dialog_request_quota_container" style="width:0px;height:0px;"/>
+										</t>
+										<t t-if="order.maintained_by != 'customer'">
+											<div class="red_text">
+												Please contact PT Universal to add your quota
+											</div>
+										</t>
+									</t>
+								</t>
+							</t>
+						</div>
+					</div>
+					<div id="dialog_order_detail_container" style="width:0px;height:0px;"/>
+					<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
+					<t t-set="i" t-value="i+1"/>
+				</t>
+			</div>
+		</t>
+	</t>
+	
 	<t t-name="dialog_change_planned_start_time">
 		<div id="dialog_change_planned_start_time" class="modal">
 		  <!-- Modal content -->
@@ -983,4 +1005,8 @@
 			</div>
 		</div>
 	</t>
+	
+	<div id = "a_contract">
+		aaaa
+	</div>
 </templates>

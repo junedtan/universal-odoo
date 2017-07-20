@@ -371,21 +371,17 @@ $(document).ready(function () {
 			}
 			self.order_datas = response['list_order'];
 			$("#main_container", self).html(qweb.render('website_mobile_app_list_order',{
-				'classifications': classifications,
-				'order_datas': response['list_order'],
 				'user_group' : self.user['user_group']
 			}));
-
-			$(".accordion").click(function(event) {
-				$(this).toggleClass("active");
-				var detail = $(this).next();
-				if (detail.css("maxHeight") != "0px"){
-					detail.css("maxHeight", "0px");
-				} else {
-					detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
-				}
+			
+			$("#website_mobile_app_tab_history_order").click(function(event) {
+				$("#container_order_list", self).html(qweb.render('website_mobile_app_list_order_classification',{
+					'classifications': 'history',
+					'order_datas': self.order_datas['history'],
+					'user_group' : self.user['user_group']
+				}));
 			});
-
+			
 			$('.btn_approve_order').click(function(event) {
 				event.stopPropagation();
 				var target = $(event.target);
@@ -401,6 +397,7 @@ $(document).ready(function () {
 			});
 
 			$(".list_order").click(function(event) {
+				console.log("adwadadwadw");
 				event.stopPropagation();
 				var target = $(event.target);
 				self.index_click_order = target.attr("index_order");

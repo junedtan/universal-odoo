@@ -183,7 +183,7 @@
 					<td class = "td_tab_order" id="website_mobile_app_tab_running_order" style = "border-right:1px solid; border-color:lightgray">
 						Running
 					</td>
-					<td class = "td_tab_order" id="website_mobile_app_tab_history_order" style = "border-right:1px solid; border-color:lightgray">
+					<td class = "td_tab_order" id="website_mobile_app_tab_history_order">
 						History
 					</td>
 				</tr>
@@ -483,24 +483,34 @@
 	<t t-name="website_mobile_app_detail_contract">
 		<h3 class="contract_detail"><b><t t-esc="contract_name"/></b></h3>
 		<div class="row contract_detail" id="menu_detail_contract_container">
-			<t t-if="user_group == 'pic'">
-				<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
-					id="website_mobile_app_menu_info_contract">Info</div>
-			</t>
-			<t t-if="contract_service_type == 'By Order'">
-				<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
-					id="website_mobile_app_menu_usage_control">Usage Control</div>
-			</t>
-			<t t-if="user_group == 'pic'">
-				<t t-if="contract_service_type == 'By Order'">
-					<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
-						id="website_mobile_app_menu_quota_changes">Quota Changes</div>
-				</t>
-			</t>
-			<t t-if="contract_service_type == 'Shuttle'">
-				<div type="button" class="btn btn-info col-md-2 col-xs-5 mb16 mt16 ml10"
-					id="website_mobile_app_menu_shuttle">Shuttle</div>
-			</t>
+			<table class="table table-hover">
+				<tbody>
+					<tr>
+						<t t-if="user_group == 'pic'">
+							<td class = "td_tab_order" id="website_mobile_app_menu_info_contract" style = "border-right:1px solid; border-color:lightgray">
+								Info
+							</td>
+						</t>
+						<t t-if="contract_service_type == 'By Order'">
+							<td class = "td_tab_order" id="website_mobile_app_menu_usage_control">
+								Usage Control
+							</td>
+						</t>
+						<t t-if="user_group == 'pic'">
+							<t t-if="contract_service_type == 'By Order'">
+								<td class = "td_tab_order" id="website_mobile_app_menu_quota_changes" style = "border-left:1px solid; border-color:lightgray">
+									Quota Changes
+								</td>
+							</t>
+						</t>
+						<t t-if="contract_service_type == 'Shuttle'" style = "border-left:1px solid; border-color:lightgray">
+							<td class = "td_tab_order" id="website_mobile_app_menu_shuttle">
+								Shuttle
+							</td>
+						</t>
+					</tr>
+				</tbody>
+			</table>
 		</div>
 
 		<div class="row contract_detail" id="detail_contract_main_container"/>

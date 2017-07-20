@@ -31,6 +31,14 @@ $(document).ready(function () {
 		$('#website_mobile_app_menu_quota_changes').removeClass('active');
 		$('#website_mobile_app_menu_shuttle').removeClass('active');
 		$(id).addClass('active');
+	};
+	
+	function onclick_tab_order(id) {
+		$('#website_mobile_app_tab_pending_order').removeClass('active');
+		$('#website_mobile_app_tab_ready_order').removeClass('active');
+		$('#website_mobile_app_tab_running_order').removeClass('active');
+		$('#website_mobile_app_tab_history_order').removeClass('active');
+		$(id).addClass('active');
     };
 
 // BOOK VEHICLE =============================================================================================================
@@ -374,52 +382,86 @@ $(document).ready(function () {
 				'user_group' : self.user['user_group']
 			}));
 			
+			$("#website_mobile_app_tab_pending_order").click(function(event) {
+				onclick_tab_order('#website_mobile_app_tab_pending_order');
+				$("#container_order_list", self).html(qweb.render('website_mobile_app_list_order_classification',{
+					'classifications': 'pending',
+					'order_datas': self.order_datas['pending'],
+					'user_group' : self.user['user_group']
+				}));
+				addEventListOrder();
+			});
+			
+			$("#website_mobile_app_tab_ready_order").click(function(event) {
+				onclick_tab_order('#website_mobile_app_tab_ready_order');
+				$("#container_order_list", self).html(qweb.render('website_mobile_app_list_order_classification',{
+					'classifications': 'ready',
+					'order_datas': self.order_datas['ready'],
+					'user_group' : self.user['user_group']
+				}));
+				addEventListOrder();
+			});
+			
+			$("#website_mobile_app_tab_running_order").click(function(event) {
+				onclick_tab_order('#website_mobile_app_tab_running_order');
+				$("#container_order_list", self).html(qweb.render('website_mobile_app_list_order_classification',{
+					'classifications': 'running',
+					'order_datas': self.order_datas['running'],
+					'user_group' : self.user['user_group']
+				}));
+				addEventListOrder();
+			});
+			
 			$("#website_mobile_app_tab_history_order").click(function(event) {
+				onclick_tab_order('#website_mobile_app_tab_history_order');
 				$("#container_order_list", self).html(qweb.render('website_mobile_app_list_order_classification',{
 					'classifications': 'history',
 					'order_datas': self.order_datas['history'],
 					'user_group' : self.user['user_group']
 				}));
-			});
-			
-			$('.btn_approve_order').click(function(event) {
-				event.stopPropagation();
-				var target = $(event.target);
-				order_id = target.attr("id_order");
-				onclick_button_approve_order(order_id);
-			});
-
-			$('.btn_reject_order').click(function(event) {
-				event.stopPropagation();
-				var target = $(event.target);
-				order_id = target.attr("id_order");
-				onclick_button_reject_order(order_id);
-			});
-
-			$(".list_order").click(function(event) {
-				console.log("adwadadwadw");
-				event.stopPropagation();
-				var target = $(event.target);
-				self.index_click_order = target.attr("index_order");
-				var classifications_order = target.attr("classification_order");
-				onclick_list_order_detail_order(self.index_click_order, classifications_order);
-			});
-
-			$('#dialog_order_detail_container').click(function(event){
-				event.stopPropagation();
-			});
-
-			$('.btn_add_quota').click(function(event) {
-				event.stopPropagation();
-				var target = $(event.target);
-				au_id = target.attr("id_au");
-				contract_id = target.attr("id_contract");
-				yellow_limit = target.attr("yellow_limit");
-				red_limit = target.attr("red_limit");
-				onclick_button_request_change_quota(au_id, contract_id, yellow_limit, red_limit);
+				addEventListOrder();
 			});
 		});
 	});
+	
+	function addEventListOrder() {
+		$('.btn_approve_order').click(function(event) {
+			event.stopPropagation();
+			var target = $(event.target);
+			order_id = target.attr("id_order");
+			console.log(order_id);
+			onclick_button_approve_order(order_id);
+		});
+
+		$('.btn_reject_order').click(function(event) {
+			event.stopPropagation();
+			var target = $(event.target);
+			order_id = target.attr("id_order");
+			onclick_button_reject_order(order_id);
+		});
+
+		$(".list_order").click(function(event) {
+			event.stopPropagation();
+			var target = $(event.target);
+			self.index_click_order = target.attr("index_order");
+			var classifications_order = target.attr("classification_order");
+			onclick_list_order_detail_order(self.index_click_order, classifications_order);
+		});
+
+		$('#dialog_order_detail_container').click(function(event){
+			event.stopPropagation();
+		});
+
+		$('.btn_add_quota').click(function(event) {
+			event.stopPropagation();
+			var target = $(event.target);
+			au_id = target.attr("id_au");
+			contract_id = target.attr("id_contract");
+			yellow_limit = target.attr("yellow_limit");
+			red_limit = target.attr("red_limit");
+			onclick_button_request_change_quota(au_id, contract_id, yellow_limit, red_limit);
+		});
+	};
 
 	//Order Detail ===============================================================
 	function onclick_list_order_detail_order(index_order, classifications_order) {

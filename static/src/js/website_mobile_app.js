@@ -31,6 +31,14 @@ $(document).ready(function () {
 		$('#website_mobile_app_menu_quota_changes').removeClass('active');
 		$('#website_mobile_app_menu_shuttle').removeClass('active');
 		$(id).addClass('active');
+	};
+	
+	function onclick_tab_order(id) {
+		$('#website_mobile_app_tab_pending_order').removeClass('active');
+		$('#website_mobile_app_tab_ready_order').removeClass('active');
+		$('#website_mobile_app_tab_running_order').removeClass('active');
+		$('#website_mobile_app_tab_history_order').removeClass('active');
+		$(id).addClass('active');
     };
 
 // BOOK VEHICLE =============================================================================================================
@@ -374,7 +382,35 @@ $(document).ready(function () {
 				'user_group' : self.user['user_group']
 			}));
 			
+			$("#website_mobile_app_tab_pending_order").click(function(event) {
+				onclick_tab_order('#website_mobile_app_tab_pending_order');
+				$("#container_order_list", self).html(qweb.render('website_mobile_app_list_order_classification',{
+					'classifications': 'pending',
+					'order_datas': self.order_datas['pending'],
+					'user_group' : self.user['user_group']
+				}));
+			});
+			
+			$("#website_mobile_app_tab_ready_order").click(function(event) {
+				onclick_tab_order('#website_mobile_app_tab_ready_order');
+				$("#container_order_list", self).html(qweb.render('website_mobile_app_list_order_classification',{
+					'classifications': 'ready',
+					'order_datas': self.order_datas['ready'],
+					'user_group' : self.user['user_group']
+				}));
+			});
+			
+			$("#website_mobile_app_tab_running_order").click(function(event) {
+				onclick_tab_order('#website_mobile_app_tab_running_order');
+				$("#container_order_list", self).html(qweb.render('website_mobile_app_list_order_classification',{
+					'classifications': 'running',
+					'order_datas': self.order_datas['running'],
+					'user_group' : self.user['user_group']
+				}));
+			});
+			
 			$("#website_mobile_app_tab_history_order").click(function(event) {
+				onclick_tab_order('#website_mobile_app_tab_history_order');
 				$("#container_order_list", self).html(qweb.render('website_mobile_app_list_order_classification',{
 					'classifications': 'history',
 					'order_datas': self.order_datas['history'],

@@ -1003,7 +1003,7 @@ $(document).ready(function () {
 				
 				$("#website_mobile_app_tab_usage_control_request_history", self).click(function(event) {
 					console.log(quota.limit_requests);
-					$(".usage_control_container", self).html(qweb.render('website_mobile_app_detail_contract_quota_changes',{
+					$(".usage_control_container", self).html(qweb.render('website_mobile_app_usage_control_request_history',{
 						'user_group': self.user['user_group'],
 						'classifications': classifications,
 						'limit_requests': quota.limit_requests,

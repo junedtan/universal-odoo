@@ -4,6 +4,11 @@
 		<template id="website_mobile_app_main_menu" name="Mobile App">
 			<t t-call="website.layout">
 				<div class="container universal_website_mobile_app">
+					<div class="panel">
+						<div id="button_back" style="height:100%;"><span class="fa fa-chevron-circle-left"/></div>
+						<h2 style="margin-left:10px;">UNIVERSAL</h2>
+					</div>
+
 					<div class="row" id="menu_container">
 						<t t-if="user_group == ''">
 							<div class="col-md-12 mb16 mt16">

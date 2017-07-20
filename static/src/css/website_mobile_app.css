@@ -271,6 +271,7 @@ div.row_hoverable{
 
 
 .panel {
+	display: inline;
 	position: fixed;
     top: 0;
     height: 45px;
@@ -278,11 +279,7 @@ div.row_hoverable{
     color: white;
     background-color: blue;
     z-index: 1000;
-}
-
-.panel h2 {
-	margin-left: 20px;
-	margin-top: 5px;
+    padding: 5px;
 }
 
 

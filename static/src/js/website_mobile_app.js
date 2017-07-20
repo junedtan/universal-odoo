@@ -981,20 +981,10 @@ $(document).ready(function () {
 					'History': 'history',
 				};
 				
-				$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_detail_control_usage',{
-					'user_group': self.user['user_group'],
-					'classifications': classifications,
-					'au_name': self.current_au_name,
-					'total_usage': quota.total_usage,
-					'yellow_limit': quota.yellow_limit,
-					'red_limit': quota.red_limit,
-					'total_request_nominal': quota.total_request_nominal,
-					'total_request_time': quota.total_request_time,
-					'limit_requests': quota.limit_requests,
-				}));
+				$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_detail_control_usage'));
 				
 				$("#website_mobile_app_tab_usage_control_information", self).click(function(event) {
-					$("#usage_control_container", self).html(qweb.render('website_mobile_app_usage_control_information',{
+					$(".usage_control_container", self).html(qweb.render('website_mobile_app_usage_control_information',{
 						'au_name': self.current_au_name,
 						'total_usage': quota.total_usage,
 						'yellow_limit': quota.yellow_limit,
@@ -1004,27 +994,36 @@ $(document).ready(function () {
 						}));
 				});
 				
-				
+				$("#website_mobile_app_tab_usage_control_request_history", self).click(function(event) {
+					console.log(quota.limit_requests);
+					$(".usage_control_container", self).html(qweb.render('website_mobile_app_detail_contract_quota_changes',{
+						'user_group': self.user['user_group'],
+						'classifications': classifications,
+						'limit_requests': quota.limit_requests,
+					}));
+					event_limit_request_list();
+				});
 
-				
-				
-				$(".accordion").click(function(event) {
-					$(this).toggleClass("active");
-					var detail = $(this).next();
-					if (detail.css("maxHeight") != "0px"){
-						detail.css("maxHeight", "0px");
-					} else {
-						detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
-					}
-				});
-				$(".limit_request_btn_approve").click(function(){
-					onclick_button_change_log_approve($(this).attr("value"));
-				});
-				$(".limit_request_btn_reject").click(function(){
-					onclick_button_change_log_reject($(this).attr("value"));
-				});
 			});
 		};
+		
+		function event_limit_request_list() {
+			$(".accordion").click(function(event) {
+				$(this).toggleClass("active");
+				var detail = $(this).next();
+				if (detail.css("maxHeight") != "0px"){
+					detail.css("maxHeight", "0px");
+				} else {
+					detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
+				}
+			});
+			$(".limit_request_btn_approve").click(function(){
+				onclick_button_change_log_approve($(this).attr("value"));
+			});
+			$(".limit_request_btn_reject").click(function(){
+				onclick_button_change_log_reject($(this).attr("value"));
+			});
+		}
 
 		//Onclick menu quota changes
 		$('#website_mobile_app_menu_quota_changes').click(function() {

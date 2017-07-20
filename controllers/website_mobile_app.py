@@ -788,7 +788,7 @@ class website_mobile_app_handler(osv.osv):
 		order_obj = self.pool.get('foms.order')
 		order_passenger_obj = self.pool.get('foms.order.passenger')
 		user_obj = self.pool.get('res.users')
-		is_fullday_passenger = user_obj.has_group(cr, SUPERUSER_ID, 'universal.group_universal_passenger')
+		is_fullday_passenger = user_obj.has_group(cr, uid, 'universal.group_universal_passenger')
 		
 		mode = domain.get('mode_create_or_edit', '')
 		contract_id = domain.get('contract_id', '')

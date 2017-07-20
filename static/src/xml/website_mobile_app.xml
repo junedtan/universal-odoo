@@ -191,6 +191,7 @@
 		</table>
 	</t>
 	
+	<!-- ORDER LIST-->
 	<t t-name="website_mobile_app_list_order_classification">
 		<t t-if="order_datas.length == 0">
 			<div class="col-xs-12" style="text-align: center; color: darkgray;">
@@ -644,7 +645,22 @@
 
 	<t t-name="website_mobile_app_detail_control_usage">
 		<h3><t t-esc="au_name"/></h3>
-		<h4>Information</h4>
+		<table class="table table-hover">
+			<tbody>
+				<tr>
+					<td id="website_mobile_app_tab_usage_control_information" class = "td_menu" style = "border-right:1px solid; border-color:lightgray">
+					Information</td>
+					<td id="website_mobile_app_tab_usage_control_request_history" class = "td_menu">
+					Limit Request History</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<div class = "usage_control_container"></div>
+	</t>
+	
+	<!-- USAGE CONTROL INFORMATION -->
+	<t t-name="website_mobile_app_usage_control_information">
 		<table class="table">
 			<tr>
 				<td>Total Usage</td>
@@ -672,8 +688,10 @@
 				<td><t t-esc="total_request_time"/></td>
 			</tr>
 		</table>
-
-		<h4>Limit Request History</h4>
+	</t>
+	
+	<!-- USAGE CONTROL LIMIT REQUEST HISTORY -->
+	<t t-name="website_mobile_app_usage_control_request_history">
 		<t t-foreach="classifications" t-as="classification">
 			<div class="row_hoverable accordion">
 				<h5><t t-esc="classification"/></h5>
@@ -758,7 +776,7 @@
 			</t>
 		</t>
 	</t>
-
+	
 	<!-- DETAIL CONTRACT QUOTA CHANGES -->
 	<t t-name="website_mobile_app_detail_contract_quota_changes">
 		<div class="contract_info no_padding">

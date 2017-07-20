@@ -256,3 +256,13 @@ div.row_hoverable{
 	display: block;
 	margin: auto;
 }
+
+.td_menu {
+	width : 33%;
+	text-align: center;
+}
+
+.td_tab_order {
+	width : 25%;
+	text-align: center;
+}

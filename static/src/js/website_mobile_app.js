@@ -993,8 +993,10 @@ $(document).ready(function () {
 					'Pending': 'pending',
 					'History': 'history',
 				};
-				
-				$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_detail_control_usage'));
+
+				$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_detail_control_usage', {
+					'au_name': self.current_au_name,
+				}));
 				
 				$("#website_mobile_app_tab_usage_control_information", self).click(function(event) {
 					$(".usage_control_container", self).html(qweb.render('website_mobile_app_usage_control_information',{

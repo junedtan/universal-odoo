@@ -488,24 +488,24 @@
 				<tbody>
 					<tr>
 						<t t-if="user_group == 'pic'">
-							<td class = "td_tab_order" id="website_mobile_app_menu_info_contract" style = "border-right:1px solid; border-color:lightgray">
+							<td class = "td_tab_order" id="website_mobile_app_menu_info_contract" style = "vertical-align:middle;border-right:1px solid; border-color:lightgray">
 								Info
 							</td>
 						</t>
 						<t t-if="contract_service_type == 'By Order'">
-							<td class = "td_tab_order" id="website_mobile_app_menu_usage_control">
+							<td class = "td_tab_order" id="website_mobile_app_menu_usage_control" style="vertical-align:middle;">
 								Usage Control
 							</td>
 						</t>
 						<t t-if="user_group == 'pic'">
 							<t t-if="contract_service_type == 'By Order'">
-								<td class = "td_tab_order" id="website_mobile_app_menu_quota_changes" style = "border-left:1px solid; border-color:lightgray">
+								<td class = "td_tab_order" id="website_mobile_app_menu_quota_changes" style = "vertical-align:middle;border-left:1px solid; border-color:lightgray">
 									Quota Changes
 								</td>
 							</t>
 						</t>
 						<t t-if="contract_service_type == 'Shuttle'" style = "border-left:1px solid; border-color:lightgray">
-							<td class = "td_tab_order" id="website_mobile_app_menu_shuttle">
+							<td class = "td_tab_order" id="website_mobile_app_menu_shuttle" style="vertical-align:middle;">
 								Shuttle
 							</td>
 						</t>

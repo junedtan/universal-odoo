@@ -5,8 +5,9 @@
 			<t t-call="website.layout">
 				<div class="container universal_website_mobile_app">
 					<div class="panel">
-						<div id="button_back" style="height:100%;"><span class="fa fa-chevron-circle-left"/></div>
-						<h2 style="margin-left:10px;">UNIVERSAL</h2>
+						<h2 id="button_back" style="height:100%;" class="no_margin"><span class="fa fa-2 fa-chevron-circle-left"/></h2>
+						<h2 id="panel_title" style="margin-left:10px;margin-top:0px;margin-bottom:0px;margin-right:0px;">
+							UNIVERSAL</h2>
 					</div>
 
 					<div class="row" id="menu_container">

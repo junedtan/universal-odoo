@@ -270,17 +270,6 @@ div.row_hoverable{
 
 
 
-.panel {
-	display: inline;
-	position: fixed;
-    top: 0;
-    height: 45px;
-    width: 100%;
-    color: white;
-    background-color: blue;
-    z-index: 1000;
-    padding: 5px;
-}
 
 
 
@@ -313,4 +302,29 @@ div.row_hoverable{
 
 #menu_container .active {
     background-color: Gainsboro;
+}
+
+
+.panel {
+	display: inline;
+	position: fixed;
+    top: 0;
+    width: 100%;
+    color: white;
+    background-color: blue;
+    z-index: 1000;
+    padding: 5px;
+    margin: 0px;
+    margin-left: -15px;
+    border-radius: 0px;
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
+}
+
+#button_back {
+	display: inline-block;
+	height:100%;
+}
+
+#panel_title {
+	display: inline-block;
 }

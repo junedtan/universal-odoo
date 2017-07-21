@@ -27,6 +27,11 @@ $(document).ready(function () {
 //		$(id).addClass('active');
 	};
 
+	function onclick_usage_control() {
+		$('#menu_detail_contract_container').hide();
+    	$('#detail_contract_main_container').show();
+	}
+
 	function onclick_detail_contract_menu(id) {
 		$('#website_mobile_app_menu_info_contract').removeClass('active');
 		$('#website_mobile_app_menu_usage_control').removeClass('active');
@@ -951,6 +956,7 @@ $(document).ready(function () {
                             quota_list = JSON.parse(response.quota_list)
 							$(".list_quota_usage").click(function(){
 								event.stopPropagation();
+								onclick_usage_control();
 								self.current_au_name = $(this).attr("au_name");
 								onclick_usage_control_quota($(this).attr("value"));
 							});

@@ -482,8 +482,8 @@
 
 	<!-- DETAIL CONTRACT HEADER-->
 	<t t-name="website_mobile_app_detail_contract">
-		<h3 class="contract_detail"><b><t t-esc="contract_name"/></b></h3>
 		<div class="row contract_detail" id="menu_detail_contract_container">
+			<h3 class="contract_detail"><b><t t-esc="contract_name"/></b></h3>
 			<table class="table table-hover">
 				<tbody>
 					<tr>

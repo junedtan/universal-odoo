@@ -31,7 +31,7 @@
 			<!-- Button -->
 			<t t-if="create_mode">
 				<div class="row ml10">
-					<button type="button" id="btn_create_order" class="btn btn-success col-md-10 col-xs-12">Create Order</button>
+					<button type="button" id="btn_create_order" class="btn btn-success col-md-10 col-xs-11">Create Order</button>
 				</div>
 			</t>
 			<t t-if="create_mode == false">
@@ -202,7 +202,7 @@
 			<div class="detail_container" >
 				<t t-set="i" t-value="0"/>
 				<t t-foreach="order_datas" t-as="order">
-					<div class="list_order clickable" t-attf-index_order = "{{i}}" t-attf-classification_order = "{{classifications}}">
+					<div class="list_order clickable plr12" t-attf-index_order = "{{i}}" t-attf-classification_order = "{{classifications}}">
 						<div class="list_title" style="pointer-events:none;">
 							<b><t t-esc="order.name"/></b> -
 							<t t-if="order.state == 'new' || order.state == 'confirmed' || order.state ==  'ready' ||

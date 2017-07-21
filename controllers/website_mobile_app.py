@@ -306,20 +306,27 @@ class website_mobile_app(http.Controller):
 			}
 		else:
 			mode = loaded_data.get('mode_create_or_edit', '')
-			if result:
-				info = _('Create Order Success') if mode == 'create' else _('Edit Order Success')
+			if isinstance(result, basestring):
 				response = {
 					'status': 'ok',
-					'info': info,
-					'success' : True,
-				}
-			else:
-				info = _('Create Order Failed') if mode == 'create' else _('Edit Order Failed')
-				response = {
-					'status': 'ok',
-					'info': info,
+					'info': result,
 					'success' : False,
 				}
+			else :
+				if result:
+					info = _('Create Order Success') if mode == 'create' else _('Edit Order Success')
+					response = {
+						'status': 'ok',
+						'info': info,
+						'success' : True,
+					}
+				else:
+					info = _('Create Order Failed') if mode == 'create' else _('Edit Order Failed')
+					response = {
+						'status': 'ok',
+						'info': info,
+						'success' : False,
+					}
 		return json.dumps(response)
 	
 	@http.route('/mobile_app/fetch_orders', type='http', auth="user", website=True)
@@ -788,7 +795,7 @@ class website_mobile_app_handler(osv.osv):
 		order_obj = self.pool.get('foms.order')
 		order_passenger_obj = self.pool.get('foms.order.passenger')
 		user_obj = self.pool.get('res.users')
-		is_fullday_passenger = user_obj.has_group(cr, SUPERUSER_ID, 'universal.group_universal_passenger')
+		is_fullday_passenger = user_obj.has_group(cr, uid, 'universal.group_universal_passenger')
 		
 		mode = domain.get('mode_create_or_edit', '')
 		contract_id = domain.get('contract_id', '')
@@ -833,6 +840,9 @@ class website_mobile_app_handler(osv.osv):
 					'is_orderer': passenger['is_orderer'],
 				}
 				passengers.append([0, False, passenger_data])
+				
+			if len(passengers) == 0:
+				return "there is no passenger, please add 1 passenger at least"
 			
 			order_data['alloc_unit_id'] = unit_id
 			order_data['order_type_by_order'] = type_id

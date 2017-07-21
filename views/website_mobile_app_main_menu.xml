@@ -60,9 +60,9 @@
 									<h1 class="no_margin"><span class="fa fa-bus"></span></h1>
 									<br/><span>Shuttle</span>
 								</a></li>
-								<li><a id="website_mobile_app_menu_change_password">
-									<h1 class="no_margin"><span class="glyphicon glyphicon-edit"></span></h1>
-									<br/><span>Change Password</span>
+								<li><a id="website_mobile_app_menu_list_orders">
+									<h1 class="no_margin"><span class="glyphicon glyphicon-align-justify"></span></h1>
+									<br/><span>Orders</span>
 								</a></li>
 							</ul>
 						</t>

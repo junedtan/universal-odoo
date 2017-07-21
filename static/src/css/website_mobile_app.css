@@ -337,3 +337,22 @@ div.row_hoverable{
 	margin-top:6px;
 	margin-bottom:0px;
 }
+
+div.scrollmenu {
+    overflow: auto;
+    white-space: nowrap;
+}
+
+div.scrollmenu div {
+    display: inline-block;
+    background-color: rgb(51,122,183);
+    color:white;
+    text-align: center;
+    padding: 10px;
+    text-decoration: none;
+    width: 150px;
+}
+
+div.scrollmenu div:hover {
+    background-color: rgb(40,96,144);
+}

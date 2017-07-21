@@ -169,26 +169,22 @@
 	
 	<!-- TAB ORDER-->
 	<t t-name="website_mobile_app_tab_order">
-		<table class="table table-hover">
-			<tbody>
-				<tr>
-					<t t-if="user_group != 'fullday_passenger'">
-						<td class = "td_tab_order" id="website_mobile_app_tab_pending_order" style = "border-right:1px solid; border-color:lightgray">
-							Pending
-						</td>
-					</t>
-					<td class = "td_tab_order" id="website_mobile_app_tab_ready_order" style = "border-right:1px solid; border-color:lightgray">
-						Ready
-					</td>
-					<td class = "td_tab_order" id="website_mobile_app_tab_running_order" style = "border-right:1px solid; border-color:lightgray">
-						Running
-					</td>
-					<td class = "td_tab_order" id="website_mobile_app_tab_history_order">
-						History
-					</td>
-				</tr>
-			</tbody>
-		</table>
+		<div class="scrollmenu" style="margin-top:5px">
+			<t t-if="user_group != 'fullday_passenger'">
+				<div id="website_mobile_app_tab_pending_order">
+					Pending
+				</div>
+			</t>
+			<div id="website_mobile_app_tab_ready_order">
+				Ready
+			</div>
+			<div id="website_mobile_app_tab_running_order">
+				Running
+			</div>
+			<div id="website_mobile_app_tab_history_order">
+				History
+			</div>
+		</div>
 	</t>
 	
 	<!-- ORDER LIST-->
@@ -376,8 +372,8 @@
 
 	<t t-name="website_mobile_app_list_shuttle">
 		<t class="full_height container universal_website_mobile_app">
-			<h2>Select Contract:</h2>
-			<div class="form-group ml10">
+			<h3 style="margin-top:10px;margin-left:10px;">Select Contract:</h3>
+			<div class="form-group ml10" style="margin-right:10px">
 				<label for="list_shuttle_contract">Contract</label>
 				<select id="list_shuttle_contract" class="form-control">
 					<t t-foreach="contract_datas" t-as="contract_data">
@@ -484,34 +480,30 @@
 	<t t-name="website_mobile_app_detail_contract">
 		<div class="row contract_detail" id="menu_detail_contract_container" style="margin-left:0px; margin-right:0px">
 			<h3 class="contract_detail" style="margin-bottom:10px; margin-top:10px;"><b><t t-esc="contract_name"/></b></h3>
-			<table class="table table-hover">
-				<tbody>
-					<tr>
-						<t t-if="user_group == 'pic'">
-							<td class = "td_tab_order" id="website_mobile_app_menu_info_contract" style = "vertical-align:middle;border-right:1px solid; border-color:lightgray">
-								Info
-							</td>
-						</t>
-						<t t-if="contract_service_type == 'By Order'">
-							<td class = "td_tab_order" id="website_mobile_app_menu_usage_control" style="vertical-align:middle;">
-								Usage Control
-							</td>
-						</t>
-						<t t-if="user_group == 'pic'">
-							<t t-if="contract_service_type == 'By Order'">
-								<td class = "td_tab_order" id="website_mobile_app_menu_quota_changes" style = "vertical-align:middle;border-left:1px solid; border-color:lightgray">
-									Quota Changes
-								</td>
-							</t>
-						</t>
-						<t t-if="contract_service_type == 'Shuttle'" style = "border-left:1px solid; border-color:lightgray">
-							<td class = "td_tab_order" id="website_mobile_app_menu_shuttle" style="vertical-align:middle;">
-								Shuttle
-							</td>
-						</t>
-					</tr>
-				</tbody>
-			</table>
+			<div class="scrollmenu">
+				<t t-if="user_group == 'pic'">
+					<div id="website_mobile_app_menu_info_contract">
+						Info
+					</div>
+				</t>
+				<t t-if="contract_service_type == 'By Order'">
+					<div id="website_mobile_app_menu_usage_control">
+						Usage Control
+					</div>
+				</t>
+				<t t-if="user_group == 'pic'">
+					<t t-if="contract_service_type == 'By Order'">
+						<div id="website_mobile_app_menu_quota_changes">
+							Quota Changes
+						</div>
+					</t>
+				</t>
+				<t t-if="contract_service_type == 'Shuttle'" style = "border-left:1px solid; border-color:lightgray">
+					<div class = "td_tab_order" id="website_mobile_app_menu_shuttle" style="display: inline-block;vertical-align:middle;">
+						Shuttle
+					</div>
+				</t>
+			</div>
 		</div>
 
 		<div class="row contract_detail" id="detail_contract_main_container"/>
@@ -779,7 +771,7 @@
 	
 	<!-- DETAIL CONTRACT QUOTA CHANGES -->
 	<t t-name="website_mobile_app_detail_contract_quota_changes">
-		<div class="contract_info no_padding">
+		<div class="contract_info no_padding" style="margin-top:5px;">
 			<t t-foreach="classifications" t-as="classification">
 				<div class="row_hoverable accordion">
 					<h5><t t-esc="classification"/></h5>

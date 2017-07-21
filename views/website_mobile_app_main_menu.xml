@@ -3,10 +3,10 @@
 
 		<template id="website_mobile_app_main_menu" name="Mobile App">
 			<t t-call="website.layout">
-				<div class="container universal_website_mobile_app">
+				<div class="container universal_website_mobile_app" style="width:100%">
 					<div class="panel">
-						<h2 id="button_back" style="height:100%;" class="no_margin"><span class="fa fa-2 fa-chevron-circle-left"/></h2>
-						<h2 id="panel_title" style="margin-left:10px;margin-top:0px;margin-bottom:0px;margin-right:0px;">
+						<h2 id="button_back" style="vertical-align:middle;"><span class="fa fa-2 fa-chevron-circle-left"/></h2>
+						<h2 id="panel_title" style="vertical-align:middle; margin-left:10px;margin-right:0px;">
 							UNIVERSAL</h2>
 					</div>
 
@@ -36,6 +36,10 @@
 									<h1 class="no_margin"><span class="glyphicon glyphicon-edit"></span></h1>
 									<br/><span>Change Password</span>
 								</a></li>
+								<li><a id="website_mobile_app_menu_log_out">
+									<h1 class="no_margin"><span class="glyphicon glyphicon-log-out"></span></h1>
+									<br/><span>Log Out</span>
+								</a></li>
 							</ul>
 						</t>
 						<t t-if="user_group == 'booker'">
@@ -47,6 +51,10 @@
 								<li><a id="website_mobile_app_menu_list_orders">
 									<h1 class="no_margin"><span class="glyphicon glyphicon-align-justify"></span></h1>
 									<br/><span>Orders</span>
+								</a></li>
+								<li><a id="website_mobile_app_menu_log_out">
+									<h1 class="no_margin"><span class="glyphicon glyphicon-log-out"></span></h1>
+									<br/><span>Log Out</span>
 								</a></li>
 							</ul>
 						</t>
@@ -64,6 +72,10 @@
 									<h1 class="no_margin"><span class="glyphicon glyphicon-align-justify"></span></h1>
 									<br/><span>Orders</span>
 								</a></li>
+								<li><a id="website_mobile_app_menu_log_out">
+									<h1 class="no_margin"><span class="glyphicon glyphicon-log-out"></span></h1>
+									<br/><span>Log Out</span>
+								</a></li>
 							</ul>
 						</t>
 						<t t-if="user_group == 'approver'">
@@ -79,6 +91,10 @@
 								<li><a id="website_mobile_app_menu_list_orders">
 									<h1 class="no_margin"><span class="glyphicon glyphicon-align-justify"></span></h1>
 									<br/><span>Orders</span>
+								</a></li>
+								<li><a id="website_mobile_app_menu_log_out">
+									<h1 class="no_margin"><span class="glyphicon glyphicon-log-out"></span></h1>
+									<br/><span>Log Out</span>
 								</a></li>
 							</ul>
 						</t>

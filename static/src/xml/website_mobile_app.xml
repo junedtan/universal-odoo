@@ -449,7 +449,7 @@
 			<t t-if="contract_datas.length != 0">
 				<t t-set="i" t-value="0"/>
 				<t t-foreach="contract_datas" t-as="contract">
-					<div class="list_contract clickable contract_detail" t-attf-id_contract = "{{i}}">
+					<div class="list_contract clickable contract_detail" style="margin-left:10px" t-attf-id_contract = "{{i}}">
 						<div class="card_padding" style="pointer-events:none;">
 							<t t-if="user_group == 'approver'">
 								<t t-esc="contract.name"/>
@@ -482,8 +482,8 @@
 
 	<!-- DETAIL CONTRACT HEADER-->
 	<t t-name="website_mobile_app_detail_contract">
-		<div class="row contract_detail" id="menu_detail_contract_container">
-			<h3 class="contract_detail"><b><t t-esc="contract_name"/></b></h3>
+		<div class="row contract_detail" id="menu_detail_contract_container" style="margin-left:0px; margin-right:0px">
+			<h3 class="contract_detail" style="margin-bottom:10px; margin-top:10px;"><b><t t-esc="contract_name"/></b></h3>
 			<table class="table table-hover">
 				<tbody>
 					<tr>
@@ -644,13 +644,13 @@
 	</t>
 
 	<t t-name="website_mobile_app_detail_control_usage">
-		<h3 style="margin-top:30px;"><t t-esc="au_name"/></h3>
+		<h3 style="margin-top:20px;"><t t-esc="au_name"/></h3>
 		<table class="table table-hover">
 			<tbody>
 				<tr>
-					<td id="website_mobile_app_tab_usage_control_information" class = "td_menu" style = "border-right:1px solid; border-color:lightgray">
+					<td id="website_mobile_app_tab_usage_control_information" class = "td_menu" style = "vertical-align:middle;border-right:1px solid; border-color:lightgray">
 					Information</td>
-					<td id="website_mobile_app_tab_usage_control_request_history" class = "td_menu">
+					<td id="website_mobile_app_tab_usage_control_request_history" class = "td_menu" style="vertical-align:middle;">
 					Limit Request History</td>
 				</tr>
 			</tbody>

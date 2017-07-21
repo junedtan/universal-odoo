@@ -15,10 +15,12 @@ $(document).ready(function () {
 	var index_click_order;
 	var current_au_name;
 	var my_id;
+	$('#button_back').hide();
 
 	function onclick_menu(id) {
 		$('#menu_container').hide();
 		$('#main_container').show();
+		$('#button_back').show();
 //		$('#website_mobile_app_menu_book_vehicle').removeClass('active');
 //		$('#website_mobile_app_menu_list_orders').removeClass('active');
 //		$('#website_mobile_app_menu_change_password').removeClass('active');
@@ -53,6 +55,7 @@ $(document).ready(function () {
 	$('#button_back').click(function() {
 		$('#menu_container').show();
 		$('#main_container').hide();
+		$('#button_back').hide();
 	});
 
 	$('#website_mobile_app_menu_book_vehicle').click(function() {
@@ -1251,4 +1254,14 @@ $(document).ready(function () {
 			}
 		}
 	};
+
+// LOG OUT ============================================================================================================
+
+	$('#website_mobile_app_menu_log_out').click(function() {
+		var pathname = window.location.pathname;
+		var url      = window.location.href;
+		url = url.replace(pathname, '');
+		url += "/web/session/logout?redirect=/";
+		window.location.replace(url);
+	});
 });

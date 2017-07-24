@@ -470,18 +470,16 @@ $(document).ready(function () {
 	});
 
 	function initOrderFilter() {
-		$('#filter_order_nnumber').on('input',function() {
-			var opt = $('option[value="'+$(this).val()+'"]');
-		 });
-		$('#filter_booker').on('input',function() {
-			var opt = $('option[value="'+$(this).val()+'"]');
-		 });
-		$('#filter_driver').on('input',function() {
-			var opt = $('option[value="'+$(this).val()+'"]');
-		 });
-		$('#filter_vehicle').on('input',function() {
-			var opt = $('option[value="'+$(this).val()+'"]');
-		 });
+		$('#button_filter').click(function(event) {
+			var order_number = $('#filter_order_number').val();
+			var booker_name = $('#filter_booker').val();
+			var driver_name = $('#filter_driver').val();
+			var vehicle_name = $('#filter_vehicle').val();
+			console.log(order_number);
+			console.log(booker_name);
+			console.log(driver_name);
+			console.log(vehicle_name);
+		});
 	};
 
 	function addEventListOrder() {

@@ -375,7 +375,7 @@ $(document).ready(function () {
 	$('#website_mobile_app_menu_list_orders').click(function() {
 		onclick_menu('#website_mobile_app_menu_list_orders');
 		$('#panel_title').text('Orders');
-		$.get('/mobile_app/fetch_orders', null, function(data){
+		$.get('/mobile_app/fetch_orders/' + JSON.stringify({}), null, function(data){
 			var response = JSON.parse(data);
 			self.user = {
             	user_group: response['user_group']
@@ -475,10 +475,16 @@ $(document).ready(function () {
 			var booker_name = $('#filter_booker').val();
 			var driver_name = $('#filter_driver').val();
 			var vehicle_name = $('#filter_vehicle').val();
-			console.log(order_number);
-			console.log(booker_name);
-			console.log(driver_name);
-			console.log(vehicle_name);
+			$.get('/mobile_app/fetch_orders/' + JSON.stringify({
+				'order_name': order_number,
+				'booker_name': booker_name,
+				'driver_name': driver_name,
+				'vehicle_name': vehicle_name,
+			}), null, function(data){
+				var response = JSON.parse(data);
+				self.order_datas = response['list_order'];
+				$("#website_mobile_app_tab_pending_order").click();
+			});
 		});
 	};
 
@@ -487,7 +493,6 @@ $(document).ready(function () {
 			event.stopPropagation();
 			var target = $(event.target);
 			order_id = target.attr("id_order");
-			console.log(order_id);
 			onclick_button_approve_order(order_id);
 		});
 
@@ -1059,7 +1064,6 @@ $(document).ready(function () {
 				});
 				
 				$("#website_mobile_app_tab_usage_control_request_history", self).click(function(event) {
-					console.log(quota.limit_requests);
 					$(".usage_control_container", self).html(qweb.render('website_mobile_app_usage_control_request_history',{
 						'user_group': self.user['user_group'],
 						'classifications': classifications,

@@ -570,7 +570,7 @@ class website_mobile_app(http.Controller):
 		quota_pending_history = {
 			'pending': [], 'history': [],
 		}
-		locale.setlocale( locale.LC_ALL, locale= "Indonesian")
+		locale.setlocale( locale.LC_ALL, locale= "id_ID.utf8")
 		for quota_change in quota_changes:
 			classification = 'history'
 			if quota_change.state == 'draft':
@@ -643,7 +643,7 @@ class website_mobile_app(http.Controller):
 					status = 'Overlimit'
 				elif quota.current_usage > quota.yellow_limit:
 					status = 'Warning'
-			locale.setlocale(locale.LC_ALL, locale= "Indonesian")
+			locale.setlocale(locale.LC_ALL, locale= "id_ID.utf8")
 			if total_count > 1:
 				plural = 'times'
 			button_change_exist = 'hide'

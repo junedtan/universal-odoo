@@ -5,110 +5,118 @@
 			<t t-call="website.layout">
 				<div class="container universal_website_mobile_app" style="width:100%">
 					<div class="panel">
-						<h2 id="button_back" style="vertical-align:middle;"><span class="fa fa-2 fa-chevron-circle-left"/></h2>
+						<h2 id="button_back" style="vertical-align:middle;margin-left:10px"><span class="fa fa-2 fa-chevron-circle-left"/></h2>
 						<h2 id="panel_title" style="vertical-align:middle; margin-left:10px;margin-right:0px;">
 							UNIVERSAL</h2>
 					</div>
 
-					<div class="row" id="menu_container">
-						<div class="row logged_in_as">Logged in as: <t t-esc="user_name"/></div>
-						<t t-if="user_group == ''">
-							<div class="col-md-12 mb16 mt16">
-								<div class="oe_callout oe_callout_danger">
-									<h4>Error</h4>
-									<p>
-										You must login as Fullday Passenger or Booker or PIC or Approver.
-									</p>
-								</div>
+					<div id="menu_container">
+						<t t-if="user_group != ''">
+							<div class="row">
+								<div class="col-md-12 mb16 mt16 logged_in_as">Logged in as: <t t-esc="user_name"/></div>
 							</div>
 						</t>
-
-						<t t-if="user_group == 'fullday_passenger'">
-							<ul>
-								<li><a id="website_mobile_app_menu_book_vehicle">
-									<h1 class="no_margin"><span class="glyphicon glyphicon-plus"></span></h1>
-									<br/><span>Book Vehicle</span>
-								</a></li>
-								<li><a id="website_mobile_app_menu_list_orders">
-									<h1 class="no_margin"><span class="glyphicon glyphicon-align-justify"></span></h1>
-									<br/><span>Orders</span>
-								</a></li>
-								<li><a id="website_mobile_app_menu_change_password">
-									<h1 class="no_margin"><span class="glyphicon glyphicon-edit"></span></h1>
-									<br/><span>Change Password</span>
-								</a></li>
-								<li><a id="website_mobile_app_menu_log_out">
-									<h1 class="no_margin"><span class="glyphicon glyphicon-log-out"></span></h1>
-									<br/><span>Log Out</span>
-								</a></li>
-							</ul>
-						</t>
-						<t t-if="user_group == 'booker'">
-							<ul>
-								<li><a id="website_mobile_app_menu_book_vehicle">
-									<h1 class="no_margin"><span class="glyphicon glyphicon-plus"></span></h1>
-									<br/><span>Book Vehicle</span>
-								</a></li>
-								<li><a id="website_mobile_app_menu_list_orders">
-									<h1 class="no_margin"><span class="glyphicon glyphicon-align-justify"></span></h1>
-									<br/><span>Orders</span>
-								</a></li>
-								<li><a id="website_mobile_app_menu_log_out">
-									<h1 class="no_margin"><span class="glyphicon glyphicon-log-out"></span></h1>
-									<br/><span>Log Out</span>
-								</a></li>
-							</ul>
-						</t>
-						<t t-if="user_group == 'pic'">
-							<ul>
-								<li><a id="website_mobile_app_menu_list_contract">
-									<h1 class="no_margin"><span class="glyphicon glyphicon-credit-card"></span></h1>
-									<br/><span>Contracts</span>
-								</a></li>
-								<li><a id="website_mobile_app_menu_list_shuttle">
-									<h1 class="no_margin"><span class="fa fa-bus"></span></h1>
-									<br/><span>Shuttle</span>
-								</a></li>
-								<li><a id="website_mobile_app_menu_list_orders">
-									<h1 class="no_margin"><span class="glyphicon glyphicon-align-justify"></span></h1>
-									<br/><span>Orders</span>
-								</a></li>
-								<li><a id="website_mobile_app_menu_log_out">
-									<h1 class="no_margin"><span class="glyphicon glyphicon-log-out"></span></h1>
-									<br/><span>Log Out</span>
-								</a></li>
-							</ul>
-						</t>
-						<t t-if="user_group == 'approver'">
-							<ul>
-								<li><a id="website_mobile_app_menu_list_contract">
-									<h1 class="no_margin"><span class="glyphicon glyphicon-credit-card"></span></h1>
-									<br/><span>Contracts</span>
-								</a></li>
-								<li><a id="website_mobile_app_menu_book_vehicle">
-									<h1 class="no_margin"><span class="glyphicon glyphicon-plus"></span></h1>
-									<br/><span>Book Vehicle</span>
-								</a></li>
-								<li><a id="website_mobile_app_menu_list_orders">
-									<h1 class="no_margin"><span class="glyphicon glyphicon-align-justify"></span></h1>
-									<br/><span>Orders</span>
-								</a></li>
-								<li><a id="website_mobile_app_menu_log_out">
-									<h1 class="no_margin"><span class="glyphicon glyphicon-log-out"></span></h1>
-									<br/><span>Log Out</span>
-								</a></li>
-							</ul>
-						</t>
-						<div class="div_emergency_number">
-							In case of emergency:
-							<t t-foreach="homebase" t-as="homebase_data">
-								<div class="homebase">Universal <t t-esc="homebase_data['name']"/>
-									(<t t-esc="homebase_data['emergency_number']"/>)</div>
+						<div class="row">
+							<t t-if="user_group == ''">
+								<div class="col-md-12 mb16 mt16">
+									<div class="oe_callout oe_callout_danger">
+										<h4>Error</h4>
+										<p>
+											You must login as Fullday Passenger or Booker or PIC or Approver.
+										</p>
+									</div>
+								</div>
 							</t>
+
+							<t t-if="user_group == 'fullday_passenger'">
+								<ul>
+									<li><a id="website_mobile_app_menu_book_vehicle">
+										<h1 class="no_margin"><span class="fa fa-plus"></span></h1>
+										<br/><span>Book Vehicle</span>
+									</a></li>
+									<li><a id="website_mobile_app_menu_list_orders">
+										<h1 class="no_margin"><span class="fa fa-align-justify"></span></h1>
+										<br/><span>Orders</span>
+									</a></li>
+									<li><a id="website_mobile_app_menu_change_password">
+										<h1 class="no_margin"><span class="fa fa-key"></span></h1>
+										<br/><span>Change Password</span>
+									</a></li>
+									<li><a id="website_mobile_app_menu_log_out">
+										<h1 class="no_margin"><span class="fa fa-sign-out"></span></h1>
+										<br/><span>Log Out</span>
+									</a></li>
+								</ul>
+							</t>
+							<t t-if="user_group == 'booker'">
+								<ul>
+									<li><a id="website_mobile_app_menu_book_vehicle">
+										<h1 class="no_margin"><span class="fa fa-plus"></span></h1>
+										<br/><span>Book Vehicle</span>
+									</a></li>
+									<li><a id="website_mobile_app_menu_list_orders">
+										<h1 class="no_margin"><span class="fa fa-align-justify"></span></h1>
+										<br/><span>Orders</span>
+									</a></li>
+									<li><a id="website_mobile_app_menu_log_out">
+										<h1 class="no_margin"><span class="fa fa-sign-out"></span></h1>
+										<br/><span>Log Out</span>
+									</a></li>
+								</ul>
+							</t>
+							<t t-if="user_group == 'pic'">
+								<ul>
+									<li><a id="website_mobile_app_menu_list_contract">
+										<h1 class="no_margin"><span class="fa fa-credit-card"></span></h1>
+										<br/><span>Contracts</span>
+									</a></li>
+									<li><a id="website_mobile_app_menu_list_shuttle">
+										<h1 class="no_margin"><span class="fa fa-bus"></span></h1>
+										<br/><span>Shuttle</span>
+									</a></li>
+									<li><a id="website_mobile_app_menu_list_orders">
+										<h1 class="no_margin"><span class="fa fa-align-justify"></span></h1>
+										<br/><span>Orders</span>
+									</a></li>
+									<li><a id="website_mobile_app_menu_log_out">
+										<h1 class="no_margin"><span class="fa fa-sign-out"></span></h1>
+										<br/><span>Log Out</span>
+									</a></li>
+								</ul>
+							</t>
+							<t t-if="user_group == 'approver'">
+								<ul>
+									<li><a id="website_mobile_app_menu_list_contract">
+										<h1 class="no_margin"><span class="fa fa-credit-card"></span></h1>
+										<br/><span>Contracts</span>
+									</a></li>
+									<li><a id="website_mobile_app_menu_book_vehicle">
+										<h1 class="no_margin"><span class="fa fa-plus"></span></h1>
+										<br/><span>Book Vehicle</span>
+									</a></li>
+									<li><a id="website_mobile_app_menu_list_orders">
+										<h1 class="no_margin"><span class="fa fa-align-justify"></span></h1>
+										<br/><span>Orders</span>
+									</a></li>
+									<li><a id="website_mobile_app_menu_log_out">
+										<h1 class="no_margin"><span class="fa fa-sign-out"></span></h1>
+										<br/><span>Log Out</span>
+									</a></li>
+								</ul>
+							</t>
+						</div>
+						<div class="row div_emergency_number">
+							<div class="col-md-12 mt16 mb16">
+								In case of emergency:
+								<t t-foreach="homebase" t-as="homebase_data">
+									<div class="homebase">Universal <t t-esc="homebase_data['name']"/>
+										(<t t-esc="homebase_data['emergency_number']"/>)</div>
+								</t>
+							</div>
 						</div>
 					</div>
 					<t t-if="user_group != ''">
-						<div class="row" id="main_container"/>
+						<div id="main_container"/>
 					</t>
 				</div>
 			</t>

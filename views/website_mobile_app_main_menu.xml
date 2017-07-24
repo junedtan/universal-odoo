@@ -11,6 +11,7 @@
 					</div>
 
 					<div class="row" id="menu_container">
+						<div class="row logged_in_as">Logged in as: <t t-esc="user_name"/></div>
 						<t t-if="user_group == ''">
 							<div class="col-md-12 mb16 mt16">
 								<div class="oe_callout oe_callout_danger">
@@ -62,7 +63,7 @@
 							<ul>
 								<li><a id="website_mobile_app_menu_list_contract">
 									<h1 class="no_margin"><span class="glyphicon glyphicon-credit-card"></span></h1>
-									<br/><span>Contract</span>
+									<br/><span>Contracts</span>
 								</a></li>
 								<li><a id="website_mobile_app_menu_list_shuttle">
 									<h1 class="no_margin"><span class="fa fa-bus"></span></h1>
@@ -82,7 +83,7 @@
 							<ul>
 								<li><a id="website_mobile_app_menu_list_contract">
 									<h1 class="no_margin"><span class="glyphicon glyphicon-credit-card"></span></h1>
-									<br/><span>Contract</span>
+									<br/><span>Contracts</span>
 								</a></li>
 								<li><a id="website_mobile_app_menu_book_vehicle">
 									<h1 class="no_margin"><span class="glyphicon glyphicon-plus"></span></h1>
@@ -98,6 +99,13 @@
 								</a></li>
 							</ul>
 						</t>
+						<div class="div_emergency_number">
+							In case of emergency:
+							<t t-foreach="homebase" t-as="homebase_data">
+								<div class="homebase">Universal <t t-esc="homebase_data['name']"/>
+									(<t t-esc="homebase_data['emergency_number']"/>)</div>
+							</t>
+						</div>
 					</div>
 					<t t-if="user_group != ''">
 						<div class="row" id="main_container"/>

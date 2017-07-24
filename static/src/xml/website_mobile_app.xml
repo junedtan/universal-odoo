@@ -169,7 +169,50 @@
 	
 	<!-- TAB ORDER-->
 	<t t-name="website_mobile_app_tab_order">
-		<div class="scrollmenu" style="margin-top:5px">
+		<form class="form-inline row">
+			<div class="form-group ml10 col-md-2 col-xs-5">
+				<label for="filter_order_number">Order Number</label>
+				<input class="form-control" list="filter_order_number_list" id="filter_order_number">
+					<datalist id="filter_order_number_list" >
+						<t t-foreach="order_names" t-as="order_name">
+							<option t-attf-value="{{order_name}}"/>
+						</t>
+					</datalist>
+				</input>
+			</div>
+			<div class="form-group ml10 col-md-2 col-xs-5">
+				<label for="filter_booker">Booker</label>
+				<input class="form-control" list="filter_booker_list" id="filter_booker">
+					<datalist id="filter_booker_list" >
+						<t t-foreach="order_bookers" t-as="order_booker">
+							<option t-attf-value="{{order_booker}}"/>
+						</t>
+					</datalist>
+				</input>
+			</div>
+			<div class="form-group ml10 col-md-2 col-xs-5">
+				<label for="filter_driver">Driver</label>
+				<input class="form-control" list="filter_driver_list" id="filter_driver">
+					<datalist id="filter_driver_list" >
+						<t t-foreach="order_drivers" t-as="order_driver">
+							<option t-attf-value="{{order_driver}}"/>
+						</t>
+					</datalist>
+				</input>
+			</div>
+			<div class="form-group ml10 col-md-2 col-xs-5">
+				<label for="filter_vehicle">Vehicle</label>
+				<input class="form-control" list="filter_vehicle_list" id="filter_vehicle">
+					<datalist id="filter_vehicle_list">
+						<t t-foreach="order_vehicles" t-as="order_vehicle">
+							<option t-attf-value="{{order_vehicles}}"/>
+						</t>
+					</datalist>
+				</input>
+			</div>
+			<div type="button" id="button_filter" class="btn btn-primary col-md-1 col-xs-10" style="margin-top:25px; margin-left:25px">Filter</div>
+		</form>
+		<div class="scrollmenu" style="margin-top:15px">
 			<t t-if="user_group != 'fullday_passenger'">
 				<div id="website_mobile_app_tab_pending_order">
 					Pending
@@ -220,41 +263,37 @@
 								<t t-if="classification_value != 'pending'">
 									<t t-if="order.pin">
 										<tr>
-											<td>Pin</td>
-											<td>:</td>
-											<td><t t-esc="order.pin"/></td>
+											<td class="order_key">Pin</td>
+											<td class="order_separator">:</td>
+											<td class="order_value"><t t-esc="order.pin"/></td>
 										</tr>
 									</t>
 								</t>
 							</t>
 							<tr>
-								<td>Time</td>
-								<td>:</td>
-								<td><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
+								<td class="order_key">Time</td>
+								<td class="order_separator">:</td>
+								<td class="order_value"><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
 							</tr>
 							<t t-if="order.assigned_vehicle_name">
 								<tr>
-									<td>Fleet</td>
-									<td>:</td>
-									<td><t t-esc="order.assigned_driver_name"/> - <t t-esc="order.assigned_vehicle_name"/></td>
+									<td class="order_key">Fleet</td>
+									<td class="order_separator">:</td>
+									<td class="order_value"><t t-esc="order.assigned_driver_name"/> - <t t-esc="order.assigned_vehicle_name"/></td>
 								</tr>
 							</t>
 							<t t-if="order.origin_location">
 								<tr>
-									<td>From</td>
-									<td>:</td>
-									<td>
-										<t t-esc="order.origin_location"/> (<t t-esc="order.origin_area_name"/>)
-									</td>
+									<td class="order_key">From</td>
+									<td class="order_separator">:</td>
+									<td class="order_value"><t t-esc="order.origin_location"/> (<t t-esc="order.origin_area_name"/>)</td>
 								</tr>
 							</t>
 							<t t-if="order.dest_location">
 								<tr>
-									<td>To</td>
-									<td>:</td>
-									<td>
-										<t t-esc="order.dest_location"/>  (<t t-esc="order.dest_area_name"/>)
-									</td>
+									<td class="order_key">To</td>
+									<td class="order_separator">:</td>
+									<td class="order_value"><t t-esc="order.dest_location"/>  (<t t-esc="order.dest_area_name"/>)</td>
 								</tr>
 							</t>
 						</table>
@@ -521,7 +560,7 @@
 				<tr>
 					<td>Period</td>
 					<td>:</td>
-					<td><t t-esc="start_date"/> / <t t-esc="end_date"/></td>
+					<td><t t-esc="start_date"/> - <t t-esc="end_date"/></td>
 				</tr>
 				<tr>
 					<td>Service Type</td>
@@ -637,17 +676,14 @@
 
 	<t t-name="website_mobile_app_detail_control_usage">
 		<h3 style="margin-top:20px;"><t t-esc="au_name"/></h3>
-		<table class="table table-hover">
-			<tbody>
-				<tr>
-					<td id="website_mobile_app_tab_usage_control_information" class = "td_menu" style = "vertical-align:middle;border-right:1px solid; border-color:lightgray">
-					Information</td>
-					<td id="website_mobile_app_tab_usage_control_request_history" class = "td_menu" style="vertical-align:middle;">
-					Limit Request History</td>
-				</tr>
-			</tbody>
-		</table>
-
+		<div class="scrollmenu" style="margin-top:5px">
+			<div id="website_mobile_app_tab_usage_control_information">
+				Information
+			</div>
+			<div id="website_mobile_app_tab_usage_control_request_history">
+				Limit Request History
+			</div>
+		</div>
 		<div class = "usage_control_container"></div>
 	</t>
 	
@@ -867,7 +903,7 @@
 		  <!-- Modal content -->
 			<div class="modal_request_change_quota">
 				<div class="modal-header">
-					<span class="close_dialog">x</span>
+         			<span class="glyphicon glyphicon-remove close_dialog"></span>
 					<div class = "list_title">
 						Request Quota Changes
 					</div>
@@ -929,7 +965,7 @@
 		  <!-- Modal content -->
 			<div class="modal_detail_order">
 				<div class="modal-header">
-					<span class="close_dialog">x</span>
+         			<span class="glyphicon glyphicon-remove close_dialog"></span>
 					<div class = "list_title">
 						<t t-esc="name"/>
 					</div>
@@ -1025,8 +1061,4 @@
 			</div>
 		</div>
 	</t>
-	
-	<div id = "a_contract">
-		aaaa
-	</div>
 </templates>

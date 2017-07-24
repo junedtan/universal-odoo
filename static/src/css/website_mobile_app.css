@@ -170,10 +170,10 @@ div.row_hoverable{
 
 /* The Close Button */
 .close_dialog {
-	color: MidnightBlue;
+	color: white;
 	float: right;
-	font-size: medium;
-	font-weight: bold;
+	margin-right: 3px;
+	margin-top: 3px;
 }
 
 .close_dialog:hover,
@@ -350,9 +350,37 @@ div.scrollmenu div {
     text-align: center;
     padding: 10px;
     text-decoration: none;
-    width: 150px;
+    width: 160px;
 }
 
 div.scrollmenu div:hover {
     background-color: rgb(40,96,144);
+}
+
+.logged_in_as {
+    color: gray;
+    margin-left: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.div_emergency_number {
+    color: gray;
+    text-align: center;
+}
+
+.homebase {
+    color: black;
+}
+
+.order_key {
+	width: 1%;
+}
+
+.order_separator {
+	width: 1%;
+}
+
+.order_value {
+
 }

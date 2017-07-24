@@ -1023,8 +1023,13 @@ class website_mobile_app_handler(osv.osv):
 	def get_homebase(self, cr, uid):
 		homebase_obj = self.pool.get('chjs.region')
 		homebase_ids = []
-		for contract_data in self.search_contract(cr, SUPERUSER_ID):
-			homebase_ids.append(contract_data.homebase_id)
+		contract_datas = self.search_contract(cr, SUPERUSER_ID, {
+			'by_user_id': True,
+			'user_id': uid,
+		})
+		for contract_data in contract_datas:
+			if contract_data.homebase_id.id not in homebase_ids:
+				homebase_ids.append(contract_data.homebase_id.id)
 		result = []
 		for homebase in homebase_obj.browse(cr, SUPERUSER_ID, homebase_ids):
 			result.append({

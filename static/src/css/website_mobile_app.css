@@ -363,3 +363,12 @@ div.scrollmenu div:hover {
     padding-top: 5px;
     padding-bottom: 5px;
 }
+
+.div_emergency_number {
+    color: gray;
+    text-align: center;
+}
+
+.homebase {
+    color: black;
+}

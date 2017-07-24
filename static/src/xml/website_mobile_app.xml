@@ -220,41 +220,37 @@
 								<t t-if="classification_value != 'pending'">
 									<t t-if="order.pin">
 										<tr>
-											<td>Pin</td>
-											<td>:</td>
-											<td><t t-esc="order.pin"/></td>
+											<td class="order_key">Pin</td>
+											<td class="order_separator">:</td>
+											<td class="order_value"><t t-esc="order.pin"/></td>
 										</tr>
 									</t>
 								</t>
 							</t>
 							<tr>
-								<td>Time</td>
-								<td>:</td>
-								<td><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
+								<td class="order_key">Time</td>
+								<td class="order_separator">:</td>
+								<td class="order_value"><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
 							</tr>
 							<t t-if="order.assigned_vehicle_name">
 								<tr>
-									<td>Fleet</td>
-									<td>:</td>
-									<td><t t-esc="order.assigned_driver_name"/> - <t t-esc="order.assigned_vehicle_name"/></td>
+									<td class="order_key">Fleet</td>
+									<td class="order_separator">:</td>
+									<td class="order_value"><t t-esc="order.assigned_driver_name"/> - <t t-esc="order.assigned_vehicle_name"/></td>
 								</tr>
 							</t>
 							<t t-if="order.origin_location">
 								<tr>
-									<td>From</td>
-									<td>:</td>
-									<td>
-										<t t-esc="order.origin_location"/> (<t t-esc="order.origin_area_name"/>)
-									</td>
+									<td class="order_key">From</td>
+									<td class="order_separator">:</td>
+									<td class="order_value"><t t-esc="order.origin_location"/> (<t t-esc="order.origin_area_name"/>)</td>
 								</tr>
 							</t>
 							<t t-if="order.dest_location">
 								<tr>
-									<td>To</td>
-									<td>:</td>
-									<td>
-										<t t-esc="order.dest_location"/>  (<t t-esc="order.dest_area_name"/>)
-									</td>
+									<td class="order_key">To</td>
+									<td class="order_separator">:</td>
+									<td class="order_value"><t t-esc="order.dest_location"/>  (<t t-esc="order.dest_area_name"/>)</td>
 								</tr>
 							</t>
 						</table>

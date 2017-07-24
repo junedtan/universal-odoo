@@ -63,7 +63,7 @@
 							<ul>
 								<li><a id="website_mobile_app_menu_list_contract">
 									<h1 class="no_margin"><span class="glyphicon glyphicon-credit-card"></span></h1>
-									<br/><span>Contract</span>
+									<br/><span>Contracts</span>
 								</a></li>
 								<li><a id="website_mobile_app_menu_list_shuttle">
 									<h1 class="no_margin"><span class="fa fa-bus"></span></h1>
@@ -83,7 +83,7 @@
 							<ul>
 								<li><a id="website_mobile_app_menu_list_contract">
 									<h1 class="no_margin"><span class="glyphicon glyphicon-credit-card"></span></h1>
-									<br/><span>Contract</span>
+									<br/><span>Contracts</span>
 								</a></li>
 								<li><a id="website_mobile_app_menu_book_vehicle">
 									<h1 class="no_margin"><span class="glyphicon glyphicon-plus"></span></h1>

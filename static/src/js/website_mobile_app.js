@@ -53,6 +53,7 @@ $(document).ready(function () {
 // BOOK VEHICLE =============================================================================================================
 
 	$('#button_back').click(function() {
+		$('#panel_title').text('UNIVERSAL');
 		$('#menu_container').show();
 		$('#main_container').hide();
 		$('#button_back').hide();
@@ -60,6 +61,7 @@ $(document).ready(function () {
 
 	$('#website_mobile_app_menu_book_vehicle').click(function() {
 		onclick_menu('#website_mobile_app_menu_book_vehicle');
+		$('#panel_title').text('Book Vehicle');
 		$.get('/mobile_app/get_required_book_vehicle', null, function(data){
 			var response = JSON.parse(data);
 			var order_type = response['order_type'];
@@ -372,6 +374,7 @@ $(document).ready(function () {
 
 	$('#website_mobile_app_menu_list_orders').click(function() {
 		onclick_menu('#website_mobile_app_menu_list_orders');
+		$('#panel_title').text('Orders');
 		$.get('/mobile_app/fetch_orders', null, function(data){
 			var response = JSON.parse(data);
 			self.user = {
@@ -803,6 +806,7 @@ $(document).ready(function () {
 
 	$('#website_mobile_app_menu_list_shuttle').click(function() {
 		onclick_menu('#website_mobile_app_menu_list_shuttle');
+		$('#panel_title').text('Shuttle');
 		$.get('/mobile_app/fetch_contract_shuttles', null, function(data){
 			self.contract_datas = JSON.parse(data);
 			$("#main_container", self).html(qweb.render('website_mobile_app_list_shuttle',{
@@ -849,6 +853,7 @@ $(document).ready(function () {
 
 	$('#website_mobile_app_menu_change_password').click(function() {
 		onclick_menu('#website_mobile_app_menu_change_password');
+		$('#panel_title').text('Change Password');
 		$("#main_container", self).html(qweb.render('website_mobile_app_change_password'));
 		$('#btn_change_password').click(function(){
 			onclick_change_password_button();
@@ -900,6 +905,7 @@ $(document).ready(function () {
 
 	$('#website_mobile_app_menu_list_contract').click(function() {
 		onclick_menu('#website_mobile_app_menu_list_contract');
+		$('#panel_title').text('Contracts');
 		$.get('/mobile_app/fetch_contracts', null, function(data){
 			var response = JSON.parse(data);
 			self.user = {

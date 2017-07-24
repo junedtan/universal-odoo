@@ -867,7 +867,7 @@
 		  <!-- Modal content -->
 			<div class="modal_request_change_quota">
 				<div class="modal-header">
-					<span class="close_dialog">x</span>
+         			<span class="glyphicon glyphicon-remove close_dialog"></span>
 					<div class = "list_title">
 						Request Quota Changes
 					</div>

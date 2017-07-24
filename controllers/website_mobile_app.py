@@ -59,11 +59,15 @@ class website_mobile_app(http.Controller):
 
 	@http.route('/mobile_app', type='http', auth="user", website=True)
 	def mobile_app(self, **kwargs):
+		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		uid = env.uid
 		response = self.mobile_app_get_user_group()
-		data = json.loads(response.data)
+		data_user = json.loads(response.data)
 		return request.render("universal.website_mobile_app_main_menu", {
-			'user_group': data['user_group'],
-			'user_name': data['user_name'],
+			'user_group': data_user['user_group'],
+			'user_name': data_user['user_name'],
+			'homebase': handler_obj.get_homebase()
 		})
 	
 	@http.route('/mobile_app/get_user_group', type='http', auth="user", website=True)
@@ -1015,3 +1019,17 @@ class website_mobile_app_handler(osv.osv):
 		shuttle_schedule_obj = self.pool.get('foms.contract.shuttle.schedule')
 		shuttle_schedule_ids = shuttle_schedule_obj.search(cr, SUPERUSER_ID, [('header_id','=',contract_id)])
 		return shuttle_schedule_obj.browse(cr, SUPERUSER_ID, shuttle_schedule_ids)
+	
+	def get_homebase(self, cr, uid):
+		homebase_obj = self.pool.get('chjs.region')
+		homebase_ids = []
+		for contract_data in self.search_contract(cr, SUPERUSER_ID):
+			homebase_ids.append(contract_data.homebase_id)
+		result = []
+		for homebase in homebase_obj.browse(cr, SUPERUSER_ID, homebase_ids):
+			result.append({
+				'id': homebase.id,
+				'name': homebase.name,
+				'emergency_number': homebase.emergency_number,
+			})
+		return result

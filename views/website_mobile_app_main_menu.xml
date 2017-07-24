@@ -99,6 +99,11 @@
 								</a></li>
 							</ul>
 						</t>
+
+						<t t-foreach="homebase" t-as="homebase_data">
+							<div class="homebase">Universal <t t-esc="homebase_data.name"/>
+								(<t t-esc="homebase_data.emergency_number"/>)</div>
+						</t>
 					</div>
 					<t t-if="user_group != ''">
 						<div class="row" id="main_container"/>

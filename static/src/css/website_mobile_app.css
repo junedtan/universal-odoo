@@ -345,7 +345,7 @@ div.scrollmenu {
 
 div.scrollmenu div {
     display: inline-block;
-    background-color: rgb(51,122,183);
+    background-color: #337ab7;
     color:white;
     text-align: center;
     padding: 10px;

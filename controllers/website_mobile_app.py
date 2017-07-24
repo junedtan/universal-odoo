@@ -341,12 +341,13 @@ class website_mobile_app(http.Controller):
 					}
 		return json.dumps(response)
 	
-	@http.route('/mobile_app/fetch_orders', type='http', auth="user", website=True)
-	def mobile_app_fetch_orders(self, **kwargs):
+	@http.route('/mobile_app/fetch_orders/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_fetch_orders(self, data,**kwargs):
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
 		uid = env.uid
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		order_datas = handler_obj.search_order({
+		loaded_data = json.loads(data)
+		order_datas = handler_obj.search_order(loaded_data, {
 			'by_user_id': True,
 			'user_id': uid,
 		})
@@ -766,11 +767,25 @@ class website_mobile_app_handler(osv.osv):
 		user = user_obj.browse(cr, SUPERUSER_ID, uid)
 		return user.partner_id
 	
-	def search_order(self, cr, uid, param_context):
+	def search_order(self, cr, uid, domain, param_context):
 		order_obj = self.pool.get('foms.order');
-		order_ids = order_obj.search(cr, SUPERUSER_ID, [
-			('start_planned_date', '>=', (datetime.now() - relativedelta(months=+1)).strftime(DEFAULT_SERVER_DATETIME_FORMAT))
-		], context=param_context)
+		name_order = domain.get('order_name', '')
+		booker_name = domain.get('booker_name', '')
+		driver_name = domain.get('driver_name', '')
+		vehicle_name = domain.get('vehicle_name', '')
+		
+		filter_domain = [('start_planned_date', '>=', (datetime.now() - relativedelta(months=+1)).strftime(DEFAULT_SERVER_DATETIME_FORMAT))]
+		
+		if name_order:
+			filter_domain.append(('name', 'ilike', name_order))
+		if booker_name:
+			filter_domain.append(('order_by.name', 'ilike', booker_name))
+		if driver_name:
+			filter_domain.append(('assigned_driver_id.name', 'ilike', driver_name))
+		if vehicle_name:
+			filter_domain.append(('assigned_vehicle_id.name', 'ilike', vehicle_name))
+		
+		order_ids = order_obj.search(cr, SUPERUSER_ID, filter_domain, context=param_context)
 		return order_obj.browse(cr, SUPERUSER_ID, order_ids)
 	
 	def search_quota(self, cr, uid, param_context):

@@ -185,6 +185,49 @@
 				History
 			</div>
 		</div>
+		<form class="form-inline">
+			<div class="form-group">
+				<label for="filter_order_number">Order Number</label>
+				<input list="filter_order_number" id="filter_order_number">
+					<datalist id="filter_order_number_list" >
+						<!--<t t-foreach="drivers" t-as="driver">-->
+							<!--<option t-att-id="driver.id" t-attf-value="{{driver.name}}"/>-->
+						<!--</t>-->
+					</datalist>
+				</input>
+			</div>
+			<div class="form-group">
+				<label for="filter_booker">Booker</label>
+				<input list="filter_booker" id="filter_booker">
+					<datalist id="filter_booker_list" >
+						<!--<t t-foreach="drivers" t-as="driver">-->
+						<!--<option t-att-id="driver.id" t-attf-value="{{driver.name}}"/>-->
+						<!--</t>-->
+					</datalist>
+				</input>
+			</div>
+			<div class="form-group">
+				<label for="filter_driver">Driver</label>
+				<input list="filter_driver_list" id="filter_driver">
+					<datalist id="filter_driver_list" >
+						<!--<t t-foreach="drivers" t-as="driver">-->
+							<!--<option t-att-id="driver.id" t-attf-value="{{driver.name}}"/>-->
+						<!--</t>-->
+					</datalist>
+				</input>
+			</div>
+			<div class="form-group">
+				<label for="filter_plate_number">Plate Number</label>
+				<input list="filter_plate_number" id="filter_plate_number">
+					<datalist id="filter_plate_number">
+						<!--<t t-foreach="drivers" t-as="driver">-->
+						<!--<option t-att-id="driver.id" t-attf-value="{{driver.name}}"/>-->
+						<!--</t>-->
+					</datalist>
+				</input>
+			</div>
+			<div type="button" id="button_filter" class="btn btn-primary ml16">Filter</div>
+		</form>
 	</t>
 	
 	<!-- ORDER LIST-->

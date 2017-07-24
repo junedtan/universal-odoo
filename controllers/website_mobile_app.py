@@ -4,6 +4,7 @@ from openerp.tools.translate import _
 from openerp.osv import osv, fields
 from openerp.http import request
 from datetime import datetime, date, timedelta
+from dateutil.relativedelta import relativedelta
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 
 from openerp.addons.website.models.website import slug
@@ -767,7 +768,9 @@ class website_mobile_app_handler(osv.osv):
 	
 	def search_order(self, cr, uid, param_context):
 		order_obj = self.pool.get('foms.order');
-		order_ids = order_obj.search(cr, SUPERUSER_ID, [], context=param_context)
+		order_ids = order_obj.search(cr, SUPERUSER_ID, [
+			('start_planned_date', '>=', (datetime.now() - relativedelta(months=+1)).strftime(DEFAULT_SERVER_DATETIME_FORMAT))
+		], context=param_context)
 		return order_obj.browse(cr, SUPERUSER_ID, order_ids)
 	
 	def search_quota(self, cr, uid, param_context):

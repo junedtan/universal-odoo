@@ -172,21 +172,21 @@
 		<form class="form-inline row">
 			<div class="form-group ml10 col-md-2 col-xs-5">
 				<label for="filter_order_number">Order Number</label>
-				<input class="form-control" list="filter_order_number" id="filter_order_number">
+				<input class="form-control" list="filter_order_number_list" id="filter_order_number">
 					<datalist id="filter_order_number_list" >
-						<!--<t t-foreach="drivers" t-as="driver">-->
-							<!--<option t-att-id="driver.id" t-attf-value="{{driver.name}}"/>-->
-						<!--</t>-->
+						<t t-foreach="order_names" t-as="order_name">
+							<option t-attf-value="{{order_name}}"/>
+						</t>
 					</datalist>
 				</input>
 			</div>
 			<div class="form-group ml10 col-md-2 col-xs-5">
 				<label for="filter_booker">Booker</label>
-				<input class="form-control" list="filter_booker" id="filter_booker">
+				<input class="form-control" list="filter_booker_list" id="filter_booker">
 					<datalist id="filter_booker_list" >
-						<!--<t t-foreach="drivers" t-as="driver">-->
-						<!--<option t-att-id="driver.id" t-attf-value="{{driver.name}}"/>-->
-						<!--</t>-->
+						<t t-foreach="order_bookers" t-as="order_booker">
+							<option t-attf-value="{{order_booker}}"/>
+						</t>
 					</datalist>
 				</input>
 			</div>
@@ -194,24 +194,23 @@
 				<label for="filter_driver">Driver</label>
 				<input class="form-control" list="filter_driver_list" id="filter_driver">
 					<datalist id="filter_driver_list" >
-						<!--<t t-foreach="drivers" t-as="driver">-->
-							<!--<option t-att-id="driver.id" t-attf-value="{{driver.name}}"/>-->
-						<!--</t>-->
+						<t t-foreach="order_drivers" t-as="order_driver">
+							<option t-attf-value="{{order_driver}}"/>
+						</t>
 					</datalist>
 				</input>
 			</div>
 			<div class="form-group ml10 col-md-2 col-xs-5">
-				<label for="filter_plate_number">Plate Number</label>
-				<input class="form-control" list="filter_plate_number" id="filter_plate_number">
-					<datalist id="filter_plate_number">
-						<!--<t t-foreach="drivers" t-as="driver">-->
-						<!--<option t-att-id="driver.id" t-attf-value="{{driver.name}}"/>-->
-						<!--</t>-->
+				<label for="filter_vehicle">Vehicle</label>
+				<input class="form-control" list="filter_vehicle_list" id="filter_vehicle">
+					<datalist id="filter_vehicle_list">
+						<t t-foreach="order_vehicles" t-as="order_vehicle">
+							<option t-attf-value="{{order_vehicles}}"/>
+						</t>
 					</datalist>
 				</input>
 			</div>
-			<div type="button" id="button_filter" class="btn btn-primary col-md-1 col-xs-10"
-			style="margin-top:25px; margin-left:25px">Filter</div>
+			<div type="button" id="button_filter" class="btn btn-primary col-md-1 col-xs-10" style="margin-top:25px; margin-left:25px">Filter</div>
 		</form>
 		<div class="scrollmenu" style="margin-top:15px">
 			<t t-if="user_group != 'fullday_passenger'">

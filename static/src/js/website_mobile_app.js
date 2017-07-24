@@ -396,10 +396,36 @@ $(document).ready(function () {
 				}
 			}
 			self.order_datas = response['list_order'];
+
+			// AUTO COMPLETE FILTER ORDER
+			var order_names = [];
+			var order_bookers = [];
+			var order_drivers = [];
+			var order_vehicles = [];
+			$.each(self.order_datas, function(key,value){
+				for(var i=0; i<value.length; i++) {
+					if ($.inArray(value[i].name, order_names) == -1 && value[i].name) {
+						order_names.push(value[i].name);
+					}
+					if ($.inArray(value[i].order_by_name, order_bookers) == -1 && value[i].order_by_name) {
+						order_bookers.push(value[i].order_by_name);
+					}
+					if ($.inArray(value[i].assigned_driver_name, order_drivers) == -1 && value[i].assigned_driver_name) {
+						order_drivers.push(value[i].assigned_driver_name);
+					}
+					if ($.inArray(value[i].assigned_vehicle_name, order_vehicles) == -1 && value[i].assigned_vehicle_name) {
+						order_vehicles.push(value[i].assigned_vehicle_name);
+					}
+				}
+            });
 			$("#main_container", self).html(qweb.render('website_mobile_app_list_order',{
-				'user_group' : self.user['user_group']
+				'user_group' : self.user['user_group'],
+				'order_names': order_names,
+				'order_bookers': order_bookers,
+				'order_drivers': order_drivers,
+				'order_vehicles': order_vehicles,
 			}));
-			
+
 			$("#website_mobile_app_tab_pending_order").click(function(event) {
 				onclick_tab_order('#website_mobile_app_tab_pending_order');
 				$("#container_order_list", self).html(qweb.render('website_mobile_app_list_order_classification',{
@@ -439,9 +465,25 @@ $(document).ready(function () {
 				}));
 				addEventListOrder();
 			});
+			initOrderFilter();
 		});
 	});
-	
+
+	function initOrderFilter() {
+		$('#filter_order_nnumber').on('input',function() {
+			var opt = $('option[value="'+$(this).val()+'"]');
+		 });
+		$('#filter_booker').on('input',function() {
+			var opt = $('option[value="'+$(this).val()+'"]');
+		 });
+		$('#filter_driver').on('input',function() {
+			var opt = $('option[value="'+$(this).val()+'"]');
+		 });
+		$('#filter_vehicle').on('input',function() {
+			var opt = $('option[value="'+$(this).val()+'"]');
+		 });
+	};
+
 	function addEventListOrder() {
 		$('.btn_approve_order').click(function(event) {
 			event.stopPropagation();

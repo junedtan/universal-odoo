@@ -35,20 +35,26 @@ $(document).ready(function () {
 	}
 
 	function onclick_detail_contract_menu(id) {
-		$('#website_mobile_app_menu_info_contract').removeClass('active');
-		$('#website_mobile_app_menu_usage_control').removeClass('active');
-		$('#website_mobile_app_menu_quota_changes').removeClass('active');
-		$('#website_mobile_app_menu_shuttle').removeClass('active');
-		$(id).addClass('active');
+		$('#website_mobile_app_menu_info_contract').css("background-color", "#337ab7");
+		$('#website_mobile_app_menu_usage_control').css("background-color", "#337ab7");
+		$('#website_mobile_app_menu_quota_changes').css("background-color", "#337ab7");
+		$('#website_mobile_app_menu_shuttle').css("background-color", "#337ab7");
+		$(id).css("background-color", "#d3d3d3");
 	};
 	
 	function onclick_tab_order(id) {
-		$('#website_mobile_app_tab_pending_order').removeClass('active');
-		$('#website_mobile_app_tab_ready_order').removeClass('active');
-		$('#website_mobile_app_tab_running_order').removeClass('active');
-		$('#website_mobile_app_tab_history_order').removeClass('active');
-		$(id).addClass('active');
+		$('#website_mobile_app_tab_pending_order').css("background-color", "#337ab7");
+		$('#website_mobile_app_tab_ready_order').css("background-color", "#337ab7");
+		$('#website_mobile_app_tab_running_order').css("background-color", "#337ab7");
+		$('#website_mobile_app_tab_history_order').css("background-color", "#337ab7");
+		$(id).css("background-color", "#d3d3d3");
     };
+
+    function onclick_tab_detail_au(id) {
+    	$('#website_mobile_app_tab_usage_control_information').css("background-color", "#337ab7");
+    	$('#website_mobile_app_tab_usage_control_request_history').css("background-color", "#337ab7");
+		$(id).css("background-color", "#d3d3d3");
+    }
 
 // BOOK VEHICLE =============================================================================================================
 
@@ -1053,6 +1059,7 @@ $(document).ready(function () {
 				}));
 				
 				$("#website_mobile_app_tab_usage_control_information", self).click(function(event) {
+					onclick_tab_detail_au("#website_mobile_app_tab_usage_control_information");
 					$(".usage_control_container", self).html(qweb.render('website_mobile_app_usage_control_information',{
 						'au_name': self.current_au_name,
 						'total_usage': quota.total_usage,
@@ -1064,6 +1071,7 @@ $(document).ready(function () {
 				});
 				
 				$("#website_mobile_app_tab_usage_control_request_history", self).click(function(event) {
+					onclick_tab_detail_au("#website_mobile_app_tab_usage_control_request_history");
 					$(".usage_control_container", self).html(qweb.render('website_mobile_app_usage_control_request_history',{
 						'user_group': self.user['user_group'],
 						'classifications': classifications,

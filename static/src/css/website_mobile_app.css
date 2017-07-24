@@ -170,10 +170,10 @@ div.row_hoverable{
 
 /* The Close Button */
 .close_dialog {
-	color: MidnightBlue;
+	color: white;
 	float: right;
-	font-size: medium;
-	font-weight: bold;
+	margin-right: 3px;
+	margin-top: 3px;
 }
 
 .close_dialog:hover,
@@ -355,4 +355,11 @@ div.scrollmenu div {
 
 div.scrollmenu div:hover {
     background-color: rgb(40,96,144);
+}
+
+.logged_in_as {
+    color: gray;
+    margin-left: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }

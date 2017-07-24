@@ -11,6 +11,7 @@
 					</div>
 
 					<div class="row" id="menu_container">
+						<div class="row logged_in_as">Logged in as: <t t-esc="user_name"/></div>
 						<t t-if="user_group == ''">
 							<div class="col-md-12 mb16 mt16">
 								<div class="oe_callout oe_callout_danger">

@@ -63,6 +63,7 @@ class website_mobile_app(http.Controller):
 		data = json.loads(response.data)
 		return request.render("universal.website_mobile_app_main_menu", {
 			'user_group': data['user_group'],
+			'user_name': data['user_name'],
 		})
 	
 	@http.route('/mobile_app/get_user_group', type='http', auth="user", website=True)
@@ -85,8 +86,14 @@ class website_mobile_app(http.Controller):
 			user_group = 'approver'
 		# elif is_driver:
 		# 	user_group = 'driver'
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		partner_data = handler_obj.get_user_data({})
+		user_name = ""
+		if len(partner_data) != 0:
+			user_name = partner_data[0].name
 		return json.dumps({
-			'user_group': user_group
+			'user_group': user_group,
+			'user_name': user_name
 		})
 	
 	@http.route('/mobile_app/get_required_book_vehicle', type='http', auth="user", website=True)

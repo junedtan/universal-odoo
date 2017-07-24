@@ -929,7 +929,7 @@
 		  <!-- Modal content -->
 			<div class="modal_detail_order">
 				<div class="modal-header">
-					<span class="close_dialog">x</span>
+         			<span class="glyphicon glyphicon-remove close_dialog"></span>
 					<div class = "list_title">
 						<t t-esc="name"/>
 					</div>
@@ -1025,8 +1025,4 @@
 			</div>
 		</div>
 	</t>
-	
-	<div id = "a_contract">
-		aaaa
-	</div>
 </templates>

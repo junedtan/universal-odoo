@@ -1010,6 +1010,7 @@ $(document).ready(function () {
 				success: function(response) {
 					if (response.status) {
 						if(response.success){
+console.log(instance.web.form.FieldMonetary.format_value(100000,''));
 							$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_list_control_usage',{
 								'quota_list': JSON.parse(response.quota_list),
                             }));

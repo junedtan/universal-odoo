@@ -1022,6 +1022,7 @@ $(document).ready(function () {
 					event_limit_request_list();
 				});
 
+				$("#website_mobile_app_tab_usage_control_information", self).click();
 			});
 		};
 		

@@ -521,7 +521,7 @@
 				<tr>
 					<td>Period</td>
 					<td>:</td>
-					<td><t t-esc="start_date"/> / <t t-esc="end_date"/></td>
+					<td><t t-esc="start_date"/> - <t t-esc="end_date"/></td>
 				</tr>
 				<tr>
 					<td>Service Type</td>
@@ -637,17 +637,14 @@
 
 	<t t-name="website_mobile_app_detail_control_usage">
 		<h3 style="margin-top:20px;"><t t-esc="au_name"/></h3>
-		<table class="table table-hover">
-			<tbody>
-				<tr>
-					<td id="website_mobile_app_tab_usage_control_information" class = "td_menu" style = "vertical-align:middle;border-right:1px solid; border-color:lightgray">
-					Information</td>
-					<td id="website_mobile_app_tab_usage_control_request_history" class = "td_menu" style="vertical-align:middle;">
-					Limit Request History</td>
-				</tr>
-			</tbody>
-		</table>
-
+		<div class="scrollmenu" style="margin-top:5px">
+			<div id="website_mobile_app_tab_usage_control_information">
+				Information
+			</div>
+			<div id="website_mobile_app_tab_usage_control_request_history">
+				Limit Request History
+			</div>
+		</div>
 		<div class = "usage_control_container"></div>
 	</t>
 	

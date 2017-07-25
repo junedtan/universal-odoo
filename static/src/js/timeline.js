@@ -16,7 +16,6 @@ openerp.universal = function(instance) {
 		_lt: _lt,
 		instance: instance,
 		className: 'oe_universal_timeline_by_date',
-		customer_id: 0,
 
 		events: {
 			'click #button_filter': 'onclick_filter_button',
@@ -52,12 +51,9 @@ openerp.universal = function(instance) {
 						var date_string = self.pad((today.getMonth()+1),2)  + "/" + self.pad(today.getDate(),2) + '/' + self.pad(today.getFullYear(),4);
 						$('#filter_date').val(date_string);
 						self.onclick_filter_button();
-
-
-					  	$('#filter_customer').on('input',function() {
-							var opt = $('option[value="'+$(this).val()+'"]');
-							self.customer_id = (opt.length ? parseInt(opt.attr('id')) : 0);
-					 	 });
+						$('input').on('click', function() {
+							$(this).val('');
+						});
 					} else {
 						alert('Server Unreachable.')
 					}
@@ -150,6 +146,10 @@ openerp.universal = function(instance) {
 					 	 });
 
 						self.onclick_filter_button();
+
+						$('input').on('click', function() {
+							$(this).val('');
+						});
 					} else {
 						alert('Server Unreachable.')
 					}

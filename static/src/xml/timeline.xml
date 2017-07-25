@@ -29,7 +29,7 @@
 							<option value="shuttle">Shuttle</option>
 						</select>
 					</div>
-					<div type="button" id="button_filter" class="btn btn-primary ml16">Filter</div>
+					<div type="button" id="button_filter" class="btn btn-primary ml16">Show Data</div>
 				</form>
 			</div>
 			<hr class="no-margin"/>
@@ -141,7 +141,7 @@
 							<option value="shuttle">Shuttle</option>
 						</select>
 					</div>
-					<div type="button" id="button_filter" class="btn btn-primary ml16">Filter</div>
+					<div type="button" id="button_filter" class="btn btn-primary ml16">Show Data</div>
 				</form>
 			</div>
 			<hr class="no-margin"/>

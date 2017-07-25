@@ -25,6 +25,7 @@ class universal_timeline(osv.osv):
 		# GET LICENSE PLATE
 			fleet_ids = contract_fleet_obj.search(cr, uid, [
 				('header_id.state', '=', 'active'),
+				('header_id.customer_id.name', 'ilike', customer_name),
 				('driver_id.user_id', '=', driver_data.id),
 			])
 			license_plates = []
@@ -107,7 +108,7 @@ class universal_timeline(osv.osv):
 					'finish': 60,
 				})
 		# ADD TO RESULT
-			if len(planned_orders) != 0 or len(actual_orders) != 0:
+			if len(fleet_ids) != 0:
 				result.append({
 					'driver_id': driver_data.id,
 					'driver_name': driver_data.name,

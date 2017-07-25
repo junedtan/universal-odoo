@@ -67,15 +67,16 @@ openerp.universal = function(instance) {
 // METHODS ------------------------------------------------------------------------------------------------------------------
 
 		onclick_filter_button: function(){
-			this.render_table($('#filter_date').val(), $('#filter_customer').val());
+			this.render_table($('#filter_date').val(), $('#filter_customer').val(),  $('#filter_service_type').val());
 		},
 
-		render_table: function(date_string, customer_name) {
+		render_table: function(date_string, customer_name, service_type) {
 			var self = this;
 			new this.instance.web.Model('universal.timeline')
         		.call('get_timeline_by_date', {
         			 'date_string' : date_string,
         			 'customer_name' : customer_name,
+        			 'service_type' : service_type,
         		}).done(function(response) {
         			console.log(response);
         			if (response.status) {
@@ -159,10 +160,10 @@ openerp.universal = function(instance) {
 
 		onclick_filter_button: function(){
 			var self = this;
-			this.render_table(self.driver_id, $('#filter_start_date').val(), $('#filter_end_date').val(), $('#filter_customer').val());
+			this.render_table(self.driver_id, $('#filter_start_date').val(), $('#filter_end_date').val(), $('#filter_customer').val(),  $('#filter_service_type').val());
 		},
 
-		render_table: function(driver_id, start_date, end_date, customer_name) {
+		render_table: function(driver_id, start_date, end_date, customer_name, service_type) {
 			var self = this;
 			new this.instance.web.Model('universal.timeline')
         		.call('get_timeline_by_driver', {
@@ -170,6 +171,7 @@ openerp.universal = function(instance) {
         			 'start_date_string' : start_date,
         			 'end_date_string': end_date,
         			 'customer_name': customer_name,
+        			 'service_type': service_type,
         		}).done(function(response) {
         			console.log(response);
         			if (response.status) {

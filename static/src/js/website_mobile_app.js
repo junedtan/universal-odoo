@@ -31,7 +31,7 @@ $(document).ready(function () {
 
 	function onclick_usage_control() {
 		$('#menu_detail_contract_container').hide();
-    	$('#detail_contract_main_container').show();
+		$('#detail_contract_main_container').show();
 	}
 
 	function onclick_detail_contract_menu(id) {
@@ -48,13 +48,58 @@ $(document).ready(function () {
 		$('#website_mobile_app_tab_running_order').css("background-color", "#337ab7");
 		$('#website_mobile_app_tab_history_order').css("background-color", "#337ab7");
 		$(id).css("background-color", "#d3d3d3");
-    };
+	};
 
-    function onclick_tab_detail_au(id) {
-    	$('#website_mobile_app_tab_usage_control_information').css("background-color", "#337ab7");
-    	$('#website_mobile_app_tab_usage_control_request_history').css("background-color", "#337ab7");
+	function onclick_tab_detail_au(id) {
+		$('#website_mobile_app_tab_usage_control_information').css("background-color", "#337ab7");
+		$('#website_mobile_app_tab_usage_control_request_history').css("background-color", "#337ab7");
 		$(id).css("background-color", "#d3d3d3");
-    }
+	}
+
+	function intersperse(str, indices, separator) {
+		separator = separator || '';
+		var result = [], last = str.length;
+
+		for(var i=0; i<indices.length; ++i) {
+			var section = indices[i];
+			if (section === -1 || last <= 0) { break; }
+			else if(section === 0 && i === 0) { break; }
+			else if (section === 0) { section = indices[--i]; }
+			result.push(str.substring(last-section, last));
+			last -= section;
+		}
+		var s = str.substring(0, last);
+		if (s) { result.push(s); }
+		return result.reverse().join(separator);
+	}
+	
+	function insert_thousand_seps(num) {
+		var l10n = instance._t.database.parameters;
+		var negative = num[0] === '-';
+		num = (negative ? num.slice(1) : num);
+
+		return (negative ? '-' : '') + intersperse(
+			num, l10n.grouping, l10n.thousands_sep);
+	}
+
+	function currency_to_str(price) {
+		var l10n = instance._t.database.parameters;
+		var precision = 2;
+		/*
+		if ($(".decimal_precision").length) {
+			var dec_precision = $(".decimal_precision").first().data('precision');
+			//MAth.log10 is not implemented in phantomJS
+			dec_precision = Math.round(Math.log(1/parseFloat(dec_precision))/Math.log(10));
+			if (!isNaN(dec_precision)) {
+				precision = dec_precision;
+			}
+		}
+		*/
+		var formatted = _.str.sprintf('%.' + precision + 'f', price).split('.');
+		formatted[0] = insert_thousand_seps(formatted[0]);
+		var ret = formatted.join(l10n.decimal_point);
+		return ret;
+	}
 
 // BOOK VEHICLE =============================================================================================================
 
@@ -363,14 +408,14 @@ $(document).ready(function () {
 		}
 		if(removable === true) {
 			row += '<td><input type="text" class="tbl_name form-control" value="' + name + '"/></td>' +
-                   	'<td><input type="text" class="tbl_phone form-control" value="' + phone + '"/></td>' +
-                   	'<td><button type="button" class="btn_remove_passenger close" aria-label="Close">' +
+					'<td><input type="text" class="tbl_phone form-control" value="' + phone + '"/></td>' +
+					'<td><button type="button" class="btn_remove_passenger close" aria-label="Close">' +
 							'<span aria-hidden="true">x</span>' +
 						'</button></td>';
 		} else {
 			row += '<td><input type="text" class="tbl_name form-control" value="' + name + '" readonly/></td>' +
-                   	'<td><input type="text" class="tbl_phone form-control" value="' + phone + '" readonly/></td>' +
-                   	'<td></td>';
+					'<td><input type="text" class="tbl_phone form-control" value="' + phone + '" readonly/></td>' +
+					'<td></td>';
 		}
 		row += '</tr>';
 		return row;
@@ -384,10 +429,10 @@ $(document).ready(function () {
 		$.get('/mobile_app/fetch_orders/' + JSON.stringify({}), null, function(data){
 			var response = JSON.parse(data);
 			self.user = {
-            	user_group: response['user_group']
-            }
+				user_group: response['user_group']
+			}
 
-            classifications = {
+			classifications = {
 				'Pending': 'pending',
 				'Ready': 'ready',
 				'Running': 'running',
@@ -423,7 +468,7 @@ $(document).ready(function () {
 						order_vehicles.push(value[i].assigned_vehicle_name);
 					}
 				}
-            });
+			});
 			$("#main_container", self).html(qweb.render('website_mobile_app_list_order',{
 				'user_group' : self.user['user_group'],
 				'order_names': order_names,
@@ -1012,9 +1057,9 @@ $(document).ready(function () {
 						if(response.success){
 							$("#detail_contract_main_container", self).html(qweb.render('website_mobile_app_list_control_usage',{
 								'quota_list': JSON.parse(response.quota_list),
-                            }));
-                            quota_list = JSON.parse(response.quota_list)
-							$(".list_quota_usage").click(function(){
+							}));
+							quota_list = JSON.parse(response.quota_list)
+							$(".list_quota_usage").click(function(event){
 								event.stopPropagation();
 								onclick_usage_control();
 								self.current_au_name = $(this).attr("au_name");

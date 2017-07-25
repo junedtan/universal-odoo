@@ -3,6 +3,11 @@
 	padding-right: 12px;
 }
 
+.ptb12 {
+	padding-top: 12px;
+	padding-bottom: 12px;
+}
+
 .ml10 {
 	margin-left: 10px;
 }
@@ -29,14 +34,21 @@ hr {
 }
 
 .accordion {
-	padding: 5px;
+	padding: 12px;
 	margin-bottom: 2px;
 }
 
 .list_title {
 	font-size: large;
 	font-weight: bold;
-	margin-top: 10px;
+}
+
+.list-row {
+	border-bottom: 1px solid #CCCCCC;
+}
+
+.list-row .table {
+	margin-bottom: 0;
 }
 
 .td_list {
@@ -73,18 +85,6 @@ div.row_hoverable{
 
 .no_padding {
 	padding: 0px;
-}
-
-.contract_detail {
-	margin-left: 15px;
-	margin-right: 10px;
-	margin-bottom:0px;
-	margin-top:0px;
-}
-
-.contract_info {
-	margin-left: 10px;
-	margin-right: 10px;
 }
 
 .contract_usage_control {
@@ -278,7 +278,6 @@ div.row_hoverable{
 
 
 
-
 #menu_container ul {
     list-style-type: none;
     margin: 0;
@@ -317,7 +316,7 @@ div.row_hoverable{
     width: 100%;
     height: 60px;
     color: white;
-    background-color: blue;
+    background-color: #337AB7;
     z-index: 1000;
     padding: 5px;
     margin: 0px;
@@ -351,6 +350,11 @@ div.scrollmenu div {
     padding: 10px;
     text-decoration: none;
     width: 160px;
+    margin-left: -3px;
+}
+
+div.scrollmenu div:first-child {
+		margin-left: 0;
 }
 
 div.scrollmenu div:hover {
@@ -359,9 +363,6 @@ div.scrollmenu div:hover {
 
 .logged_in_as {
     color: gray;
-    margin-left: 10px;
-    padding-top: 5px;
-    padding-bottom: 5px;
 }
 
 .div_emergency_number {

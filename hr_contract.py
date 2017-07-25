@@ -2,6 +2,7 @@ from openerp.osv import osv, fields
 from openerp.tools.translate import _
 from datetime import datetime, date, timedelta
 from . import CONTRACT_STATE
+import openerp
 
 _CONTRACT_TYPE = [
 	('employee',_('Employee')),
@@ -256,7 +257,7 @@ class resource_calendar_attendance(osv.osv):
 		'working_time_type': fields.selection(_WORKING_TIME_TYPE, 'Type', required=True),
 		'max_hour': fields.float('Max Work Hour'),
 		'hour_from' : fields.float('Work from', help="Start and End time of working.", select=True),
-    'hour_to' : fields.float("Work to"),
+	'hour_to' : fields.float("Work to"),
 	}
 	
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------

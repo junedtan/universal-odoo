@@ -15,19 +15,33 @@ $(document).ready(function () {
 	var index_click_order;
 	var current_au_name;
 	var my_id;
+	var page_stack = [];
 	$('#button_back').hide();
 
-	function onclick_menu(id) {
+	function onclick_menu(id, page_title) {
+		page_stack.push(id);
+		$('#panel_title').text(page_title);
 		$('#menu_container').hide();
 		$('#main_container').show();
 		$('#button_back').show();
-//		$('#website_mobile_app_menu_book_vehicle').removeClass('active');
-//		$('#website_mobile_app_menu_list_orders').removeClass('active');
-//		$('#website_mobile_app_menu_change_password').removeClass('active');
-//		$('#website_mobile_app_menu_list_contract').removeClass('active');
-//		$('#website_mobile_app_menu_list_shuttle').removeClass('active');
-//		$(id).addClass('active');
 	};
+
+	$('#button_back').click(function() {
+		page_stack.pop();
+		if(page_stack.length == 0) {
+			$('#panel_title').text('UNIVERSAL');
+			$('#menu_container').show();
+			$('#main_container').hide();
+			$('#button_back').hide();
+		} else {
+			var page = page_stack.pop();
+			$(page).click();
+			if(page == '.list_contract') {
+				page_stack.pop();
+			}
+		}
+	});
+
 
 	function onclick_usage_control() {
 		$('#menu_detail_contract_container').hide();
@@ -103,16 +117,8 @@ $(document).ready(function () {
 
 // BOOK VEHICLE =============================================================================================================
 
-	$('#button_back').click(function() {
-		$('#panel_title').text('UNIVERSAL');
-		$('#menu_container').show();
-		$('#main_container').hide();
-		$('#button_back').hide();
-	});
-
 	$('#website_mobile_app_menu_book_vehicle').click(function() {
-		onclick_menu('#website_mobile_app_menu_book_vehicle');
-		$('#panel_title').text('Book Vehicle');
+		onclick_menu('#website_mobile_app_menu_book_vehicle', 'Book Vehicle');
 		$.get('/mobile_app/get_required_book_vehicle', null, function(data){
 			var response = JSON.parse(data);
 			var order_type = response['order_type'];
@@ -424,8 +430,7 @@ $(document).ready(function () {
 // LIST ORDER ===============================================================================================================
 
 	$('#website_mobile_app_menu_list_orders').click(function() {
-		onclick_menu('#website_mobile_app_menu_list_orders');
-		$('#panel_title').text('Orders');
+		onclick_menu('#website_mobile_app_menu_list_orders', 'Orders');
 		$.get('/mobile_app/fetch_orders/' + JSON.stringify({}), null, function(data){
 			var response = JSON.parse(data);
 			self.user = {
@@ -901,8 +906,7 @@ $(document).ready(function () {
 // LIST SHUTTLE =============================================================================================================
 
 	$('#website_mobile_app_menu_list_shuttle').click(function() {
-		onclick_menu('#website_mobile_app_menu_list_shuttle');
-		$('#panel_title').text('Shuttle');
+		onclick_menu('#website_mobile_app_menu_list_shuttle', 'Shuttle');
 		$.get('/mobile_app/fetch_contract_shuttles', null, function(data){
 			self.contract_datas = JSON.parse(data);
 			$("#main_container", self).html(qweb.render('website_mobile_app_list_shuttle',{
@@ -948,8 +952,7 @@ $(document).ready(function () {
 // CHANGE PASSWORD ==========================================================================================================
 
 	$('#website_mobile_app_menu_change_password').click(function() {
-		onclick_menu('#website_mobile_app_menu_change_password');
-		$('#panel_title').text('Change Password');
+		onclick_menu('#website_mobile_app_menu_change_password', 'Change Password');
 		$("#main_container", self).html(qweb.render('website_mobile_app_change_password'));
 		$('#btn_change_password').click(function(){
 			onclick_change_password_button();
@@ -1000,8 +1003,7 @@ $(document).ready(function () {
 // LIST CONTRACT ============================================================================================================
 
 	$('#website_mobile_app_menu_list_contract').click(function() {
-		onclick_menu('#website_mobile_app_menu_list_contract');
-		$('#panel_title').text('Contracts');
+		onclick_menu('#website_mobile_app_menu_list_contract', 'Contracts');
 		$.get('/mobile_app/fetch_contracts', null, function(data){
 			var response = JSON.parse(data);
 			self.user = {
@@ -1015,7 +1017,8 @@ $(document).ready(function () {
 			$(".list_contract").click(function(event) {
 				var target = $(event.target);
 				self.index_click_contract = target.attr("id_contract");
-				$("#main_container", self).html(qweb.render('website_mobile_app_detail_contract',{
+				onclick_menu('.list_contract', self.contract_datas[self.index_click_contract].name);
+				$("#detail_contract_container", self).html(qweb.render('website_mobile_app_detail_contract',{
 					'contract_name': self.contract_datas[self.index_click_contract].name,
 					'user_group': self.user['user_group'],
 					'contract_service_type': self.contract_datas[self.index_click_contract].service_type,
@@ -1031,6 +1034,8 @@ $(document).ready(function () {
 	});
 
 	function setOnClickButtonMenuDetailContract(){
+		$("#list_contract_container").hide();
+		$("#detail_contract_container").show();
 		//Onclick menu info
 		$('#website_mobile_app_menu_info_contract').click(function() {
 			onclick_detail_contract_menu('#website_mobile_app_menu_info_contract');
@@ -1063,6 +1068,7 @@ $(document).ready(function () {
 								event.stopPropagation();
 								onclick_usage_control();
 								self.current_au_name = $(this).attr("au_name");
+								onclick_menu('.list_quota_usage', self.current_au_name);
 								onclick_usage_control_quota($(this).attr("value"));
 							});
 							$(".quota_btn_request_change_quota").click(function(event){

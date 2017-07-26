@@ -475,45 +475,48 @@
 	<!-- LIST CONTRACT -->
 
 	<t t-name="website_mobile_app_list_contract">
-		<t class="full_height container universal_website_mobile_app">
-			<t t-if="contract_datas.length == 0">
-				<div class="col-xs-12" style="text-align: center; color: darkgray;">
-					<h4>Data Kosong</h4>
-				</div>
-			</t>
-			<t t-if="contract_datas.length != 0">
-				<t t-set="i" t-value="0"/>
-				<div class="row">
-					<t t-foreach="contract_datas" t-as="contract">
-						<div class="list_contract col-md-12 clickable contract_detail no_padding" t-attf-id_contract = "{{i}}">
-							<div class="card_padding list-row" style="pointer-events:none;">
-								<t t-if="user_group == 'approver'">
-									<t t-esc="contract.name"/>
-								</t>
-								<t t-if="user_group != 'approver'">
-									<div class="list_title">
-										<b><t t-esc="contract.name"/></b>-
-										<t t-if="contract.state == 'active'">
-											<span class="green_text">
-												<t t-esc="contract.state_name"/>
-											</span>
-										</t>
-										<t t-if="contract.state != 'active'">
-											<span class="red_text">
-												<t t-esc="contract.state_name"/>
-											</span>
-										</t>
-									</div>
-									<t t-esc="contract.start_date"/> / <t t-esc="contract.end_date"/><br></br>
-									Service Type: <t t-esc="contract.service_type"/><br></br>
-								</t>
+		<div id="list_contract_container">
+			<t class="full_height container universal_website_mobile_app">
+				<t t-if="contract_datas.length == 0">
+					<div class="col-xs-12" style="text-align: center; color: darkgray;">
+						<h4>Data Kosong</h4>
+					</div>
+				</t>
+				<t t-if="contract_datas.length != 0">
+					<t t-set="i" t-value="0"/>
+					<div class="row">
+						<t t-foreach="contract_datas" t-as="contract">
+							<div class="list_contract col-md-12 clickable contract_detail no_padding" t-attf-id_contract = "{{i}}">
+								<div class="card_padding list-row" style="pointer-events:none;">
+									<t t-if="user_group == 'approver'">
+										<t t-esc="contract.name"/>
+									</t>
+									<t t-if="user_group != 'approver'">
+										<div class="list_title">
+											<b><t t-esc="contract.name"/></b>-
+											<t t-if="contract.state == 'active'">
+												<span class="green_text">
+													<t t-esc="contract.state_name"/>
+												</span>
+											</t>
+											<t t-if="contract.state != 'active'">
+												<span class="red_text">
+													<t t-esc="contract.state_name"/>
+												</span>
+											</t>
+										</div>
+										<t t-esc="contract.start_date"/> / <t t-esc="contract.end_date"/><br></br>
+										Service Type: <t t-esc="contract.service_type"/><br></br>
+									</t>
+								</div>
 							</div>
-						</div>
-						<t t-set="i" t-value="i+1"/>
-					</t>
-				</div>
+							<t t-set="i" t-value="i+1"/>
+						</t>
+					</div>
+				</t>
 			</t>
-		</t>
+		</div>
+		<div id="detail_contract_container"></div>
 	</t>
 
 	<!-- DETAIL CONTRACT HEADER-->

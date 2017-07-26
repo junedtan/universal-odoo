@@ -522,11 +522,6 @@
 	<!-- DETAIL CONTRACT HEADER-->
 	<t t-name="website_mobile_app_detail_contract">
 		<div class="row contract_detail" id="menu_detail_contract_container">
-			<div class="col-md-12 no_padding">
-				<h3 class="contract_detail plr12 no_margin ptb12">
-					<b><t t-esc="contract_name"/></b>
-				</h3>
-			</div>
 			<div class="scrollmenu col-md-12 no_padding">
 				<t t-if="user_group == 'pic'">
 					<div id="website_mobile_app_menu_info_contract">
@@ -674,8 +669,7 @@
 	</t>
 
 	<t t-name="website_mobile_app_detail_control_usage">
-		<h3 style="margin-top:20px;"><t t-esc="au_name"/></h3>
-		<div class="scrollmenu" style="margin-top:5px">
+		<div class="scrollmenu">
 			<div id="website_mobile_app_tab_usage_control_information">
 				Information
 			</div>

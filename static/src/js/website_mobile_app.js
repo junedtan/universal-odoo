@@ -526,6 +526,16 @@ $(document).ready(function () {
 	});
 
 	function initOrderFilter() {
+		$(".accordion").click(function(event) {
+			$(this).toggleClass("active");
+			var detail = $(this).next();
+			if (detail.css("maxHeight") != "0px"){
+				detail.css("maxHeight", "0px");
+			} else {
+				detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
+			}
+		});
+
 		$('#button_filter').click(function(event) {
 			var order_number = $('#filter_order_number').val();
 			var booker_name = $('#filter_booker').val();

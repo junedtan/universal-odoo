@@ -1,160 +1,669 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
+	<t t-name="univmobile_main_menu">
+		<div class="container univmobile_main_menu">
+			<div class="row">
+				<div class="col-md-12 logged_in_as">
+					<div class="ptb12">
+						Logged in as: <t t-esc="app_data['user_name']"/>
+					</div>
+				</div>
+			</div>
+			<div class="row" id="menu_container">
+				<t t-set="menus" t-value="app_data['menus']" />
+				<t t-if="menus.length == 0">
+					<div class="col-md-12 no_padding">
+						<div class="oe_callout oe_callout_danger">
+							<h4>Error</h4>
+							<p>
+								You must login as Fullday Passenger or Booker or PIC or Approver.
+							</p>
+						</div>
+					</div>
+				</t>
+				<t t-if="menus.length > 0">
+					<div class="col-md-12 no_padding">
+						<ul>
+							<t t-foreach="menus" t-as="menu">
+								<li t-att-intent="menu['intent']">
+									<a>
+									<h1 class="no_margin"><span t-att-class="menu['icon']"></span></h1>
+									<br/><span><t t-raw="menu['label']" /></span>
+									</a>
+								</li>
+							</t>
+						</ul>
+					</div>
+				</t>
+			</div>
+			<div class="row">
+				<div class="col-md-12 mt16 mb16">
+					<div class="text-center">In case of emergency, please contact:</div>
+					<t t-foreach="app_data['homebases']" t-as="homebase_data">
+						<div class="homebase text-center">Universal <t t-esc="homebase_data['name']"/>
+							(<t t-esc="homebase_data['emergency_number']"/>)</div>
+					</t>
+				</div>
+			</div>
+		</div>
+	</t>
+
+	<t t-name="univmobile_chpwd">
+		<form id="chpwd_form">
+			<div class="plr12 ptb12">
+				<div class="form-group">
+					<label for="old_password">Old Password</label>
+					<input type="password" id="old_password" class="form-control"/>
+				</div>
+				<div class="form-group">
+					<label for="new_password">New Password</label>
+					<input type="password" id="new_password" class="form-control"/>
+				</div>
+				<div class="form-group">
+					<label for="new_password_retype">Retype New Password</label>
+					<input type="password" id="new_password_retype" class="form-control"/>
+				</div>
+			</div>
+			<hr />
+			<div class="row no_margin ptb12">
+				<div class="col-xs-12">
+					<button type="button" form-submit="click" class="btn btn-success form-control">Change Password</button>
+				</div>
+			</div>
+
+		</form>
+	</t>
+
+	<t t-name="univmobile_contract">
+		<div class="container univmobile_contract">
+			<t t-call="chjs_mobile_web_list" />
+		</div>
+	</t>
+
+	<t t-name="univmobile_contract_list_row">
+		<div class="row row_hoverable" intent="univmobile_intent_contract_detail" t-att-data-data_id="row.id">
+			<div class="col-md-12 no_padding">
+				<div class="card_padding list-row" style="pointer-events:none;">
+					<t t-if="row.user_group == 'approver'">
+						<t t-esc="row.name"/>
+					</t>
+					<t t-if="row.user_group != 'approver'">
+						<div class="list_title">
+							<b><t t-esc="row.name"/></b>-
+							<t t-if="row.state == 'active'">
+								<span class="green_text">
+									<t t-esc="row.state_name"/>
+								</span>
+							</t>
+							<t t-if="row.state != 'active'">
+								<span class="red_text">
+									<t t-esc="row.state_name"/>
+								</span>
+							</t>
+						</div>
+						<t t-esc="row.start_date"/> / <t t-esc="row.end_date"/><br></br>
+						Service Type: <t t-esc="row.service_type"/><br></br>
+					</t>
+				</div>
+			</div>
+		</div>
+	</t>
+
+	<t t-name="univmobile_contract_detail_form">
+		<div>
+			<div class="row no_margin">
+				<div class="col-md-12 card_padding">
+					<h2 class="no_margin"><t t-esc="detail.name"/></h2>
+				</div>
+			</div>
+			<div class="row no_margin">
+				<div class="col-md-12 no_margin no_padding">
+					<ul class="nav nav-tabs">
+						<t t-if="detail.user_group == 'pic'">
+							<li><a data-toggle="tab" href="#contract_detail_info">Info</a></li>
+						</t>
+						<t t-if="detail.service_type == 'By Order'">
+							<li><a data-toggle="tab" href="#contract_detail_usage_control">Usage Control</a></li>
+							<li><a data-toggle="tab" href="#contract_detail_quota_changes">Quota Changes <span id="contract_detail_quota_changes_notif" class="badge"></span></a></li>
+						</t>
+						<t t-if="detail.service_type == 'Shuttle'">
+							<li><a data-toggle="tab" href="#contract_detail_shuttle">Shuttle</a></li>
+						</t>
+					</ul>
+				</div>
+			</div>
+			<div class="row no_margin tab-content mt16">
+				<t t-if="detail.user_group == 'pic'">
+					<div id="contract_detail_info" class="tab-pane fade">
+						<t t-call="univmobile_contract_detail_info" />
+					</div>
+				</t>
+				<t t-if="detail.service_type == 'By Order'">
+					<div id="contract_detail_usage_control" class="tab-pane fade"></div>
+					<div id="contract_detail_quota_changes" class="tab-pane fade"></div>
+				</t>
+				<t t-if="detail.service_type == 'Shuttle'">
+					<div id="contract_detail_shuttle" class="tab-pane fade"></div>
+				</t>
+			</div>
+		</div>
+	</t>
+
+	<t t-name="univmobile_contract_detail_info">
+		<div class="row no_margin">
+			<div class="col-md-12 card_padding" style="padding-top: 0">
+				<table class="table table-condensed">
+					<tr>
+						<td>Status</td>
+						<td>:</td>
+						<td class="title-case"><t t-esc="detail.state"/></td>
+					</tr>
+					<tr>
+						<td>Period</td>
+						<td>:</td>
+						<td><t t-esc="detail.start_date"/> - <t t-esc="detail.end_date"/></td>
+					</tr>
+					<tr>
+						<td>Service Type</td>
+						<td>:</td>
+						<td><t t-esc="detail.service_type"/></td>
+					</tr>
+					<t t-if="detail.service_type == 'By Order'">
+						<tr>
+							<td>Max Order Time</td>
+							<td>:</td>
+							<td><t t-esc="detail.by_order_minimum_minutes"/> minutes</td>
+						</tr>
+						<tr>
+							<td>Max Delay</td>
+							<td>:</td>
+							<td><t t-esc="detail.max_delay_minutes"/> minutes</td>
+						</tr>
+					</t>
+					<tr>
+						<td>Max Start</td>
+						<td>:</td>
+						<td><t t-esc="detail.min_start_minutes"/> minutes</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</t>
+
+	<t t-name="univmobile_contract_detail_usage_control_row">
+		<div class="row row_hoverable no_margin">
+			<div class="col-md-12 no_padding">
+				<div class="card_padding list-row">
+					<div>
+						<span class="list_title" style="pointer-events:none;">
+							<b><t t-esc="row.allocation_unit_name"/></b>
+						</span>
+						<span style="float: right">
+							<t t-if="row.status == 'OK'">
+								<span class="fa fa-check-circle" style="color:#009900;font-size:24pt"></span>
+							</t>
+							<t t-if="row.status != 'OK'">
+								<span class="fa fa-minus-circle" style="color:#FF0000;font-size:24pt"></span>
+							</t>
+						</span>
+					</div>
+					<div>
+						<t t-if="row.control_level != 'no_control'">
+							<small>
+								Quota changes requested <t t-esc="row.total_request_count"/> <t t-esc="row.plural"/> with total of <t t-esc="row.total_request_nominal_formatted"/><br/>
+							</small>
+							<br/>
+						</t>
+					</div>
+					<t t-if="row.control_level != 'no_control'">
+						<div id="current_usage_quota_progress" style="overflow:auto;">
+							<t t-if="row.progress_exist == 'show'">
+								<t t-if="row.status == 'OK'">
+									<div class="progress-bar progress-bar-success" role="progressbar"
+											t-attf-style='width:{{row.current_usage*100.0/row.red_limit}}%'>
+										<span t-esc='row.current_usage'/>
+									</div>
+									<div class="progress-bar progress-bar-grey" role="progressbar"
+											t-attf-style='width:{{100-(row.current_usage*100.0/row.red_limit)}}%'>
+										<span t-esc='row.red_limit'/>
+									</div>
+								</t>
+								<t t-if="row.status == 'Warning'">
+									<div class="progress-bar progress-bar-warning" role="progressbar"
+											t-attf-style='width:{{row.current_usage*100.0/row.red_limit}}%'>
+										<span t-esc='row.current_usage'/>
+									</div>
+								</t>
+								<t t-if="row.status == 'Overlimit'">
+									<div class="progress-bar progress-bar-danger" role="progressbar"
+											t-attf-style='width:{{100.0}}%'>
+										<span t-esc='row.current_usage'/>
+									</div>
+								</t>
+							</t>
+							<t t-if="row.progress_exist == 'hide'">
+								<div class="progress-bar progress-bar-grey" role="progressbar"
+										t-attf-style='width:{{100}}%'>
+									<span t-esc='100'/>
+								</div>
+							</t>
+						</div>
+						<div class="row mt16">
+							<div class="col-xs-4 text-center">
+								<strong>Usage</strong><br/><t t-esc="row.current_usage_formatted"/><br/> 
+							</div>
+							<div class="col-xs-4 text-center">
+								<strong>Yellow Limit</strong><br/> <t t-esc="row.yellow_limit_formatted"/><br/> 
+							</div>
+							<div class="col-xs-4 text-center">
+								<strong>Red Limit</strong><br/> <t t-esc="row.red_limit_formatted"/><br/> 
+							</div>
+						</div>
+					</t>
+					<t t-if="row.button_change_exist == 'show'">
+						<div class="mt16 mb16"><hr/></div>
+						<button class="btn btn-success form-control" intent="univmobile_intent_request_quota_change" t-att-data-data_id="row.id" t-attf-intent-data="{'au_id': {{row.au_id}}, 'contract_id': {{row.contract_id}}, 'yellow_limit': {{row.yellow_limit}}, 'red_limit': {{row.red_limit}}}">
+							Request Quota Change
+						</button>
+					</t>
+					<t t-if="row.button_change_exist != 'show'">
+						<div class="mb16"></div>
+					</t>
+					<t t-set="i" t-value="i+1"/>
+				</div>
+			</div>
+		</div>
+	</t>
+
+	<t t-name="univmobile_contract_detail_quota_changes_row">
+		<div>
+			<div class="row row_hoverable no_margin" data-toggle="collapse" t-att-data-target="'#detail_'+row.section">
+				<div class="col-md-12 card_padding">
+					<span><t t-esc="row.title"/></span>
+				</div>
+			</div>
+			<div class="row collapse no_margin" t-att-id="'detail_'+row.section">
+				<t t-if="row.data.length == 0">
+					<div class="col-md-12 card_padding empty_data">
+						<span>No data</span>
+					</div>
+				</t>
+				<t t-if="row.data.length > 0">
+					<t t-foreach="row.data" t-as="row_data">
+						<div class="row text-right no_margin">
+							<div class="col-xs-12 mt16 text-right title-case">
+								<t t-esc="row_data.state" />
+							</div>
+						</div>
+						<div class="card_padding list-row">
+							<t t-if="row_data.yellow_limit_new > 0">
+								<div class="form-section form-section-light">Yellow Limit</div>
+								<div class="row mb16">
+									<div class="col-xs-7">
+										<label>Additional Requested</label><br/>
+										<span class="larger"><span class="larger"><t t-esc="row_data.yellow_limit_formatted"/></span></span><br/>
+										<t t-esc="row_data.request_type" />
+									</div>
+									<div class="col-xs-5">
+										<label>Current Limit</label><br/>
+										<p><t t-esc="row_data.yellow_limit_old"/></p>
+										<label>New Limit</label><br/>
+										<p><t t-esc="row_data.yellow_limit_final"/></p>
+									</div>
+								</div>
+							</t>
+							<t t-if="row_data.red_limit_new > 0">
+								<div class="form-section form-section-light">Red Limit</div>
+								<div class="row mb16">
+									<div class="col-xs-7">
+										<label>Additional Requested</label><br/>
+										<span class="larger"><span class="larger"><t t-esc="row_data.red_limit_formatted"/></span></span><br/>
+										<t t-esc="row_data.request_type" />
+									</div>
+									<div class="col-xs-5">
+										<label>Current Limit</label><br/>
+										<p><t t-esc="row_data.red_limit_old"/></p>
+										<label>New Limit</label><br/>
+										<p><t t-esc="row_data.red_limit_final"/></p>
+									</div>
+								</div>
+							</t>
+							<p class="mt16">
+								<t t-esc="row_data.request_detail" />
+								<t t-if="row_data.confirm_detail">
+									<br/>
+									<t t-esc="row_data.confirm_detail" />
+								</t>
+							</p>
+							<t t-if="row_data.state == 'draft'">
+								<t t-if="row_data.user_group == 'pic'">
+									<div class="row">
+										<div class="col-xs-6">
+											<button class="btn btn-success form-control" intent="univmobile_intent_request_quota_approve" t-att-data-data_id="row_data.id">Approve</button>
+										</div>
+										<div class="col-xs-6">
+											<button class="btn btn-success form-control" intent="univmobile_intent_request_quota_reject" t-att-data-data_id="row_data.id">Reject</button>
+										</div>
+									</div>
+								</t>
+							</t>
+						</div>
+					</t>
+				</t>
+			</div>
+		</div>
+	</t>
+
+	<t t-name="univmobile_request_quota_change">
+		<form id="request_quota_change_form">
+			<div class="plr12 ptb12 btn-group btn-block" data-toggle="buttons">
+				<label class="btn btn-info active" style="width: 50%">
+					<input class="form-check-input" type="radio" name="request_longevity" id="longevity_month" checked="checked" value="temporary" />
+					This Month Only
+				</label>
+				<label class="btn btn-info" style="width: 50%">
+					<input class="form-check-input" type="radio" name="request_longevity" id="longevity_permanent" value="permanent" />
+					Permanent
+				</label>
+			</div>
+			<div class="form-section plr12 ptb12">Yellow Limit</div>
+			<div class="plr12 ptb12">
+				<div class="form-group">
+					<label for="new_yellow_limit" class="col-form-label">Add Amount</label>
+					<input type="number" id="new_yellow_limit" class="form-control text-right" />
+				</div>
+				<div class="row no_padding">
+					<div class="form-group col-xs-6">
+						<label class="col-form-label">Previous</label>
+						<div class="form-control-static"><t t-esc="detail.yellow_limit_formatted" /></div>
+						<input type="number" id="old_amount_yellow" t-att-value="detail.yellow_limit" style="display: none" />
+					</div>
+					<div class="form-group col-xs-6">
+						<label class="col-form-label">New</label>
+						<div class="form-control-static" id="new_amount_yellow"><t t-esc="detail.yellow_limit_formatted" /></div>
+					</div>
+				</div>
+			</div>
+			<div class="form-section plr12 ptb12">Red Limit</div>
+			<div class="plr12 ptb12">
+				<div class="form-group">
+					<label for="new_red_limit" class="col-form-label">Add Amount</label>
+					<input type="number" id="new_red_limit" class="form-control text-right" />
+				</div>
+				<div class="row">
+					<div class="form-group col-xs-6">
+						<label class="col-form-label">Previous</label>
+						<div class="form-control-static"><t t-esc="detail.red_limit_formatted" /></div>
+						<input type="number" id="old_amount_red" t-att-value="detail.red_limit" style="display: none" />
+					</div>
+					<div class="form-group col-xs-6">
+						<label class="col-form-label">New</label>
+						<div class="form-control-static" id="new_amount_red"><t t-esc="detail.red_limit_formatted" /></div>
+					</div>
+				</div>
+			</div>
+			<hr />
+			<div class="row no_margin ptb12">
+				<div class="col-xs-12">
+					<button type="button" form-submit="click" class="form-control btn btn-success">Submit</button>
+					<button type="button" class="form-control btn btn-secondary" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+			<input type="hidden" id="allocation_unit_id" t-att-value="detail.au_id" />
+			<input type="hidden" id="customer_contract_id" t-att-value="detail.contract_id" />
+		</form>
+	</t>
+
+	<t t-name="univmobile_request_quota_reject">
+		<form id="request_quota_reject_form">
+			<div class="plr12 ptb12">
+				<div class="form-group">
+					<label for="reject_reason">Reason</label>
+					<textarea id="reject_reason" class="form-control" row="4"></textarea>
+				</div>
+			</div>
+			<hr />
+			<div class="row no_margin ptb12">
+				<div class="col-xs-12">
+					<button type="button" form-submit="click" class="btn btn-success form-control">Reject Request</button>
+					<button type="button" class="form-control btn btn-secondary" data-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+			<input type="hidden" id="change_log_id" t-att-value="detail.data_id" />
+		</form>
+	</t>
+
+	<t t-name="univmobile_shuttle">
+		<div class="container univmobile_shuttle">
+			<t t-call="chjs_mobile_web_list" />
+		</div>
+	</t>
+
+	<t t-name="univmobile_shuttle_filter_form">
+		<form>
+			<div class="row">
+				<div class="form-group col-md-12 mt16">
+					<label for="list_shuttle_contract">Select Contract</label>
+					<select id="list_shuttle_contract" class="form-control mb16"></select>
+				</div>
+			</div>
+			<div class="mb16" />
+		</form>
+	</t>
+
+	<t t-name="univmobile_shuttle_list_row">
+		<div>
+			<div class="row row_hoverable" data-toggle="collapse" t-att-data-target="'#detail_'+row.day">
+				<div class="col-md-12 card_padding">
+					<span><t t-esc="row.day"/></span>
+				</div>
+			</div>
+			<div class="row collapse" t-att-id="'detail_'+row.day">
+				<t t-if="row.day_value.length == 0">
+					<div class="col-md-12 card_padding empty_data">
+						<span>No data</span>
+					</div>
+				</t>
+				<t t-if="row.day_value.length != 0">
+					<t t-foreach="row.day_value" t-as="shuttle">
+						<div class="col-md-12 no_padding">
+							<div class="card_padding list-row">
+								<div class="list_title">
+									<b><t t-esc="shuttle.name"/></b>
+								</div>
+								Depart at <t t-esc="shuttle.departure_time"/><br/>
+								<t t-esc="shuttle.assigned_vehicle_name"/> (<t t-esc="shuttle.assigned_driver_name"/>)
+							</div>
+						</div>
+					</t>
+				</t>				
+			</div>
+		</div>
+	</t>
+
+<!-- ==================================================================================== -->
+<!-- ==================================================================================== -->
+<!-- ==================================================================================== -->
+<!-- Dari titik ini ke bawah adalah qweb template untuk versi lama -->
+
 	<!-- BOOK VEHICLE / CREATE ORDER -->
 
 	<t t-name="website_mobile_app_create_order">
 		<div class="full_height container universal_website_mobile_app">
 			<!-- Information -->
-			<div class="col-md-12 col-xs-12">
-				<t t-call="website_mobile_app_create_order_information_basic"/>
-				<t t-if="user_group == 'booker'">
-					<t t-call="website_mobile_app_create_order_information_other"/>
-				</t>
-				<t t-if="user_group == 'approver'">
-					<t t-call="website_mobile_app_create_order_information_other"/>
-				</t>
-			</div>
+			<t t-call="website_mobile_app_create_order_information_basic"/>
+			<t t-if="user_group == 'booker' || user_group == 'approver'">
+				<t t-call="website_mobile_app_create_order_information_other"/>
+			</t>
+			<div class="mb16"></div>
 			<!-- Route & Passenger -->
 			<t t-if="user_group == 'booker' || user_group == 'approver'">
-				<div class="col-md-12 col-xs-12">
-					<t t-call="website_mobile_app_create_order_route"/>
-				</div>
-				<div class="col-md-10 col-xs-12">
-					<t t-call="website_mobile_app_create_order_passenger"/>
-				</div>
+				<t t-call="website_mobile_app_create_order_route"/>
+				<div class="mb16"></div>
+				<t t-call="website_mobile_app_create_order_passenger"/>
+				<div class="mb16"></div>
 			</t>
 			<!-- Time -->
-			<div class="col-md-12">
-				<t t-call="website_mobile_app_create_order_time"/>
-			</div>
+			<t t-call="website_mobile_app_create_order_time"/>
+			<div class="mb16"></div>
 			<!-- Button -->
 			<t t-if="create_mode">
-				<div class="row ml10">
-					<button type="button" id="btn_create_order" class="btn btn-success col-md-10 col-xs-11">Create Order</button>
+				<div class="row">
+					<div class="col-md-12">
+						<button type="button" id="btn_create_order" class="btn btn-success form-control">Create Order</button>
+					</div>
 				</div>
 			</t>
 			<t t-if="create_mode == false">
-				<div class="row ml10">
-					<button type="button" t-attf-id_order = "{{order_id}}" class="btn btn-success btn_save_edit_order mt16 col-md-9 col-xs-6">Save</button>
-					<button type="button" t-attf-id_order = "{{order_id}}" class="btn btn-danger btn_cancel_edit_order mt16 ml10 col-md-1 col-xs-6">Cancel</button>
+				<div class="row">
+					<div class="col-md-6">
+						<button type="button" t-attf-id_order = "{{order_id}}" class="btn btn-success btn_save_edit_order form-control">Save</button>
+					</div>
+					<div class="col-md-6">
+						<button type="button" t-attf-id_order = "{{order_id}}" class="btn btn-danger btn_cancel_edit_order form-control">Cancel</button>
+					</div>
 				</div>
 			</t>
 		</div>
 	</t>
 
 	<t t-name="website_mobile_app_create_order_information_basic">
-		<h2>Information</h2>
-		<div class="form-group ml10 col-md-5 col-xs-12">
-			<label for="create_order_info_contract">Contract</label>
-			<select id="create_order_info_contract" class="form-control">
-				<t t-foreach="contract_datas" t-as="contract_data">
-					<option t-attf-value="{{contract_data.id}}"><t t-esc="contract_data.name"/></option>
-				</t>
-			</select>
+		<div class="row mb16">
+			<div class="col-md-12 form-section ptb12">Information</div>
 		</div>
-		<div class="form-group ml10 col-md-5 col-xs-12">
-			<label for="create_order_info_fleet_type">Vehicle</label>
-			<select id="create_order_info_fleet_type" class="form-control">
-				<t t-foreach="fleet_type_datas" t-as="fleet_type_data">
-					<option t-attf-value="{{fleet_type_data.id}}"><t t-esc="fleet_type_data.name"/></option>
-				</t>
-			</select>
+		<div class="row">
+			<div class="form-group col-md-6">
+				<label for="create_order_info_contract">Contract</label>
+				<select id="create_order_info_contract" class="form-control">
+					<t t-foreach="contract_datas" t-as="contract_data">
+						<option t-attf-value="{{contract_data.id}}"><t t-esc="contract_data.name"/></option>
+					</t>
+				</select>
+			</div>
+			<div class="form-group col-md-6">
+				<label for="create_order_info_fleet_type">Vehicle</label>
+				<select id="create_order_info_fleet_type" class="form-control">
+					<t t-foreach="fleet_type_datas" t-as="fleet_type_data">
+						<option t-attf-value="{{fleet_type_data.id}}"><t t-esc="fleet_type_data.name"/></option>
+					</t>
+				</select>
+			</div>
 		</div>
 	</t>
 
 	<t t-name="website_mobile_app_create_order_information_other">
-		<div class="form-group ml10 col-md-5 col-xs-12">
-			<label for="create_order_info_unit">Unit</label>
-			<select id="create_order_info_unit" class="form-control">
-				<t t-foreach="units" t-as="unit">
-					<option t-attf-value="{{unit.id}}"><t t-esc="unit.name"/></option>
-				</t>
-			</select>
-		</div>
-		<div class="form-group ml10 col-md-5 col-xs-12">
-			<label for="create_order_info_type">Type</label>
-			<select id="create_order_info_type" class="form-control">
-				<t t-foreach="order_types" t-as="order_type">
-					<option t-attf-value="{{order_type.id}}"><t t-esc="order_type.name"/></option>
-				</t>
-			</select>
+		<div class="row">
+			<div class="form-group col-md-6">
+				<label for="create_order_info_unit">Unit</label>
+				<select id="create_order_info_unit" class="form-control">
+					<t t-foreach="units" t-as="unit">
+						<option t-attf-value="{{unit.id}}"><t t-esc="unit.name"/></option>
+					</t>
+				</select>
+			</div>
+			<div class="form-group col-md-6">
+				<label for="create_order_info_type">Type</label>
+				<select id="create_order_info_type" class="form-control">
+					<t t-foreach="order_types" t-as="order_type">
+						<option t-attf-value="{{order_type.id}}"><t t-esc="order_type.name"/></option>
+					</t>
+				</select>
+			</div>
 		</div>
 	</t>
 
 	<t t-name="website_mobile_app_create_order_route">
-		<h2>Route</h2>
-		<div class="form-group ml10 col-md-5 col-xs-12">
-			<label for="create_order_route_from">From</label>
-			<div id="create_order_route_from" class="ml10">
-				<label class="no_bold" for="create_order_route_from_district">District</label>
-				<select id="create_order_route_from_district" class="form-control">
-					<t t-foreach="from_districts" t-as="from_district">
-						<option t-attf-value="{{from_district.id}}"><t t-esc="from_district.name"/></option>
-					</t>
-				</select>
-				<label class="no_bold" for="create_order_route_from_area">Area</label>
-				<select id="create_order_route_from_area" class="form-control">
-					<t t-foreach="from_areas" t-as="from_area">
-						<option t-attf-value="{{from_area.id}}"><t t-esc="from_area.name"/></option>
-					</t>
-				</select>
-				<label class="no_bold" for="create_order_route_from_location">Location</label>
-				<input id="create_order_route_from_location" class="form-control" type="text"/>
-			</div>
+		<div class="row mb16">
+			<div class="col-md-12 form-section ptb12">Route</div>
 		</div>
-		<div class="form-group ml10 col-md-5 col-xs-12">
-			<label for="create_order_route_to">To</label>
-			<div id="create_order_route_to" class="ml10">
-				<label class="no_bold" for="create_order_route_to_city">City</label>
-				<select id="create_order_route_to_city" class="form-control">
-					<t t-foreach="to_cities" t-as="city">
-						<option t-attf-value="{{city.id}}"><t t-esc="city.name"/></option>
-					</t>
-				</select>
-				<label class="no_bold" for="create_order_route_to_district">District</label>
-				<select id="create_order_route_to_district" class="form-control">
-					<t t-foreach="to_districts" t-as="to_district">
-						<option t-attf-value="{{to_district.id}}"><t t-esc="to_district.name"/></option>
-					</t>
-				</select>
-				<label class="no_bold" for="create_order_route_to_area">Area</label>
-				<select id="create_order_route_to_area" class="form-control">
-					<t t-foreach="to_areas" t-as="area">
-						<option t-attf-value="{{area.id}}"><t t-esc="area.name"/></option>
-					</t>
-				</select>
-				<label class="no_bold" for="create_order_route_to_location">Location</label>
-				<input id="create_order_route_to_location" class="form-control" type="text"/>
+		<div class="row">
+			<div class="form-group col-md-6">
+				<label for="create_order_route_from" class="mb16">From</label>
+				<div id="create_order_route_from">
+					<label class="no_bold" for="create_order_route_from_district">District</label>
+					<select id="create_order_route_from_district" class="form-control mb16">
+						<t t-foreach="from_districts" t-as="from_district">
+							<option t-attf-value="{{from_district.id}}"><t t-esc="from_district.name"/></option>
+						</t>
+					</select>
+					<label class="no_bold" for="create_order_route_from_area">Area</label>
+					<select id="create_order_route_from_area" class="form-control mb16">
+						<t t-foreach="from_areas" t-as="from_area">
+							<option t-attf-value="{{from_area.id}}"><t t-esc="from_area.name"/></option>
+						</t>
+					</select>
+					<label class="no_bold" for="create_order_route_from_location">Location</label>
+					<input id="create_order_route_from_location" class="form-control mb16" type="text"/>
+				</div>
+			</div>
+			<div class="form-group col-md-6">
+				<label for="create_order_route_to" class="mb16">To</label>
+				<div id="create_order_route_to">
+					<label class="no_bold" for="create_order_route_to_city">City</label>
+					<select id="create_order_route_to_city" class="form-control mb16">
+						<t t-foreach="to_cities" t-as="city">
+							<option t-attf-value="{{city.id}}"><t t-esc="city.name"/></option>
+						</t>
+					</select>
+					<label class="no_bold" for="create_order_route_to_district">District</label>
+					<select id="create_order_route_to_district" class="form-control mb16">
+						<t t-foreach="to_districts" t-as="to_district">
+							<option t-attf-value="{{to_district.id}}"><t t-esc="to_district.name"/></option>
+						</t>
+					</select>
+					<label class="no_bold" for="create_order_route_to_area">Area</label>
+					<select id="create_order_route_to_area" class="form-control mb16">
+						<t t-foreach="to_areas" t-as="area">
+							<option t-attf-value="{{area.id}}"><t t-esc="area.name"/></option>
+						</t>
+					</select>
+					<label class="no_bold" for="create_order_route_to_location">Location</label>
+					<input id="create_order_route_to_location" class="form-control mb16" type="text"/>
+				</div>
 			</div>
 		</div>
 	</t>
 
 	<t t-name="website_mobile_app_create_order_passenger">
-		<h2>Passenger</h2>
-		<label class="no_bold"><input id="ckb_i_am_passenger" type="checkbox" name="passenger" value="1"> I am the passenger</input></label>
-		<table id="passengers" class="table table-bordered table-striped table-highlight">
-			<thead>
-				<th>Name</th>
-				<th>Phone</th>
-				<th><button id="btn_add_passenger" type="button" class="add" aria-label="Add">
-						<span aria-hidden="true">+</span>
-					</button></th>
-			</thead>
-			<tbody>
-			</tbody>
-		</table>
+		<div class="row mb16">
+			<div class="col-md-12 form-section ptb12">Passenger</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<label class="no_bold"><input id="ckb_i_am_passenger" type="checkbox" name="passenger" value="1"> I am the passenger</input></label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<table id="passengers" class="table table-bordered table-striped table-highlight mb16">
+					<thead>
+						<th>Name</th>
+						<th>Phone</th>
+						<th style="padding: 0"><button id="btn_add_passenger" type="button" class="add btn form-control btn-success" aria-label="Add">
+								<span aria-hidden="true" class="fa fa-plus"></span>
+							</button></th>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+		</div>
 	</t>
 
 	<t t-name="website_mobile_app_create_order_time">
-		<h2>Time</h2>
-		<div class="form-group ml10 col-md-5 col-xs-11">
-			<label for="create_order_start_planned">Start Planned</label>
-			<input id="create_order_start_planned" class="form-control" type="datetime-local" t-attf-value="{{start_planned_default}}"/>
+		<div class="row mb16">
+			<div class="col-md-12 form-section ptb12">Time</div>
 		</div>
-		<div class="form-group ml10 col-md-5 col-xs-11">
-			<label for="create_order_finish_planned">Finish Planned</label>
-			<input id="create_order_finish_planned" class="form-control" type="datetime-local" t-attf-value="{{finish_planned_default}}"/>
+		<div class="row">
+			<div class="form-group col-md-6">
+				<label for="create_order_start_planned">Start Planned</label>
+				<input id="create_order_start_planned" class="form-control" type="datetime-local" t-attf-value="{{start_planned_default}}"/>
+			</div>
+			<div class="form-group col-md-6">
+				<label for="create_order_finish_planned">Finish Planned</label>
+				<input id="create_order_finish_planned" class="form-control" type="datetime-local" t-attf-value="{{finish_planned_default}}"/>
+			</div>
 		</div>
 	</t>
 
@@ -233,7 +742,7 @@
 	<!-- ORDER LIST-->
 	<t t-name="website_mobile_app_list_order_classification">
 		<t t-if="order_datas.length == 0">
-			<div class="col-xs-12" style="text-align: center; color: darkgray;">
+			<div class="col-md-12 empty_data">
 				<h4>Data Kosong</h4>
 			</div>
 		</t>
@@ -384,23 +893,21 @@
 
 	<t t-name="website_mobile_app_change_password">
 		<div class="full_height container universal_website_mobile_app">
-			<div class="col-xs-12">
-				<div class="form-group ml10">
+			<div class="mb16"></div>
+			<div class="row">
+				<div class="col-md-12">
 					<label for="change_password_old">Old Password</label>
-					<input type="password" id="change_password_old" class="form-control"/>
-				</div>
-				<div class="form-group ml10">
+					<input type="password" id="change_password_old" class="form-control mb16"/>
 					<label for="change_password_new">New Password</label>
-					<input type="password" id="change_password_new" class="form-control"/>
-				</div>
-				<div class="form-group ml10">
+					<input type="password" id="change_password_new" class="form-control mb16"/>
 					<label for="change_password_retype">Retype New Password</label>
-					<input type="password" id="change_password_retype" class="form-control"/>
+					<input type="password" id="change_password_retype" class="form-control mb16"/>
 				</div>
 			</div>
-			<div class="row ml10">
-				<div class="col-md-1 form-group">
-					<button type="button" id="btn_change_password" class="btn btn-success">Change Password</button>
+			<div class="mb16"></div>
+			<div class="row">
+				<div class="col-md-12">
+					<button type="button" id="btn_change_password" class="btn btn-success form-control">Change Password</button>
 				</div>
 			</div>
 		</div>
@@ -410,65 +917,59 @@
 	<!-- LIST SHUTTLE -->
 
 	<t t-name="website_mobile_app_list_shuttle">
-		<t class="full_height container universal_website_mobile_app">
-			<h3 style="margin-top:10px;margin-left:10px;">Select Contract:</h3>
-			<div class="form-group ml10" style="margin-right:10px">
-				<label for="list_shuttle_contract">Contract</label>
-				<select id="list_shuttle_contract" class="form-control">
-					<t t-foreach="contract_datas" t-as="contract_data">
-						<t t-if="contract_data.service_type == 'Shuttle'">
-							<option t-attf-value="{{contract_data.id}}"><t t-esc="contract_data.name"/></option>
-						</t>
-					</t>
-				</select>
+		<div class="full_height container universal_website_mobile_app">
+			<div class="row accordion form-section">
+				<div class="plr12 text-right">
+					<button class="btn btn-default"><span class="fa fa-filter"></span></button>
+				</div>
 			</div>
-		</t>
-		<div id="website_mobile_app_list_shuttle_schedules"></div>
+			<div class="row accordion_detail" id="shuttle_filter_container">
+				<form>
+					<div class="form-group col-md-12 mt16">
+						<label for="list_shuttle_contract">Select Contract</label>
+						<select id="list_shuttle_contract" class="form-control mb16">
+							<t t-foreach="contract_datas" t-as="contract_data">
+								<t t-if="contract_data.service_type == 'Shuttle'">
+									<option t-attf-value="{{contract_data.id}}"><t t-esc="contract_data.name"/></option>
+								</t>
+							</t>
+						</select>
+					</div>
+				</form>
+			</div>
+			<div id="website_mobile_app_list_shuttle_schedules"></div>
+			<div class="mb16"></div>
+		</div>
 	</t>
 
 	<t t-name="website_mobile_app_list_shuttle_schedules">
 		<t t-foreach="days" t-as="day">
-			<div class="row_hoverable accordion">
-				<h5><t t-esc="day"/></h5>
+			<div class="row row_hoverable accordion">
+				<div class="col-md-12">
+					<span><t t-esc="day"/></span>
+				</div>
 			</div>
-			<t t-if="shuttle_datas[day_value].length == 0">
-				<div class="detail_container accordion_detail" >
-					<div class="col-xs-12" style="text-align: center; color: darkgray;">
+			<div class="row accordion_detail">
+				<t t-if="shuttle_datas[day_value].length == 0">
+					<div class="col-md-12 empty_data">
 						<h4>Data Kosong</h4>
 					</div>
-				</div>
-			</t>
-			<t t-if="shuttle_datas[day_value].length != 0">
-				<div class="detail_container accordion_detail" >
+				</t>
+				<t t-if="shuttle_datas[day_value].length != 0">
 					<t t-foreach="shuttle_datas[day_value]" t-as="shuttle">
-						<div class="list_title">
-							<b><t t-esc="shuttle.name"/></b>
+						<div class="col-md-12 no_padding">
+							<div class="card_padding list-row">
+								<div class="list_title">
+									<b><t t-esc="shuttle.name"/></b>
+								</div>
+								Depart at <t t-esc="shuttle.departure_time"/><br/>
+								<t t-esc="shuttle.assigned_vehicle_name"/> (<t t-esc="shuttle.assigned_driver_name"/>)
+							</div>
 						</div>
-						<table class="table">
-							<tr>
-								<td>Time</td>
-								<td>:</td>
-								<td>
-									<t t-esc="shuttle.departure_time"/>
-									<!-- - <t t-esc="shuttle.arrival_time"/>-->
-								</td>
-							</tr>
-							<tr>
-								<td>Driver</td>
-								<td>:</td>
-								<td><t t-esc="shuttle.assigned_driver_name"/></td>
-							</tr>
-							<tr>
-								<td>Vehicle</td>
-								<td>:</td>
-								<td><t t-esc="shuttle.assigned_vehicle_name"/></td>
-							</tr>
-						</table>
-						<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
 					</t>
-				</div>
-			</t>
-		</t>
+				</t>				
+			</div>
+		</t>			
 	</t>
 	
 
@@ -477,8 +978,10 @@
 	<t t-name="website_mobile_app_list_contract">
 		<t class="full_height container universal_website_mobile_app">
 			<t t-if="contract_datas.length == 0">
-				<div class="col-xs-12" style="text-align: center; color: darkgray;">
-					<h4>Data Kosong</h4>
+				<div class="row">
+					<div class="col-md-12 empty_data">
+						<h4>Data Kosong</h4>
+					</div>
 				</div>
 			</t>
 			<t t-if="contract_datas.length != 0">
@@ -517,156 +1020,173 @@
 	</t>
 
 	<!-- DETAIL CONTRACT HEADER-->
+
 	<t t-name="website_mobile_app_detail_contract">
-		<div class="row contract_detail" id="menu_detail_contract_container">
-			<div class="col-md-12 no_padding">
-				<h3 class="contract_detail plr12 no_margin ptb12">
-					<b><t t-esc="contract_name"/></b>
-				</h3>
+		<div class="contract_detail" id="menu_detail_contract_container">
+			<div class="row">
+				<div class="col-md-12 no_padding">
+					<h3 class="contract_detail plr12 no_margin ptb12">
+						<b><t t-esc="contract_name"/></b>
+					</h3>
+				</div>
 			</div>
-			<div class="scrollmenu col-md-12 no_padding">
-				<t t-if="user_group == 'pic'">
-					<div id="website_mobile_app_menu_info_contract">
-						Info
-					</div>
-				</t>
-				<t t-if="contract_service_type == 'By Order'">
-					<div id="website_mobile_app_menu_usage_control">
-						Usage Control
-					</div>
-				</t>
-				<t t-if="user_group == 'pic'">
-					<t t-if="contract_service_type == 'By Order'">
-						<div id="website_mobile_app_menu_quota_changes">
-							Quota Changes
+			<div class="row">
+				<div class="scrollmenu col-md-12 no_padding">
+					<t t-if="user_group == 'pic'">
+						<div id="website_mobile_app_menu_info_contract">
+							Info
 						</div>
 					</t>
-				</t>
-				<t t-if="contract_service_type == 'Shuttle'" style = "border-left:1px solid; border-color:lightgray">
-					<div class = "td_tab_order" id="website_mobile_app_menu_shuttle" style="display: inline-block;vertical-align:middle;">
-						Shuttle
-					</div>
-				</t>
+					<t t-if="contract_service_type == 'By Order'">
+						<div id="website_mobile_app_menu_usage_control">
+							Usage Control
+						</div>
+					</t>
+					<t t-if="user_group == 'pic'">
+						<t t-if="contract_service_type == 'By Order'">
+							<div id="website_mobile_app_menu_quota_changes">
+								Quota Changes
+							</div>
+						</t>
+					</t>
+					<t t-if="contract_service_type == 'Shuttle'" style = "border-left:1px solid; border-color:lightgray">
+						<div class = "td_tab_order" id="website_mobile_app_menu_shuttle" style="display: inline-block;vertical-align:middle;">
+							Shuttle
+						</div>
+					</t>
+				</div>
 			</div>
 		</div>
-
-		<div class="row contract_detail" id="detail_contract_main_container"/>
+		<div class="contract_detail" id="detail_contract_main_container"/>
 	</t>
 
 	<!-- DETAIL CONTRACT INFO-->
 	<t t-name="website_mobile_app_detail_contract_info">
-		<div class="col-md-12 contract_info mt16">
-			<table class="table table-condensed">
-				<tr>
-					<td>Status</td>
-					<td>:</td>
-					<td><t t-esc="state"/></td>
-				</tr>
-				<tr>
-					<td>Period</td>
-					<td>:</td>
-					<td><t t-esc="start_date"/> - <t t-esc="end_date"/></td>
-				</tr>
-				<tr>
-					<td>Service Type</td>
-					<td>:</td>
-					<td><t t-esc="service_type"/></td>
-				</tr>
-				<tr>
-					<td>Max Order Time</td>
-					<td>:</td>
-					<td><t t-esc="by_order_minimum_minutes"/></td>
-				</tr>
-				<tr>
-					<td>Max Start</td>
-					<td>:</td>
-					<td><t t-esc="min_start_minutes"/></td>
-				</tr>
-				<tr>
-					<td>Max Delay</td>
-					<td>:</td>
-					<td><t t-esc="max_delay_minutes"/></td>
-				</tr>
-			</table>
+		<div class="row">
+			<div class="col-md-12 contract_info mt16">
+				<table class="table table-condensed">
+					<tr>
+						<td>Status</td>
+						<td>:</td>
+						<td><t t-esc="state"/></td>
+					</tr>
+					<tr>
+						<td>Period</td>
+						<td>:</td>
+						<td><t t-esc="start_date"/> - <t t-esc="end_date"/></td>
+					</tr>
+					<tr>
+						<td>Service Type</td>
+						<td>:</td>
+						<td><t t-esc="service_type"/></td>
+					</tr>
+					<tr>
+						<td>Max Order Time</td>
+						<td>:</td>
+						<td><t t-esc="by_order_minimum_minutes"/></td>
+					</tr>
+					<tr>
+						<td>Max Start</td>
+						<td>:</td>
+						<td><t t-esc="min_start_minutes"/></td>
+					</tr>
+					<tr>
+						<td>Max Delay</td>
+						<td>:</td>
+						<td><t t-esc="max_delay_minutes"/></td>
+					</tr>
+				</table>
+			</div>
 		</div>
 	</t>
 
 	<!-- DETAIL CONTRACT LIST CONTROL USAGE-->
+
 	<t t-name="website_mobile_app_list_control_usage">
 		<t class="full_height container universal_website_mobile_app">
-			<t t-if="quota_list.length == 0">
-				<div class="col-xs-12" style="text-align: center; color: darkgray;">
-					<h4>Data Kosong</h4>
-				</div>
-			</t>
-
-			<t t-if="quota_list.length != 0">
-				<t t-set="i" t-value="0"/>
-				<t t-foreach="quota_list" t-as="quota">
-					<div class="list_quota_usage clickable col-md-12 no_padding" t-attf-value="{{quota.id}}" t-attf-index_list_quota = "{{i}}" t-attf-au_name="{{quota.allocation_unit_name}}">
-						<div class="card_padding list-row">
-							<div class="list_title" style="pointer-events:none;">
-								<b><t t-esc="quota.allocation_unit_name"/></b>
-							</div>
-							<div>
-								<t t-if="quota.control_level != 'no_control'">
-									Quota changes requested <t t-esc="quota.total_request_count"/> <t t-esc="quota.plural"/> with total of <t t-esc="quota.total_request_nominal"/><br/>
-								</t>
-								<t t-if="quota.control_level != 'no_control'">
-									Usage: <t t-esc="quota.current_usage"/><br/> 
-								</t>
-								Status: <t t-esc="quota.status"/><br/>
-							</div>
-							<t t-if="quota.control_level != 'no_control'">
-								<div id="current_usage_quota_progress" style="overflow:auto;">
-									<t t-if="progress_exist == 'show'">
+			<div class="row">
+				<t t-if="quota_list.length == 0">
+					<div class="col-md-12 empty_data">
+						<h4>Data Kosong</h4>
+					</div>
+				</t>
+				<t t-if="quota_list.length != 0">
+					<t t-set="i" t-value="0"/>
+					<t t-foreach="quota_list" t-as="quota">
+						<div class="list_quota_usage clickable col-md-12 no_padding" t-attf-value="{{quota.id}}" t-attf-index_list_quota = "{{i}}" t-attf-au_name="{{quota.allocation_unit_name}}">
+							<div class="card_padding list-row">
+								<div>
+									<span class="list_title" style="pointer-events:none;">
+										<b><t t-esc="quota.allocation_unit_name"/></b>
+									</span>
+									<span style="float: right">
 										<t t-if="quota.status == 'OK'">
-											<div class="progress-bar progress-bar-success" role="progressbar"
-													t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
-												<span t-esc='quota.current_usage'/>
-											</div>
-											<div class="progress-bar progress-bar-grey" role="progressbar"
-													t-attf-style='width:{{100-(quota.current_usage*100.0/quota.red_limit)}}%'>
-												<span t-esc='quota.red_limit'/>
-											</div>
+											<span class="fa fa-check-circle" style="color:#009900;font-size:24pt"></span>
 										</t>
-										<t t-if="quota.status == 'Warning'">
-											<div class="progress-bar progress-bar-warning" role="progressbar"
-													t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
-												<span t-esc='quota.current_usage'/>
-											</div>
+										<t t-if="quota.status != 'OK'">
+											<span class="fa fa-minus-circle" style="color:#FF0000;font-size:24pt"></span>
 										</t>
-										<t t-if="quota.status == 'Overlimit'">
-											<div class="progress-bar progress-bar-danger" role="progressbar"
-													t-attf-style='width:{{100.0}}%'>
-												<span t-esc='quota.current_usage'/>
-											</div>
-										</t>
-									</t>
-									<t t-if="progress_exist == 'hide'">
-										<div class="progress-bar progress-bar-grey" role="progressbar"
-												t-attf-style='width:{{100}}%'>
-											<span t-esc='100'/>
-										</div>
+									</span>
+								</div>
+								<div>
+									<t t-if="quota.control_level != 'no_control'">
+										<small>
+											Quota changes requested <t t-esc="quota.total_request_count"/> <t t-esc="quota.plural"/> with total of <t t-esc="quota.total_request_nominal"/><br/>
+										</small>
+										<br/>
+										Usage: <t t-esc="quota.current_usage"/><br/> 
 									</t>
 								</div>
-							</t>
-							<div style="overflow:auto;">
-								<!-- TODO -->
-								<t t-if="button_change_exist == 'show'">
-									<div type="button" t-attf-au_id="{{quota.au_id}}" t-attf-contract_id="{{quota.contract_id}}"
-											class="quota_btn_request_change_quota btn btn-success col-md-2 col-xs-4 mt16 ml10 contract_usage_control">
-										Change Quota
+								<t t-if="quota.control_level != 'no_control'">
+									<div id="current_usage_quota_progress" style="overflow:auto;">
+										<t t-if="progress_exist == 'show'">
+											<t t-if="quota.status == 'OK'">
+												<div class="progress-bar progress-bar-success" role="progressbar"
+														t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
+													<span t-esc='quota.current_usage'/>
+												</div>
+												<div class="progress-bar progress-bar-grey" role="progressbar"
+														t-attf-style='width:{{100-(quota.current_usage*100.0/quota.red_limit)}}%'>
+													<span t-esc='quota.red_limit'/>
+												</div>
+											</t>
+											<t t-if="quota.status == 'Warning'">
+												<div class="progress-bar progress-bar-warning" role="progressbar"
+														t-attf-style='width:{{quota.current_usage*100.0/quota.red_limit}}%'>
+													<span t-esc='quota.current_usage'/>
+												</div>
+											</t>
+											<t t-if="quota.status == 'Overlimit'">
+												<div class="progress-bar progress-bar-danger" role="progressbar"
+														t-attf-style='width:{{100.0}}%'>
+													<span t-esc='quota.current_usage'/>
+												</div>
+											</t>
+										</t>
+										<t t-if="progress_exist == 'hide'">
+											<div class="progress-bar progress-bar-grey" role="progressbar"
+													t-attf-style='width:{{100}}%'>
+												<span t-esc='100'/>
+											</div>
+										</t>
 									</div>
-
-									<div id="dialog_request_quota_container" style="width:0px;height:0px;"/>
+								</t>
+								<t t-if="button_change_exist == 'show'">
+									<div class="mt16 mb16"><hr/></div>
+									<button class="btn btn-success quota_btn_request_change_quota contract_usage_control form-control" t-attf-au_id="{{quota.au_id}}" t-attf-contract_id="{{quota.contract_id}}">
+										Request Quota Change
+									</button>
+									<div id="dialog_request_quota_container" style="width:0px;height:0px;"></div>
+								</t>
+								<t t-if="button_change_exist != 'show'">
+									<div class="mb16"></div>
 								</t>
 								<t t-set="i" t-value="i+1"/>
 							</div>
 						</div>
-					</div>
+					</t>
 				</t>
-			</t>
+			</div>
 		</t>
 	</t>
 
@@ -715,14 +1235,17 @@
 	</t>
 	
 	<!-- USAGE CONTROL LIMIT REQUEST HISTORY -->
+
 	<t t-name="website_mobile_app_usage_control_request_history">
 		<t t-foreach="classifications" t-as="classification">
-			<div class="row_hoverable accordion">
-				<h5><t t-esc="classification"/></h5>
+			<div class="row row_hoverable accordion">
+				<div class="col-md-12">
+					<span><t t-esc="classification"/></span>
+				</div>
 			</div>
 			<t t-if="limit_requests[classification_value].length == 0">
 				<div class="detail_container accordion_detail" >
-					<div class="col-xs-12" style="text-align: center; color: darkgray;">
+					<div class="col-md-12 empty_data">
 						<h4>Data Kosong</h4>
 					</div>
 				</div>
@@ -802,93 +1325,96 @@
 	</t>
 	
 	<!-- DETAIL CONTRACT QUOTA CHANGES -->
+
 	<t t-name="website_mobile_app_detail_contract_quota_changes">
-		<div class="contract_info no_padding" style="margin-top:2px;">
+		<div class="contract_info" style="margin-top:2px;">
 			<t t-foreach="classifications" t-as="classification">
-				<div class="row_hoverable accordion">
-					<span><t t-esc="classification"/></span>
+				<div class="row row_hoverable accordion">
+					<div class="col-md-12">
+						<span><t t-esc="classification"/></span>
+					</div>
 				</div>
-				<t t-if="quota_changes[classification_value].length == 0">
-					<div class="detail_container accordion_detail" >
-						<div class="col-xs-12" style="text-align: center; color: darkgray;">
+				<div class="row accordion_detail">
+					<t t-if="quota_changes[classification_value].length == 0">
+						<div class="col-md-12 empty_data">
 							<h4>Data Kosong</h4>
 						</div>
-					</div>
-				</t>
-				<t t-if="quota_changes[classification_value].length != 0">
-					<div class="detail_container accordion_detail" >
-						<t t-foreach="quota_changes[classification_value]" t-as="quota_change">
-							<div class="list_title">
-								<b><t t-esc="quota_change.name"/></b>
-							</div>
-							<table class="table">
-								<tr>
-									<td>Request Date</td>
-									<td>:</td>
-									<td><t t-esc="quota_change.request_date"/></td>
-								</tr>
-								<tr>
-									<td>Request By</td>
-									<td>:</td>
-									<td><t t-esc="quota_change.request_by"/></td>
-								</tr>
-								<tr>
-									<td>Request Type</td>
-									<td>:</td>
-									<td><t t-esc="quota_change.request_type"/></td>
-								</tr>
-								<tr>
-									<td>Yellow Limit</td>
-									<td>:</td>
-									<td class="strike_through_text"><t t-esc="quota_change.yellow_limit_old"/></td>
-								</tr>
-								<tr>
-									<td></td>
-									<td></td>
-									<td><t t-esc="quota_change.yellow_limit_new"/></td>
-								</tr>
-								<tr>
-									<td>Red Limit</td>
-									<td>:</td>
-									<td class="strike_through_text"><t t-esc="quota_change.red_limit_old"/></td>
-								</tr>
-								<tr>
-									<td></td>
-									<td></td>
-									<td><t t-esc="quota_change.red_limit_new"/></td>
-								</tr>
-								<t t-if="classification_value == 'history'">
+					</t>
+					<t t-if="quota_changes[classification_value].length != 0">
+						<div class="detail_container col-md-12" >
+							<t t-foreach="quota_changes[classification_value]" t-as="quota_change">
+								<div class="list_title">
+									<b><t t-esc="quota_change.name"/></b>
+								</div>
+								<table class="table">
 									<tr>
-										<td>Respond Date</td>
+										<td>Request Date</td>
 										<td>:</td>
-										<td><t t-esc="quota_change.respond_date"/></td>
+										<td><t t-esc="quota_change.request_date"/></td>
 									</tr>
-								</t>
-								<tr>
-									<td>Status</td>
-									<td>:</td>
-									<td><t t-esc="quota_change.state"/></td>
-								</tr>
-								<tr>
-									<td>Reason</td>
-									<td>:</td>
-									<td><t t-esc="quota_change.reason"/></td>
-								</tr>
-							</table>
-							<t t-if="classification_value == 'pending'">
-								<t t-if="user_group == 'pic'">
-									<div>
-										<div type="button" t-attf-value="{{quota_change.id}}"
-											class="quota_change_btn_approve btn btn-success col-md-1 col-xs-3 ml10">Approve</div>
-										<div type="button" t-attf-value="{{quota_change.id}}"
-											class="quota_change_btn_reject btn btn-danger col-md-1 col-xs-3 ml10">Reject</div>
-									</div>
-								</t>
-							</t><br></br><br></br>
-							<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
-						</t>
-					</div>
-				</t>
+									<tr>
+										<td>Request By</td>
+										<td>:</td>
+										<td><t t-esc="quota_change.request_by"/></td>
+									</tr>
+									<tr>
+										<td>Request Type</td>
+										<td>:</td>
+										<td><t t-esc="quota_change.request_type"/></td>
+									</tr>
+									<tr>
+										<td>Yellow Limit</td>
+										<td>:</td>
+										<td class="strike_through_text"><t t-esc="quota_change.yellow_limit_old"/></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td></td>
+										<td><t t-esc="quota_change.yellow_limit_new"/></td>
+									</tr>
+									<tr>
+										<td>Red Limit</td>
+										<td>:</td>
+										<td class="strike_through_text"><t t-esc="quota_change.red_limit_old"/></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td></td>
+										<td><t t-esc="quota_change.red_limit_new"/></td>
+									</tr>
+									<t t-if="classification_value == 'history'">
+										<tr>
+											<td>Respond Date</td>
+											<td>:</td>
+											<td><t t-esc="quota_change.respond_date"/></td>
+										</tr>
+									</t>
+									<tr>
+										<td>Status</td>
+										<td>:</td>
+										<td><t t-esc="quota_change.state"/></td>
+									</tr>
+									<tr>
+										<td>Reason</td>
+										<td>:</td>
+										<td><t t-esc="quota_change.reason"/></td>
+									</tr>
+								</table>
+								<t t-if="classification_value == 'pending'">
+									<t t-if="user_group == 'pic'">
+										<div>
+											<div type="button" t-attf-value="{{quota_change.id}}"
+												class="quota_change_btn_approve btn btn-success col-md-1 col-xs-3 ml10">Approve</div>
+											<div type="button" t-attf-value="{{quota_change.id}}"
+												class="quota_change_btn_reject btn btn-danger col-md-1 col-xs-3 ml10">Reject</div>
+										</div>
+									</t>
+								</t><br></br><br></br>
+								<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
+							</t>
+						</div>
+					</t>					
+				</div>
 			</t>
 		</div>
 	</t>

@@ -1,8 +1,79 @@
+
+function intersperse(str, indices, separator) {
+	separator = separator || '';
+	var result = [], last = str.length;
+
+	for(var i=0; i<indices.length; ++i) {
+		var section = indices[i];
+		if (section === -1 || last <= 0) { break; }
+		else if(section === 0 && i === 0) { break; }
+		else if (section === 0) { section = indices[--i]; }
+		result.push(str.substring(last-section, last));
+		last -= section;
+	}
+	var s = str.substring(0, last);
+	if (s) { result.push(s); }
+	return result.reverse().join(separator);
+}
+
+function insert_thousand_seps(num) {
+	var l10n = openerp._t.database.parameters;
+	var negative = num[0] === '-';
+	num = (negative ? num.slice(1) : num);
+
+	if (l10n.grouping.length == 0) {
+		l10n.grouping = [3,0];
+	}
+
+	return (negative ? '-' : '') + intersperse(
+		num, l10n.grouping, l10n.thousands_sep);
+}
+
+function currency_to_str(price) {
+	var l10n = openerp._t.database.parameters;
+	var precision = 2;
+	/*
+	if ($(".decimal_precision").length) {
+		var dec_precision = $(".decimal_precision").first().data('precision');
+		//MAth.log10 is not implemented in phantomJS
+		dec_precision = Math.round(Math.log(1/parseFloat(dec_precision))/Math.log(10));
+		if (!isNaN(dec_precision)) {
+			precision = dec_precision;
+		}
+	}
+	*/
+	var formatted = _.str.sprintf('%.' + precision + 'f', price).split('.');
+	formatted[0] = insert_thousand_seps(formatted[0]);
+	var ret = formatted.join(l10n.decimal_point);
+	return ret;
+}
+
+
+
 $(document).ready(function () {
 
 	var self = this;
 	var instance = openerp;
 	var qweb = openerp.qweb;
+
+//new version
+
+	try {
+		if (mobile_web == true) {
+			$(".navbar-static-top").hide();
+			qweb.add_template('/universal/static/src/xml/website_mobile_app.xml', function() {
+				mobile_app.init(mobile_app_activity_definition, mobile_app_intent_definition);
+				mobile_app.data_manager.attach_data_sources(mobile_app_data_sources, true);
+			});
+
+			return;
+		}
+	} catch(e) {
+
+	}
+
+//old version
+
 	qweb.add_template('/universal/static/src/xml/website_mobile_app.xml');
 
 	var contract_datas = [];
@@ -27,6 +98,48 @@ $(document).ready(function () {
 //		$('#website_mobile_app_menu_list_contract').removeClass('active');
 //		$('#website_mobile_app_menu_list_shuttle').removeClass('active');
 //		$(id).addClass('active');
+	};
+
+
+	function onclick_change_password_button(event) {
+		old_password = $('#change_password_old').val();
+		new_password = $('#change_password_new').val();
+		retype_password = $('#change_password_retype').val();
+
+		if(new_password != retype_password) {
+			alert('New Password and Retype Password does not match.');
+			$('#change_password_new').val('');
+			$('#change_password_retype').val('')
+		} else if(old_password.length == 0){
+			alert('Old Password may not be empty.');
+		}  else if(new_password.length == 0){
+			alert('New Password may not be empty.');
+		} else {
+			change_password_json = {
+				'old_password': old_password,
+				'new_password': new_password,
+			};
+			$.ajax({
+				dataType: "json",
+				url: '/mobile_app/change_password/' + JSON.stringify(change_password_json),
+				method: 'POST',
+				success: function(response) {
+					if (response.status) {
+						alert(response.info);
+						if(response.success){
+							logout();
+						}else {
+							$('#change_password_old').val('');
+						}
+					} else {
+						alert('Server Unreachable.');
+					}
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					alert_error(XMLHttpRequest);
+				} ,
+			});
+		}
 	};
 
 	function onclick_usage_control() {
@@ -409,8 +522,8 @@ $(document).ready(function () {
 		if(removable === true) {
 			row += '<td><input type="text" class="tbl_name form-control" value="' + name + '"/></td>' +
 					'<td><input type="text" class="tbl_phone form-control" value="' + phone + '"/></td>' +
-					'<td><button type="button" class="btn_remove_passenger close" aria-label="Close">' +
-							'<span aria-hidden="true">x</span>' +
+					'<td><button type="button" class="btn_remove_passenger form-control btn btn-default" aria-label="Close">' +
+							'<span class="fa fa-close"></span>' +
 						'</button></td>';
 		} else {
 			row += '<td><input type="text" class="tbl_name form-control" value="' + name + '" readonly/></td>' +
@@ -949,53 +1062,12 @@ $(document).ready(function () {
 
 	$('#website_mobile_app_menu_change_password').click(function() {
 		onclick_menu('#website_mobile_app_menu_change_password');
-		$('#panel_title').text('Change Password');
+		$('#panel_title').text('Password');
 		$("#main_container", self).html(qweb.render('website_mobile_app_change_password'));
 		$('#btn_change_password').click(function(){
 			onclick_change_password_button();
 		});
 	});
-
-	function onclick_change_password_button() {
-		old_password = $('#change_password_old').val();
-		new_password = $('#change_password_new').val();
-		retype_password = $('#change_password_retype').val();
-
-		if(new_password != retype_password) {
-			alert('New Password and Retype Password doesn\'t match.');
-			$('#change_password_new').val('');
-			$('#change_password_retype').val('')
-		} else if(old_password.length == 0){
-			alert('Old Password may not be empty.');
-		}  else if(new_password.length == 0){
-			alert('New Password may not be empty.');
-		} else {
-			change_password_json = {
-				'old_password': old_password,
-				'new_password': new_password,
-			};
-			$.ajax({
-				dataType: "json",
-				url: '/mobile_app/change_password/' + JSON.stringify(change_password_json),
-				method: 'POST',
-				success: function(response) {
-					if (response.status) {
-						alert(response.info);
-						if(response.success){
-							logout();
-						}else {
-							$('#change_password_old').val('');
-						}
-					} else {
-						alert('Server Unreachable.');
-					}
-				},
-				error: function(XMLHttpRequest, textStatus, errorThrown) {
-					alert_error(XMLHttpRequest);
-				} ,
-			});
-		}
-	};
 
 // LIST CONTRACT ============================================================================================================
 

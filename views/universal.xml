@@ -5,8 +5,10 @@
 			<xpath expr="." position="inside">
 				<link rel='stylesheet' href='/universal/static/src/css/universal.css'/>
 				<script type="text/javascript" src="/universal/static/src/js/website_universal.js"></script>
-
 				<link rel='stylesheet' href='/universal/static/src/css/website_mobile_app.css'/>
+				<script type="text/javascript" src="/universal/static/src/js/website_mobile_activities.js"></script>
+				<script type="text/javascript" src="/universal/static/src/js/website_mobile_intents.js"></script>
+				<script type="text/javascript" src="/universal/static/src/js/website_mobile_datasources.js"></script>
 				<script type="text/javascript" src="/universal/static/src/js/website_mobile_app.js"></script>
 			</xpath>
 		</template>

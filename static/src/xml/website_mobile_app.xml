@@ -678,50 +678,67 @@
 	
 	<!-- TAB ORDER-->
 	<t t-name="website_mobile_app_tab_order">
-		<form class="form-inline row">
-			<div class="form-group ml10 col-md-2 col-xs-5">
-				<label for="filter_order_number">Order Number</label>
-				<input class="form-control" list="filter_order_number_list" id="filter_order_number">
-					<datalist id="filter_order_number_list" >
-						<t t-foreach="order_names" t-as="order_name">
-							<option t-attf-value="{{order_name}}"/>
-						</t>
-					</datalist>
-				</input>
+		<div class="row row_hoverable accordion">
+			Filter
+		</div>
+		<div class="row accordion_detail">
+			<div class="col-md-12">
+				<div class="row">
+					<div class="form-group col-md-12">
+						<label for="filter_order_number">Order Number</label>
+						<input class="form-control" list="filter_order_number_list" id="filter_order_number">
+							<datalist id="filter_order_number_list" >
+								<t t-foreach="order_names" t-as="order_name">
+									<option t-attf-value="{{order_name}}"/>
+								</t>
+							</datalist>
+						</input>
+					</div>
+				</div>
+				<div class="row">
+					<div class="form-group col-md-12">
+						<label for="filter_booker">Booker</label>
+						<input class="form-control" list="filter_booker_list" id="filter_booker">
+							<datalist id="filter_booker_list" >
+								<t t-foreach="order_bookers" t-as="order_booker">
+									<option t-attf-value="{{order_booker}}"/>
+								</t>
+							</datalist>
+						</input>
+					</div>
+				</div>
+				<div class="row">
+					<div class="form-group col-md-12">
+						<label for="filter_driver">Driver</label>
+						<input class="form-control" list="filter_driver_list" id="filter_driver">
+							<datalist id="filter_driver_list" >
+								<t t-foreach="order_drivers" t-as="order_driver">
+									<option t-attf-value="{{order_driver}}"/>
+								</t>
+							</datalist>
+						</input>
+					</div>
+				</div>
+				<div class="row">
+					<div class="form-group col-md-12">
+						<label for="filter_vehicle">Vehicle</label>
+						<input class="form-control" list="filter_vehicle_list" id="filter_vehicle">
+							<datalist id="filter_vehicle_list">
+								<t t-foreach="order_vehicles" t-as="order_vehicle">
+									<option t-attf-value="{{order_vehicles}}"/>
+								</t>
+							</datalist>
+						</input>
+					</div>
+				</div>
+				<div class="row">
+					<div class="form-group col-md-12">
+						<div type="button" id="button_filter" class="btn btn-primary col-xs-12">Filter</div>
+					</div>
+				</div>
 			</div>
-			<div class="form-group ml10 col-md-2 col-xs-5">
-				<label for="filter_booker">Booker</label>
-				<input class="form-control" list="filter_booker_list" id="filter_booker">
-					<datalist id="filter_booker_list" >
-						<t t-foreach="order_bookers" t-as="order_booker">
-							<option t-attf-value="{{order_booker}}"/>
-						</t>
-					</datalist>
-				</input>
-			</div>
-			<div class="form-group ml10 col-md-2 col-xs-5">
-				<label for="filter_driver">Driver</label>
-				<input class="form-control" list="filter_driver_list" id="filter_driver">
-					<datalist id="filter_driver_list" >
-						<t t-foreach="order_drivers" t-as="order_driver">
-							<option t-attf-value="{{order_driver}}"/>
-						</t>
-					</datalist>
-				</input>
-			</div>
-			<div class="form-group ml10 col-md-2 col-xs-5">
-				<label for="filter_vehicle">Vehicle</label>
-				<input class="form-control" list="filter_vehicle_list" id="filter_vehicle">
-					<datalist id="filter_vehicle_list">
-						<t t-foreach="order_vehicles" t-as="order_vehicle">
-							<option t-attf-value="{{order_vehicles}}"/>
-						</t>
-					</datalist>
-				</input>
-			</div>
-			<div type="button" id="button_filter" class="btn btn-primary col-md-1 col-xs-10" style="margin-top:25px; margin-left:25px">Filter</div>
-		</form>
-		<div class="scrollmenu" style="margin-top:15px">
+		</div>
+		<div class="scrollmenu row mt5">
 			<t t-if="user_group != 'fullday_passenger'">
 				<div id="website_mobile_app_tab_pending_order">
 					Pending
@@ -747,7 +764,7 @@
 			</div>
 		</t>
 		<t t-if="order_datas.length != 0">
-			<div class="detail_container" >
+			<div class="detail_container row" >
 				<t t-set="i" t-value="0"/>
 				<t t-foreach="order_datas" t-as="order">
 					<div class="list_order clickable plr12" t-attf-index_order = "{{i}}" t-attf-classification_order = "{{classifications}}">
@@ -1011,12 +1028,13 @@
 									Service Type: <t t-esc="contract.service_type"/><br></br>
 								</t>
 							</div>
-						</div>
-						<t t-set="i" t-value="i+1"/>
-					</t>
-				</div>
+							<t t-set="i" t-value="i+1"/>
+						</t>
+					</div>
+				</t>
 			</t>
-		</t>
+		</div>
+		<div id="detail_contract_container"></div>
 	</t>
 
 	<!-- DETAIL CONTRACT HEADER-->
@@ -1191,8 +1209,7 @@
 	</t>
 
 	<t t-name="website_mobile_app_detail_control_usage">
-		<h3 style="margin-top:20px;"><t t-esc="au_name"/></h3>
-		<div class="scrollmenu" style="margin-top:5px">
+		<div class="scrollmenu">
 			<div id="website_mobile_app_tab_usage_control_information">
 				Information
 			</div>

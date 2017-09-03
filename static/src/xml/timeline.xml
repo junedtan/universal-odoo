@@ -7,10 +7,29 @@
 			<div class="row no-margin padding6 div_filter">
 				<form class="form-inline">
   					<div class="form-group">
-						<label for="filter_date">Date: </label>
+						<label for="filter_date">Date</label>
 						<input class="datepicker" id="filter_date" size="8" type="text" readonly=""/>
 					</div>
-					<div type="button" id="button_filter" class="btn btn-primary ml16">Filter</div>
+  					<div class="form-group">
+						<label for="filter_customer">Customer Company</label>
+						<input list="filter_customer_list" id="filter_customer">
+							<datalist id="filter_customer_list" >
+								<t t-foreach="customers" t-as="customer">
+									<option t-att-id="customer.id" t-attf-value="{{customer.name}}"/>
+								</t>
+							</datalist>
+						</input>
+					</div>
+  					<div class="form-group">
+						<label for="filter_service_type">Service Type</label>
+						<select id="filter_service_type">
+							<option value=""></option>
+							<option value="full_day">Full-day Service</option>
+							<option value="by_order">By Order</option>
+							<option value="shuttle">Shuttle</option>
+						</select>
+					</div>
+					<div type="button" id="button_filter" class="btn btn-primary ml16">Show Data</div>
 				</form>
 			</div>
 			<hr class="no-margin"/>
@@ -103,7 +122,26 @@
 						<label class="ml16" for="filter_end_date">End Date</label>
 						<input class="datepicker" id="filter_end_date" size="8" type="text" readonly=""/>
 					</div>
-					<div type="button" id="button_filter" class="btn btn-primary ml16">Filter</div>
+  					<div class="form-group">
+						<label for="filter_customer">Customer Company</label>
+						<input list="filter_customer_list" id="filter_customer">
+							<datalist id="filter_customer_list" >
+								<t t-foreach="customers" t-as="customer">
+									<option t-att-id="customer.id" t-attf-value="{{customer.name}}"/>
+								</t>
+							</datalist>
+						</input>
+					</div>
+  					<div class="form-group">
+						<label for="filter_service_type">Service Type</label>
+						<select id="filter_service_type">
+							<option value=""></option>
+							<option value="full_day">Full-day Service</option>
+							<option value="by_order">By Order</option>
+							<option value="shuttle">Shuttle</option>
+						</select>
+					</div>
+					<div type="button" id="button_filter" class="btn btn-primary ml16">Show Data</div>
 				</form>
 			</div>
 			<hr class="no-margin"/>

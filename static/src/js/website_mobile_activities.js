@@ -385,5 +385,95 @@ var mobile_app_activity_definition = {
 		}
 	},
 
+//ORDERS -----------------------------------------------------------------------------------------------------------------
+
+	'univmobile_actv_order': {
+		title: 'Orders',
+		back_intent_id: 'univmobile_intent_main',
+		qweb_template_id: 'univmobile_order',
+		onload_callback: function(activity_data, intent_data) {
+			//list order
+			var order_list_view = mobile_app.list_view({
+				container: ".univmobile_order .list-container",
+				row_qweb: "univmobile_order_list_row",
+				prepare_data: function(data) {
+					var new_data = [];
+					$.each(data['list_order']['pending'], function(idx, row) {
+						row['user_group'] = data['user_group'];
+						new_data.push(row);
+					});
+					return [new_data];
+				},
+			});
+			mobile_app.data_manager.attach_view('orders', 'order_list', order_list_view);
+			order_list_view.render_view();
+			mobile_app.data_manager.refresh('orders', {}, true);
+
+			$('.website_mobile_app_tab_history_order').click(function(event) {
+				order_list_view = mobile_app.list_view({
+					container: ".univmobile_order .list-container",
+					row_qweb: "univmobile_order_list_row",
+					prepare_data: function(data) {
+						var new_data = [];
+						$.each(data['list_order']['history'], function(idx, row) {
+							row['user_group'] = data['user_group'];
+							new_data.push(row);
+						});
+						return [new_data];
+					},
+				});
+				mobile_app.data_manager.attach_view('orders', 'order_list', order_list_view);
+				order_list_view.render_view();
+				mobile_app.data_manager.refresh('orders', {}, true);
+			});
+		}
+	},
+
+	'univmobile_actv_order_detail': {
+		title: 'Order Detail',
+		onload_callback: function(activity_data, intent_data) {
+			//form request quota change
+			var order_detail_view = mobile_app.detail_view({
+				container: "#chjs_mobile_modal_content",
+				detail_qweb: "univmobile_order_detail",
+				prepare_data: function(data) {
+					console.log(data);
+					return data;
+				},
+				after_refresh: function(data) {
+					// var form_object = $("#order_detail_form");
+					// mobile_app.form.initialize("#order_detail_form", {
+					// 	validate_and_prepare: function(form_object) {
+					// 		var valid = true;
+					// 		var form_data = mobile_app.form.get_values(form_object);
+					// 		return {
+					// 			valid: valid,
+					// 			form_data: form_data,
+					// 		}
+					// 	},
+					// 	after_success: function(response) {
+					// 		mobile_app.close_modal();
+					// 		//reload detail kontrak
+					// 		mobile_app.intent('univmobile_intent_contract_detail', {
+					// 			data_id: mobile_app.cache['selected_contract'].id,
+					// 		});
+					// 	},
+					// 	events: {
+					// 		// "change #new_yellow_limit": function(event) {
+					// 		// 	var form_values = mobile_app.form.get_values(form_object);
+					// 		// 	var new_amount = form_values['old_amount_yellow'] + form_values['new_yellow_limit'];
+					// 		// 	new_amount = insert_thousand_seps(new_amount.toString());
+					// 		// 	$("#new_amount_yellow").html(new_amount);
+					// 		// },
+					// 	},
+					// });
+				}
+			});
+			mobile_app.data_manager.attach_view('order_detail', 'order_list', order_detail_view);
+			mobile_app.data_manager.refresh('order_detail', intent_data, true);
+		}
+	},
+
+
 };
 

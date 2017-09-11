@@ -389,7 +389,7 @@ class website_mobile_app(http.Controller):
 			for passenger in order_data.passengers:
 				list_passenger.append({'name':passenger.name, 'phone' : passenger.phone_no})
 			
-			result[classification].append({
+			jsonOrder = {
 				'id': order_data.id,
 				'name': order_data.name,
 				'state': order_data.state,
@@ -420,7 +420,10 @@ class website_mobile_app(http.Controller):
 				'contract_name': order_data.customer_contract_id.name,
 				'type': order_data.order_type_by_order,
 				'type_name': dict(_ORDER_TYPE).get(order_data.order_type_by_order, ''),
-			});
+			}
+			if type(loaded_data) is int:
+				return json.dumps(jsonOrder)
+			result[classification].append(jsonOrder);
 		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
 		result['ready']   = sorted(result['ready'],   key=lambda order: order['request_date'], reverse=True)
 		result['running'] = sorted(result['running'], key=lambda order: order['request_date'], reverse=True)
@@ -799,22 +802,25 @@ class website_mobile_app_handler(osv.osv):
 	
 	def search_order(self, cr, uid, domain, param_context):
 		order_obj = self.pool.get('foms.order');
-		name_order = domain.get('order_name', '')
-		booker_name = domain.get('booker_name', '')
-		driver_name = domain.get('driver_name', '')
-		vehicle_name = domain.get('vehicle_name', '')
-		
 		filter_domain = [('start_planned_date', '>=', (datetime.now() - relativedelta(months=+2)).strftime(DEFAULT_SERVER_DATETIME_FORMAT))]
-		
-		if name_order:
-			filter_domain.append(('name', 'ilike', name_order))
-		if booker_name:
-			filter_domain.append(('order_by.name', 'ilike', booker_name))
-		if driver_name:
-			filter_domain.append(('assigned_driver_id.name', 'ilike', driver_name))
-		if vehicle_name:
-			filter_domain.append(('assigned_vehicle_id.name', 'ilike', vehicle_name))
-		
+	
+		if type(domain) is int:
+			filter_domain.append(('id', '=', domain))
+		else:
+			name_order = domain.get('order_name', '')
+			booker_name = domain.get('booker_name', '')
+			driver_name = domain.get('driver_name', '')
+			vehicle_name = domain.get('vehicle_name', '')
+			
+			if name_order:
+				filter_domain.append(('name', 'ilike', name_order))
+			if booker_name:
+				filter_domain.append(('order_by.name', 'ilike', booker_name))
+			if driver_name:
+				filter_domain.append(('assigned_driver_id.name', 'ilike', driver_name))
+			if vehicle_name:
+				filter_domain.append(('assigned_vehicle_id.name', 'ilike', vehicle_name))
+			
 		order_ids = order_obj.search(cr, SUPERUSER_ID, filter_domain, context=param_context)
 		return order_obj.browse(cr, SUPERUSER_ID, order_ids)
 	

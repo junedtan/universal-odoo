@@ -43,4 +43,16 @@ var mobile_app_data_sources = {
 		type: 'static',
 		views: {},
 	},
+	'orders': {
+		id: 'orders',
+		type: 'ajax',
+		url: '/mobile_app/fetch_orders/{}',
+		views: {},
+	},
+	'order_detail': {
+		id: 'order_detail',
+		type: 'ajax',
+		url: '/mobile_app/fetch_orders',
+		views: {},
+	},
 }

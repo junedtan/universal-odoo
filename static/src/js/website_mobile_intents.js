@@ -43,4 +43,14 @@ var mobile_app_intent_definition = {
 		'target_activity_id': 'univmobile_actv_request_quota_approve',
 		'target': 'confirm',
 	},
+	'univmobile_intent_order': {
+		'intent_type': 'page',
+		'target_activity_id': 'univmobile_actv_order',
+		'target': 'main',
+	},
+	'univmobile_intent_order_detail': {
+		'intent_type': 'page',
+		'target_activity_id': 'univmobile_actv_order_detail',
+		'target': 'modal',
+	},
 }

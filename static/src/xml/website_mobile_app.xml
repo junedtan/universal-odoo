@@ -543,93 +543,94 @@
 		<t t-if="row.length != 0">
 			<div t-foreach="row" t-as="order">
 				<div class="row row_hoverable" intent="univmobile_intent_order_detail" t-att-data-data_id="order.id">
-					<div class="list_title" style="pointer-events:none;">
-						<b><t t-esc="order.name"/></b> -
-						<t t-if="order.state == 'new' || order.state == 'confirmed' || order.state ==  'ready' ||
-						order.state == 'started' || order.state == 'start_confirmed' || order.state == 'resumed' ||
-						 order.state == 'finished' || order.state == 'finish_confirmed'">
-							<span class="green_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
-						</t>
-						<t t-if="order.state == 'rejected' || order.state == 'canceled'">
-							<span class="red_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
-						</t>
-						<t t-if="order.state == 'paused'">
-							<span class="orange_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
-						</t>
-					</div>
-					Requested at: <b style="pointer-events:none;"><t t-esc="order.request_date"/></b>
-					by <b style="pointer-events:none;"><t t-esc="order.order_by_name"/></b>
-					<table class="table" style="pointer-events:none;">
-						<t t-if="order.user_group == 'booker'">
-							<t t-if="classification_value != 'pending'">
-								<t t-if="order.pin">
-									<tr>
-										<td class="order_key">Pin</td>
-										<td class="order_separator">:</td>
-										<td class="order_value"><t t-esc="order.pin"/></td>
-									</tr>
+					<div class="col-md-12 card_padding list-row" style="pointer-events:none;">
+						<div class="list_title" style="pointer-events:none;">
+							<b><t t-esc="order.name"/></b> -
+							<t t-if="order.state == 'new' || order.state == 'confirmed' || order.state ==  'ready' ||
+							order.state == 'started' || order.state == 'start_confirmed' || order.state == 'resumed' ||
+							 order.state == 'finished' || order.state == 'finish_confirmed'">
+								<span class="green_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
+							</t>
+							<t t-if="order.state == 'rejected' || order.state == 'canceled'">
+								<span class="red_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
+							</t>
+							<t t-if="order.state == 'paused'">
+								<span class="orange_text" style="font-size:medium;"><t t-esc="order.state_name"/></span>
+							</t>
+						</div>
+						Requested at: <b style="pointer-events:none;"><t t-esc="order.request_date"/></b>
+						by <b style="pointer-events:none;"><t t-esc="order.order_by_name"/></b>
+						<table class="table" style="pointer-events:none;">
+							<t t-if="order.user_group == 'booker'">
+								<t t-if="classification_value != 'pending'">
+									<t t-if="order.pin">
+										<tr>
+											<td class="order_key">Pin</td>
+											<td class="order_separator">:</td>
+											<td class="order_value"><t t-esc="order.pin"/></td>
+										</tr>
+									</t>
 								</t>
 							</t>
-						</t>
-						<tr>
-							<td class="order_key">Time</td>
-							<td class="order_separator">:</td>
-							<td class="order_value"><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
-						</tr>
-						<t t-if="order.assigned_vehicle_name">
 							<tr>
-								<td class="order_key">Fleet</td>
+								<td class="order_key">Time</td>
 								<td class="order_separator">:</td>
-								<td class="order_value"><t t-esc="order.assigned_driver_name"/> - <t t-esc="order.assigned_vehicle_name"/></td>
+								<td class="order_value"><t t-esc="order.start_planned_date"/> - <t t-esc="order.finish_planned_date"/></td>
 							</tr>
-						</t>
-						<t t-if="order.origin_location">
-							<tr>
-								<td class="order_key">From</td>
-								<td class="order_separator">:</td>
-								<td class="order_value"><t t-esc="order.origin_location"/> (<t t-esc="order.origin_area_name"/>)</td>
-							</tr>
-						</t>
-						<t t-if="order.dest_location">
-							<tr>
-								<td class="order_key">To</td>
-								<td class="order_separator">:</td>
-								<td class="order_value"><t t-esc="order.dest_location"/>  (<t t-esc="order.dest_area_name"/>)</td>
-							</tr>
-						</t>
-					</table>
-					<div class="div_order_button">
-						<t t-if="order.user_group == 'approver'">
-							<t t-if="order.state == 'new'">
-								<t t-if="order.over_quota_status == 'warning'">
-									<div class="red_text">
-										Approving this order will lead to over quota by
-										<t t-esc="order.order_usage"/>
-										above <t t-esc="order.red_limit"/>
-									</div>
-								</t>
-								<t t-if="order.over_quota_status != 'approval'">
-								<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_approve_order col-md-1 col-xs-4">Approve</button>
-								<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_reject_order col-md-1 col-xs-4 ml10">Reject</button>
-								</t>
-								<t t-if="order.over_quota_status == 'approval'">
-									<t t-if="order.maintained_by == 'customer'">
-										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_reject_order col-md-1 col-xs-4 ml10">Reject</button>
-										<button type="button" t-attf-id_au = "{{order.au_id}}" t-attf-id_contract = "{{order.contract_id}}"
-												t-attf-yellow_limit = "{{order.yellow_limit}}" t-attf-red_limit = "{{order.red_limit}}"
-												class="btn btn-success btn_add_quota col-md-1 col-xs-4 ml10">Add Quota</button>
-										<div class="row dialog_request_quota" id="dialog_request_quota_container" style="width:0px;height:0px;"/>
-									</t>
-									<t t-if="order.maintained_by != 'customer'">
+							<t t-if="order.assigned_vehicle_name">
+								<tr>
+									<td class="order_key">Fleet</td>
+									<td class="order_separator">:</td>
+									<td class="order_value"><t t-esc="order.assigned_driver_name"/> - <t t-esc="order.assigned_vehicle_name"/></td>
+								</tr>
+							</t>
+							<t t-if="order.origin_location">
+								<tr>
+									<td class="order_key">From</td>
+									<td class="order_separator">:</td>
+									<td class="order_value"><t t-esc="order.origin_location"/> (<t t-esc="order.origin_area_name"/>)</td>
+								</tr>
+							</t>
+							<t t-if="order.dest_location">
+								<tr>
+									<td class="order_key">To</td>
+									<td class="order_separator">:</td>
+									<td class="order_value"><t t-esc="order.dest_location"/>  (<t t-esc="order.dest_area_name"/>)</td>
+								</tr>
+							</t>
+						</table>
+						<div class="div_order_button">
+							<t t-if="order.user_group == 'approver'">
+								<t t-if="order.state == 'new'">
+									<t t-if="order.over_quota_status == 'warning'">
 										<div class="red_text">
-											Please contact PT Universal to add your quota
+											Approving this order will lead to over quota by
+											<t t-esc="order.order_usage"/>
+											above <t t-esc="order.red_limit"/>
 										</div>
 									</t>
+									<t t-if="order.over_quota_status != 'approval'">
+									<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_approve_order col-md-1 col-xs-4">Approve</button>
+									<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_reject_order col-md-1 col-xs-4 ml10">Reject</button>
+									</t>
+									<t t-if="order.over_quota_status == 'approval'">
+										<t t-if="order.maintained_by == 'customer'">
+											<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_reject_order col-md-1 col-xs-4 ml10">Reject</button>
+											<button type="button" t-attf-id_au = "{{order.au_id}}" t-attf-id_contract = "{{order.contract_id}}"
+													t-attf-yellow_limit = "{{order.yellow_limit}}" t-attf-red_limit = "{{order.red_limit}}"
+													class="btn btn-success btn_add_quota col-md-1 col-xs-4 ml10">Add Quota</button>
+											<div class="row dialog_request_quota" id="dialog_request_quota_container" style="width:0px;height:0px;"/>
+										</t>
+										<t t-if="order.maintained_by != 'customer'">
+											<div class="red_text">
+												Please contact PT Universal to add your quota
+											</div>
+										</t>
+									</t>
 								</t>
 							</t>
-						</t>
+						</div>
 					</div>
-					<hr style="border:solid 1px; border-color:darkgrey; margin:0px;"/>
 				</div>
 			</div>
 		</t>
@@ -644,9 +645,9 @@
 							<t t-if="detail.classification_value == 'pending' || detail.classification_value == 'ready'">
 								<button type="button" intent="univmobile_intent_change_start_planned_time" t-att-data-data_id="detail.id"
 										class="btn btn-success btn_change_planned_start_time mt5">Change Planned Start Time</button>
-								<button type="button" t-att-data-data_id="detail.id"
+								<button type="button" intent="univmobile_intent_edit_order" t-att-data-data_id="detail.id"
 										class="btn btn-success btn_edit_order mt5">Edit Order</button>
-								<button type="button" t-att-data-data_id="detail.id"
+								<button type="button" intent="univmobile_intent_cancel_order" t-att-data-data_id="detail.id"
 										class="btn btn-danger btn_cancel_order mt5">Cancel Order</button>
 							</t>
 							<div id="change_planned_start_time"/>

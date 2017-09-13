@@ -483,7 +483,6 @@ var mobile_app_activity_definition = {
 						validate_and_prepare: function(form_object) {
 							var valid = true;
 							var form_data = mobile_app.form.get_values(form_object);
-							//harus isi minimal 1, jangan dua2nya kosong
 							if (form_data['change_order_start_planned_new'] == '') {
 								alert("Please fill in new start planned time.");
 								valid = false;
@@ -506,7 +505,55 @@ var mobile_app_activity_definition = {
 			mobile_app.data_manager.refresh('order_detail', intent_data, true);
 		}
 	},
-
+	'univmobile_actv_edit_order': {
+		title: 'Edit Order',
+		back_intent_id: 'univmobile_intent_order_detail',
+		onload_callback: function(activity_data, intent_data) {
+			var edit_order_view = mobile_app.detail_view({
+				container: "#chjs_mobile_modal_content",
+				detail_qweb: "univmobile_change_start_planned_time",
+				after_refresh: function(data) {
+					mobile_app.form.initialize("#change_start_planned_time_form", {
+						action: '/mobile_app/change_planned_start_time/',
+						validate_and_prepare: function(form_object) {
+							var valid = true;
+							var form_data = mobile_app.form.get_values(form_object);
+							if (form_data['change_order_start_planned_new'] == '') {
+								alert("Please fill in new start planned time.");
+								valid = false;
+							}
+							return {
+								valid: valid,
+								form_data: form_data,
+							}
+						},
+						after_success: function(response) {
+							mobile_app.close_modal();
+							mobile_app.intent('univmobile_intent_order_detail', {
+								data_id: mobile_app.cache['selected_order_id'],
+							});
+						},
+					});
+				}
+			});
+			mobile_app.data_manager.attach_view('order_detail', 'order_detail', edit_order_view);
+			mobile_app.data_manager.refresh('order_detail', intent_data, true);
+		}
+	},
+	'univmobile_actv_cancel_order': {
+		title: 'Cancel Order',
+		confirm_text: 'Are you sure to cancel this order? This cannot be undone.',
+		action: '/mobile_app/cancel_order/',
+		action_payload: function(intent_data) {
+			return [intent_data.data_id.toString()];
+		},
+		is_alert_message: true,
+		after_success: function(response) {
+			mobile_app.intent('univmobile_intent_order_detail', {
+				data_id: mobile_app.cache['selected_order_id'],
+			});
+		}
+	},
 
 };
 

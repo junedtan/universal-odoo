@@ -492,7 +492,7 @@ class website_mobile_app(http.Controller):
 			datetime_format = '%Y-%m-%dT%H:%M'
 		new_start_date = datetime.strptime(order_data['change_order_start_planned_new'], datetime_format)
 		try:
-			result = handler_obj.change_planned_start_time(int(order_data['order_id']), new_start_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT))
+			handler_obj.change_planned_start_time(int(order_data['order_id']), new_start_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT))
 			return json.dumps({
 				'status': 'ok',
 				'info': _('Start planned time has been changed.'),

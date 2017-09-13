@@ -439,6 +439,24 @@ var mobile_app_activity_definition = {
 		}
 	},
 
+	'univmobile_actv_book_vehicle': {
+		title: 'Book Vehicle',
+		back_intent_id: 'univmobile_intent_main',
+		onload_callback: function(activity_data, intent_data) {
+		//form request book vehicle
+			var data_book_vehicle = mobile_app.detail_view({
+				container: "#chjs_mobile_web_container",
+				detail_qweb: "univmobile_book_vehicle",
+				prepare_data: function(data) {
+					console.log(data);
+					return data;
+				},
+			});
+			mobile_app.data_manager.attach_view('book_vehicle', 'book_vehicle', data_book_vehicle);
+			mobile_app.data_manager.refresh('book_vehicle', {}, true);
+		}
+	},
+
 	'univmobile_actv_order_detail': {
 		title: 'Order Detail',
 		back_intent_id: 'univmobile_intent_order',

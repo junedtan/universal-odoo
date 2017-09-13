@@ -135,7 +135,7 @@ div.row_hoverable {
 }
 
 .header_detail_order{
-	color : blue;
+	color : #337AB7;
 	font-weight: bold;
 }
 
@@ -303,4 +303,9 @@ div.scrollmenu div:first-child {
 
 .order_value {
 
+}
+
+.order_name {
+	font-size: 150%;
+	color: #559CD9;
 }

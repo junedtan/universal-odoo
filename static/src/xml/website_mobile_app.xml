@@ -483,16 +483,26 @@
 	</t>
 
 	<t t-name="univmobile_book_vehicle">
-		<t t-esc="detail"/>
 		<form id="book_vehicle_form">
 			<div class="form-section plr12 ptb12">Information</div>
 			<div class="plr12 ptb12">
 				<div class="form-group col-xs-6">
 					<label for="information_book_vehicle" class="col-form-label">Contract</label>
-					<select id="information_book_vehicle" class="form-control" />
-					<!--<t t-foreach="row" t-as="contract">-->
-						<!--<option t-attf-value="{{contract.id}}"><t t-esc="contract.name"/></option>-->
-					<!--</t>-->
+					<select id="information_book_vehicle" class="form-control">
+						<t t-foreach="detail.contract_datas" t-as="contract">
+							<option t-attf-value="{{contract.id}}"><t t-esc="contract.name"/></option>
+						</t>
+					</select>
+				</div>
+				<div class="form-group col-xs-6">
+					<label for="information_book_vehicle" class="col-form-label">Contract</label>
+					<select id="information_book_vehicle" class="form-control">
+						<t t-if="detail.contract_datas.length != 0">
+							<t t-foreach="detail.contract_datas[0].fleet_type" t-as="vehicle">
+								<option t-attf-value="{{vehicle.id}}"><t t-esc="vehicle.name"/></option>
+							</t>
+						</t>
+					</select>
 				</div>
 			</div>
 			<hr />

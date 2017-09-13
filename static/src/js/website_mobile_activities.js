@@ -442,70 +442,15 @@ var mobile_app_activity_definition = {
 	'univmobile_actv_book_vehicle': {
 		title: 'Book Vehicle',
 		back_intent_id: 'univmobile_intent_main',
-		qweb_template_id: 'univmobile_book_vehicle',
 		onload_callback: function(activity_data, intent_data) {
 		//form request book vehicle
 			var data_book_vehicle = mobile_app.detail_view({
-				container: "#chjs_mobile_modal_content",
+				container: "#chjs_mobile_web_container",
 				detail_qweb: "univmobile_book_vehicle",
 				prepare_data: function(data) {
 					console.log(data);
-					var new_data = [];
-					$.each(data['contract_datas'], function(idx, row) {
-						row['user_group'] = data['user_group'];
-						new_data.push(row);
-					});
-					return {data};
+					return data;
 				},
-				after_refresh: function(data) {
-					var form_object = $("#book_vehicle_form");
-					mobile_app.form.initialize("#book_vehicle_form", {
-						action: '/mobile_app/create_edit_order/',
-						validate_and_prepare: function(form_object) {
-							var valid = true;
-							var form_data = mobile_app.form.get_values(form_object);
-//						//harus isi minimal 1, jangan dua2nya kosong
-//							if ((form_data['new_yellow_limit'] == '' || form_data['new_yellow_limit'] == 0) && (form_data['new_red_limit'] == '' || form_data['new_red_limit'] == 0)) {
-//								alert("Please fill in at least the new yellow limit or the red one.");
-//								valid = false;
-//							}
-//						//kalau old yellow limit ditambah sama yellow limit baru jadi > dari red limit, cegah save
-//							var new_yellow_limit = form_data['old_amount_yellow'] + form_data['new_yellow_limit'];
-//							var new_red_limit = form_data['old_amount_red'] + form_data['new_red_limit'];
-//							if (new_yellow_limit >= new_red_limit) {
-//								alert("New yellow limit cannot be bigger than red limit.");
-//								valid = false;
-//							}
-//						//tambahin request by
-//							form_data['request_by'] = parseInt(mobile_app.app_data.user_id);
-//							return {
-//								valid: valid,
-//								form_data: form_data,
-//							}
-						},
-//						after_success: function(response) {
-//							mobile_app.close_modal();
-//						//reload detail kontrak
-//							mobile_app.intent('univmobile_intent_contract_detail', {
-//								data_id: mobile_app.cache['selected_contract'].id,
-//							});
-//						},
-//						events: {
-//							"change #new_yellow_limit": function(event) {
-//								var form_values = mobile_app.form.get_values(form_object);
-//								var new_amount = form_values['old_amount_yellow'] + form_values['new_yellow_limit'];
-//								new_amount = insert_thousand_seps(new_amount.toString());
-//								$("#new_amount_yellow").html(new_amount);
-//							},
-//							"change #new_red_limit": function(event) {
-//								var form_values = mobile_app.form.get_values(form_object);
-//								var new_amount = form_values['old_amount_red'] + form_values['new_red_limit'];
-//								new_amount = insert_thousand_seps(new_amount.toString());
-//								$("#new_amount_red").html(new_amount);
-//							},
-//						},
-					});
-				}
 			});
 			mobile_app.data_manager.attach_view('book_vehicle', 'book_vehicle', data_book_vehicle);
 			mobile_app.data_manager.refresh('book_vehicle', {}, true);

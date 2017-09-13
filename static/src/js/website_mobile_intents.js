@@ -53,4 +53,9 @@ var mobile_app_intent_definition = {
 		'target_activity_id': 'univmobile_actv_order_detail',
 		'target': 'modal',
 	},
+	'univmobile_intent_book_vehicle': {
+		'intent_type': 'page',
+		'target_activity_id': 'univmobile_actv_book_vehicle',
+		'target': 'main',
+    },
 }

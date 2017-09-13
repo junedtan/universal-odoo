@@ -360,6 +360,11 @@ class website_mobile_app(http.Controller):
 			'by_user_id': True,
 			'user_id': uid,
 		})
+		
+		# User
+		response_user_group = self.mobile_app_get_user_group()
+		data_user_group = json.loads(response_user_group.data)
+		
 		result = {
 			'pending': [],
 			'ready'  : [],
@@ -420,8 +425,11 @@ class website_mobile_app(http.Controller):
 				'contract_name': order_data.customer_contract_id.name,
 				'type': order_data.order_type_by_order,
 				'type_name': dict(_ORDER_TYPE).get(order_data.order_type_by_order, ''),
+				'classification_value': classification,
 			}
 			if type(loaded_data) is int:
+				jsonOrder['user_group'] = data_user_group['user_group']
+				
 				return json.dumps(jsonOrder)
 			result[classification].append(jsonOrder);
 		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
@@ -429,13 +437,16 @@ class website_mobile_app(http.Controller):
 		result['running'] = sorted(result['running'], key=lambda order: order['request_date'], reverse=True)
 		result['history'] = sorted(result['history'], key=lambda order: order['request_date'], reverse=True)
 		
-		# User
-		response_user_group = self.mobile_app_get_user_group()
-		data_user_group = json.loads(response_user_group.data)
-		return json.dumps({
-			'user_group': data_user_group['user_group'],
-			'list_order': result,
-		})
+		if loaded_data.get('classification', False):
+			return json.dumps({
+				'user_group': data_user_group['user_group'],
+				'list_order': result[loaded_data['classification']],
+			})
+		else:
+			return json.dumps({
+				'user_group': data_user_group['user_group'],
+				'list_order': result,
+			})
 	
 	@http.route('/mobile_app/approve_order/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_approve_order(self, data, **kwargs):
@@ -807,11 +818,15 @@ class website_mobile_app_handler(osv.osv):
 		if type(domain) is int:
 			filter_domain.append(('id', '=', domain))
 		else:
+			id_order = domain.get('order_id', '')
 			name_order = domain.get('order_name', '')
 			booker_name = domain.get('booker_name', '')
 			driver_name = domain.get('driver_name', '')
 			vehicle_name = domain.get('vehicle_name', '')
+			classification = domain.get('classification', '')
 			
+			if id_order:
+				filter_domain.append(('id', '=', id_order))
 			if name_order:
 				filter_domain.append(('name', 'ilike', name_order))
 			if booker_name:
@@ -820,6 +835,15 @@ class website_mobile_app_handler(osv.osv):
 				filter_domain.append(('assigned_driver_id.name', 'ilike', driver_name))
 			if vehicle_name:
 				filter_domain.append(('assigned_vehicle_id.name', 'ilike', vehicle_name))
+			if classification:
+				if classification == 'pending':
+					filter_domain.append(('state', 'in', ['new', 'confirmed']))
+				elif classification == 'ready':
+					filter_domain.append(('state', 'in', ['ready', 'started']))
+				elif classification == 'running':
+					filter_domain.append(('state', 'in', ['start_confirmed', 'paused', 'resumed', 'finished']))
+				else:
+					filter_domain.append(('state', 'in', ['rejected', 'finish_confirmed', 'canceled']))
 			
 		order_ids = order_obj.search(cr, SUPERUSER_ID, filter_domain, context=param_context)
 		return order_obj.browse(cr, SUPERUSER_ID, order_ids)

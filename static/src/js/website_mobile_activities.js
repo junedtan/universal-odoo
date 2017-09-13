@@ -398,34 +398,44 @@ var mobile_app_activity_definition = {
 				row_qweb: "univmobile_order_list_row",
 				prepare_data: function(data) {
 					var new_data = [];
-					$.each(data['list_order']['pending'], function(idx, row) {
+					$.each(data['list_order'], function(idx, row) {
 						row['user_group'] = data['user_group'];
 						new_data.push(row);
 					});
 					return [new_data];
 				},
 			});
-			mobile_app.data_manager.attach_view('orders', 'order_list', order_list_view);
-			order_list_view.render_view();
-			mobile_app.data_manager.refresh('orders', {}, true);
 
-			$('.website_mobile_app_tab_history_order').click(function(event) {
-				order_list_view = mobile_app.list_view({
-					container: ".univmobile_order .list-container",
-					row_qweb: "univmobile_order_list_row",
-					prepare_data: function(data) {
-						var new_data = [];
-						$.each(data['list_order']['history'], function(idx, row) {
-							row['user_group'] = data['user_group'];
-							new_data.push(row);
-						});
-						return [new_data];
-					},
-				});
-				mobile_app.data_manager.attach_view('orders', 'order_list', order_list_view);
-				order_list_view.render_view();
-				mobile_app.data_manager.refresh('orders', {}, true);
+			function onclick_tab_order(event) {
+				$('.website_mobile_app_tab_pending_order').css("background-color", "#337ab7");
+				$('.website_mobile_app_tab_ready_order').css("background-color", "#337ab7");
+				$('.website_mobile_app_tab_running_order').css("background-color", "#337ab7");
+				$('.website_mobile_app_tab_history_order').css("background-color", "#337ab7");
+				$('.' + event.target.className).css("background-color", "#286090");
+			};
+
+			$('.website_mobile_app_tab_pending_order').click(function(event) {
+				onclick_tab_order(event);
+				mobile_app.data_manager.attach_view('order_pending', 'order_list', order_list_view);
+				mobile_app.data_manager.refresh('order_pending', {}, true);
 			});
+			$('.website_mobile_app_tab_ready_order').click(function(event) {
+				onclick_tab_order(event);
+				mobile_app.data_manager.attach_view('order_ready', 'order_list', order_list_view);
+				mobile_app.data_manager.refresh('order_ready', {}, true);
+			});
+			$('.website_mobile_app_tab_running_order').click(function(event) {
+				onclick_tab_order(event);
+				mobile_app.data_manager.attach_view('order_running', 'order_list', order_list_view);
+				mobile_app.data_manager.refresh('order_running', {}, true);
+			});
+			$('.website_mobile_app_tab_history_order').click(function(event) {
+				onclick_tab_order(event);
+				mobile_app.data_manager.attach_view('order_history', 'order_list', order_list_view);
+				mobile_app.data_manager.refresh('order_history', {}, true);
+			});
+			$('.website_mobile_app_tab_pending_order').click();
+			order_list_view.render_view();
 		}
 	},
 

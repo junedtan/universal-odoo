@@ -269,15 +269,16 @@ div.scrollmenu div {
     text-decoration: none;
     width: 160px;
     margin-left: -3px;
+	cursor: pointer; cursor: hand;
 }
 
 div.scrollmenu div:first-child {
 		margin-left: 0;
 }
 
-div.scrollmenu div:hover {
-    background-color: rgb(40,96,144);
-}
+/*div.scrollmenu div:hover {*/
+    /*background-color: rgb(40,96,144);*/
+/*}*/
 
 .logged_in_as {
     color: gray;

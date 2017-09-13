@@ -317,7 +317,7 @@ class foms_order(osv.osv):
 			self._cek_contract_is_active(cr,uid, [vals['customer_contract_id']], context)
 		
 	#cek dahulu apakah ada perubahan start_planned_date, kalau ada cek apakah kosong
-		if vals.get('start_planned_date', False):
+		if 'start_planned_date' in vals:
 			if not vals.get('start_planned_date', False):
 				raise osv.except_osv(_('Order Error'),_('Please input start date.'))
 		
@@ -329,6 +329,8 @@ class foms_order(osv.osv):
 			# cek start date harus minimal n jam dari sekarang
 				self._cek_min_hour_for_type_by_order(cr, uid, start_date, data.customer_contract_id.by_order_minimum_minutes, context)
 				original_start_date.update({data.id: data.start_planned_date})
+				if start_date > datetime.strptime(data.finish_planned_date,'%Y-%m-%d %H:%M:%S'):
+					raise osv.except_osv(_('Order Error'),_('Start date cannot be greater than end date.'))
 		
 	# cek apakah bentrok waktu sama order lain
 		if vals.get('assigned_vehicle_id', False) or vals.get('start_planned_date', False):

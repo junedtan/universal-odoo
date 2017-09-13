@@ -441,45 +441,50 @@ var mobile_app_activity_definition = {
 
 	'univmobile_actv_order_detail': {
 		title: 'Order Detail',
+		back_intent_id: 'univmobile_intent_order',
 		onload_callback: function(activity_data, intent_data) {
-			//form request quota change
 			var order_detail_view = mobile_app.detail_view({
-				container: "#chjs_mobile_modal_content",
+				container: "#chjs_mobile_web_container",
 				detail_qweb: "univmobile_order_detail",
-				prepare_data: function(data) {
-					console.log(data);
-					return data;
-				},
+			})
+			mobile_app.cache['selected_order_id'] = intent_data['data_id'];
+			mobile_app.data_manager.attach_view('order_detail', 'order_detail', order_detail_view);
+			mobile_app.data_manager.refresh('order_detail', intent_data, true);
+		}
+	},
+	'univmobile_actv_change_start_planned_time': {
+		title: 'Change Start Planned Time',
+		back_intent_id: 'univmobile_intent_order_detail',
+		onload_callback: function(activity_data, intent_data) {
+			var change_start_planned_view = mobile_app.detail_view({
+				container: "#chjs_mobile_modal_content",
+				detail_qweb: "univmobile_change_start_planned_time",
 				after_refresh: function(data) {
-					// var form_object = $("#order_detail_form");
-					// mobile_app.form.initialize("#order_detail_form", {
-					// 	validate_and_prepare: function(form_object) {
-					// 		var valid = true;
-					// 		var form_data = mobile_app.form.get_values(form_object);
-					// 		return {
-					// 			valid: valid,
-					// 			form_data: form_data,
-					// 		}
-					// 	},
-					// 	after_success: function(response) {
-					// 		mobile_app.close_modal();
-					// 		//reload detail kontrak
-					// 		mobile_app.intent('univmobile_intent_contract_detail', {
-					// 			data_id: mobile_app.cache['selected_contract'].id,
-					// 		});
-					// 	},
-					// 	events: {
-					// 		// "change #new_yellow_limit": function(event) {
-					// 		// 	var form_values = mobile_app.form.get_values(form_object);
-					// 		// 	var new_amount = form_values['old_amount_yellow'] + form_values['new_yellow_limit'];
-					// 		// 	new_amount = insert_thousand_seps(new_amount.toString());
-					// 		// 	$("#new_amount_yellow").html(new_amount);
-					// 		// },
-					// 	},
-					// });
+					mobile_app.form.initialize("#change_start_planned_time_form", {
+						action: '/mobile_app/change_planned_start_time/',
+						validate_and_prepare: function(form_object) {
+							var valid = true;
+							var form_data = mobile_app.form.get_values(form_object);
+							//harus isi minimal 1, jangan dua2nya kosong
+							if (form_data['change_order_start_planned_new'] == '') {
+								alert("Please fill in new start planned time.");
+								valid = false;
+							}
+							return {
+								valid: valid,
+								form_data: form_data,
+							}
+						},
+						after_success: function(response) {
+							mobile_app.close_modal();
+							mobile_app.intent('univmobile_intent_order_detail', {
+								data_id: mobile_app.cache['selected_order_id'],
+							});
+						},
+					});
 				}
 			});
-			mobile_app.data_manager.attach_view('order_detail', 'order_list', order_detail_view);
+			mobile_app.data_manager.attach_view('order_detail', 'order_detail', change_start_planned_view);
 			mobile_app.data_manager.refresh('order_detail', intent_data, true);
 		}
 	},

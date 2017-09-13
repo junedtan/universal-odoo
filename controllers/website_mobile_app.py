@@ -426,6 +426,7 @@ class website_mobile_app(http.Controller):
 				'type': order_data.order_type_by_order,
 				'type_name': dict(_ORDER_TYPE).get(order_data.order_type_by_order, ''),
 				'classification_value': classification,
+				'start_planned_date_format_input': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
 			}
 			if type(loaded_data) is int:
 				jsonOrder['user_group'] = data_user_group['user_group']
@@ -487,20 +488,20 @@ class website_mobile_app(http.Controller):
 		order_data = json.loads(data)
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		datetime_format = '%Y-%m-%dT%H:%M:%S'
-		if order_data['new_planned_start_time'].count(':') == 1:
+		if order_data['change_order_start_planned_new'].count(':') == 1:
 			datetime_format = '%Y-%m-%dT%H:%M'
-		new_start_date = datetime.strptime(order_data['new_planned_start_time'], datetime_format)
-		result = handler_obj.change_planned_start_time(int(order_data['order_id']), new_start_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT))
-		if result:
+		new_start_date = datetime.strptime(order_data['change_order_start_planned_new'], datetime_format)
+		try:
+			result = handler_obj.change_planned_start_time(int(order_data['order_id']), new_start_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT))
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Planned Start Time Changed'),
+				'info': _('Start planned time has been changed.'),
 				'success': True,
 			})
-		else:
+		except Exception,e :
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Changing Planned Start Time Failed'),
+				'info': e.value,
 				'success': False,
 			})
 	

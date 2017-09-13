@@ -487,16 +487,16 @@
 			<div class="form-section plr12 ptb12">Information</div>
 			<div class="plr12 ptb12">
 				<div class="form-group col-xs-6">
-					<label for="information_book_vehicle" class="col-form-label">Contract</label>
-					<select id="information_book_vehicle" class="form-control">
+					<label for="book_vehicle_info_contract" class="col-form-label">Contract</label>
+					<select id="book_vehicle_info_contract" class="form-control">
 						<t t-foreach="detail.contract_datas" t-as="contract">
 							<option t-attf-value="{{contract.id}}"><t t-esc="contract.name"/></option>
 						</t>
 					</select>
 				</div>
 				<div class="form-group col-xs-6">
-					<label for="information_book_vehicle" class="col-form-label">Contract</label>
-					<select id="information_book_vehicle" class="form-control">
+					<label for="book_vehicle_info_vehicle" class="col-form-label">Vehicle</label>
+					<select id="book_vehicle_info_vehicle" class="form-control">
 						<t t-if="detail.contract_datas.length != 0">
 							<t t-foreach="detail.contract_datas[0].fleet_type" t-as="vehicle">
 								<option t-attf-value="{{vehicle.id}}"><t t-esc="vehicle.name"/></option>
@@ -504,7 +504,58 @@
 						</t>
 					</select>
 				</div>
+
+				<t t-if="detail.user_group == 'booker' || detail.user_group == 'approver'">
+					<div class="form-group col-xs-6">
+						<label for="book_vehicle_info_unit" class="col-form-label">Unit</label>
+						<select id="book_vehicle_info_unit" class="form-control">
+							<t t-if="detail.contract_datas.length != 0">
+								<t t-foreach="detail.contract_datas[0].units" t-as="unit">
+									<option t-attf-value="{{unit.id}}"><t t-esc="unit.name"/></option>
+								</t>
+							</t>
+						</select>
+					</div>
+					<div class="form-group col-xs-6">
+						<label for="book_vehicle_info_contract_type" class="col-form-label">Type</label>
+						<select id="book_vehicle_info_contract_type" class="form-control">
+							<t t-foreach="detail.order_type" t-as="order_type">
+								<option t-attf-value="{{order_type.id}}"><t t-esc="order_type.name"/></option>
+							</t>
+						</select>
+					</div>
+				</t>
 			</div>
+
+			<div class="col-md-12 form-section plr12 ptb12">Route</div>
+			<div class="plr12 ptb12">
+				<div class="form-group col-xs-6">
+					<label for="create_order_route_from" class="mb16">From</label>
+					<div id="create_order_route_from">
+						<label class="no_bold" for="create_order_route_from_district">District</label>
+						<select id="create_order_route_from_district" class="form-control mb16">
+							<t t-if="detail.contract_datas.length != 0">
+								<t t-foreach="detail.contract_datas[0].districts" t-as="from_district">
+									<option t-attf-value="{{from_district.id}}"><t t-esc="from_district.name"/></option>
+								</t>
+							</t>
+						</select>
+						<label class="no_bold" for="create_order_route_from_area">Area</label>
+						<select id="create_order_route_from_area" class="form-control mb16">
+							<t t-if="detail.contract_datas.length != 0">
+								<t t-if="detail.contract_datas[0].districts.length != 0">
+									<t t-foreach="detail.contract_datas[0].districts[0].areas" t-as="from_area">
+										<option t-attf-value="{{from_area.id}}"><t t-esc="from_area.name"/></option>
+									</t>
+								</t>
+							</t>
+						</select>
+						<label class="no_bold" for="create_order_route_from_location">Location</label>
+						<input id="create_order_route_from_location" class="form-control mb16" type="text"/>
+					</div>
+				</div>
+			</div>
+
 			<hr />
 			<div class="row no_margin ptb12">
 				<div class="col-xs-12">

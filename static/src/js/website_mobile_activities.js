@@ -451,6 +451,46 @@ var mobile_app_activity_definition = {
 					console.log(data);
 					return data;
 				},
+				after_refresh: function(data) {
+					var form_object = $("#book_vehicle_form");
+					mobile_app.form.initialize("#book_vehicle_form", {
+						action: '/mobile_app/get_required_book_vehicle/',
+//						validate_and_prepare: function(form_object) {
+//							var valid = true;
+//							var form_data = mobile_app.form.get_values(form_object);
+//						//harus isi minimal 1, jangan dua2nya kosong
+//							if ((form_data['new_yellow_limit'] == '' || form_data['new_yellow_limit'] == 0) && (form_data['new_red_limit'] == '' || form_data['new_red_limit'] == 0)) {
+//								alert("Please fill in at least the new yellow limit or the red one.");
+//								valid = false;
+//							}
+//						//kalau old yellow limit ditambah sama yellow limit baru jadi > dari red limit, cegah save
+//							var new_yellow_limit = form_data['old_amount_yellow'] + form_data['new_yellow_limit'];
+//							var new_red_limit = form_data['old_amount_red'] + form_data['new_red_limit'];
+//							if (new_yellow_limit >= new_red_limit) {
+//								alert("New yellow limit cannot be bigger than red limit.");
+//								valid = false;
+//							}
+//						//tambahin request by
+//							form_data['request_by'] = parseInt(mobile_app.app_data.user_id);
+//							return {
+//								valid: valid,
+//								form_data: form_data,
+//							}
+//						},
+//						after_success: function(response) {
+//							mobile_app.close_modal();
+//						//reload detail kontrak
+//							mobile_app.intent('univmobile_intent_contract_detail', {
+//								data_id: mobile_app.cache['selected_contract'].id,
+//							});
+//						},
+						events: {
+							"change #book_vehicle_info_contract_type": function(event) {
+								console.log($(this).val())
+							},
+						},
+					});
+				}
 			});
 			mobile_app.data_manager.attach_view('book_vehicle', 'book_vehicle', data_book_vehicle);
 			mobile_app.data_manager.refresh('book_vehicle', {}, true);

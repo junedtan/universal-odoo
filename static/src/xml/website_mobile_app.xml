@@ -487,16 +487,16 @@
 			<div class="form-section plr12 ptb12">Information</div>
 			<div class="plr12 ptb12">
 				<div class="form-group col-xs-6">
-					<label for="book_vehicle_info_contract" class="col-form-label">Contract</label>
-					<select id="book_vehicle_info_contract" class="form-control">
+					<label for="contract_id" class="col-form-label">Contract</label>
+					<select id="contract_id" class="form-control">
 						<t t-foreach="detail.contract_datas" t-as="contract">
 							<option t-attf-value="{{contract.id}}"><t t-esc="contract.name"/></option>
 						</t>
 					</select>
 				</div>
 				<div class="form-group col-xs-6">
-					<label for="book_vehicle_info_vehicle" class="col-form-label">Vehicle</label>
-					<select id="book_vehicle_info_vehicle" class="form-control">
+					<label for="fleet_type_id" class="col-form-label">Vehicle</label>
+					<select id="fleet_type_id" class="form-control">
 						<t t-if="detail.contract_datas.length != 0">
 							<t t-foreach="detail.contract_datas[0].fleet_type" t-as="vehicle">
 								<option t-attf-value="{{vehicle.id}}"><t t-esc="vehicle.name"/></option>
@@ -507,8 +507,8 @@
 
 				<t t-if="detail.user_group == 'booker' || detail.user_group == 'approver'">
 					<div class="form-group col-xs-6">
-						<label for="book_vehicle_info_unit" class="col-form-label">Unit</label>
-						<select id="book_vehicle_info_unit" class="form-control">
+						<label for="unit_id" class="col-form-label">Unit</label>
+						<select id="unit_id" class="form-control">
 							<t t-if="detail.contract_datas.length != 0">
 								<t t-foreach="detail.contract_datas[0].units" t-as="unit">
 									<option t-attf-value="{{unit.id}}"><t t-esc="unit.name"/></option>
@@ -517,8 +517,8 @@
 						</select>
 					</div>
 					<div class="form-group col-xs-6">
-						<label for="book_vehicle_info_contract_type" class="col-form-label">Type</label>
-						<select id="book_vehicle_info_contract_type" class="form-control">
+						<label for="type_id" class="col-form-label">Type</label>
+						<select id="type_id" class="form-control">
 							<t t-foreach="detail.order_type" t-as="order_type">
 								<option t-attf-value="{{order_type.id}}"><t t-esc="order_type.name"/></option>
 							</t>
@@ -527,90 +527,114 @@
 				</t>
 			</div>
 
-			<div class="form-section plr12 ptb12">Route</div>
-			<div class="plr12 ptb12">
-				<div class="form-group col-xs-6">
-					<label for="book_vehicle_route_from" class="mb16">From</label>
-					<div id="book_vehicle_route_from">
-						<label class="no_bold" for="book_vehicle_route_from_district">District</label>
-						<select id="book_vehicle_route_from_district" class="form-control mb16">
-							<t t-if="detail.contract_datas.length != 0">
-								<t t-foreach="detail.contract_datas[0].districts" t-as="from_district">
-									<option t-attf-value="{{from_district.id}}"><t t-esc="from_district.name"/></option>
-								</t>
-							</t>
-						</select>
-						<label class="no_bold" for="book_vehicle_route_from_area">Area</label>
-						<select id="book_vehicle_route_from_area" class="form-control mb16">
-							<t t-if="detail.contract_datas.length != 0">
-								<t t-if="detail.contract_datas[0].districts.length != 0">
-									<t t-foreach="detail.contract_datas[0].districts[0].areas" t-as="from_area">
-										<option t-attf-value="{{from_area.id}}"><t t-esc="from_area.name"/></option>
+			<t t-if="detail.user_group == 'booker' || detail.user_group == 'approver'">
+				<div class="form-section plr12 ptb12">Route</div>
+				<div class="plr12 ptb12">
+					<div class="form-group col-xs-6">
+						<label for="book_vehicle_route_from" class="mb16">From</label>
+						<div id="book_vehicle_route_from">
+							<label class="no_bold" for="book_vehicle_route_from_district">District</label>
+							<select id="book_vehicle_route_from_district" class="form-control mb16">
+								<t t-if="detail.contract_datas.length != 0">
+									<t t-foreach="detail.contract_datas[0].districts" t-as="from_district">
+										<option t-attf-value="{{from_district.id}}"><t t-esc="from_district.name"/></option>
 									</t>
-`								</t>
-							</t>
-						</select>
-						<label class="no_bold" for="book_vehicle_route_from_location">Location</label>
-						<input id="book_vehicle_route_from_location" class="form-control mb16" type="text"/>
+								</t>
+							</select>
+							<label class="no_bold" for="from_area_id">Area</label>
+							<select id="from_area_id" class="form-control mb16">
+								<t t-if="detail.contract_datas.length != 0">
+									<t t-if="detail.contract_datas[0].districts.length != 0">
+										<t t-foreach="detail.contract_datas[0].districts[0].areas" t-as="from_area">
+											<option t-attf-value="{{from_area.id}}"><t t-esc="from_area.name"/></option>
+										</t>
+	`								</t>
+								</t>
+							</select>
+							<label class="no_bold" for="from_location">Location</label>
+							<input id="from_location" class="form-control mb16" type="text"/>
+						</div>
+					</div>
+
+					<div class="form-group col-xs-6">
+						<label for="book_vehicle_route_to" class="mb16">To</label>
+						<div id="book_vehicle_route_to">
+							<label class="no_bold" for="to_city_id">City</label>
+							<select id="to_city_id" class="form-control mb16">
+								<t t-foreach="detail.route_to" t-as="city">
+									<option t-attf-value="{{city.id}}"><t t-esc="city.name"/></option>
+								</t>
+							</select>
+							<label class="no_bold" for="book_vehicle_route_to_district">District</label>
+							<select id="book_vehicle_route_to_district" class="form-control mb16">
+								<t t-if="detail.route_to.length != 0">
+									<t t-foreach="detail.route_to[0].districts" t-as="to_district">
+										<option t-attf-value="{{to_district.id}}"><t t-esc="to_district.name"/></option>
+									</t>
+								</t>
+							</select>
+							<label class="no_bold" for="to_area_id">Area</label>
+							<select id="to_area_id" class="form-control mb16">
+								<t t-if="detail.route_to.length != 0">
+									<t t-if="detail.route_to[0].districts.length != 0">
+										<t t-foreach="detail.route_to[0].districts[0].areas" t-as="to_area">
+											<option t-attf-value="{{to_area.id}}"><t t-esc="to_area.name"/></option>
+										</t>
+									</t>
+								</t>
+							</select>
+							<label class="no_bold" for="to_location">Location</label>
+							<input id="to_location" class="form-control mb16" type="text"/>
+						</div>
 					</div>
 				</div>
 
-				<div class="form-group col-xs-6">
-					<label for="book_vehicle_route_to" class="mb16">To</label>
-					<div id="book_vehicle_route_to">
-						<label class="no_bold" for="book_vehicle_route_to_city">City</label>
-						<select id="book_vehicle_route_to_city" class="form-control mb16">
-							<t t-foreach="detail.route_to" t-as="city">
-								<option t-attf-value="{{city.id}}"><t t-esc="city.name"/></option>
-							</t>
-						</select>
-						<label class="no_bold" for="book_vehicle_route_to_district">District</label>
-						<select id="book_vehicle_route_to_district" class="form-control mb16">
-							<t t-if="detail.route_to.length != 0">
-								<t t-foreach="detail.route_to[0].districts" t-as="to_district">
-									<option t-attf-value="{{to_district.id}}"><t t-esc="to_district.name"/></option>
-								</t>
-							</t>
-						</select>
-						<label class="no_bold" for="book_vehicle_route_to_area">Area</label>
-						<select id="book_vehicle_route_to_area" class="form-control mb16">
-							<t t-if="detail.route_to.length != 0">
-								<t t-if="detail.route_to[0].districts.length != 0">
-									<t t-foreach="detail.route_to[0].districts[0].areas" t-as="to_area">
-										<option t-attf-value="{{to_area.id}}"><t t-esc="to_area.name"/></option>
-									</t>
-								</t>
-							</t>
-						</select>
-						<label class="no_bold" for="book_vehicle_route_to_location">Location</label>
-						<input id="book_vehicle_route_to_location" class="form-control mb16" type="text"/>
-					</div>
-				</div>
-			</div>
-
-			<div class="form-section plr12 ptb12">Passenger</div>
-			<div class="plr12 ptb12">
-				<div class="form-group">
-					<div class="col-md-12">
-						<label class="no_bold"><input id="ckb_i_am_passenger" type="checkbox" name="passenger" value="1"> I am the passenger</input></label>
-					</div>
-				</div>
-			</div>
-			<div class="plr12 ptb12">
-				<div class="col-md-12">
+				<div class="form-section plr12 ptb12">Passenger</div>
+				<div class="plr12 ptb12">
 					<div class="form-group">
-						<table id="passengers" class="table table-bordered table-striped table-highlight mb16">
-							<thead>
-								<th>Name</th>
-								<th>Phone</th>
-								<th style="padding: 0"><button id="btn_add_passenger" type="button" class="add btn form-control btn-success" aria-label="Add">
-										<span aria-hidden="true" class="fa fa-plus"></span>
-									</button></th>
-							</thead>
-							<tbody>
-							</tbody>
-						</table>
+						<div class="col-md-12">
+							<label class="no_bold"><input id="i_am_passenger" type="checkbox" name="passenger" value="1" checked="checked"> I am the passenger</input></label>
+						</div>
 					</div>
+				</div>
+				<div class="plr12 ptb12">
+					<div class="col-md-12">
+						<div class="form-group">
+							<table id="passengers" class="table table-bordered table-striped table-highlight mb16">
+								<thead>
+									<th>Name</th>
+									<th>Phone</th>
+									<th style="padding: 0"><button id="btn_add_passenger" type="button" class="add btn form-control btn-success" aria-label="Add">
+											<span aria-hidden="true" class="fa fa-plus"></span>
+										</button></th>
+								</thead>
+								<tbody>
+									<tr>
+										<td><input type="text" class="tbl_name form-control"  t-attf-value="{{detail.user.name}}" readonly="readonly"/></td>
+										<t t-if="!detail.user.phone" >
+											<td><input type="text" class="tbl_phone form-control"  t-attf-value="-" readonly="readonly"/></td>
+										</t>
+										<t t-if="detail.user.phone">
+											<td><input type="text" class="tbl_phone form-control"  t-attf-value="{{detail.user.phone}}" readonly="readonly"/></td>
+										</t>
+										<td></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</t>
+
+			<div class="form-section plr12 ptb12">Time</div>
+			<div class="plr12 ptb12">
+				<div class="form-group col-md-6">
+					<label for="start_planned">Start Planned</label>
+					<input id="start_planned" class="form-control" type="datetime-local" t-attf-value="{{detail.start_planned_default}}"/>
+				</div>
+				<div class="form-group col-md-6">
+					<label for="finish_planned">Finish Planned</label>
+					<input id="finish_planned" class="form-control" type="datetime-local" t-attf-value="{{detail.finish_planned_default}}"/>
 				</div>
 			</div>
 

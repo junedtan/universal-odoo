@@ -451,6 +451,8 @@ var mobile_app_activity_definition = {
 					console.log(data);
 					mobile_app.cache['contract_datas'] = data['contract_datas'];
 					mobile_app.cache['route_to'] = data['route_to'];
+					mobile_app.cache['user'] = data['user'];
+					mobile_app.cache['user']['user_group'] = data['user_group'];
 					return data;
 				},
 				after_refresh: function(data) {
@@ -561,10 +563,63 @@ var mobile_app_activity_definition = {
 									}
 								});
 							},
+							"click #ckb_i_am_passenger": function(event) {
+								onclick_create_order_i_am_passenger("");
+							},
+							"click #btn_add_passenger": function(event) {
+								var table_passengers = $("#passengers");
+								table_passengers.append(get_row_string_passenger("", "", "", "", true));
+								$(".btn_remove_passenger").click(function(){
+									onclick_create_order_remove_passenger(this);
+								});
+							},
 						},
 					});
 				}
 			});
+			function get_row_string_passenger(name, phone, id, exist_id, removable) {
+				if(id === "") {
+					if(exist_id === "") {
+						var row = '<tr>';
+					} else {
+						var row = '<tr exist_id="' + exist_id + '">';
+					}
+				} else {
+					if(exist_id === "") {
+						var row = '<tr id="' + id + '">';
+					} else {
+						var row = '<tr id="' + id + '" exist_id="' + exist_id + '">';
+					}
+				}
+				if(removable === true) {
+					row += '<td><input type="text" class="tbl_name form-control" value="' + name + '"/></td>' +
+							'<td><input type="text" class="tbl_phone form-control" value="' + phone + '"/></td>' +
+							'<td><button type="button" class="btn_remove_passenger form-control btn btn-default" aria-label="Close">' +
+									'<span class="fa fa-close"></span>' +
+								'</button></td>';
+				} else {
+					row += '<td><input type="text" class="tbl_name form-control" value="' + name + '" readonly/></td>' +
+							'<td><input type="text" class="tbl_phone form-control" value="' + phone + '" readonly/></td>' +
+							'<td></td>';
+				}
+				row += '</tr>';
+				return row;
+			};
+            function onclick_create_order_i_am_passenger(exist_id) {
+            	var checkbox = $("#ckb_i_am_passenger");
+				mobile_app.cache['my_id'] = "passenger_me";
+				if(checkbox.prop('checked')) {
+					var table_passengers = $("#passengers");
+					table_passengers.prepend(get_row_string_passenger(mobile_app.cache['user'].name,
+						mobile_app.cache['user'].phone === false ? '-' : mobile_app.cache['user'].phone, mobile_app.cache['my_id'], exist_id, false));
+				} else {
+					$("#"+mobile_app.cache['my_id']).remove();
+				}
+            }
+            function onclick_create_order_remove_passenger(button_remove) {
+            	button_remove.closest('tr').remove();
+            };
+
 			mobile_app.data_manager.attach_view('book_vehicle', 'book_vehicle', data_book_vehicle);
 			mobile_app.data_manager.refresh('book_vehicle', {}, true);
 		}

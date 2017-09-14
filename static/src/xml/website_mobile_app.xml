@@ -527,7 +527,7 @@
 				</t>
 			</div>
 
-			<div class="col-md-12 form-section plr12 ptb12">Route</div>
+			<div class="form-section plr12 ptb12">Route</div>
 			<div class="plr12 ptb12">
 				<div class="form-group col-xs-6">
 					<label for="book_vehicle_route_from" class="mb16">From</label>
@@ -584,6 +584,32 @@
 						</select>
 						<label class="no_bold" for="book_vehicle_route_to_location">Location</label>
 						<input id="book_vehicle_route_to_location" class="form-control mb16" type="text"/>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-section plr12 ptb12">Passenger</div>
+			<div class="plr12 ptb12">
+				<div class="form-group">
+					<div class="col-md-12">
+						<label class="no_bold"><input id="ckb_i_am_passenger" type="checkbox" name="passenger" value="1"> I am the passenger</input></label>
+					</div>
+				</div>
+			</div>
+			<div class="plr12 ptb12">
+				<div class="col-md-12">
+					<div class="form-group">
+						<table id="passengers" class="table table-bordered table-striped table-highlight mb16">
+							<thead>
+								<th>Name</th>
+								<th>Phone</th>
+								<th style="padding: 0"><button id="btn_add_passenger" type="button" class="add btn form-control btn-success" aria-label="Add">
+										<span aria-hidden="true" class="fa fa-plus"></span>
+									</button></th>
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
 					</div>
 				</div>
 			</div>

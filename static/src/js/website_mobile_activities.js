@@ -449,15 +449,17 @@ var mobile_app_activity_definition = {
 				detail_qweb: "univmobile_book_vehicle",
 				prepare_data: function(data) {
 					console.log(data);
+					mobile_app.cache['contract_datas'] = data['contract_datas'];
+					mobile_app.cache['route_to'] = data['route_to'];
 					return data;
 				},
 				after_refresh: function(data) {
 					var form_object = $("#book_vehicle_form");
 					mobile_app.form.initialize("#book_vehicle_form", {
 						action: '/mobile_app/get_required_book_vehicle/',
-//						validate_and_prepare: function(form_object) {
-//							var valid = true;
-//							var form_data = mobile_app.form.get_values(form_object);
+						validate_and_prepare: function(form_object) {
+							var valid = true;
+							var form_data = mobile_app.form.get_values(form_object);
 //						//harus isi minimal 1, jangan dua2nya kosong
 //							if ((form_data['new_yellow_limit'] == '' || form_data['new_yellow_limit'] == 0) && (form_data['new_red_limit'] == '' || form_data['new_red_limit'] == 0)) {
 //								alert("Please fill in at least the new yellow limit or the red one.");
@@ -476,7 +478,7 @@ var mobile_app_activity_definition = {
 //								valid: valid,
 //								form_data: form_data,
 //							}
-//						},
+						},
 //						after_success: function(response) {
 //							mobile_app.close_modal();
 //						//reload detail kontrak
@@ -485,8 +487,79 @@ var mobile_app_activity_definition = {
 //							});
 //						},
 						events: {
-							"change #book_vehicle_info_contract_type": function(event) {
-								console.log($(this).val())
+							"change #book_vehicle_info_contract": function(event) {
+								var contract_id = $(this).val();
+								$.each(mobile_app.cache['contract_datas'], function(index, contract_data) {
+									if (contract_data.id == contract_id) {
+										// Update fleet selection
+										$('#book_vehicle_info_vehicle').empty();
+										$.each(contract_data.fleet_type, function(index, fleet_type_data) {
+											$('#book_vehicle_info_vehicle').append(
+												'<option value=' + fleet_type_data.id + '>' + fleet_type_data.name + '</option>');
+										});
+										// Update allocation unit selection
+										$('#book_vehicle_info_unit').empty();
+										$.each(contract_data.units, function(index, unit) {
+											$('#book_vehicle_info_unit').append(
+												'<option value=' + unit.id + '>' + unit.name + '</option>');
+										});
+										// Update route_from_disctrict selection
+										$('#create_order_route_from_district').empty();
+										$.each(contract_data.districts, function(index, district) {
+											$('#create_order_route_from_district').append(
+												'<option value=' + district.id + '>' + district.name + '</option>');
+										});
+									}
+								});
+							},
+							"change #book_vehicle_route_from_district": function(event) {
+								var contract_id = $('#book_vehicle_info_contract').val();
+								var district_id = $(this).val();
+								$.each(mobile_app.cache['contract_datas'], function(index, contract_data) {
+									if (contract_data.id == contract_id) {
+										console.log(contract_data.districts);
+										$.each(contract_data.districts, function(index, district) {
+											if (district.id == district_id) {
+												$('#book_vehicle_route_from_area').empty();
+												$.each(district.areas, function(index, area) {
+													$('#book_vehicle_route_from_area').append(
+														'<option value=' + area.id + '>' + area.name + '</option>');
+												});
+											}
+										});
+									}
+								});
+							},
+							"change #book_vehicle_route_to_city": function(event) {
+								var city_id = $(this).val();
+								$.each(mobile_app.cache['route_to'], function(index, city) {
+									if (city.id == city_id) {
+										$('#book_vehicle_route_to_district').empty();
+										$('#book_vehicle_route_to_area').empty();
+										$.each(city.districts, function(index, district) {
+											$('#book_vehicle_route_to_district').append(
+												'<option value=' + district.id + '>' + district.name + '</option>');
+										});
+										$('#book_vehicle_route_to_district').change();
+									}
+								});
+							},
+							"change #book_vehicle_route_to_district": function(event) {
+								var city_id = $('#book_vehicle_route_to_city').val();
+								var district_id= $(this).val();
+								$.each(mobile_app.cache['route_to'], function(index, city) {
+									if (city.id == city_id) {
+										$.each(city.districts, function(index, district) {
+											if (district.id == district_id) {
+												$('#book_vehicle_route_to_area').empty();
+												$.each(district.areas, function(index, area) {
+													$('#book_vehicle_route_to_area').append(
+														'<option value=' + area.id + '>' + area.name + '</option>');
+												});
+											}
+										});
+									}
+								});
 							},
 						},
 					});

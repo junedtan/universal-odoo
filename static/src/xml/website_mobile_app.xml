@@ -530,28 +530,60 @@
 			<div class="col-md-12 form-section plr12 ptb12">Route</div>
 			<div class="plr12 ptb12">
 				<div class="form-group col-xs-6">
-					<label for="create_order_route_from" class="mb16">From</label>
-					<div id="create_order_route_from">
-						<label class="no_bold" for="create_order_route_from_district">District</label>
-						<select id="create_order_route_from_district" class="form-control mb16">
+					<label for="book_vehicle_route_from" class="mb16">From</label>
+					<div id="book_vehicle_route_from">
+						<label class="no_bold" for="book_vehicle_route_from_district">District</label>
+						<select id="book_vehicle_route_from_district" class="form-control mb16">
 							<t t-if="detail.contract_datas.length != 0">
 								<t t-foreach="detail.contract_datas[0].districts" t-as="from_district">
 									<option t-attf-value="{{from_district.id}}"><t t-esc="from_district.name"/></option>
 								</t>
 							</t>
 						</select>
-						<label class="no_bold" for="create_order_route_from_area">Area</label>
-						<select id="create_order_route_from_area" class="form-control mb16">
+						<label class="no_bold" for="book_vehicle_route_from_area">Area</label>
+						<select id="book_vehicle_route_from_area" class="form-control mb16">
 							<t t-if="detail.contract_datas.length != 0">
 								<t t-if="detail.contract_datas[0].districts.length != 0">
 									<t t-foreach="detail.contract_datas[0].districts[0].areas" t-as="from_area">
 										<option t-attf-value="{{from_area.id}}"><t t-esc="from_area.name"/></option>
 									</t>
+`								</t>
+							</t>
+						</select>
+						<label class="no_bold" for="book_vehicle_route_from_location">Location</label>
+						<input id="book_vehicle_route_from_location" class="form-control mb16" type="text"/>
+					</div>
+				</div>
+
+				<div class="form-group col-xs-6">
+					<label for="book_vehicle_route_to" class="mb16">To</label>
+					<div id="book_vehicle_route_to">
+						<label class="no_bold" for="book_vehicle_route_to_city">City</label>
+						<select id="book_vehicle_route_to_city" class="form-control mb16">
+							<t t-foreach="detail.route_to" t-as="city">
+								<option t-attf-value="{{city.id}}"><t t-esc="city.name"/></option>
+							</t>
+						</select>
+						<label class="no_bold" for="book_vehicle_route_to_district">District</label>
+						<select id="book_vehicle_route_to_district" class="form-control mb16">
+							<t t-if="detail.route_to.length != 0">
+								<t t-foreach="detail.route_to[0].districts" t-as="to_district">
+									<option t-attf-value="{{to_district.id}}"><t t-esc="to_district.name"/></option>
 								</t>
 							</t>
 						</select>
-						<label class="no_bold" for="create_order_route_from_location">Location</label>
-						<input id="create_order_route_from_location" class="form-control mb16" type="text"/>
+						<label class="no_bold" for="book_vehicle_route_to_area">Area</label>
+						<select id="book_vehicle_route_to_area" class="form-control mb16">
+							<t t-if="detail.route_to.length != 0">
+								<t t-if="detail.route_to[0].districts.length != 0">
+									<t t-foreach="detail.route_to[0].districts[0].areas" t-as="to_area">
+										<option t-attf-value="{{to_area.id}}"><t t-esc="to_area.name"/></option>
+									</t>
+								</t>
+							</t>
+						</select>
+						<label class="no_bold" for="book_vehicle_route_to_location">Location</label>
+						<input id="book_vehicle_route_to_location" class="form-control mb16" type="text"/>
 					</div>
 				</div>
 			</div>

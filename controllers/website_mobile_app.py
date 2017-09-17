@@ -203,6 +203,7 @@ class website_mobile_app(http.Controller):
 			'order_type': data_book_vehicle['order_type'],
 			'route_to': data_book_vehicle['route_to'],
 			'order_data': {
+				'id' : order_data.id,
 				'is_orderer_passenger': order_data.is_orderer_passenger,
 				'customer_contract_id': order_data.customer_contract_id.id,
 				'fleet_type_id': order_data.fleet_type_id.id,
@@ -218,6 +219,8 @@ class website_mobile_app(http.Controller):
 				'passengers': passenger_arr,
 				'start_planned_date': order_data.start_planned_date,
 				'finish_planned_date': order_data.finish_planned_date,
+				'start_planned_date_format_input': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
+				'finish_planned_date_format_input': datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
 			},
 		})
 		

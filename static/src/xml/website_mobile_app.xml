@@ -638,7 +638,9 @@
 					</t>
 				</div>
 			</div>
-			<!--<input type="hidden" id="order_id" t-att-value="detail.id" />-->
+			<t t-if="detail.order_data">
+				<input type="hidden" id="order_id" t-att-value="detail.order_data.id" />
+			</t>
 		</form>
 	</t>
 

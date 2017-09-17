@@ -466,6 +466,7 @@ var mobile_app_activity_definition = {
 							var valid = true;
 							var form_data = mobile_app.form.get_values(form_object);
 							valid = is_valid_form_data_order(form_data);
+							console.log(valid);
 							form_data['mode_create_or_edit'] = 'create';
 							return {
 								valid: valid,
@@ -559,8 +560,8 @@ var mobile_app_activity_definition = {
 					});
 				}
 			});
-			mobile_app.data_manager.attach_view('order_edit', 'order_edit', change_start_planned_view);
-			mobile_app.data_manager.refresh('order_edit', intent_data, true);
+			mobile_app.data_manager.attach_view('order_detail', 'order_edit', change_start_planned_view);
+			mobile_app.data_manager.refresh('order_detail', intent_data, true);
 		}
 	},
 	'univmobile_actv_edit_order': {
@@ -579,27 +580,31 @@ var mobile_app_activity_definition = {
 					mobile_app.cache['user']['user_group'] = data['user_group'];
 
 					console.log(mobile_app.cache['order_data']);
+					data['start_planned_date'] = mobile_app.cache['order_data'].start_planned_date_format_input;
+					data['finish_planned_date'] = mobile_app.cache['order_data'].finish_planned_date_format_input;
 					return data;
 				},
 				after_refresh: function(data) {
 					mobile_app.form.initialize("#book_vehicle_form", {
-						action: '/mobile_app/change_planned_start_time/',
+						action: '/mobile_app/create_edit_order/',
 						validate_and_prepare: function(form_object) {
 							var valid = true;
 							var form_data = mobile_app.form.get_values(form_object);
 							valid = is_valid_form_data_order(form_data);
 							form_data['mode_create_or_edit'] = 'edit';
-							form_data['order_id'] = mobile_app.cache['order_data'].id;
+							console.log(form_data);
 							return {
 								valid: valid,
 								form_data: form_data,
 							}
 						},
 						after_success: function(response) {
-							//mobile_app.close_modal();
-							mobile_app.intent('univmobile_intent_order_detail', {
-								data_id: mobile_app.cache['selected_order_id'],
-							});
+							if (response.success){
+								mobile_app.close_modal();
+								mobile_app.intent('univmobile_intent_order_detail', {
+									data_id: mobile_app.cache['selected_order_id'],
+								});
+							}
 						},
 						events: {
 							"change #contract_id": function(event) {
@@ -640,6 +645,7 @@ var mobile_app_activity_definition = {
 					$('#to_location').val(""+order_data.dest_location).change();
 
 					var ckb_i_am_passenger = $('#ckb_i_am_passenger');
+					console.log(order_data.passengers);
 					$.each(order_data.passengers, function(index, passenger) {
 						if(!passenger.is_orderer) {
 							add_passenger_to_table(passenger.name, passenger.phone_no, passenger.id);
@@ -671,6 +677,8 @@ var mobile_app_activity_definition = {
 	},
 
 };
+
+// Function For Book / Edit Order -------------------------------------------------------------------------------------------------------------------
 
 function onchange_book_vehicle_contract_id(contract_id){
 	$.each(mobile_app.cache['contract_datas'], function(index, contract_data) {
@@ -800,6 +808,7 @@ function onclick_book_vehicle_btn_add_passenger(){
 }
 
 function is_valid_form_data_order(form_data){
+	var valid = true;
 	if(mobile_app.cache['user']['user_group'] !== 'fullday_passenger') {
 		passengers = [];
 		$('#passengers > tbody > tr').each(function() {
@@ -812,7 +821,7 @@ function is_valid_form_data_order(form_data){
 					'name': name,
 					'phone_no': phone,
 				}
-				if(row.attr("id") === self.my_id) {
+				if(row.attr("id") === mobile_app.cache['my_id']) {
 					passenger_info['is_orderer'] = true;
 				} else {
 					passenger_info['is_orderer'] = false;
@@ -822,8 +831,8 @@ function is_valid_form_data_order(form_data){
 				}
 				passengers.push(passenger_info);
 			} else {
-				return false;
 				alert('Please complete the passengers information, name and phone number are both required!');
+				valid = false;
 			}
 		});
 
@@ -831,43 +840,51 @@ function is_valid_form_data_order(form_data){
 	}
 	if (form_data['contract_id'] == '') {
 		alert('You have no Contract!');
-		return false;
+		valid = false;
 	} else if (form_data['fleet_type_id'] == '') {
 		alert('You have no Fleet!');
-		return false;
+		valid = false;
 	} else if (form_data['start_planned'] == '') {
 		alert('Please input the start planned date correctly!');
-		return false;
+		valid = false;
 	} else if (form_data['finish_planned'] == '') {
 		alert('Please input the finish planned date correctly!');
-		return false;
+		valid = false;
 	}
 
 	if(mobile_app.cache['user']['user_group'] === 'booker' || mobile_app.cache['user']['user_group'] === 'approver') {
 		if (!form_data['unit_id']) {
 			alert('You have no Unit!');
-			return false;
+			valid = false;
 		} else if (!form_data['type_id']) {
 			alert('Please select the Order Type!');
-			return false;
+			valid = false;
 		} else if (!form_data['from_area_id']) {
 			alert('Please select the Origin Area!');
-			return false;
+			valid = false;
 		} else if (!form_data['from_location']) {
 			alert('Please input the Origin Location!');
-			return false;
+			valid = false;
 		} else if (!form_data['to_city_id']) {
 			alert('Please select the Destination City!');
-			return false;
+			valid = false;
 		} else if (!form_data['to_area_id']) {
 			alert('Please select the Destination Area!');
-			return false;
+			valid = false;
 		} else if (!form_data['to_location']) {
 			alert('Please input the Destination Location!');
-			return false;
+			valid = false;
 		}
 	}
-	return true;
+	return valid;
+};
+
+function add_passenger_to_table(name, phone, exist_id) {
+	var table_passengers = $("#passengers");
+	table_passengers.append(get_row_string_passenger(name, phone, '', exist_id, true));
+	$(".btn_remove_passenger").click(function(){
+		onclick_create_order_remove_passenger(this);
+	});
 };
 
 

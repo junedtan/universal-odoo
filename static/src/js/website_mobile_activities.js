@@ -551,134 +551,30 @@ var mobile_app_activity_definition = {
 						events: {
 							"change #contract_id": function(event) {
 								var contract_id = $(this).val();
-								$.each(mobile_app.cache['contract_datas'], function(index, contract_data) {
-									if (contract_data.id == contract_id) {
-										// Update fleet selection
-										$('#fleet_type_id').empty();
-										$.each(contract_data.fleet_type, function(index, fleet_type_data) {
-											$('#fleet_type_id').append(
-												'<option value=' + fleet_type_data.id + '>' + fleet_type_data.name + '</option>');
-										});
-										// Update allocation unit selection
-										$('#unit_id').empty();
-										$.each(contract_data.units, function(index, unit) {
-											$('#unit_id').append(
-												'<option value=' + unit.id + '>' + unit.name + '</option>');
-										});
-										// Update route_from_disctrict selection
-										$('#create_order_route_from_district').empty();
-										$.each(contract_data.districts, function(index, district) {
-											$('#create_order_route_from_district').append(
-												'<option value=' + district.id + '>' + district.name + '</option>');
-										});
-									}
-								});
+								onchange_book_vehicle_contract_id(contract_id);
 							},
 							"change #book_vehicle_route_from_district": function(event) {
-								var contract_id = $('#contract_id').val();
 								var district_id = $(this).val();
-								$.each(mobile_app.cache['contract_datas'], function(index, contract_data) {
-									if (contract_data.id == contract_id) {
-										console.log(contract_data.districts);
-										$.each(contract_data.districts, function(index, district) {
-											if (district.id == district_id) {
-												$('#from_area_id').empty();
-												$.each(district.areas, function(index, area) {
-													$('#from_area_id').append(
-														'<option value=' + area.id + '>' + area.name + '</option>');
-												});
-											}
-										});
-									}
-								});
+								onchange_book_vehicle_from_district(district_id);
 							},
 							"change #to_city_id": function(event) {
 								var city_id = $(this).val();
-								$.each(mobile_app.cache['route_to'], function(index, city) {
-									if (city.id == city_id) {
-										$('#book_vehicle_route_to_district').empty();
-										$('#to_area_id').empty();
-										$.each(city.districts, function(index, district) {
-											$('#book_vehicle_route_to_district').append(
-												'<option value=' + district.id + '>' + district.name + '</option>');
-										});
-										$('#book_vehicle_route_to_district').change();
-									}
-								});
+								onchange_book_vehicle_to_city(city_id);
 							},
 							"change #book_vehicle_route_to_district": function(event) {
-								var city_id = $('#to_city_id').val();
 								var district_id= $(this).val();
-								$.each(mobile_app.cache['route_to'], function(index, city) {
-									if (city.id == city_id) {
-										$.each(city.districts, function(index, district) {
-											if (district.id == district_id) {
-												$('#to_area_id').empty();
-												$.each(district.areas, function(index, area) {
-													$('#to_area_id').append(
-														'<option value=' + area.id + '>' + area.name + '</option>');
-												});
-											}
-										});
-									}
-								});
+								onchange_book_vehicle_to_district(district_id);
 							},
 							"click #i_am_passenger": function(event) {
 								onclick_create_order_i_am_passenger("");
 							},
 							"click #btn_add_passenger": function(event) {
-								var table_passengers = $("#passengers");
-								table_passengers.append(get_row_string_passenger("", "", "", "", true));
-								$(".btn_remove_passenger").click(function(){
-									onclick_create_order_remove_passenger(this);
-								});
+								onclick_book_vehicle_btn_add_passenger();
 							},
 						},
 					});
 				}
 			});
-			function get_row_string_passenger(name, phone, id, exist_id, removable) {
-				if(id === "") {
-					if(exist_id === "") {
-						var row = '<tr>';
-					} else {
-						var row = '<tr exist_id="' + exist_id + '">';
-					}
-				} else {
-					if(exist_id === "") {
-						var row = '<tr id="' + id + '">';
-					} else {
-						var row = '<tr id="' + id + '" exist_id="' + exist_id + '">';
-					}
-				}
-				if(removable === true) {
-					row += '<td><input type="text" class="tbl_name form-control" value="' + name + '"/></td>' +
-							'<td><input type="text" class="tbl_phone form-control" value="' + phone + '"/></td>' +
-							'<td><button type="button" class="btn_remove_passenger form-control btn btn-default" aria-label="Close">' +
-									'<span class="fa fa-close"></span>' +
-								'</button></td>';
-				} else {
-					row += '<td><input type="text" class="tbl_name form-control" value="' + name + '" readonly/></td>' +
-							'<td><input type="text" class="tbl_phone form-control" value="' + phone + '" readonly/></td>' +
-							'<td></td>';
-				}
-				row += '</tr>';
-				return row;
-			};
-            function onclick_create_order_i_am_passenger(exist_id) {
-            	var checkbox = $("#i_am_passenger");
-				mobile_app.cache['my_id'] = "passenger_me";
-				if(checkbox.prop('checked')) {
-					var table_passengers = $("#passengers");
-					table_passengers.prepend(get_row_string_passenger(mobile_app.cache['user'].name,
-						mobile_app.cache['user'].phone === false ? '-' : mobile_app.cache['user'].phone, mobile_app.cache['my_id'], exist_id, false));
-				} else {
-					$("#"+mobile_app.cache['my_id']).remove();
-				}
-            }
-            function onclick_create_order_remove_passenger(button_remove) {
-            	button_remove.closest('tr').remove();
-            };
 			mobile_app.data_manager.attach_view('book_vehicle', 'book_vehicle', data_book_vehicle);
 			mobile_app.data_manager.refresh('book_vehicle', {}, true);
 		}
@@ -728,8 +624,8 @@ var mobile_app_activity_definition = {
 					});
 				}
 			});
-			mobile_app.data_manager.attach_view('order_detail', 'order_detail', change_start_planned_view);
-			mobile_app.data_manager.refresh('order_detail', intent_data, true);
+			mobile_app.data_manager.attach_view('order_edit', 'order_edit', change_start_planned_view);
+			mobile_app.data_manager.refresh('order_edit', intent_data, true);
 		}
 	},
 	'univmobile_actv_edit_order': {
@@ -738,24 +634,21 @@ var mobile_app_activity_definition = {
 		onload_callback: function(activity_data, intent_data) {
 			var edit_order_view = mobile_app.detail_view({
 				container: "#chjs_mobile_modal_content",
-				detail_qweb: "univmobile_change_start_planned_time",
+				detail_qweb: "univmobile_book_vehicle",
+
 				after_refresh: function(data) {
-					mobile_app.form.initialize("#change_start_planned_time_form", {
+					mobile_app.form.initialize("#book_vehicle_form", {
 						action: '/mobile_app/change_planned_start_time/',
 						validate_and_prepare: function(form_object) {
 							var valid = true;
 							var form_data = mobile_app.form.get_values(form_object);
-							if (form_data['change_order_start_planned_new'] == '') {
-								alert("Please fill in new start planned time.");
-								valid = false;
-							}
 							return {
 								valid: valid,
 								form_data: form_data,
 							}
 						},
 						after_success: function(response) {
-							mobile_app.close_modal();
+							//mobile_app.close_modal();
 							mobile_app.intent('univmobile_intent_order_detail', {
 								data_id: mobile_app.cache['selected_order_id'],
 							});
@@ -763,8 +656,9 @@ var mobile_app_activity_definition = {
 					});
 				}
 			});
-			mobile_app.data_manager.attach_view('order_detail', 'order_detail', edit_order_view);
-			mobile_app.data_manager.refresh('order_detail', intent_data, true);
+			mobile_app.cache['selected_order_id'] = intent_data['data_id'];
+			mobile_app.data_manager.attach_view('order_edit', 'order_edit', edit_order_view);
+			mobile_app.data_manager.refresh('order_edit', intent_data, true);
 		}
 	},
 	'univmobile_actv_cancel_order': {
@@ -783,4 +677,132 @@ var mobile_app_activity_definition = {
 	},
 
 };
+
+function onchange_book_vehicle_contract_id(contract_id){
+	$.each(mobile_app.cache['contract_datas'], function(index, contract_data) {
+		if (contract_data.id == contract_id) {
+			// Update fleet selection
+			$('#fleet_type_id').empty();
+			$.each(contract_data.fleet_type, function(index, fleet_type_data) {
+				$('#fleet_type_id').append(
+					'<option value=' + fleet_type_data.id + '>' + fleet_type_data.name + '</option>');
+			});
+			// Update allocation unit selection
+			$('#unit_id').empty();
+			$.each(contract_data.units, function(index, unit) {
+				$('#unit_id').append(
+					'<option value=' + unit.id + '>' + unit.name + '</option>');
+			});
+			// Update route_from_disctrict selection
+			$('#create_order_route_from_district').empty();
+			$.each(contract_data.districts, function(index, district) {
+				$('#create_order_route_from_district').append(
+					'<option value=' + district.id + '>' + district.name + '</option>');
+			});
+		}
+	});
+};
+
+function onchange_book_vehicle_from_district(district_id){
+	var contract_id = $('#contract_id').val();
+	$.each(mobile_app.cache['contract_datas'], function(index, contract_data) {
+		if (contract_data.id == contract_id) {
+			console.log(contract_data.districts);
+			$.each(contract_data.districts, function(index, district) {
+				if (district.id == district_id) {
+					$('#from_area_id').empty();
+					$.each(district.areas, function(index, area) {
+						$('#from_area_id').append(
+							'<option value=' + area.id + '>' + area.name + '</option>');
+					});
+				}
+			});
+		}
+	});
+};
+
+function onchange_book_vehicle_to_city(city_id){
+	$.each(mobile_app.cache['route_to'], function(index, city) {
+		if (city.id == city_id) {
+			$('#book_vehicle_route_to_district').empty();
+			$('#to_area_id').empty();
+			$.each(city.districts, function(index, district) {
+				$('#book_vehicle_route_to_district').append(
+					'<option value=' + district.id + '>' + district.name + '</option>');
+			});
+			$('#book_vehicle_route_to_district').change();
+		}
+	});
+};
+
+function onchange_book_vehicle_to_district(district_id){
+	var city_id = $('#to_city_id').val();
+	$.each(mobile_app.cache['route_to'], function(index, city) {
+		if (city.id == city_id) {
+			$.each(city.districts, function(index, district) {
+				if (district.id == district_id) {
+					$('#to_area_id').empty();
+					$.each(district.areas, function(index, area) {
+						$('#to_area_id').append(
+							'<option value=' + area.id + '>' + area.name + '</option>');
+					});
+				}
+			});
+		}
+	});
+};
+
+function onclick_create_order_i_am_passenger(exist_id) {
+	var checkbox = $("#i_am_passenger");
+	mobile_app.cache['my_id'] = "passenger_me";
+	if(checkbox.prop('checked')) {
+		var table_passengers = $("#passengers");
+		table_passengers.prepend(get_row_string_passenger(mobile_app.cache['user'].name,
+			mobile_app.cache['user'].phone === false ? '-' : mobile_app.cache['user'].phone, mobile_app.cache['my_id'], exist_id, false));
+	} else {
+		$("#"+mobile_app.cache['my_id']).remove();
+	}
+};
+
+function onclick_create_order_remove_passenger(button_remove) {
+	button_remove.closest('tr').remove();
+};
+
+function get_row_string_passenger(name, phone, id, exist_id, removable) {
+	if(id === "") {
+		if(exist_id === "") {
+			var row = '<tr>';
+		} else {
+			var row = '<tr exist_id="' + exist_id + '">';
+		}
+	} else {
+		if(exist_id === "") {
+			var row = '<tr id="' + id + '">';
+		} else {
+			var row = '<tr id="' + id + '" exist_id="' + exist_id + '">';
+		}
+	}
+	if(removable === true) {
+		row += '<td><input type="text" class="tbl_name form-control" value="' + name + '"/></td>' +
+				'<td><input type="text" class="tbl_phone form-control" value="' + phone + '"/></td>' +
+				'<td><button type="button" class="btn_remove_passenger form-control btn btn-default" aria-label="Close">' +
+						'<span class="fa fa-close"></span>' +
+					'</button></td>';
+	} else {
+		row += '<td><input type="text" class="tbl_name form-control" value="' + name + '" readonly/></td>' +
+				'<td><input type="text" class="tbl_phone form-control" value="' + phone + '" readonly/></td>' +
+				'<td></td>';
+	}
+	row += '</tr>';
+	return row;
+};
+
+function onclick_book_vehicle_btn_add_passenger(){
+	var table_passengers = $("#passengers");
+	table_passengers.append(get_row_string_passenger("", "", "", "", true));
+	$(".btn_remove_passenger").click(function(){
+		onclick_create_order_remove_passenger(this);
+	});
+}
+
 

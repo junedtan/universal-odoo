@@ -609,7 +609,7 @@
 										</button></th>
 								</thead>
 								<tbody>
-									<tr>
+									<tr id="passenger_me">
 										<td><input type="text" class="tbl_name form-control"  t-attf-value="{{detail.user.name}}" readonly="readonly"/></td>
 										<t t-if="!detail.user.phone" >
 											<td><input type="text" class="tbl_phone form-control"  t-attf-value="-" readonly="readonly"/></td>
@@ -644,6 +644,7 @@
 					<button type="button" form-submit="click" class="form-control btn btn-success">Create Order</button>
 				</div>
 			</div>
+			<!--<input type="hidden" id="order_id" t-att-value="detail.id" />-->
 		</form>
 	</t>
 

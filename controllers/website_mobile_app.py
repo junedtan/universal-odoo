@@ -185,7 +185,7 @@ class website_mobile_app(http.Controller):
 		data_book_vehicle = json.loads(response_book_vehicle.data)
 		# Get order current info
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		order_data = handler_obj.get_order(loaded_data['order_id'])
+		order_data = handler_obj.get_order(loaded_data)
 		
 		passenger_arr = []
 		for passenger in order_data.passengers:

@@ -79,6 +79,12 @@ var mobile_app_data_sources = {
 		url: '/mobile_app/fetch_orders',
 		views: {},
 	},
+	'order_edit': {
+		id: 'order_edit',
+		type: 'ajax',
+		url: '/mobile_app/get_required_edit_order',
+		views: {},
+	},
 	'book_vehicle': {
 		id: 'book_vehicle',
 		type: 'ajax',

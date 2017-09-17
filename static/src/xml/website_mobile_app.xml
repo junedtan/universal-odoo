@@ -490,7 +490,17 @@
 					<label for="contract_id" class="col-form-label">Contract</label>
 					<select id="contract_id" class="form-control">
 						<t t-foreach="detail.contract_datas" t-as="contract">
-							<option t-attf-value="{{contract.id}}"><t t-esc="contract.name"/></option>
+							<t t-if="detail.order_data">
+								<t t-if="detail.order_data.customer_contract_id == contract.id">
+									<option t-attf-value="{{contract.id}}"><t t-esc="contract.name" selected = "selected"/></option>
+								</t>
+								<t t-if="detail.order_data.customer_contract_id != contract.id">
+									<option t-attf-value="{{contract.id}}"><t t-esc="contract.name"/></option>
+								</t>
+							</t>
+							<t t-if="detail.order_data == false">
+								<option t-attf-value="{{contract.id}}"><t t-esc="contract.name"/></option>
+							</t>
 						</t>
 					</select>
 				</div>

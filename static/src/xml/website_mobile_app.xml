@@ -484,8 +484,8 @@
 
 	<t t-name="univmobile_book_vehicle">
 		<form id="book_vehicle_form">
-			<div class="form-section plr12 ptb12">Information</div>
-			<div class="plr12 ptb12">
+			<div class="form-section plr12 ptb12 col-xs-12">Information</div>
+			<div class="plr12 ptb12 col-xs-12">
 				<div class="form-group col-xs-6">
 					<label for="contract_id" class="col-form-label">Contract</label>
 					<select id="contract_id" class="form-control">
@@ -528,8 +528,8 @@
 			</div>
 
 			<t t-if="detail.user_group == 'booker' || detail.user_group == 'approver'">
-				<div class="form-section plr12 ptb12">Route</div>
-				<div class="plr12 ptb12">
+				<div class="form-section plr12 ptb12 col-xs-12">Route</div>
+				<div class="plr12 ptb12 col-xs-12">
 					<div class="form-group col-xs-6">
 						<label for="book_vehicle_route_from" class="mb16">From</label>
 						<div id="book_vehicle_route_from">
@@ -589,15 +589,13 @@
 					</div>
 				</div>
 
-				<div class="form-section plr12 ptb12">Passenger</div>
-				<div class="plr12 ptb12">
+				<div class="form-section plr12 ptb12 col-xs-12">Passenger</div>
+				<div class="plr12 ptb12 col-xs-12">
 					<div class="form-group">
 						<div class="col-md-12">
 							<label class="no_bold"><input id="i_am_passenger" type="checkbox" name="passenger" value="1"> I am the passenger</input></label>
 						</div>
 					</div>
-				</div>
-				<div class="plr12 ptb12">
 					<div class="col-md-12">
 						<div class="form-group">
 							<table id="passengers" class="table table-bordered table-striped table-highlight mb16">
@@ -615,8 +613,8 @@
 				</div>
 			</t>
 
-			<div class="form-section plr12 ptb12">Time</div>
-			<div class="plr12 ptb12">
+			<div class="form-section plr12 ptb12 col-xs-12">Time</div>
+			<div class="plr12 ptb12 col-xs-12">
 				<div class="form-group col-md-6">
 					<label for="start_planned">Start Planned</label>
 					<input id="start_planned" class="form-control" type="datetime-local" t-attf-value="{{detail.start_planned_date}}"/>

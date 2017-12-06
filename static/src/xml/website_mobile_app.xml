@@ -1024,16 +1024,17 @@
 											</span>
 										</t>
 									</div>
-									<t t-esc="contract.start_date"/> / <t t-esc="contract.end_date"/><br></br>
-									Service Type: <t t-esc="contract.service_type"/><br></br>
+									<t t-esc="contract.start_date"/> / <t t-esc="contract.end_date"/>
+									<br/><br/>
+									Service Type: <t t-esc="contract.service_type"/><br/><br/>
 								</t>
 							</div>
 							<t t-set="i" t-value="i+1"/>
-						</t>
-					</div>
-				</t>
+						</div>
+					</t>
+				</div>
 			</t>
-		</div>
+		</t>
 		<div id="detail_contract_container"></div>
 	</t>
 

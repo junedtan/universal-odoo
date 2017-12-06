@@ -51,6 +51,12 @@ class res_users(osv.osv):
 			cr.execute("DELETE FROM res_groups_users_rel WHERE uid=%s AND gid in (" % new_hr_id +
 						"SELECT id FROM res_groups WHERE category_id in (" +
 						"SELECT id FROM ir_module_category WHERE name='Human Resources' ))")
+		# sekalian, home action di-set "website" soalnya user external cuman dapet mobul website
+			model_obj = self.pool.get('ir.model.data')
+			model, action_id = model_obj.get_object_reference(cr, uid, 'website', 'action_website')
+			self.write(cr, uid, [new_hr_id], {
+				'action_id': action_id,
+				})
 		return new_hr_id
 	
 	def write(self, cr, uid, ids, vals, context={}):

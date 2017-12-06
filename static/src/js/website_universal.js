@@ -55,7 +55,6 @@ function logout() {
 $(document).ready(function () {
 	
 	var message_timer;
-	
 	function display_message(container, message, type='info', timeout=5) { //timeout dalam detik
 		var type_to_class = {
 			'info': 'oe_callout_info',

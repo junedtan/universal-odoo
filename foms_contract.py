@@ -1338,6 +1338,7 @@ class foms_contract_quota_change_log(osv.osv):
 			('approved','Approved'),
 			('rejected','Rejected'),], 'State'),
 		'request_date': fields.datetime('Request Date', required=True),
+		'request_by': fields.many2one('res.users', 'Request By'),
 		'period': fields.char('Period', required=True),
 		'request_longevity': fields.selection([
 			('temporary','Temporary'),
@@ -1464,8 +1465,10 @@ class foms_contract_quota_change_log(osv.osv):
 				])
 				if len(quota_ids) == 0: continue
 				new_data = {}
-				if change_data.new_yellow_limit: new_data.update({'yellow_limit': change_data.new_yellow_limit})
-				if change_data.new_red_limit: new_data.update({'red_limit': change_data.new_red_limit})
+				if change_data.new_yellow_limit: 
+					new_data.update({'yellow_limit': change_data.new_yellow_limit + change_data.old_yellow_limit})
+				if change_data.new_red_limit: 
+					new_data.update({'red_limit': change_data.new_red_limit + change_data.old_red_limit})
 				if new_data == {}: continue
 				quota_obj.write(cr, uid, quota_ids, new_data, context=context)
 			# ganti over_quota_status semua order yang lagi pending untuk contract dan allocation unit ini

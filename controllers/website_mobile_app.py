@@ -6,6 +6,7 @@ from openerp.http import request
 from datetime import datetime, date, timedelta
 from dateutil.relativedelta import relativedelta
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
+from openerp.addons.universal import datetime_to_server
 
 from openerp.addons.website.models.website import slug
 
@@ -70,7 +71,15 @@ class website_mobile_app(http.Controller):
 			'user_name': data_user['user_name'],
 			'homebase': handler_obj.get_homebase()
 		})
-	
+
+	@http.route('/mobile_app_new', type='http', auth="user", website=True)
+	def mobile_app_new(self, **kwargs):
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
+		return handler_obj.render_main(request, {
+			'homebases': handler_obj.get_homebase(),
+			})
+
 	@http.route('/mobile_app/get_user_group', type='http', auth="user", website=True)
 	def mobile_app_get_user_group(self, **kwargs):
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
@@ -176,7 +185,7 @@ class website_mobile_app(http.Controller):
 		data_book_vehicle = json.loads(response_book_vehicle.data)
 		# Get order current info
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		order_data = handler_obj.get_order(loaded_data['order_id'])
+		order_data = handler_obj.get_order(loaded_data)
 		
 		passenger_arr = []
 		for passenger in order_data.passengers:
@@ -194,6 +203,7 @@ class website_mobile_app(http.Controller):
 			'order_type': data_book_vehicle['order_type'],
 			'route_to': data_book_vehicle['route_to'],
 			'order_data': {
+				'id' : order_data.id,
 				'is_orderer_passenger': order_data.is_orderer_passenger,
 				'customer_contract_id': order_data.customer_contract_id.id,
 				'fleet_type_id': order_data.fleet_type_id.id,
@@ -209,6 +219,8 @@ class website_mobile_app(http.Controller):
 				'passengers': passenger_arr,
 				'start_planned_date': order_data.start_planned_date,
 				'finish_planned_date': order_data.finish_planned_date,
+				'start_planned_date_format_input': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
+				'finish_planned_date_format_input': datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
 			},
 		})
 		
@@ -351,6 +363,11 @@ class website_mobile_app(http.Controller):
 			'by_user_id': True,
 			'user_id': uid,
 		})
+		
+		# User
+		response_user_group = self.mobile_app_get_user_group()
+		data_user_group = json.loads(response_user_group.data)
+		
 		result = {
 			'pending': [],
 			'ready'  : [],
@@ -380,7 +397,7 @@ class website_mobile_app(http.Controller):
 			for passenger in order_data.passengers:
 				list_passenger.append({'name':passenger.name, 'phone' : passenger.phone_no})
 			
-			result[classification].append({
+			jsonOrder = {
 				'id': order_data.id,
 				'name': order_data.name,
 				'state': order_data.state,
@@ -411,19 +428,29 @@ class website_mobile_app(http.Controller):
 				'contract_name': order_data.customer_contract_id.name,
 				'type': order_data.order_type_by_order,
 				'type_name': dict(_ORDER_TYPE).get(order_data.order_type_by_order, ''),
-			});
+				'classification_value': classification,
+				'start_planned_date_format_input': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
+			}
+			if type(loaded_data) is int:
+				jsonOrder['user_group'] = data_user_group['user_group']
+				
+				return json.dumps(jsonOrder)
+			result[classification].append(jsonOrder);
 		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
 		result['ready']   = sorted(result['ready'],   key=lambda order: order['request_date'], reverse=True)
 		result['running'] = sorted(result['running'], key=lambda order: order['request_date'], reverse=True)
 		result['history'] = sorted(result['history'], key=lambda order: order['request_date'], reverse=True)
 		
-		# User
-		response_user_group = self.mobile_app_get_user_group()
-		data_user_group = json.loads(response_user_group.data)
-		return json.dumps({
-			'user_group': data_user_group['user_group'],
-			'list_order': result,
-		})
+		if loaded_data.get('classification', False):
+			return json.dumps({
+				'user_group': data_user_group['user_group'],
+				'list_order': result[loaded_data['classification']],
+			})
+		else:
+			return json.dumps({
+				'user_group': data_user_group['user_group'],
+				'list_order': result,
+			})
 	
 	@http.route('/mobile_app/approve_order/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_approve_order(self, data, **kwargs):
@@ -464,20 +491,20 @@ class website_mobile_app(http.Controller):
 		order_data = json.loads(data)
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		datetime_format = '%Y-%m-%dT%H:%M:%S'
-		if order_data['new_planned_start_time'].count(':') == 1:
+		if order_data['change_order_start_planned_new'].count(':') == 1:
 			datetime_format = '%Y-%m-%dT%H:%M'
-		new_start_date = datetime.strptime(order_data['new_planned_start_time'], datetime_format)
-		result = handler_obj.change_planned_start_time(int(order_data['order_id']), new_start_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT))
-		if result:
+		new_start_date = datetime.strptime(order_data['change_order_start_planned_new'], datetime_format)
+		try:
+			handler_obj.change_planned_start_time(int(order_data['order_id']), new_start_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT))
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Planned Start Time Changed'),
+				'info': _('Start planned time has been changed.'),
 				'success': True,
 			})
-		else:
+		except Exception,e :
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Changing Planned Start Time Failed'),
+				'info': e.value,
 				'success': False,
 			})
 	
@@ -517,6 +544,18 @@ class website_mobile_app(http.Controller):
 		
 	@http.route('/mobile_app/fetch_contract_shuttles', type='http', auth="user", website=True)
 	def mobile_app_fetch_contract_shuttles(self, **kwargs):
+		"""
+		dummy
+		return json.dumps([{
+			'id': 27,
+			'name': '170346',
+			'service_type': 'Shuttle',
+			'shuttle_schedules_by_days': {
+				'0': [{'name': 'IP-TSM', 'departure_time': '08:00', 'assigned_vehicle_name': 'B 1234 XX', 'assigned_driver_name': 'Baskoro'}],
+				'1': [{'name': 'IP-TSM', 'departure_time': '08:00', 'assigned_vehicle_name': 'B 1234 XX', 'assigned_driver_name': 'Baskoro'}],
+			}
+		}])
+		"""
 		response_fetch_contract = self.mobile_app_fetch_contracts()
 		data_fetch_contract = json.loads(response_fetch_contract.data)
 		contract_datas = data_fetch_contract['list_contract']
@@ -579,13 +618,12 @@ class website_mobile_app(http.Controller):
 			quota_pending_history[classification].append({
 				'id': quota_change.id,
 				'name': quota_change.allocation_unit_id.name,
-				'request_date': quota_change.request_date,
-				'request_by': quota_change.create_uid.name,
+				'request_date': datetime_to_server(quota_change.request_date),
+				'request_by': quota_change.request_by and quota_change.request_by.name or quota_change.create_uid.name,
 				'request_type': dict(_REQUEST_LONGEVITY).get(quota_change.request_longevity, ''),
-				#'yellow_limit_old': locale.currency(quota_change.old_yellow_limit, grouping= True),
-				#'yellow_limit_new': locale.currency(quota_change.new_yellow_limit, grouping= True),
-				#'red_limit_old': locale.currency(quota_change.old_red_limit, grouping= True),
-				#'red_limit_new': locale.currency(quota_change.new_red_limit, grouping= True),
+				'confirm_by': quota_change.confirm_by and quota_change.confirm_by.name or None,
+				'confirm_date': quota_change.confirm_date and datetime_to_server(quota_change.confirm_date) or None,
+				'reject_reason': quota_change.reject_reason,
 				'yellow_limit_old': quota_change.old_yellow_limit,
 				'yellow_limit_new': quota_change.new_yellow_limit,
 				'red_limit_old': quota_change.old_red_limit,
@@ -603,13 +641,13 @@ class website_mobile_app(http.Controller):
 		if result:
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Quota Change Approved'),
+				'info': _('Quota change approval is successfully saved.'),
 				'success': True,
 			})
 		else:
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Approving Quota Change Failed'),
+				'info': _('System fails to save the quota change approval. Please try again later.'),
 				'success': False,
 			})
 	
@@ -620,13 +658,13 @@ class website_mobile_app(http.Controller):
 		if result:
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Quota Change Rejected'),
+				'info': _('Quota change rejection is successfully saved.'),
 				'success': True,
 			})
 		else:
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Rejecting Quota Change Failed'),
+				'info': _('System fails to save the quota change rejection. Please try again later.'),
 				'success': False,
 			})
 	
@@ -679,6 +717,7 @@ class website_mobile_app(http.Controller):
 		return json.dumps({
 			'status': 'ok',
 			'quota_list': json.dumps(quota_from_arr),
+			'data': json.dumps(quota_from_arr), # ditambahkan untuk framework baru. quota_list tetap dipertahankan sampai framework baru jalan semua
 			'success' : True,
 		})
 	
@@ -726,7 +765,7 @@ class website_mobile_app(http.Controller):
 		if result:
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Change Password Success'),
+				'info': _('Change password is successful.'),
 				'success' : True,
 			})
 		else:
@@ -751,13 +790,13 @@ class website_mobile_app(http.Controller):
 			if result:
 				response = {
 					'status': 'ok',
-					'info': _('Quota Change Request Succeed'),
+					'info': _('Your quota change request has been succesfully submitted.'),
 					'success' : True,
 				}
 			else:
 				response = {
 					'status': 'ok',
-					'info': _('Quota Change Request Failed'),
+					'info': _('System fails to save your quota change request. Please try again later.'),
 					'success' : False,
 				}
 		return json.dumps(response)
@@ -766,7 +805,11 @@ class website_mobile_app_handler(osv.osv):
 	_name = 'universal.website.mobile_app.handler'
 	_description = 'Model for handling website-based requests'
 	_auto = False
-	
+
+	def render_main(self, cr, uid, request, additional_data={}):
+		mobile_web_obj = self.pool.get('chjs.mobile.web.app')
+		return mobile_web_obj.render_main(cr, uid, request, 'univmobile', additional_data=additional_data)
+
 	def get_user_data(self, cr, uid, param_context):
 		user_obj = self.pool.get('res.users')
 		user = user_obj.browse(cr, SUPERUSER_ID, uid)
@@ -774,21 +817,38 @@ class website_mobile_app_handler(osv.osv):
 	
 	def search_order(self, cr, uid, domain, param_context):
 		order_obj = self.pool.get('foms.order');
-		name_order = domain.get('order_name', '')
-		booker_name = domain.get('booker_name', '')
-		driver_name = domain.get('driver_name', '')
-		vehicle_name = domain.get('vehicle_name', '')
-		
 		filter_domain = [('start_planned_date', '>=', (datetime.now() - relativedelta(months=+2)).strftime(DEFAULT_SERVER_DATETIME_FORMAT))]
-		
-		if name_order:
-			filter_domain.append(('name', 'ilike', name_order))
-		if booker_name:
-			filter_domain.append(('order_by.name', 'ilike', booker_name))
-		if driver_name:
-			filter_domain.append(('assigned_driver_id.name', 'ilike', driver_name))
-		if vehicle_name:
-			filter_domain.append(('assigned_vehicle_id.name', 'ilike', vehicle_name))
+	
+		if type(domain) is int:
+			filter_domain.append(('id', '=', domain))
+		else:
+			id_order = domain.get('order_id', '')
+			name_order = domain.get('order_name', '')
+			booker_name = domain.get('booker_name', '')
+			driver_name = domain.get('driver_name', '')
+			vehicle_name = domain.get('vehicle_name', '')
+			classification = domain.get('classification', '')
+			
+			if id_order:
+				filter_domain.append(('id', '=', id_order))
+			if name_order:
+				filter_domain.append(('name', 'ilike', name_order))
+			if booker_name:
+				filter_domain.append(('order_by.name', 'ilike', booker_name))
+			if driver_name:
+				filter_domain.append(('assigned_driver_id.name', 'ilike', driver_name))
+			if vehicle_name:
+				filter_domain.append(('assigned_vehicle_id.name', 'ilike', vehicle_name))
+			if classification:
+				if classification == 'pending':
+					filter_domain.append(('state', 'in', ['new', 'confirmed']))
+				elif classification == 'ready':
+					filter_domain.append(('state', 'in', ['ready', 'started']))
+				elif classification == 'running':
+					filter_domain.append(('state', 'in', ['start_confirmed', 'paused', 'resumed', 'finished']))
+				else:
+					filter_domain.append(('state', 'in', ['rejected', 'finish_confirmed', 'canceled']))
+			
 		order_ids = order_obj.search(cr, SUPERUSER_ID, filter_domain, context=param_context)
 		return order_obj.browse(cr, SUPERUSER_ID, order_ids)
 	
@@ -906,6 +966,7 @@ class website_mobile_app_handler(osv.osv):
 		new_yellow_limit = domain.get('new_yellow_limit', '')
 		new_red_limit = domain.get('new_red_limit', '')
 		request_longevity = domain.get('request_longevity', '')
+		request_by = domain.get('request_by', SUPERUSER_ID)
 		
 		now = datetime.now()
 		period = "%02d/%04d" % (now.month ,now.year)
@@ -919,6 +980,7 @@ class website_mobile_app_handler(osv.osv):
 			'period': period,
 			'state': 'draft',
 			'request_date': now,
+			'request_by': request_by,
 		}, context = {'from_webservice' : 1})
 	
 	def change_password(self, cr, uid, domain, context={}):
@@ -987,9 +1049,9 @@ class website_mobile_app_handler(osv.osv):
 		result_nominal = 0
 		for quota_change in quota_change_obj.browse(cr, SUPERUSER_ID, quota_change_log_ids):
 			if quota_change.new_red_limit != 0 and quota_change.new_red_limit != quota_change.old_red_limit:
-				result_nominal += quota_change.new_red_limit - quota_change.old_red_limit
+				result_nominal += quota_change.new_red_limit
 			elif quota_change.new_yellow_limit != 0 and quota_change.new_yellow_limit != quota_change.old_yellow_limit:
-				result_nominal += quota_change.new_yellow_limit - quota_change.old_yellow_limit
+				result_nominal += quota_change.new_yellow_limit
 		return result_nominal, len(quota_change_log_ids)
 	
 	def approve_quota_change(self, cr, uid, change_log_id, context={}):

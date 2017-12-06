@@ -1,8 +1,79 @@
+
+function intersperse(str, indices, separator) {
+	separator = separator || '';
+	var result = [], last = str.length;
+
+	for(var i=0; i<indices.length; ++i) {
+		var section = indices[i];
+		if (section === -1 || last <= 0) { break; }
+		else if(section === 0 && i === 0) { break; }
+		else if (section === 0) { section = indices[--i]; }
+		result.push(str.substring(last-section, last));
+		last -= section;
+	}
+	var s = str.substring(0, last);
+	if (s) { result.push(s); }
+	return result.reverse().join(separator);
+}
+
+function insert_thousand_seps(num) {
+	var l10n = openerp._t.database.parameters;
+	var negative = num[0] === '-';
+	num = (negative ? num.slice(1) : num);
+
+	if (l10n.grouping.length == 0) {
+		l10n.grouping = [3,0];
+	}
+
+	return (negative ? '-' : '') + intersperse(
+		num, l10n.grouping, l10n.thousands_sep);
+}
+
+function currency_to_str(price) {
+	var l10n = openerp._t.database.parameters;
+	var precision = 2;
+	/*
+	if ($(".decimal_precision").length) {
+		var dec_precision = $(".decimal_precision").first().data('precision');
+		//MAth.log10 is not implemented in phantomJS
+		dec_precision = Math.round(Math.log(1/parseFloat(dec_precision))/Math.log(10));
+		if (!isNaN(dec_precision)) {
+			precision = dec_precision;
+		}
+	}
+	*/
+	var formatted = _.str.sprintf('%.' + precision + 'f', price).split('.');
+	formatted[0] = insert_thousand_seps(formatted[0]);
+	var ret = formatted.join(l10n.decimal_point);
+	return ret;
+}
+
+
+
 $(document).ready(function () {
 
 	var self = this;
 	var instance = openerp;
 	var qweb = openerp.qweb;
+
+//new version
+
+	try {
+		if (mobile_web == true) {
+			$(".navbar-static-top").hide();
+			qweb.add_template('/universal/static/src/xml/website_mobile_app.xml', function() {
+				mobile_app.init(mobile_app_activity_definition, mobile_app_intent_definition);
+				mobile_app.data_manager.attach_data_sources(mobile_app_data_sources, true);
+			});
+
+			return;
+		}
+	} catch(e) {
+
+	}
+
+//old version
+
 	qweb.add_template('/universal/static/src/xml/website_mobile_app.xml');
 
 	var contract_datas = [];
@@ -15,19 +86,73 @@ $(document).ready(function () {
 	var index_click_order;
 	var current_au_name;
 	var my_id;
+	var page_stack = [];
 	$('#button_back').hide();
 
-	function onclick_menu(id) {
+	function onclick_menu(id, page_title) {
+		page_stack.push(id);
+		$('#panel_title').text(page_title);
 		$('#menu_container').hide();
 		$('#main_container').show();
 		$('#button_back').show();
-//		$('#website_mobile_app_menu_book_vehicle').removeClass('active');
-//		$('#website_mobile_app_menu_list_orders').removeClass('active');
-//		$('#website_mobile_app_menu_change_password').removeClass('active');
-//		$('#website_mobile_app_menu_list_contract').removeClass('active');
-//		$('#website_mobile_app_menu_list_shuttle').removeClass('active');
-//		$(id).addClass('active');
 	};
+
+	function onclick_change_password_button(event) {
+		old_password = $('#change_password_old').val();
+		new_password = $('#change_password_new').val();
+		retype_password = $('#change_password_retype').val();
+
+		if(new_password != retype_password) {
+			alert('New Password and Retype Password does not match.');
+			$('#change_password_new').val('');
+			$('#change_password_retype').val('')
+		} else if(old_password.length == 0){
+			alert('Old Password may not be empty.');
+		}  else if(new_password.length == 0){
+			alert('New Password may not be empty.');
+		} else {
+			change_password_json = {
+				'old_password': old_password,
+				'new_password': new_password,
+			};
+			$.ajax({
+				dataType: "json",
+				url: '/mobile_app/change_password/' + JSON.stringify(change_password_json),
+				method: 'POST',
+				success: function(response) {
+					if (response.status) {
+						alert(response.info);
+						if(response.success){
+							logout();
+						}else {
+							$('#change_password_old').val('');
+						}
+					} else {
+						alert('Server Unreachable.');
+					}
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown) {
+					alert_error(XMLHttpRequest);
+				} ,
+			});
+		}
+	};
+
+	$('#button_back').click(function() {
+		page_stack.pop();
+		if(page_stack.length == 0) {
+			$('#panel_title').text('UNIVERSAL');
+			$('#menu_container').show();
+			$('#main_container').hide();
+			$('#button_back').hide();
+		} else {
+			var page = page_stack.pop();
+			$(page).click();
+			if(page == '.list_contract') {
+				page_stack.pop();
+			}
+		}
+	});
 
 	function onclick_usage_control() {
 		$('#menu_detail_contract_container').hide();
@@ -103,16 +228,8 @@ $(document).ready(function () {
 
 // BOOK VEHICLE =============================================================================================================
 
-	$('#button_back').click(function() {
-		$('#panel_title').text('UNIVERSAL');
-		$('#menu_container').show();
-		$('#main_container').hide();
-		$('#button_back').hide();
-	});
-
 	$('#website_mobile_app_menu_book_vehicle').click(function() {
-		onclick_menu('#website_mobile_app_menu_book_vehicle');
-		$('#panel_title').text('Book Vehicle');
+		onclick_menu('#website_mobile_app_menu_book_vehicle', 'Book Vehicle');
 		$.get('/mobile_app/get_required_book_vehicle', null, function(data){
 			var response = JSON.parse(data);
 			var order_type = response['order_type'];
@@ -409,8 +526,8 @@ $(document).ready(function () {
 		if(removable === true) {
 			row += '<td><input type="text" class="tbl_name form-control" value="' + name + '"/></td>' +
 					'<td><input type="text" class="tbl_phone form-control" value="' + phone + '"/></td>' +
-					'<td><button type="button" class="btn_remove_passenger close" aria-label="Close">' +
-							'<span aria-hidden="true">x</span>' +
+					'<td><button type="button" class="btn_remove_passenger form-control btn btn-default" aria-label="Close">' +
+							'<span class="fa fa-close"></span>' +
 						'</button></td>';
 		} else {
 			row += '<td><input type="text" class="tbl_name form-control" value="' + name + '" readonly/></td>' +
@@ -424,8 +541,7 @@ $(document).ready(function () {
 // LIST ORDER ===============================================================================================================
 
 	$('#website_mobile_app_menu_list_orders').click(function() {
-		onclick_menu('#website_mobile_app_menu_list_orders');
-		$('#panel_title').text('Orders');
+		onclick_menu('#website_mobile_app_menu_list_orders', 'Orders');
 		$.get('/mobile_app/fetch_orders/' + JSON.stringify({}), null, function(data){
 			var response = JSON.parse(data);
 			self.user = {
@@ -521,6 +637,16 @@ $(document).ready(function () {
 	});
 
 	function initOrderFilter() {
+		$(".accordion").click(function(event) {
+			$(this).toggleClass("active");
+			var detail = $(this).next();
+			if (detail.css("maxHeight") != "0px"){
+				detail.css("maxHeight", "0px");
+			} else {
+				detail.css("maxHeight", detail.prop("scrollHeight")+ "px");
+			}
+		});
+
 		$('#button_filter').click(function(event) {
 			var order_number = $('#filter_order_number').val();
 			var booker_name = $('#filter_booker').val();
@@ -901,8 +1027,7 @@ $(document).ready(function () {
 // LIST SHUTTLE =============================================================================================================
 
 	$('#website_mobile_app_menu_list_shuttle').click(function() {
-		onclick_menu('#website_mobile_app_menu_list_shuttle');
-		$('#panel_title').text('Shuttle');
+		onclick_menu('#website_mobile_app_menu_list_shuttle', 'Shuttle');
 		$.get('/mobile_app/fetch_contract_shuttles', null, function(data){
 			self.contract_datas = JSON.parse(data);
 			$("#main_container", self).html(qweb.render('website_mobile_app_list_shuttle',{
@@ -948,60 +1073,17 @@ $(document).ready(function () {
 // CHANGE PASSWORD ==========================================================================================================
 
 	$('#website_mobile_app_menu_change_password').click(function() {
-		onclick_menu('#website_mobile_app_menu_change_password');
-		$('#panel_title').text('Change Password');
+		onclick_menu('#website_mobile_app_menu_change_password', 'Change Password');
 		$("#main_container", self).html(qweb.render('website_mobile_app_change_password'));
 		$('#btn_change_password').click(function(){
 			onclick_change_password_button();
 		});
 	});
 
-	function onclick_change_password_button() {
-		old_password = $('#change_password_old').val();
-		new_password = $('#change_password_new').val();
-		retype_password = $('#change_password_retype').val();
-
-		if(new_password != retype_password) {
-			alert('New Password and Retype Password doesn\'t match.');
-			$('#change_password_new').val('');
-			$('#change_password_retype').val('')
-		} else if(old_password.length == 0){
-			alert('Old Password may not be empty.');
-		}  else if(new_password.length == 0){
-			alert('New Password may not be empty.');
-		} else {
-			change_password_json = {
-				'old_password': old_password,
-				'new_password': new_password,
-			};
-			$.ajax({
-				dataType: "json",
-				url: '/mobile_app/change_password/' + JSON.stringify(change_password_json),
-				method: 'POST',
-				success: function(response) {
-					if (response.status) {
-						alert(response.info);
-						if(response.success){
-							logout();
-						}else {
-							$('#change_password_old').val('');
-						}
-					} else {
-						alert('Server Unreachable.');
-					}
-				},
-				error: function(XMLHttpRequest, textStatus, errorThrown) {
-					alert_error(XMLHttpRequest);
-				} ,
-			});
-		}
-	};
-
 // LIST CONTRACT ============================================================================================================
 
 	$('#website_mobile_app_menu_list_contract').click(function() {
-		onclick_menu('#website_mobile_app_menu_list_contract');
-		$('#panel_title').text('Contracts');
+		onclick_menu('#website_mobile_app_menu_list_contract', 'Contracts');
 		$.get('/mobile_app/fetch_contracts', null, function(data){
 			var response = JSON.parse(data);
 			self.user = {
@@ -1015,7 +1097,8 @@ $(document).ready(function () {
 			$(".list_contract").click(function(event) {
 				var target = $(event.target);
 				self.index_click_contract = target.attr("id_contract");
-				$("#main_container", self).html(qweb.render('website_mobile_app_detail_contract',{
+				onclick_menu('.list_contract', self.contract_datas[self.index_click_contract].name);
+				$("#detail_contract_container", self).html(qweb.render('website_mobile_app_detail_contract',{
 					'contract_name': self.contract_datas[self.index_click_contract].name,
 					'user_group': self.user['user_group'],
 					'contract_service_type': self.contract_datas[self.index_click_contract].service_type,
@@ -1031,6 +1114,8 @@ $(document).ready(function () {
 	});
 
 	function setOnClickButtonMenuDetailContract(){
+		$("#list_contract_container").hide();
+		$("#detail_contract_container").show();
 		//Onclick menu info
 		$('#website_mobile_app_menu_info_contract').click(function() {
 			onclick_detail_contract_menu('#website_mobile_app_menu_info_contract');
@@ -1063,6 +1148,7 @@ $(document).ready(function () {
 								event.stopPropagation();
 								onclick_usage_control();
 								self.current_au_name = $(this).attr("au_name");
+								onclick_menu('.list_quota_usage', self.current_au_name);
 								onclick_usage_control_quota($(this).attr("value"));
 							});
 							$(".quota_btn_request_change_quota").click(function(event){

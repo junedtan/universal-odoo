@@ -1,19 +1,9 @@
-.plr12 {
-	padding-left: 12px;
-	padding-right: 12px;
+body {
+	font-family: "Segoe UI","Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
 }
 
-.ptb12 {
-	padding-top: 12px;
-	padding-bottom: 12px;
-}
-
-.ml10 {
-	margin-left: 10px;
-}
-
-.mt5 {
-	margin-top: 5px;
+h1, h2, h3, h4, h5, h6 {
+	font-family: inherit;
 }
 
 hr {
@@ -30,11 +20,10 @@ hr {
 	max-height: 0;
 	overflow: hidden;
 	transition: max-height 0.2s ease-out;
-	margin-left: 20px;
 }
 
 .accordion {
-	padding: 12px;
+	padding: 12px 0;
 	margin-bottom: 2px;
 }
 
@@ -59,7 +48,7 @@ div.row_hoverable:hover {
 	background-color: #EEEEEE;
 }
 
-div.row_hoverable{
+div.row_hoverable {
 	background-color: #f5f5f5;
     border-radius: 2px;
 }
@@ -76,7 +65,7 @@ div.row_hoverable{
 }
 
 .no_bold {
-	font-weight:normal;
+	font-weight: normal;
 }
 
 .no_margin {
@@ -96,118 +85,15 @@ div.row_hoverable{
 	color: gray;
 }
 
-/* The Modal (background) */
-.modal {
-	display: none; /* Hidden by default */
-	position: fixed; /* Stay in place */
-	z-index: 1; /* Sit on top */
-	left: 0;
-	top: 0;
-	width: 100%; /* Full width */
-	height: 100%; /* Full height */
-	overflow: auto; /* Enable scroll if needed */
-	background-color: rgb(0,0,0); /* Fallback color */
-	background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-	-webkit-animation-name: fadeIn; /* Fade in the background */
-	-webkit-animation-duration: 0.4s;
-	animation-name: fadeIn;
-	animation-duration: 0.4s;
-	overflow: scroll;
-}
-
-/* Modal Content */
-.modal_request_change_quota {
-	position: fixed;
-	margin-left: auto;
-	margin-right: auto;
-	left: 0;
-	top: 15%;
-	right: 0;
-	background-color: #fefefe;
-	width: 350px;
-	-webkit-animation-name: slideIn;
-	-webkit-animation-duration: 0.4s;
-	animation-name: slideIn;
-	animation-duration: 0.4s;
-}
-
-.modal_detail_order {
-	position: fixed;
-	margin-left: auto;
-	margin-right: auto;
-	left: 0;
-	top: 15%;
-	right: 0;
-	background-color: #fefefe;
-	width: 90%;
-	-webkit-animation-name: slideIn;
-	-webkit-animation-duration: 0.4s;
-	animation-name: slideIn;
-	animation-duration: 0.4s;
-	overflow: hidden;
-}
-
-.modal_detail_order .modal-body{
-  	height: 400px;
-	overflow: auto;
-}
-
-.modal_change_planned_start_time {
-	position: fixed;
-	margin-left: auto;
-	margin-right: auto;
-	left: 0;
-	top: 15%;
-	right: 0;
-	background-color: #fefefe;
-	width: 70%;
-	-webkit-animation-name: slideIn;
-	-webkit-animation-duration: 0.4s;
-	animation-name: slideIn;
-	animation-duration: 0.4s;
-	overflow: hidden;
-}
-
-/* The Close Button */
-.close_dialog {
-	color: white;
-	float: right;
-	margin-right: 3px;
-	margin-top: 3px;
-}
-
-.close_dialog:hover,
-.close_dialog:focus {
-	color: MediumTurquoise;
-	text-decoration: none;
-	cursor: pointer;
-}
-
-.modal-header {
-	padding-left: 5px;
-	padding-right: 5px;
-	padding-bottom: 5px;
-	padding-top: 1px;
-	background-color: #428bca;
-	color: white;
-}
-
-.modal-body {padding: 10px 16px;}
-
-.modal_change_planned_start_time .modal-body {
-	padding: 10px 16px;
-	overflow: hidden;
-	height: 150px;
-}
-
-.modal-footer {
-	padding: 2px 16px;
-	background-color: #5cb85c;
-	color: white;
+.form-section {
+	font-size: 125%;
+	font-weight: bold;
+	background: #559CD9;
+	color: #FFFFFF;
 }
 
 .progress-bar-grey {
-	background-color: darkgrey;
+	background-color: #CCCCCC;
 }
 
 .input-number {
@@ -219,10 +105,6 @@ div.row_hoverable{
 
 .clickable:hover {
 	background-color: #F4F4F4;
-}
-
-.card_padding {
-	padding: 10px;
 }
 
 .grey_text {
@@ -253,13 +135,17 @@ div.row_hoverable{
 }
 
 .header_detail_order{
-	color : blue;
+	color : #337AB7;
 	font-weight: bold;
 }
 
 #btn_add_passenger{
 	display: block;
 	margin: auto;
+}
+
+table#passengers td {
+	padding: 0 !important;
 }
 
 .td_menu {
@@ -272,6 +158,34 @@ div.row_hoverable{
 	text-align: center;
 }
 
+.modal-header {
+	background-color: #337AB7;
+	color: #FFFFFF;
+}
+
+.modal-header h5 {
+	font-weight: bold;
+	font-size: 125%;
+	width: calc(100% - 36px);
+}
+
+.modal-content .form-section {
+	font-size: 110%;
+}
+
+.modal-content .form-section.ptb12 {
+	padding-top: 9px !important;
+	padding-bottom: 9px !important;
+}
+
+.modal-header .close {
+	margin-top: 0 !important;
+}
+
+.form-section.form-section-light {
+	background-color: #FFFFFF;
+	color: #559CD9;
+}
 
 
 
@@ -308,6 +222,10 @@ div.row_hoverable{
     background-color: Gainsboro;
 }
 
+.chjs_mobile_web_title_container {
+	background-color: #337AB7;
+	color: #FFFFFF;
+}
 
 .panel {
 	display: inline;
@@ -351,15 +269,16 @@ div.scrollmenu div {
     text-decoration: none;
     width: 160px;
     margin-left: -3px;
+	cursor: pointer; cursor: hand;
 }
 
 div.scrollmenu div:first-child {
 		margin-left: 0;
 }
 
-div.scrollmenu div:hover {
-    background-color: rgb(40,96,144);
-}
+/*div.scrollmenu div:hover {*/
+    /*background-color: rgb(40,96,144);*/
+/*}*/
 
 .logged_in_as {
     color: gray;
@@ -384,4 +303,9 @@ div.scrollmenu div:hover {
 
 .order_value {
 
+}
+
+.order_name {
+	font-size: 150%;
+	color: #559CD9;
 }

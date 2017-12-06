@@ -12,7 +12,7 @@ class universal_timeline(osv.osv):
 	_description = 'Timeline Controller'
 	_auto = False
 	
-	def get_timeline_by_date(self, cr, uid, date_string):
+	def get_timeline_by_date(self, cr, uid, date_string, customer_name, service_type):
 		user_obj = self.pool.get('res.users');
 		order_obj = self.pool.get('foms.order');
 		contract_fleet_obj = self.pool.get('foms.contract.fleet');
@@ -25,6 +25,7 @@ class universal_timeline(osv.osv):
 		# GET LICENSE PLATE
 			fleet_ids = contract_fleet_obj.search(cr, uid, [
 				('header_id.state', '=', 'active'),
+				('header_id.customer_id.name', 'ilike', customer_name),
 				('driver_id.user_id', '=', driver_data.id),
 			])
 			license_plates = []
@@ -32,18 +33,27 @@ class universal_timeline(osv.osv):
 				if fleet_data.fleet_vehicle_id.license_plate:
 					license_plates.append(fleet_data.fleet_vehicle_id.license_plate)
 		# GET PLANNED AND ACTUAL ORDER
-			planned_order_ids = order_obj.search(cr, uid, [
+			domain =  [
+				('customer_contract_id.customer_id.name', 'ilike', customer_name),
+				('customer_contract_id.service_type', 'ilike', service_type),
 				('state', 'not in', ['canceled', 'rejected']),
 				('assigned_driver_id.user_id', '=', driver_data.id),
 				('start_planned_date', '<', (tomorrow_date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
 				('finish_planned_date', '>=', (date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
-			], order='start_planned_date ASC')
-			actual_order_ids = order_obj.search(cr, uid, [
+			]
+			if customer_name != '':
+				domain.append(('customer_name', 'ilike', customer_name))
+			planned_order_ids = order_obj.search(cr, uid, domain, order='start_planned_date ASC')
+		
+			domain = [
+				('customer_contract_id.customer_id.name', 'ilike', customer_name),
+				('customer_contract_id.service_type', 'ilike', service_type),
 				('state', 'not in', ['canceled', 'rejected']),
 				('actual_driver_id.user_id', '=', driver_data.id),
 				('start_date', '<', (tomorrow_date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
 				'|',('finish_date', '>=', (date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")), ('finish_date', '=', False),
-			], order='start_date ASC')
+			]
+			actual_order_ids = order_obj.search(cr, uid, domain, order='start_date ASC')
 		# ACTUAL ORDER
 			actual_orders = []
 			finish_before = 0
@@ -98,7 +108,7 @@ class universal_timeline(osv.osv):
 					'finish': 60,
 				})
 		# ADD TO RESULT
-			if len(planned_orders) != 0 or len(actual_orders) != 0:
+			if len(fleet_ids) != 0:
 				result.append({
 					'driver_id': driver_data.id,
 					'driver_name': driver_data.name,
@@ -117,7 +127,7 @@ class universal_timeline(osv.osv):
 		}
 	
 	
-	def get_timeline_by_driver(self, cr, uid, driver_id, start_date_string, end_date_string):
+	def get_timeline_by_driver(self, cr, uid, driver_id, start_date_string, end_date_string, customer_name, service_type):
 		user_obj = self.pool.get('res.users')
 		order_obj = self.pool.get('foms.order')
 		start_date = datetime.strptime(start_date_string,'%m/%d/%Y')
@@ -129,12 +139,16 @@ class universal_timeline(osv.osv):
 			tomorrow_date = start_date + timedelta(days=1)
 		# GET PLANNED AND ACTUAL ORDER
 			planned_order_ids = order_obj.search(cr, uid, [
+				('customer_contract_id.customer_id.name', 'ilike', customer_name),
+				('customer_contract_id.service_type', 'ilike', service_type),
 				('state', 'not in', ['canceled', 'rejected']),
 				('assigned_driver_id.user_id', '=', driver_data.id),
 				('start_planned_date', '<', (tomorrow_date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
 				('finish_planned_date', '>=', (start_date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
 			], order='start_planned_date ASC')
 			actual_order_ids = order_obj.search(cr, uid, [
+				('customer_contract_id.customer_id.name', 'ilike', customer_name),
+				('customer_contract_id.service_type', 'ilike', service_type),
 				('state', 'not in', ['canceled', 'rejected']),
 				('actual_driver_id.user_id', '=', driver_data.id),
 				('start_date', '<', (tomorrow_date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
@@ -208,17 +222,36 @@ class universal_timeline(osv.osv):
 			'hours': hours,
 		}
 	
-	def get_drivers(self, cr, uid):
+	def get_required_datas(self, cr, uid):
 		user_obj = self.pool.get('res.users')
+		contract_obj = self.pool.get('foms.contract')
+		
+	# DRIVER
 		driver_ids = user_obj.get_user_ids_by_group(cr, SUPERUSER_ID, 'universal', 'group_universal_driver')
-		result = []
+		drivers = []
 		for driver_data in user_obj.browse(cr, uid, driver_ids):
-			result.append({
+			drivers.append({
 				'id': driver_data.id,
 				'name': driver_data.name,
 			})
-		result = sorted(result, key=lambda driver: driver['name'])
+		drivers = sorted(drivers, key=lambda driver: driver['name'])
+		
+	# CUSTOMER
+		contract_ids = contract_obj.search(cr, uid, [])
+		customers = []
+		customers_existing_ids = []
+		for contract_data in contract_obj.browse(cr, uid, contract_ids):
+			customer_id = contract_data.customer_id.id
+			if customer_id not in customers_existing_ids:
+				customers_existing_ids.append(customer_id)
+				customers.append({
+					'id': customer_id,
+					'name': contract_data.customer_id.name,
+				})
+		customers = sorted(customers, key=lambda customer: customer['name'])
+		
 		return {
 			'status': 'ok',
-			'drivers': result,
+			'drivers': drivers,
+			'customers': customers
 		}

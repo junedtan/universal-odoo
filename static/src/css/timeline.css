@@ -60,6 +60,7 @@
 
 .bg-now {
 	background-color: cyan;
+    opacity: 0.3;
 }
 
 #btn_filter {

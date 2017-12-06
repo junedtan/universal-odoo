@@ -43,4 +43,34 @@ var mobile_app_intent_definition = {
 		'target_activity_id': 'univmobile_actv_request_quota_approve',
 		'target': 'confirm',
 	},
+	'univmobile_intent_order': {
+		'intent_type': 'page',
+		'target_activity_id': 'univmobile_actv_order',
+		'target': 'main',
+	},
+	'univmobile_intent_order_detail': {
+		'intent_type': 'page',
+		'target_activity_id': 'univmobile_actv_order_detail',
+		'target': 'main',
+	},
+	'univmobile_intent_change_start_planned_time': {
+		'intent_type': 'page',
+		'target_activity_id': 'univmobile_actv_change_start_planned_time',
+		'target': 'modal',
+	},
+	'univmobile_intent_book': {
+		'intent_type': 'page',
+		'target_activity_id': 'univmobile_actv_book_vehicle',
+		'target': 'main',
+    },
+	'univmobile_intent_edit_order': {
+		'intent_type': 'page',
+		'target_activity_id': 'univmobile_actv_edit_order',
+		'target': 'modal',
+	},
+	'univmobile_intent_cancel_order': {
+		'intent_type': 'confirm_and_action',
+		'target_activity_id': 'univmobile_actv_cancel_order',
+		'target': 'confirm',
+	},
 }

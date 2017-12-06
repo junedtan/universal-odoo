@@ -59,7 +59,7 @@ _REQUEST_LONGEVITY = [
 
 class website_mobile_app(http.Controller):
 
-	@http.route('/mobile_app', type='http', auth="user", website=True)
+	@http.route('/mobile_app_old', type='http', auth="user", website=True)
 	def mobile_app(self, **kwargs):
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
@@ -72,7 +72,7 @@ class website_mobile_app(http.Controller):
 			'homebase': handler_obj.get_homebase()
 		})
 
-	@http.route('/mobile_app_new', type='http', auth="user", website=True)
+	@http.route('/mobile_app', type='http', auth="user", website=True)
 	def mobile_app_new(self, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
@@ -185,7 +185,7 @@ class website_mobile_app(http.Controller):
 		data_book_vehicle = json.loads(response_book_vehicle.data)
 		# Get order current info
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		order_data = handler_obj.get_order(loaded_data['order_id'])
+		order_data = handler_obj.get_order(loaded_data)
 		
 		passenger_arr = []
 		for passenger in order_data.passengers:
@@ -203,6 +203,7 @@ class website_mobile_app(http.Controller):
 			'order_type': data_book_vehicle['order_type'],
 			'route_to': data_book_vehicle['route_to'],
 			'order_data': {
+				'id' : order_data.id,
 				'is_orderer_passenger': order_data.is_orderer_passenger,
 				'customer_contract_id': order_data.customer_contract_id.id,
 				'fleet_type_id': order_data.fleet_type_id.id,
@@ -218,6 +219,8 @@ class website_mobile_app(http.Controller):
 				'passengers': passenger_arr,
 				'start_planned_date': order_data.start_planned_date,
 				'finish_planned_date': order_data.finish_planned_date,
+				'start_planned_date_format_input': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
+				'finish_planned_date_format_input': datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
 			},
 		})
 		
@@ -360,6 +363,11 @@ class website_mobile_app(http.Controller):
 			'by_user_id': True,
 			'user_id': uid,
 		})
+		
+		# User
+		response_user_group = self.mobile_app_get_user_group()
+		data_user_group = json.loads(response_user_group.data)
+		
 		result = {
 			'pending': [],
 			'ready'  : [],
@@ -388,8 +396,11 @@ class website_mobile_app(http.Controller):
 			list_passenger = []
 			for passenger in order_data.passengers:
 				list_passenger.append({'name':passenger.name, 'phone' : passenger.phone_no})
-			
-			result[classification].append({
+			start_planned_date = datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
+			finish_planned_date = datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
+			start_date = order_data.start_date and datetime.strptime(order_data.start_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7) or None
+			finish_date = order_data.finish_date and datetime.strptime(order_data.finish_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7) or None
+			jsonOrder = {
 				'id': order_data.id,
 				'name': order_data.name,
 				'state': order_data.state,
@@ -397,8 +408,10 @@ class website_mobile_app(http.Controller):
 				'state_name': dict(_ORDER_STATE).get(order_data.state, ''),
 				'request_date':  datetime.strptime(order_data.request_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
 				'order_by_name': order_data.order_by.name,
-				'start_planned_date': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
-				'finish_planned_date':  datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
+				'start_planned_date': start_planned_date.strftime('%d-%m-%Y %H:%M'),
+				'finish_planned_date': finish_planned_date.strftime('%d-%m-%Y %H:%M'),
+				'start_date': start_date and start_date.strftime('%d-%m-%Y %H:%M') or '-',
+				'finish_date': finish_date and finish_date.strftime('%d-%m-%Y %H:%M') or '-',
 				'assigned_vehicle_name': order_data.assigned_vehicle_id.name,
 				'assigned_driver_name': order_data.assigned_driver_id.name,
 				'origin_location': order_data.origin_location,
@@ -420,19 +433,29 @@ class website_mobile_app(http.Controller):
 				'contract_name': order_data.customer_contract_id.name,
 				'type': order_data.order_type_by_order,
 				'type_name': dict(_ORDER_TYPE).get(order_data.order_type_by_order, ''),
-			});
+				'classification_value': classification,
+				'start_planned_date_format_input': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
+			}
+			if type(loaded_data) is int:
+				jsonOrder['user_group'] = data_user_group['user_group']
+				
+				return json.dumps(jsonOrder)
+			result[classification].append(jsonOrder);
 		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
 		result['ready']   = sorted(result['ready'],   key=lambda order: order['request_date'], reverse=True)
 		result['running'] = sorted(result['running'], key=lambda order: order['request_date'], reverse=True)
 		result['history'] = sorted(result['history'], key=lambda order: order['request_date'], reverse=True)
 		
-		# User
-		response_user_group = self.mobile_app_get_user_group()
-		data_user_group = json.loads(response_user_group.data)
-		return json.dumps({
-			'user_group': data_user_group['user_group'],
-			'list_order': result,
-		})
+		if loaded_data.get('classification', False):
+			return json.dumps({
+				'user_group': data_user_group['user_group'],
+				'list_order': result[loaded_data['classification']],
+			})
+		else:
+			return json.dumps({
+				'user_group': data_user_group['user_group'],
+				'list_order': result,
+			})
 	
 	@http.route('/mobile_app/approve_order/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_approve_order(self, data, **kwargs):
@@ -473,20 +496,20 @@ class website_mobile_app(http.Controller):
 		order_data = json.loads(data)
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		datetime_format = '%Y-%m-%dT%H:%M:%S'
-		if order_data['new_planned_start_time'].count(':') == 1:
+		if order_data['change_order_start_planned_new'].count(':') == 1:
 			datetime_format = '%Y-%m-%dT%H:%M'
-		new_start_date = datetime.strptime(order_data['new_planned_start_time'], datetime_format)
-		result = handler_obj.change_planned_start_time(int(order_data['order_id']), new_start_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT))
-		if result:
+		new_start_date = datetime.strptime(order_data['change_order_start_planned_new'], datetime_format)
+		try:
+			handler_obj.change_planned_start_time(int(order_data['order_id']), new_start_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT))
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Planned Start Time Changed'),
+				'info': _('Start planned time has been changed.'),
 				'success': True,
 			})
-		else:
+		except Exception,e :
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Changing Planned Start Time Failed'),
+				'info': e.value,
 				'success': False,
 			})
 	
@@ -799,22 +822,38 @@ class website_mobile_app_handler(osv.osv):
 	
 	def search_order(self, cr, uid, domain, param_context):
 		order_obj = self.pool.get('foms.order');
-		name_order = domain.get('order_name', '')
-		booker_name = domain.get('booker_name', '')
-		driver_name = domain.get('driver_name', '')
-		vehicle_name = domain.get('vehicle_name', '')
-		
 		filter_domain = [('start_planned_date', '>=', (datetime.now() - relativedelta(months=+2)).strftime(DEFAULT_SERVER_DATETIME_FORMAT))]
-		
-		if name_order:
-			filter_domain.append(('name', 'ilike', name_order))
-		if booker_name:
-			filter_domain.append(('order_by.name', 'ilike', booker_name))
-		if driver_name:
-			filter_domain.append(('assigned_driver_id.name', 'ilike', driver_name))
-		if vehicle_name:
-			filter_domain.append(('assigned_vehicle_id.name', 'ilike', vehicle_name))
-		
+	
+		if type(domain) is int:
+			filter_domain.append(('id', '=', domain))
+		else:
+			id_order = domain.get('order_id', '')
+			name_order = domain.get('order_name', '')
+			booker_name = domain.get('booker_name', '')
+			driver_name = domain.get('driver_name', '')
+			vehicle_name = domain.get('vehicle_name', '')
+			classification = domain.get('classification', '')
+			
+			if id_order:
+				filter_domain.append(('id', '=', id_order))
+			if name_order:
+				filter_domain.append(('name', 'ilike', name_order))
+			if booker_name:
+				filter_domain.append(('order_by.name', 'ilike', booker_name))
+			if driver_name:
+				filter_domain.append(('assigned_driver_id.name', 'ilike', driver_name))
+			if vehicle_name:
+				filter_domain.append(('assigned_vehicle_id.name', 'ilike', vehicle_name))
+			if classification:
+				if classification == 'pending':
+					filter_domain.append(('state', 'in', ['new', 'confirmed']))
+				elif classification == 'ready':
+					filter_domain.append(('state', 'in', ['ready', 'started']))
+				elif classification == 'running':
+					filter_domain.append(('state', 'in', ['start_confirmed', 'paused', 'resumed', 'finished']))
+				else:
+					filter_domain.append(('state', 'in', ['rejected', 'finish_confirmed', 'canceled']))
+			
 		order_ids = order_obj.search(cr, SUPERUSER_ID, filter_domain, context=param_context)
 		return order_obj.browse(cr, SUPERUSER_ID, order_ids)
 	

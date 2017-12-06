@@ -130,12 +130,11 @@ div.row_hoverable {
 }
 
 .div_detail_order_button {
-	margin-bottom: 10px;
 	overflow: hidden;
 }
 
 .header_detail_order{
-	color : blue;
+	color : #337AB7;
 	font-weight: bold;
 }
 
@@ -269,15 +268,16 @@ div.scrollmenu div {
     text-decoration: none;
     width: 160px;
     margin-left: -3px;
+	cursor: pointer; cursor: hand;
 }
 
 div.scrollmenu div:first-child {
 		margin-left: 0;
 }
 
-div.scrollmenu div:hover {
-    background-color: rgb(40,96,144);
-}
+/*div.scrollmenu div:hover {*/
+    /*background-color: rgb(40,96,144);*/
+/*}*/
 
 .logged_in_as {
     color: gray;
@@ -302,4 +302,9 @@ div.scrollmenu div:hover {
 
 .order_value {
 
+}
+
+.order_name {
+	font-size: 150%;
+	color: #559CD9;
 }

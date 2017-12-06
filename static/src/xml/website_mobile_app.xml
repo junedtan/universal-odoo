@@ -482,7 +482,442 @@
 		</div>
 	</t>
 
-<!-- ==================================================================================== -->
+	<t t-name="univmobile_book_vehicle">
+		<form id="book_vehicle_form">
+			<div class="form-section plr12 ptb12">Information</div>
+			<div class="plr12 ptb12">
+				<div class="row no_padding">
+					<div class="form-group col-md-6 col-xs-12">
+						<label for="contract_id" class="col-form-label">Contract</label>
+						<select id="contract_id" class="form-control">
+							<t t-foreach="detail.contract_datas" t-as="contract">
+								<option t-attf-value="{{contract.id}}"><t t-esc="contract.name"/></option>
+							</t>
+						</select>
+					</div>
+					<div class="form-group col-md-6 col-xs-12">
+						<label for="fleet_type_id" class="col-form-label">Vehicle</label>
+						<select id="fleet_type_id" class="form-control">
+							<t t-if="detail.contract_datas.length != 0">
+								<t t-foreach="detail.contract_datas[0].fleet_type" t-as="vehicle">
+									<option t-attf-value="{{vehicle.id}}"><t t-esc="vehicle.name"/></option>
+								</t>
+							</t>
+						</select>
+					</div>
+				</div>
+
+				<t t-if="detail.user_group == 'booker' || detail.user_group == 'approver'">
+					<div class="row no_padding">
+						<div class="form-group col-md-6 col-xs-12">
+							<label for="unit_id" class="col-form-label">Unit</label>
+							<select id="unit_id" class="form-control">
+								<t t-if="detail.contract_datas.length != 0">
+									<t t-foreach="detail.contract_datas[0].units" t-as="unit">
+										<option t-attf-value="{{unit.id}}"><t t-esc="unit.name"/></option>
+									</t>
+								</t>
+							</select>
+						</div>
+						<div class="form-group col-md-6 col-xs-12">
+							<label for="type_id" class="col-form-label">Type</label>
+							<select id="type_id" class="form-control">
+								<t t-foreach="detail.order_type" t-as="order_type">
+									<option t-attf-value="{{order_type.id}}"><t t-esc="order_type.name"/></option>
+								</t>
+							</select>
+						</div>
+					</div>
+				</t>
+			</div>
+
+			<t t-if="detail.user_group == 'booker' || detail.user_group == 'approver'">
+				<div class="form-section plr12 ptb12">Route</div>
+				<div class="plr12 ptb12">
+					<div class="row no_padding">
+						<div class="form-group col-md-6 col-xs-12">
+							<label for="book_vehicle_route_from" class="mb16">Origin</label>
+							<div id="book_vehicle_route_from">
+								<label class="no_bold" for="book_vehicle_route_from_district">District</label>
+								<select id="book_vehicle_route_from_district" class="form-control mb16">
+									<t t-if="detail.contract_datas.length != 0">
+										<t t-foreach="detail.contract_datas[0].districts" t-as="from_district">
+											<option t-attf-value="{{from_district.id}}"><t t-esc="from_district.name"/></option>
+										</t>
+									</t>
+								</select>
+								<label class="no_bold" for="from_area_id">Area</label>
+								<select id="from_area_id" class="form-control mb16">
+									<t t-if="detail.contract_datas.length != 0">
+										<t t-if="detail.contract_datas[0].districts.length != 0">
+											<t t-foreach="detail.contract_datas[0].districts[0].areas" t-as="from_area">
+												<option t-attf-value="{{from_area.id}}"><t t-esc="from_area.name"/></option>
+											</t>
+		`								</t>
+									</t>
+								</select>
+								<label class="no_bold" for="from_location">Location</label>
+								<input id="from_location" class="form-control mb16" type="text"/>
+							</div>
+						</div>
+
+						<div class="form-group col-md-6 col-xs-12">
+							<label for="book_vehicle_route_to" class="mb16">Destination</label>
+							<div id="book_vehicle_route_to">
+								<label class="no_bold" for="to_city_id">City</label>
+								<select id="to_city_id" class="form-control mb16">
+									<t t-foreach="detail.route_to" t-as="city">
+										<option t-attf-value="{{city.id}}"><t t-esc="city.name"/></option>
+									</t>
+								</select>
+								<label class="no_bold" for="book_vehicle_route_to_district">District</label>
+								<select id="book_vehicle_route_to_district" class="form-control mb16">
+									<t t-if="detail.route_to.length != 0">
+										<t t-foreach="detail.route_to[0].districts" t-as="to_district">
+											<option t-attf-value="{{to_district.id}}"><t t-esc="to_district.name"/></option>
+										</t>
+									</t>
+								</select>
+								<label class="no_bold" for="to_area_id">Area</label>
+								<select id="to_area_id" class="form-control mb16">
+									<t t-if="detail.route_to.length != 0">
+										<t t-if="detail.route_to[0].districts.length != 0">
+											<t t-foreach="detail.route_to[0].districts[0].areas" t-as="to_area">
+												<option t-attf-value="{{to_area.id}}"><t t-esc="to_area.name"/></option>
+											</t>
+										</t>
+									</t>
+								</select>
+								<label class="no_bold" for="to_location">Location</label>
+								<input id="to_location" class="form-control" type="text"/>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="form-section plr12 ptb12">Passenger</div>
+				<div class="plr12 ptb12">
+					<div class="row no_padding">
+						<div class="form-group">
+							<div class="col-md-12">
+								<label class="no_bold"><input id="i_am_passenger" type="checkbox" name="passenger" value="1"> I am the passenger</input></label>
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group">
+								<table id="passengers" class="table table-bordered table-striped table-highlight mb16">
+									<thead>
+										<th>Name</th>
+										<th>Phone</th>
+										<th style="padding: 0"><button id="btn_add_passenger" type="button" class="add btn form-control btn-success" aria-label="Add">
+												<span aria-hidden="true" class="fa fa-plus"></span>
+											</button></th>
+									</thead>
+									<tbody></tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</t>
+
+			<div class="form-section plr12 ptb12">Time</div>
+			<div class="plr12 ptb12">
+				<div class="row no_padding">
+					<div class="form-group col-md-6">
+						<label for="start_planned">Planned Start Time</label>
+						<input id="start_planned" class="form-control" type="datetime-local" t-attf-value="{{detail.start_planned_date}}"/>
+					</div>
+					<div class="form-group col-md-6">
+						<label for="finish_planned">Planned Finish Time</label>
+						<input id="finish_planned" class="form-control" type="datetime-local" t-attf-value="{{detail.finish_planned_date}}"/>
+					</div>
+				</div>
+			</div>
+
+			<hr />
+			<div class="row no_margin ptb12">
+				<div class="col-xs-12">
+					<t t-if="detail.order_data">
+						<button type="button" form-submit="click" class="form-control btn btn-success">Edit Order</button>
+					</t>
+					<t t-if="detail.order_data == False">
+						<button type="button" form-submit="click" class="form-control btn btn-success">Create Order</button>
+					</t>
+				</div>
+			</div>
+			<t t-if="detail.order_data">
+				<input type="hidden" id="order_id" t-att-value="detail.order_data.id" />
+			</t>
+		</form>
+	</t>
+
+	<t t-name="univmobile_order">
+		<div class="container univmobile_order">
+			<div class="scrollmenu row">
+				<t t-if="user_group != 'fullday_passenger'">
+					<div class="website_mobile_app_tab_pending_order">
+						Pending
+					</div>
+				</t>
+				<div class="website_mobile_app_tab_ready_order">
+					Ready
+				</div>
+				<div class="website_mobile_app_tab_running_order">
+					Running
+				</div>
+				<div class="website_mobile_app_tab_history_order">
+					History
+				</div>
+			</div>
+			<div class="list-container mb16"></div>
+		</div>
+	</t>
+
+	<t t-name="univmobile_order_list_row">
+		<t t-if="row.length == 0">
+			<t t-call="chjs_mobile_web_list_nodata"/>
+		</t>
+		<t t-if="row.length != 0">
+			<div t-foreach="row" t-as="order">
+				<div class="row row_hoverable" intent="univmobile_intent_order_detail" t-att-data-data_id="order.id">
+					<div class="col-md-12 card_padding list-row" style="pointer-events:none;">
+						<div class="list_title" style="pointer-events:none;">
+							<b><t t-esc="order.name"/></b> -
+							<t t-if="order.state == 'new' || order.state == 'confirmed' || order.state ==  'ready' ||
+							order.state == 'started' || order.state == 'start_confirmed' || order.state == 'resumed' ||
+							 order.state == 'finished' || order.state == 'finish_confirmed'">
+								<span class="green_text"><t t-esc="order.state_name"/></span>
+							</t>
+							<t t-if="order.state == 'rejected' || order.state == 'canceled'">
+								<span class="red_text"><t t-esc="order.state_name"/></span>
+							</t>
+							<t t-if="order.state == 'paused'">
+								<span class="orange_text"><t t-esc="order.state_name"/></span>
+							</t>
+						</div>
+						<div class="small">
+							Requested at: <b style="pointer-events:none;"><t t-esc="order.request_date"/></b>
+							by <b style="pointer-events:none;"><t t-esc="order.order_by_name"/></b>
+						</div>
+						<div class="small mt8">
+							<div class="row no_padding mt8">
+								<div class="col-xs-12">
+									<t t-if="order.origin_location">
+										Origin location is <t t-esc="order.origin_location"/> (<t t-esc="order.origin_area_name"/>) with start time of <t t-esc="order.start_date"/>.
+									</t>
+									<t t-if="order.origin_location == false">
+										Start time is <t t-esc="order.start_date"/>.
+									</t> 
+									<t t-if="order.dest_location">
+										Destination location is <t t-esc="order.dest_location"/> (<t t-esc="order.dest_area_name"/>) with finish time of <t t-esc="order.finish_date"/>.
+									</t>
+									<t t-if="order.dest_location == false">
+										Finish time is <t t-esc="order.finish_date"/>.
+									</t>
+								</div>
+							</div>
+							<t t-if="order.assigned_vehicle_name">
+								<div class="row no_padding mt8">
+									<div class="col-xs-12">Vehicle used is <t t-esc="order.assigned_vehicle_name"/> with <t t-esc="order.assigned_driver_name"/> as driver.
+									</div>
+								</div>
+							</t>
+							<t t-if="order.user_group == 'booker'">
+								<t t-if="classification_value != 'pending'">
+									<t t-if="order.pin">
+										<div class="row no_padding mt16">
+											<div class="col-xs-12">PIN: <t t-esc="order.pin"/></div>
+										</div>
+									</t>
+								</t>
+							</t>
+						</div>
+
+						<div class="div_order_button">
+							<t t-if="order.user_group == 'approver'">
+								<t t-if="order.state == 'new'">
+									<t t-if="order.over_quota_status == 'warning'">
+										<div class="red_text">
+											Approving this order will lead to over quota by
+											<t t-esc="order.order_usage"/>
+											above <t t-esc="order.red_limit"/>
+										</div>
+									</t>
+									<t t-if="order.over_quota_status != 'approval'">
+									<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_approve_order col-md-1 col-xs-4">Approve</button>
+									<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_reject_order col-md-1 col-xs-4 ml10">Reject</button>
+									</t>
+									<t t-if="order.over_quota_status == 'approval'">
+										<t t-if="order.maintained_by == 'customer'">
+											<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_reject_order col-md-1 col-xs-4 ml10">Reject</button>
+											<button type="button" t-attf-id_au = "{{order.au_id}}" t-attf-id_contract = "{{order.contract_id}}"
+													t-attf-yellow_limit = "{{order.yellow_limit}}" t-attf-red_limit = "{{order.red_limit}}"
+													class="btn btn-success btn_add_quota col-md-1 col-xs-4 ml10">Add Quota</button>
+											<div class="row dialog_request_quota" id="dialog_request_quota_container" style="width:0px;height:0px;"/>
+										</t>
+										<t t-if="order.maintained_by != 'customer'">
+											<div class="red_text">
+												Please contact PT Universal to add your quota
+											</div>
+										</t>
+									</t>
+								</t>
+							</t>
+						</div>
+					</div>
+				</div>
+			</div>
+		</t>
+	</t>
+
+	<t t-name="univmobile_order_detail">
+		<div>
+			<div class="div_detail_order_button">
+				<t t-if="detail.user_group != 'pic'">
+					<t t-if="detail.classification_value == 'pending' || detail.classification_value == 'ready'">
+						<button type="button" intent="univmobile_intent_change_start_planned_time" t-att-data-data_id="detail.id"
+								class="btn btn-success btn_change_planned_start_time mt5">Change Time</button>
+						<button type="button" intent="univmobile_intent_edit_order" t-att-data-data_id="detail.id"
+								class="btn btn-success btn_edit_order mt5">Edit Order</button>
+						<button type="button" intent="univmobile_intent_cancel_order" t-att-data-data_id="detail.id"
+								class="btn btn-danger btn_cancel_order mt5">Cancel Order</button>
+					</t>
+					<div id="change_planned_start_time"/>
+					<div id="list_order_edit_order"/>
+				</t>
+			</div>
+			<div class="row no_margin">
+				<div class="col-md-12 card_padding">
+					<h2 class="no_margin"><t t-esc="detail.name"/></h2>
+				</div>
+			</div>
+			<div class="row no_margin">
+				<div class="col-md-12">
+					<table class="table table_condensed small">
+						<tr>
+							<td>Requested</td>
+							<td><t t-esc="detail.request_date"/> by <t t-esc="detail.order_by_name"/></td>
+						</tr>
+						<t t-if="detail.assigned_vehicle_name">
+							<tr>
+								<td>Vehicle</td>
+								<td><t t-esc="detail.assigned_vehicle_name"/></td>
+							</tr>
+						</t>
+						<t t-if="detail.assigned_driver_name">
+							<tr>
+								<td>Driver</td>
+								<td><t t-esc="detail.assigned_driver_name"/></td>
+							</tr>
+						</t>
+						<t t-if="detail.origin_location || detail.dest_location">
+							<tr>
+								<td colspan="2" class="header_detail_order">Route</td>
+							</tr>
+						</t>
+						<t t-if="detail.origin_location">
+							<tr>
+								<td>From</td>
+								<td><t t-esc="detail.origin_location"/> (<t t-esc="detail.origin_area_name"/>)</td>
+							</tr>
+						</t>
+						<t t-if="detail.dest_location">
+							<tr>
+								<td>To</td>
+								<td><t t-esc="detail.dest_location"/> (<t t-esc="detail.dest_area_name"/>)</td>
+							</tr>
+						</t>
+						<t t-if="detail.service_type != 'full_day'">
+							<!--<t t-if="detail.list_passenger.length != 0">-->
+								<!--<tr>-->
+									<!--<td colspan="2" class = "header_detail_order">Passenger</td>-->
+								<!--</tr>-->
+								<!--<t t-foreach="detail.list_passenger" t-as="passenger">-->
+									<!--<tr>-->
+										<!--<td>-->
+											<!--<t t-esc="passenger.name"/>-->
+										<!--</td>-->
+										<!--<td>-->
+											<!--<t t-if="passenger.phone"> <t t-esc="passenger.phone"/></t>-->
+										<!--</td>-->
+									<!--</tr>-->
+								<!--</t>-->
+							<!--</t>-->
+						</t>
+						<tr>
+							<td colspan="2" class = "header_detail_order">Time</td>
+						</tr>
+						<tr>
+							<td>Planned Start</td>
+							<td><t t-esc="detail.start_planned_date"/></td>
+						</tr>
+						<tr>
+							<td>Planned Finish</td>
+							<td><t t-esc="detail.finish_planned_date"/></td>
+						</tr>
+						<tr>
+							<td>Actual Start</td>
+							<td><t t-esc="detail.start_date"/></td>
+						</tr>
+						<tr>
+							<td>Actual Finish</td>
+							<td><t t-esc="detail.finish_date"/></td>
+						</tr>
+						<tr>
+							<td colspan="2" class = "header_detail_order">Information</td>
+						</tr>
+						<tr>
+							<td>Contract</td>
+							<td><t t-esc="detail.contract_name"/></td>
+						</tr>
+						<t t-if="detail.service_type == 'by_order'">
+							<tr>
+								<td>Unit</td>
+								<td><t t-esc="detail.au_name"/></td>
+							</tr>
+						</t>
+						<tr>
+							<td>Service Type</td>
+							<td><t t-esc="detail.service_type_name"/></td>
+						</tr>
+						<t t-if="detail.type">
+							<tr>
+								<td>Type</td>
+								<td><t t-esc="detail.type_name"/></td>
+							</tr>
+						</t>
+						<tr>
+							<td>State</td>
+							<td><t t-esc="detail.state_name"/></td>
+						</tr>
+					</table>				
+				</div>
+			</div>
+		</div>
+	</t>
+
+	<t t-name="univmobile_change_start_planned_time">
+		<form id="change_start_planned_time_form">
+			<div class="plr12 ptb12">
+				<div class="form-group">
+					<label for="change_order_start_planned_new">New Start Planned Time</label>
+					<input id="change_order_start_planned_new" class="form-control" type="datetime-local"
+							t-attf-value="{{detail.start_planned_date_format_input}}"/>
+				</div>
+			</div>
+			<hr />
+			<div class="row no_margin ptb12">
+				<div class="col-xs-12">
+					<button type="button" form-submit="click" class="btn btn-success form-control">Change Time</button>
+					<button type="button" class="form-control btn btn-secondary" data-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+			<input type="hidden" id="order_id" t-att-value="detail.id" />
+		</form>
+	</t>
+
+	<!-- ==================================================================================== -->
 <!-- ==================================================================================== -->
 <!-- ==================================================================================== -->
 <!-- Dari titik ini ke bawah adalah qweb template untuk versi lama -->
@@ -992,6 +1427,7 @@
 
 	<!-- LIST CONTRACT -->
 
+<!--
 	<t t-name="website_mobile_app_list_contract">
 		<t class="full_height container universal_website_mobile_app">
 			<t t-if="contract_datas.length == 0">
@@ -1037,6 +1473,51 @@
 		</t>
 		<div id="detail_contract_container"></div>
 	</t>
+
+	<t t-name="website_mobile_app_list_contract">-->
+		<!--<t class="full_height container universal_website_mobile_app">-->
+			<!--<t t-if="contract_datas.length == 0">-->
+				<!--<div class="row">-->
+					<!--<div class="col-md-12 empty_data">-->
+						<!--<h4>Data Kosong</h4>-->
+					<!--</div>-->
+				<!--</div>-->
+			<!--</t>-->
+			<!--<t t-if="contract_datas.length != 0">-->
+				<!--<t t-set="i" t-value="0"/>-->
+				<!--<div class="row">-->
+					<!--<t t-foreach="contract_datas" t-as="contract">-->
+						<!--<div class="list_contract col-md-12 clickable contract_detail no_padding" t-attf-id_contract = "{{i}}">-->
+							<!--<div class="card_padding list-row" style="pointer-events:none;">-->
+								<!--<t t-if="user_group == 'approver'">-->
+									<!--<t t-esc="contract.name"/>-->
+								<!--</t>-->
+								<!--<t t-if="user_group != 'approver'">-->
+									<!--<div class="list_title">-->
+										<!--<b><t t-esc="contract.name"/></b>- -->
+										<!--<t t-if="contract.state == 'active'">-->
+											<!--<span class="green_text">-->
+												<!--<t t-esc="contract.state_name"/>-->
+											<!--</span>-->
+										<!--</t>-->
+										<!--<t t-if="contract.state != 'active'">-->
+											<!--<span class="red_text">-->
+												<!--<t t-esc="contract.state_name"/>-->
+											<!--</span>-->
+										<!--</t>-->
+									<!--</div>-->
+									<!--<t t-esc="contract.start_date"/> / <t t-esc="contract.end_date"/><br></br>-->
+									<!--Service Type: <t t-esc="contract.service_type"/><br></br>-->
+								<!--</t>-->
+							<!--</div>-->
+							<!--<t t-set="i" t-value="i+1"/>-->
+						<!--</t>-->
+					<!--</div>-->
+				<!--</t>-->
+			<!--</t>-->
+		<!--</div>-->
+		<!--<div id="detail_contract_container"></div>-->
+	<!--</t>-->
 
 	<!-- DETAIL CONTRACT HEADER-->
 

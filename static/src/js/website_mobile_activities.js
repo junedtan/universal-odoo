@@ -385,5 +385,506 @@ var mobile_app_activity_definition = {
 		}
 	},
 
+//ORDERS -----------------------------------------------------------------------------------------------------------------
+
+	'univmobile_actv_order': {
+		title: 'Orders',
+		back_intent_id: 'univmobile_intent_main',
+		qweb_template_id: 'univmobile_order',
+		onload_callback: function(activity_data, intent_data) {
+			//list order
+			var order_list_view = mobile_app.list_view({
+				container: ".univmobile_order .list-container",
+				row_qweb: "univmobile_order_list_row",
+				prepare_data: function(data) {
+					var new_data = [];
+					$.each(data['list_order'], function(idx, row) {
+						row['user_group'] = data['user_group'];
+						new_data.push(row);
+					});
+					return [new_data];
+				},
+			});
+
+			function onclick_tab_order(event) {
+				$('.website_mobile_app_tab_pending_order').css("background-color", "#337ab7");
+				$('.website_mobile_app_tab_ready_order').css("background-color", "#337ab7");
+				$('.website_mobile_app_tab_running_order').css("background-color", "#337ab7");
+				$('.website_mobile_app_tab_history_order').css("background-color", "#337ab7");
+				$('.' + event.target.className).css("background-color", "#286090");
+			};
+
+			$('.website_mobile_app_tab_pending_order').click(function(event) {
+				onclick_tab_order(event);
+				mobile_app.data_manager.attach_view('order_pending', 'order_list', order_list_view);
+				mobile_app.data_manager.refresh('order_pending', {}, true);
+			});
+			$('.website_mobile_app_tab_ready_order').click(function(event) {
+				onclick_tab_order(event);
+				mobile_app.data_manager.attach_view('order_ready', 'order_list', order_list_view);
+				mobile_app.data_manager.refresh('order_ready', {}, true);
+			});
+			$('.website_mobile_app_tab_running_order').click(function(event) {
+				onclick_tab_order(event);
+				mobile_app.data_manager.attach_view('order_running', 'order_list', order_list_view);
+				mobile_app.data_manager.refresh('order_running', {}, true);
+			});
+			$('.website_mobile_app_tab_history_order').click(function(event) {
+				onclick_tab_order(event);
+				mobile_app.data_manager.attach_view('order_history', 'order_list', order_list_view);
+				mobile_app.data_manager.refresh('order_history', {}, true);
+			});
+			$('.website_mobile_app_tab_pending_order').click();
+			order_list_view.render_view();
+		}
+	},
+
+	'univmobile_actv_book_vehicle': {
+		title: 'Book Vehicle',
+		back_intent_id: 'univmobile_intent_main',
+		onload_callback: function(activity_data, intent_data) {
+		//form request book vehicle
+			var data_book_vehicle = mobile_app.detail_view({
+				container: "#chjs_mobile_web_container",
+				detail_qweb: "univmobile_book_vehicle",
+				prepare_data: function(data) {
+					mobile_app.cache['contract_datas'] = data['contract_datas'];
+					mobile_app.cache['route_to'] = data['route_to'];
+					mobile_app.cache['user'] = data['user'];
+					mobile_app.cache['user']['user_group'] = data['user_group'];
+
+					data['start_planned_date'] = new Date().addHours(1).toDatetimeString();
+                    data['finish_planned_date'] = new Date().addHours(2).toDatetimeString();
+
+					return data;
+				},
+				after_refresh: function(data) {
+					var form_object = $("#book_vehicle_form");
+					mobile_app.form.initialize("#book_vehicle_form", {
+						action: '/mobile_app/create_edit_order/',
+						validate_and_prepare: function(form_object) {
+							var valid = true;
+							var form_data = mobile_app.form.get_values(form_object);
+							valid = is_valid_form_data_order(form_data);
+							console.log(valid);
+							form_data['mode_create_or_edit'] = 'create';
+							return {
+								valid: valid,
+								form_data: form_data,
+							}
+						},
+						after_success: function(response) {
+						//reload list order
+							console.log(response);
+							if (response.success){
+								mobile_app.intent('univmobile_intent_order', {});
+							}
+						},
+						events: {
+							"change #contract_id": function(event) {
+								var contract_id = $(this).val();
+								onchange_book_vehicle_contract_id(contract_id);
+							},
+							"change #book_vehicle_route_from_district": function(event) {
+								var district_id = $(this).val();
+								onchange_book_vehicle_from_district(district_id);
+							},
+							"change #to_city_id": function(event) {
+								var city_id = $(this).val();
+								onchange_book_vehicle_to_city(city_id);
+							},
+							"change #book_vehicle_route_to_district": function(event) {
+								var district_id= $(this).val();
+								onchange_book_vehicle_to_district(district_id);
+							},
+							"click #i_am_passenger": function(event) {
+								onclick_create_order_i_am_passenger("");
+							},
+							"click #btn_add_passenger": function(event) {
+								onclick_book_vehicle_btn_add_passenger();
+							},
+						},
+					});
+					$('#i_am_passenger').click();
+					$('#i_am_passenger').click();
+					$('#i_am_passenger').prop('checked', true);
+				}
+			});
+
+			mobile_app.data_manager.attach_view('book_vehicle', 'book_vehicle', data_book_vehicle);
+			mobile_app.data_manager.refresh('book_vehicle', {}, true);
+		}
+	},
+
+	'univmobile_actv_order_detail': {
+		title: 'Order Detail',
+		back_intent_id: 'univmobile_intent_order',
+		onload_callback: function(activity_data, intent_data) {
+			var order_detail_view = mobile_app.detail_view({
+				container: "#chjs_mobile_web_container",
+				detail_qweb: "univmobile_order_detail",
+			})
+			mobile_app.cache['selected_order_id'] = intent_data['data_id'];
+			mobile_app.data_manager.attach_view('order_detail', 'order_detail', order_detail_view);
+			mobile_app.data_manager.refresh('order_detail', intent_data, true);
+		}
+	},
+	'univmobile_actv_change_start_planned_time': {
+		title: 'Change Start Planned Time',
+		back_intent_id: 'univmobile_intent_order_detail',
+		onload_callback: function(activity_data, intent_data) {
+			var change_start_planned_view = mobile_app.detail_view({
+				container: "#chjs_mobile_modal_content",
+				detail_qweb: "univmobile_change_start_planned_time",
+				after_refresh: function(data) {
+					mobile_app.form.initialize("#change_start_planned_time_form", {
+						action: '/mobile_app/change_planned_start_time/',
+						validate_and_prepare: function(form_object) {
+							var valid = true;
+							var form_data = mobile_app.form.get_values(form_object);
+							if (form_data['change_order_start_planned_new'] == '') {
+								alert("Please fill in new start planned time.");
+								valid = false;
+							}
+							return {
+								valid: valid,
+								form_data: form_data,
+							}
+						},
+						after_success: function(response) {
+							mobile_app.close_modal();
+							mobile_app.intent('univmobile_intent_order_detail', {
+								data_id: mobile_app.cache['selected_order_id'],
+							});
+						},
+					});
+				}
+			});
+			mobile_app.data_manager.attach_view('order_detail', 'order_edit', change_start_planned_view);
+			mobile_app.data_manager.refresh('order_detail', intent_data, true);
+		}
+	},
+	'univmobile_actv_edit_order': {
+		title: 'Edit Order',
+		back_intent_id: 'univmobile_intent_order_detail',
+		onload_callback: function(activity_data, intent_data) {
+			var edit_order_view = mobile_app.detail_view({
+				container: "#chjs_mobile_modal_content",
+				detail_qweb: "univmobile_book_vehicle",
+				prepare_data: function(data) {
+					console.log(data);
+					mobile_app.cache['contract_datas'] = data['contract_datas'];
+					mobile_app.cache['route_to'] = data['route_to'];
+					mobile_app.cache['user'] = data['user'];
+					mobile_app.cache['order_data'] = data['order_data'];
+					mobile_app.cache['user']['user_group'] = data['user_group'];
+
+					console.log(mobile_app.cache['order_data']);
+					data['start_planned_date'] = mobile_app.cache['order_data'].start_planned_date_format_input;
+					data['finish_planned_date'] = mobile_app.cache['order_data'].finish_planned_date_format_input;
+					return data;
+				},
+				after_refresh: function(data) {
+					mobile_app.form.initialize("#book_vehicle_form", {
+						action: '/mobile_app/create_edit_order/',
+						validate_and_prepare: function(form_object) {
+							var valid = true;
+							var form_data = mobile_app.form.get_values(form_object);
+							valid = is_valid_form_data_order(form_data);
+							form_data['mode_create_or_edit'] = 'edit';
+							console.log(form_data);
+							return {
+								valid: valid,
+								form_data: form_data,
+							}
+						},
+						after_success: function(response) {
+							if (response.success){
+								mobile_app.close_modal();
+								mobile_app.intent('univmobile_intent_order_detail', {
+									data_id: mobile_app.cache['selected_order_id'],
+								});
+							}
+						},
+						events: {
+							"change #contract_id": function(event) {
+								var contract_id = $(this).val();
+								onchange_book_vehicle_contract_id(contract_id);
+							},
+							"change #book_vehicle_route_from_district": function(event) {
+								var district_id = $(this).val();
+								onchange_book_vehicle_from_district(district_id);
+							},
+							"change #to_city_id": function(event) {
+								var city_id = $(this).val();
+								onchange_book_vehicle_to_city(city_id);
+							},
+							"change #book_vehicle_route_to_district": function(event) {
+								var district_id= $(this).val();
+								onchange_book_vehicle_to_district(district_id);
+							},
+							"click #i_am_passenger": function(event) {
+								onclick_create_order_i_am_passenger("");
+							},
+							"click #btn_add_passenger": function(event) {
+								onclick_book_vehicle_btn_add_passenger();
+							},
+						},
+					});
+					var order_data = mobile_app.cache['order_data'];
+					$('#contract_id').val(""+order_data.customer_contract_id).change();
+					$('#fleet_type_id').val(""+order_data.fleet_type_id).change();
+					$('#unit_id').val(""+order_data.alloc_unit_id).change();
+					$('#type_id').val(""+order_data.order_type_by_order).change();
+					$('#book_vehicle_route_from').val(""+order_data.origin_district_id).change();
+					$('#from_area_id').val(""+order_data.origin_area_id).change();
+					$('#from_location').val(""+order_data.origin_location).change();
+					$('#to_city_id').val(""+order_data.dest_city_id).change();
+					$('#book_vehicle_route_to_district').val(""+order_data.dest_district_id).change();
+					$('#to_area_id').val(""+order_data.dest_area_id).change();
+					$('#to_location').val(""+order_data.dest_location).change();
+
+					var ckb_i_am_passenger = $('#ckb_i_am_passenger');
+					console.log(order_data.passengers);
+					$.each(order_data.passengers, function(index, passenger) {
+						if(!passenger.is_orderer) {
+							add_passenger_to_table(passenger.name, passenger.phone_no, passenger.id);
+						} else {
+							$('#i_am_passenger').click();
+							$('#i_am_passenger').click();
+							$('#i_am_passenger').prop('checked', true);
+						}
+					});
+				}
+			});
+			mobile_app.data_manager.attach_view('order_edit', 'order_edit', edit_order_view);
+			mobile_app.data_manager.refresh('order_edit', intent_data, true);
+		}
+	},
+	'univmobile_actv_cancel_order': {
+		title: 'Cancel Order',
+		confirm_text: 'Are you sure to cancel this order? This cannot be undone.',
+		action: '/mobile_app/cancel_order/',
+		action_payload: function(intent_data) {
+			return [intent_data.data_id.toString()];
+		},
+		is_alert_message: true,
+		after_success: function(response) {
+			mobile_app.intent('univmobile_intent_order_detail', {
+				data_id: mobile_app.cache['selected_order_id'],
+			});
+		}
+	},
+
 };
+
+// Function For Book / Edit Order -------------------------------------------------------------------------------------------------------------------
+
+function onchange_book_vehicle_contract_id(contract_id){
+	$.each(mobile_app.cache['contract_datas'], function(index, contract_data) {
+		if (contract_data.id == contract_id) {
+			// Update fleet selection
+			$('#fleet_type_id').empty();
+			$.each(contract_data.fleet_type, function(index, fleet_type_data) {
+				$('#fleet_type_id').append(
+					'<option value=' + fleet_type_data.id + '>' + fleet_type_data.name + '</option>');
+			});
+			// Update allocation unit selection
+			$('#unit_id').empty();
+			$.each(contract_data.units, function(index, unit) {
+				$('#unit_id').append(
+					'<option value=' + unit.id + '>' + unit.name + '</option>');
+			});
+			// Update route_from_disctrict selection
+			$('#create_order_route_from_district').empty();
+			$.each(contract_data.districts, function(index, district) {
+				$('#create_order_route_from_district').append(
+					'<option value=' + district.id + '>' + district.name + '</option>');
+			});
+		}
+	});
+};
+
+function onchange_book_vehicle_from_district(district_id){
+	var contract_id = $('#contract_id').val();
+	$.each(mobile_app.cache['contract_datas'], function(index, contract_data) {
+		if (contract_data.id == contract_id) {
+			console.log(contract_data.districts);
+			$.each(contract_data.districts, function(index, district) {
+				if (district.id == district_id) {
+					$('#from_area_id').empty();
+					$.each(district.areas, function(index, area) {
+						$('#from_area_id').append(
+							'<option value=' + area.id + '>' + area.name + '</option>');
+					});
+				}
+			});
+		}
+	});
+};
+
+function onchange_book_vehicle_to_city(city_id){
+	$.each(mobile_app.cache['route_to'], function(index, city) {
+		if (city.id == city_id) {
+			$('#book_vehicle_route_to_district').empty();
+			$('#to_area_id').empty();
+			$.each(city.districts, function(index, district) {
+				$('#book_vehicle_route_to_district').append(
+					'<option value=' + district.id + '>' + district.name + '</option>');
+			});
+			$('#book_vehicle_route_to_district').change();
+		}
+	});
+};
+
+function onchange_book_vehicle_to_district(district_id){
+	var city_id = $('#to_city_id').val();
+	$.each(mobile_app.cache['route_to'], function(index, city) {
+		if (city.id == city_id) {
+			$.each(city.districts, function(index, district) {
+				if (district.id == district_id) {
+					$('#to_area_id').empty();
+					$.each(district.areas, function(index, area) {
+						$('#to_area_id').append(
+							'<option value=' + area.id + '>' + area.name + '</option>');
+					});
+				}
+			});
+		}
+	});
+};
+
+function onclick_create_order_i_am_passenger(exist_id) {;
+	var checkbox = $("#i_am_passenger");
+	mobile_app.cache['my_id'] = "passenger_me";
+	if(checkbox.prop('checked')) {
+		var table_passengers = $("#passengers");
+		table_passengers.prepend(get_row_string_passenger(mobile_app.cache['user'].name,
+			mobile_app.cache['user'].phone === false ? '-' : mobile_app.cache['user'].phone, mobile_app.cache['my_id'], exist_id, false));
+	} else {
+		$("#"+mobile_app.cache['my_id']).remove();
+	}
+};
+
+function onclick_create_order_remove_passenger(button_remove) {
+	button_remove.closest('tr').remove();
+};
+
+function get_row_string_passenger(name, phone, id, exist_id, removable) {
+	if(id === "") {
+		if(exist_id === "") {
+			var row = '<tr>';
+		} else {
+			var row = '<tr exist_id="' + exist_id + '">';
+		}
+	} else {
+		if(exist_id === "") {
+			var row = '<tr id="' + id + '">';
+		} else {
+			var row = '<tr id="' + id + '" exist_id="' + exist_id + '">';
+		}
+	}
+	if(removable === true) {
+		row += '<td><input type="text" class="tbl_name form-control" value="' + name + '"/></td>' +
+				'<td><input type="text" class="tbl_phone form-control" value="' + phone + '"/></td>' +
+				'<td><button type="button" class="btn_remove_passenger form-control btn btn-default" aria-label="Close">' +
+						'<span class="fa fa-close"></span>' +
+					'</button></td>';
+	} else {
+		row += '<td><input type="text" class="tbl_name form-control" value="' + name + '" readonly/></td>' +
+				'<td><input type="text" class="tbl_phone form-control" value="' + phone + '" readonly/></td>' +
+				'<td></td>';
+	}
+	row += '</tr>';
+	return row;
+};
+
+function onclick_book_vehicle_btn_add_passenger(){
+	var table_passengers = $("#passengers");
+	table_passengers.append(get_row_string_passenger("", "", "", "", true));
+	$(".btn_remove_passenger").click(function(){
+		onclick_create_order_remove_passenger(this);
+	});
+}
+
+function is_valid_form_data_order(form_data){
+	var valid = true;
+	if(mobile_app.cache['user']['user_group'] !== 'fullday_passenger') {
+		passengers = [];
+		$('#passengers > tbody > tr').each(function() {
+			var row = $(this);
+			var name = row.find('.tbl_name').val().trim();
+			var phone = row.find('.tbl_phone').val().trim();
+			var passenger_info;
+			if(name && phone) {
+				passenger_info = {
+					'name': name,
+					'phone_no': phone,
+				}
+				if(row.attr("id") === mobile_app.cache['my_id']) {
+					passenger_info['is_orderer'] = true;
+				} else {
+					passenger_info['is_orderer'] = false;
+				}
+				if(row.attr("exist_id") && (row.attr("exist_id").trim() !== false || row.attr("exist_id").trim() !== '')) {
+					passenger_info['exist_id'] = row.attr("exist_id");
+				}
+				passengers.push(passenger_info);
+			} else {
+				alert('Please complete the passengers information, name and phone number are both required!');
+				valid = false;
+			}
+		});
+
+		form_data['passengers'] = passengers;
+	}
+	if (form_data['contract_id'] == '') {
+		alert('You have no Contract!');
+		valid = false;
+	} else if (form_data['fleet_type_id'] == '') {
+		alert('You have no Fleet!');
+		valid = false;
+	} else if (form_data['start_planned'] == '') {
+		alert('Please input the start planned date correctly!');
+		valid = false;
+	} else if (form_data['finish_planned'] == '') {
+		alert('Please input the finish planned date correctly!');
+		valid = false;
+	}
+
+	if(mobile_app.cache['user']['user_group'] === 'booker' || mobile_app.cache['user']['user_group'] === 'approver') {
+		if (!form_data['unit_id']) {
+			alert('You have no Unit!');
+			valid = false;
+		} else if (!form_data['type_id']) {
+			alert('Please select the Order Type!');
+			valid = false;
+		} else if (!form_data['from_area_id']) {
+			alert('Please select the Origin Area!');
+			valid = false;
+		} else if (!form_data['from_location']) {
+			alert('Please input the Origin Location!');
+			valid = false;
+		} else if (!form_data['to_city_id']) {
+			alert('Please select the Destination City!');
+			valid = false;
+		} else if (!form_data['to_area_id']) {
+			alert('Please select the Destination Area!');
+			valid = false;
+		} else if (!form_data['to_location']) {
+			alert('Please input the Destination Location!');
+			valid = false;
+		}
+	}
+	return valid;
+};
+
+function add_passenger_to_table(name, phone, exist_id) {
+	var table_passengers = $("#passengers");
+	table_passengers.append(get_row_string_passenger(name, phone, '', exist_id, true));
+	$(".btn_remove_passenger").click(function(){
+		onclick_create_order_remove_passenger(this);
+	});
+};
+
 

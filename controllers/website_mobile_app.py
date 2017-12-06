@@ -779,7 +779,7 @@ class website_mobile_app_handler(osv.osv):
 		driver_name = domain.get('driver_name', '')
 		vehicle_name = domain.get('vehicle_name', '')
 		
-		filter_domain = [('start_planned_date', '>=', (datetime.now() - relativedelta(months=+1)).strftime(DEFAULT_SERVER_DATETIME_FORMAT))]
+		filter_domain = [('start_planned_date', '>=', (datetime.now() - relativedelta(months=+2)).strftime(DEFAULT_SERVER_DATETIME_FORMAT))]
 		
 		if name_order:
 			filter_domain.append(('name', 'ilike', name_order))
@@ -789,7 +789,6 @@ class website_mobile_app_handler(osv.osv):
 			filter_domain.append(('assigned_driver_id.name', 'ilike', driver_name))
 		if vehicle_name:
 			filter_domain.append(('assigned_vehicle_id.name', 'ilike', vehicle_name))
-		
 		order_ids = order_obj.search(cr, SUPERUSER_ID, filter_domain, context=param_context)
 		return order_obj.browse(cr, SUPERUSER_ID, order_ids)
 	

@@ -59,7 +59,7 @@ _REQUEST_LONGEVITY = [
 
 class website_mobile_app(http.Controller):
 
-	@http.route('/mobile_app', type='http', auth="user", website=True)
+	@http.route('/mobile_app_old', type='http', auth="user", website=True)
 	def mobile_app(self, **kwargs):
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
@@ -72,7 +72,7 @@ class website_mobile_app(http.Controller):
 			'homebase': handler_obj.get_homebase()
 		})
 
-	@http.route('/mobile_app_new', type='http', auth="user", website=True)
+	@http.route('/mobile_app', type='http', auth="user", website=True)
 	def mobile_app_new(self, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
@@ -396,7 +396,10 @@ class website_mobile_app(http.Controller):
 			list_passenger = []
 			for passenger in order_data.passengers:
 				list_passenger.append({'name':passenger.name, 'phone' : passenger.phone_no})
-			
+			start_planned_date = datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
+			finish_planned_date = datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
+			start_date = order_data.start_date and datetime.strptime(order_data.start_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7) or None
+			finish_date = order_data.finish_date and datetime.strptime(order_data.finish_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7) or None
 			jsonOrder = {
 				'id': order_data.id,
 				'name': order_data.name,
@@ -405,8 +408,10 @@ class website_mobile_app(http.Controller):
 				'state_name': dict(_ORDER_STATE).get(order_data.state, ''),
 				'request_date':  datetime.strptime(order_data.request_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
 				'order_by_name': order_data.order_by.name,
-				'start_planned_date': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
-				'finish_planned_date':  datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
+				'start_planned_date': start_planned_date.strftime('%d-%m-%Y %H:%M'),
+				'finish_planned_date': finish_planned_date.strftime('%d-%m-%Y %H:%M'),
+				'start_date': start_date and start_date.strftime('%d-%m-%Y %H:%M') or '-',
+				'finish_date': finish_date and finish_date.strftime('%d-%m-%Y %H:%M') or '-',
 				'assigned_vehicle_name': order_data.assigned_vehicle_id.name,
 				'assigned_driver_name': order_data.assigned_driver_id.name,
 				'origin_location': order_data.origin_location,

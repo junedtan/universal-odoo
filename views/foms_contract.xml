@@ -407,6 +407,7 @@
 		<record model="ir.ui.view" id="foms_contract_change_driver_phone_tree">
 			<field name="name">foms.contract.change.driver.phone.tree</field>
 			<field name="model">hr.employee</field>
+			<field name="priority">200</field>
 			<field name="arch" type="xml">
 				<tree version="7.0" string="Driver Phone" editable="bottom" create="false" delete="false">
 					<field name="name" />

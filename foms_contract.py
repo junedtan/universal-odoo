@@ -748,7 +748,7 @@ class foms_contract_fleet(osv.osv):
 	
 # ==========================================================================================================================
 
-class foms_contract_fleet_planning_memory(osv.osv):
+class foms_contract_fleet_planning_memory(osv.osv_memory):
 
 	_name = "foms.contract.fleet.planning.memory"
 	_description = 'Contract Fleet Planning'
@@ -793,7 +793,7 @@ class foms_contract_fleet_planning_memory(osv.osv):
 		
 # ==========================================================================================================================
 
-class foms_contract_fleet_planning_line_memory(osv.osv):
+class foms_contract_fleet_planning_line_memory(osv.osv_memory):
 
 	_name = "foms.contract.fleet.planning.line.memory"
 	_description = 'Contract Fleet Planning Line'
@@ -801,7 +801,7 @@ class foms_contract_fleet_planning_line_memory(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'header_id': fields.many2one('foms.contract.fleet.planning.memory', 'Fleet Planning'),
+		'header_id': fields.many2one('foms.contract.fleet.planning.memory', 'Fleet Planning', ondelete="cascade"),
 		'fleet_type_id': fields.many2one('fleet.vehicle.model', 'Fleet Type'),
 		'fleet_vehicle_id': fields.many2one('fleet.vehicle', 'Vehicle'),
 		'driver_id': fields.many2one('hr.employee', 'Driver'),
@@ -810,7 +810,7 @@ class foms_contract_fleet_planning_line_memory(osv.osv):
 	
 # ==========================================================================================================================
 
-class foms_contract_shuttle_schedule_memory(osv.osv):
+class foms_contract_shuttle_schedule_memory(osv.osv_memory):
 
 	_name = "foms.contract.shuttle.schedule.memory"
 	_description = 'Contract Shuttle Schedule'
@@ -884,7 +884,7 @@ class foms_contract_shuttle_schedule_memory(osv.osv):
 		
 # ==========================================================================================================================
 
-class foms_contract_shuttle_schedule_line_memory(osv.osv):
+class foms_contract_shuttle_schedule_line_memory(osv.osv_memory):
 
 	_name = "foms.contract.shuttle.schedule.line.memory"
 	_description = 'Contract Shuttle Schedule Line'
@@ -892,7 +892,7 @@ class foms_contract_shuttle_schedule_line_memory(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
-		'header_id': fields.many2one('foms.contract.shuttle.schedule.memory', 'Shuttle Schedule'),
+		'header_id': fields.many2one('foms.contract.shuttle.schedule.memory', 'Shuttle Schedule', ondelete="cascade"),
 		'dayofweek': fields.selection([
 			('A','Same all week'),
 			('0','Monday'),

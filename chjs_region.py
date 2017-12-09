@@ -7,5 +7,8 @@ class chjs_region(osv.osv):
 	_inherit = 'chjs.region'
 
 	_columns = {
+		'sequence': fields.integer('Sequence'),
 		'emergency_number': fields.char('Emergency Number'),
 	}
+
+	_order = 'sequence'

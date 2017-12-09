@@ -94,8 +94,8 @@ class res_partner_route(osv.osv):
 	_columns = {
 		'header_id': fields.many2one('res.partner', 'Partner', ondelete='cascade'),
 		'name': fields.char('Route Name', required=True),
-		'start_location': fields.many2one('res.partner.location', 'Start Location', required=True, ondelete='restrict'),
-		'end_location': fields.many2one('res.partner.location', 'End Location', required=True, ondelete='restrict'),
+		'start_location': fields.many2one('res.partner.location', 'Start Location', required=True, ondelete='cascade'),
+		'end_location': fields.many2one('res.partner.location', 'End Location', required=True, ondelete='cascade'),
 	}
 	
 # CONSTRAINTS -------------------------------------------------------------------------------------------------------------------

@@ -101,6 +101,8 @@
 						</group>
 						<group>
 							<field name="request_date" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
+							<field name="purpose_id" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
+							<field name="other_purpose" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
 							<field name="actual_vehicle_id" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['started','start_confirmed','finished','finish_confirmed'])]}" />
 							<field name="actual_driver_id" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['started','start_confirmed','finished','finish_confirmed'])]}" />
 							<field name="pin" attrs="{'invisible': [('service_type','!=','by_order')]}" readonly="1" />
@@ -327,6 +329,18 @@
 					<footer>
 						<button type="object" name="action_execute" string="Execute" />
 					</footer>
+				</form>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="foms_booking_purpose_form">
+			<field name="name">foms.booking.purpose</field>
+			<field name="model">foms.booking.purpose</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Customer Order" >
+					<group>
+						<field name="name"/>
+					</group>
 				</form>
 			</field>
 		</record>

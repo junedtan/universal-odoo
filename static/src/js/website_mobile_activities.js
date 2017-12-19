@@ -643,6 +643,8 @@ var mobile_app_activity_definition = {
 					$('#book_vehicle_route_to_district').val(""+order_data.dest_district_id).change();
 					$('#to_area_id').val(""+order_data.dest_area_id).change();
 					$('#to_location').val(""+order_data.dest_location).change();
+					$('#purpose_id').val(""+order_data.purpose_id).change();
+					$('#other_purpose').val(""+order_data.other_purpose).change();
 
 					var ckb_i_am_passenger = $('#ckb_i_am_passenger');
 					console.log(order_data.passengers);

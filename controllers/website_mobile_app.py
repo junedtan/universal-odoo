@@ -168,10 +168,19 @@ class website_mobile_app(http.Controller):
 				'name': region.name,
 				'districts': route_district_arr,
 			})
+		# Booking Purpose
+		purpose_arr = []
+		purposes = handler_obj.search_purpose({})
+		for purpose in purposes:
+			purpose_arr.append({
+				'id': purpose.id,
+				'name': purpose.name,
+			})
 		
 		return json.dumps({
 			'user_group': data_user_group['user_group'],
 			'contract_datas': data_fetch_contract['list_contract'],
+			'booking_purpose': purpose_arr,
 			'user': user,
 			'order_type': order_type_arr,
 			'route_to': route_city_arr,
@@ -196,9 +205,19 @@ class website_mobile_app(http.Controller):
 				'is_orderer': passenger.is_orderer,
 			})
 		
+		# Booking Purpose
+		purpose_arr = []
+		purposes = handler_obj.search_purpose({})
+		for purpose in purposes:
+			purpose_arr.append({
+				'id': purpose.id,
+				'name': purpose.name,
+			})
+		
 		return json.dumps({
 			'user_group': data_book_vehicle['user_group'],
 			'contract_datas': data_book_vehicle['contract_datas'],
+			'booking_purpose': purpose_arr,
 			'user': data_book_vehicle['user'],
 			'order_type': data_book_vehicle['order_type'],
 			'route_to': data_book_vehicle['route_to'],
@@ -221,6 +240,8 @@ class website_mobile_app(http.Controller):
 				'finish_planned_date': order_data.finish_planned_date,
 				'start_planned_date_format_input': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
 				'finish_planned_date_format_input': datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
+				'purpose_id' : order_data.purpose_id.id,
+				'other_purpose' : order_data.other_purpose,
 			},
 		})
 		
@@ -435,6 +456,8 @@ class website_mobile_app(http.Controller):
 				'type_name': dict(_ORDER_TYPE).get(order_data.order_type_by_order, ''),
 				'classification_value': classification,
 				'start_planned_date_format_input': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
+				'purpose' : order_data.purpose_id and order_data.purpose_id.name or '-',
+				'other_purpose' : order_data.other_purpose and order_data.other_purpose or '-',
 			}
 			if type(loaded_data) is int:
 				jsonOrder['user_group'] = data_user_group['user_group']
@@ -884,6 +907,11 @@ class website_mobile_app_handler(osv.osv):
 		region_ids = region_obj.search(cr, SUPERUSER_ID, [('type','=','city')])
 		return region_obj.browse(cr, SUPERUSER_ID, region_ids)
 	
+	def search_purpose(self, cr, uid, param_context):
+		purpose_obj = self.pool.get('foms.booking.purpose');
+		purpose_ids = purpose_obj.search(cr, SUPERUSER_ID, [])
+		return purpose_obj.browse(cr, SUPERUSER_ID, purpose_ids)
+	
 	def search_contract(self, cr, uid, param_context):
 		contract_obj = self.pool.get('foms.contract');
 		contract_ids = contract_obj.search(cr, SUPERUSER_ID, [], context=param_context)
@@ -896,10 +924,13 @@ class website_mobile_app_handler(osv.osv):
 		is_fullday_passenger = user_obj.has_group(cr, uid, 'universal.group_universal_passenger')
 		
 		mode = domain.get('mode_create_or_edit', '')
-		contract_id = domain.get('contract_id', '')
+		contract_id = domain.get('contract_id', 0)
 		contract_id = int(contract_id.encode('ascii', 'ignore'))
-		fleet_type_id = domain.get('fleet_type_id', '')
+		fleet_type_id = domain.get('fleet_type_id', 0)
 		fleet_type_id = int(fleet_type_id.encode('ascii', 'ignore'))
+		purpose_id = domain.get('purpose_id', 0)
+		purpose_id = int(purpose_id.encode('ascii', 'ignore'))
+		other_purpose = domain.get('other_purpose', '')
 		
 		start_planned = domain.get('start_planned', '')
 		start_planned = datetime.strptime(start_planned, '%Y-%m-%dT%H:%M' if start_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
@@ -912,20 +943,22 @@ class website_mobile_app_handler(osv.osv):
 			'start_planned_date': start_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
 			'finish_planned_date': finish_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
 			'request_date': datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT),
+			'purpose_id' : purpose_id,
+			'other_purpose' : other_purpose,
 		}
 		
 		if not is_fullday_passenger:
-			unit_id = domain.get('unit_id', '')
+			unit_id = domain.get('unit_id', 0)
 			unit_id = int(unit_id.encode('ascii', 'ignore'))
 			type_id = domain.get('type_id', '')
 			
-			from_area_id = domain.get('from_area_id', '')
+			from_area_id = domain.get('from_area_id', 0)
 			from_area_id = int(from_area_id.encode('ascii', 'ignore'))
 			from_location = domain.get('from_location', '')
 			
 			# to_city_id = domain.get('to_city_id', '')
 			# to_city_id = int(to_city_id.encode('ascii', 'ignore'))
-			to_area_id = domain.get('to_area_id', '')
+			to_area_id = domain.get('to_area_id', 0)
 			to_area_id = int(to_area_id.encode('ascii', 'ignore'))
 			to_location = domain.get('to_location', '')
 			

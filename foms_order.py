@@ -773,6 +773,16 @@ class foms_order(osv.osv):
 					'district_id': area.district_id.id,
 					'name': area.name,
 				})
+	# list booking purpose
+		elif command == 'booking_purpose':
+			purpose_obj = self.pool.get('foms.booking.purpose')
+			purpose_ids = purpose_obj.search(cr, uid, [])
+			result = []
+			for purpose in purpose_obj.browse(cr, uid, purpose_ids):
+				result.append({
+					'id': purpose.id,
+					'name': purpose.name,
+				})
 		return result
 
 # METHODS ------------------------------------------------------------------------------------------------------------------

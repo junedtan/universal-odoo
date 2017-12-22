@@ -128,6 +128,8 @@ class foms_order(osv.osv):
 			('app', 'Mobile App'),
 			('central', 'Central'),
 		), 'Create Source', readonly=True),
+		'purpose_id' : fields.many2one('foms.booking.purpose', 'Booking Purpose', ondelete='SET NULL'),
+		'other_purpose': fields.text('Booking Other Purpose'),
 	}
 
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------
@@ -770,6 +772,16 @@ class foms_order(osv.osv):
 					'homebase_id': area.homebase_id.id,
 					'district_id': area.district_id.id,
 					'name': area.name,
+				})
+	# list booking purpose
+		elif command == 'booking_purpose':
+			purpose_obj = self.pool.get('foms.booking.purpose')
+			purpose_ids = purpose_obj.search(cr, uid, [])
+			result = []
+			for purpose in purpose_obj.browse(cr, uid, purpose_ids):
+				result.append({
+					'id': purpose.id,
+					'name': purpose.name,
 				})
 		return result
 
@@ -2371,3 +2383,16 @@ class foms_order_try_cron(osv.osv_memory):
 			raise osv.except_osv('test','test')
 		elif form_data.cron == 'cron_sync_gps_data':
 			gps_obj.cron_sync_gps_data(cr, uid, context)
+
+# ==========================================================================================================================
+
+class foms_booking_purpose(osv.osv):
+	
+	_name = "foms.booking.purpose"
+	_description = 'Foms booking purpose'
+	
+	# COLUMNS ------------------------------------------------------------------------------------------------------------------
+	
+	_columns = {
+		'name': fields.char('Purpose', size=64, required=True)
+	}

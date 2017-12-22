@@ -27,17 +27,17 @@
 				</xpath>
 			</field>
 		</record>
-<!--		
+		
 		<record model="ir.ui.view" id="chjs_region_list">
 			<field name="name">chjs.region.list</field>
 			<field name="model">chjs.region</field>
 			<field name="inherit_id" ref="chjs_region.chjs_region_list" />
 			<field name="arch" type="xml">
 				<xpath expr="//field[@name='type']" position="after">
-					<field name="sequence" />
+					<field name="sequence" invisible="1" />
 				</xpath>
 			</field>
 		</record>
--->
+
 	</data>
 </openerp>

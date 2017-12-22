@@ -316,6 +316,12 @@
 			<field name="context">{'hide_sidebar': 1}</field>
 		</record>
 
+		<record id="universal_action_booking_purpose" model="ir.actions.act_window">
+			<field name="name">Booking Purposes</field>
+			<field name="res_model">foms.booking.purpose</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+		</record>
 
 		<record id="universal_action_try_cron" model="ir.actions.act_window">
 			<field name="name">Test Cron</field>
@@ -415,6 +421,7 @@
 			<menuitem parent="menu_universal_foms_config" sequence="8" id="universal_menu_order_cancel_reason" action="universal_action_order_cancel_reason" groups="universal.group_universal_dispatcher" />
 			<menuitem parent="menu_universal_foms_config" sequence="9" id="universal_menu_change_driver_phone" action="universal_action_change_driver_phone" groups="universal.group_universal_dispatcher" />
 
+			<menuitem parent="menu_universal_foms_config" sequence="10" id="universal_menu_booking_purpose" action="universal_action_booking_purpose" groups="universal.group_universal_dispatcher" />
 		
 <!-- INHERIT -->
 

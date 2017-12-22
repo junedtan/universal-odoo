@@ -129,7 +129,7 @@ class foms_order(osv.osv):
 			('central', 'Central'),
 		), 'Create Source', readonly=True),
 		'purpose_id' : fields.many2one('foms.booking.purpose', 'Booking Purpose', ondelete='SET NULL'),
-		'other_purpose': fields.text('Booking Other Purpose'),
+		'other_purpose': fields.text('Other Purpose'),
 	}
 
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------

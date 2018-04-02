@@ -9,7 +9,6 @@ var mobile_app_activity_definition = {
 		back_intent_id: '',
 		qweb_template_id: 'univmobile_main_menu',
 		onload_callback: function(activity_data, intent_data) {
-			
 			$("footer div.container").append('<div class="text-center small text-muted">Version: ' + mobile_app_version + '</div>');
 		},
 	},

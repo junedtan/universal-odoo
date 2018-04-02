@@ -61,7 +61,7 @@ $(document).ready(function () {
 	try {
 		if (mobile_web == true) {
 			$(".navbar-static-top").hide();
-			qweb.add_template('/universal/static/src/xml/website_mobile_app.xml', function() {
+			qweb.add_template('/universal/static/src/xml/website_mobile_app.xml?'+$.now(), function() {
 				mobile_app.init(mobile_app_activity_definition, mobile_app_intent_definition);
 				mobile_app.data_manager.attach_data_sources(mobile_app_data_sources, true);
 			});

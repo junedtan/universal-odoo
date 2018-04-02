@@ -877,7 +877,7 @@ class website_mobile_app_handler(osv.osv):
 				else:
 					filter_domain.append(('state', 'in', ['rejected', 'finish_confirmed', 'canceled']))
 			
-		order_ids = order_obj.search(cr, SUPERUSER_ID, filter_domain, context=param_context)
+		order_ids = order_obj.search(cr, SUPERUSER_ID, filter_domain, order="start_planned_date ASC", context=param_context)
 		return order_obj.browse(cr, SUPERUSER_ID, order_ids)
 	
 	def search_quota(self, cr, uid, param_context):

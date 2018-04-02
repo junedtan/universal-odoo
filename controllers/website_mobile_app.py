@@ -516,6 +516,12 @@ class website_mobile_app(http.Controller):
 	
 	@http.route('/mobile_app/change_planned_start_time/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_change_planned_start_time(self, data, **kwargs):
+	# 20180402: fungsi change planned start ditutup supaya tidak ambigu dengan fitur edit order
+		return json.dumps({
+			'status': 'ok',
+			'info': _('This feature has been disabled. Please use Edit Order instead.'),
+			'success': False,
+		})
 		order_data = json.loads(data)
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		datetime_format = '%Y-%m-%dT%H:%M:%S'

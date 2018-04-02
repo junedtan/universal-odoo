@@ -570,7 +570,7 @@
 											<t t-foreach="detail.contract_datas[0].districts[0].areas" t-as="from_area">
 												<option t-attf-value="{{from_area.id}}"><t t-esc="from_area.name"/></option>
 											</t>
-		`								</t>
+										</t>
 									</t>
 								</select>
 								<label class="no_bold" for="from_location">Location</label>
@@ -762,8 +762,8 @@
 										</div>
 									</t>
 									<t t-if="order.over_quota_status != 'approval'">
-									<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_approve_order col-md-1 col-xs-4">Approve</button>
-									<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_reject_order col-md-1 col-xs-4 ml10">Reject</button>
+										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-success btn_approve_order col-md-1 col-xs-4">Approve</button>
+										<button type="button" t-attf-id_order = "{{order.id}}" class="btn btn-danger btn_reject_order col-md-1 col-xs-4 ml10">Reject</button>
 									</t>
 									<t t-if="order.over_quota_status == 'approval'">
 										<t t-if="order.maintained_by == 'customer'">
@@ -775,7 +775,7 @@
 										</t>
 										<t t-if="order.maintained_by != 'customer'">
 											<div class="red_text">
-												Please contact PT Universal to add your quota
+												Please contact PT Universal to add your quota.
 											</div>
 										</t>
 									</t>
@@ -792,11 +792,14 @@
 		<div>
 			<div class="div_detail_order_button">
 				<t t-if="detail.user_group != 'pic'">
-					<t t-if="detail.classification_value == 'pending' || detail.classification_value == 'ready'">
+					<t t-if="detail.classification_value == 'pending'">
+						<!--
 						<button type="button" intent="univmobile_intent_change_start_planned_time" t-att-data-data_id="detail.id"
 								class="btn btn-success btn_change_planned_start_time mt5">Change Time</button>
-						<button type="button" intent="univmobile_intent_edit_order" t-att-data-data_id="detail.id"
-								class="btn btn-success btn_edit_order mt5">Edit Order</button>
+						-->
+						<button type="button" intent="univmobile_intent_edit_order" t-att-data-data_id="detail.id" class="btn btn-success btn_edit_order mt5">Edit Order</button>
+					</t>
+					<t t-if="detail.classification_value == 'pending' || detail.classification_value == 'ready'">
 						<button type="button" intent="univmobile_intent_cancel_order" t-att-data-data_id="detail.id"
 								class="btn btn-danger btn_cancel_order mt5">Cancel Order</button>
 					</t>
@@ -927,8 +930,7 @@
 			<div class="plr12 ptb12">
 				<div class="form-group">
 					<label for="change_order_start_planned_new">New Start Planned Time</label>
-					<input id="change_order_start_planned_new" class="form-control" type="datetime-local"
-							t-attf-value="{{detail.start_planned_date_format_input}}"/>
+					<input id="change_order_start_planned_new" class="form-control" type="datetime-local" t-attf-value="{{detail.start_planned_date_format_input}}"/>
 				</div>
 			</div>
 			<hr />

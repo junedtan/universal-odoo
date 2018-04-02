@@ -529,6 +529,7 @@ var mobile_app_activity_definition = {
 			mobile_app.data_manager.refresh('order_detail', intent_data, true);
 		}
 	},
+
 	'univmobile_actv_change_start_planned_time': {
 		title: 'Change Start Planned Time',
 		back_intent_id: 'univmobile_intent_order_detail',
@@ -564,6 +565,7 @@ var mobile_app_activity_definition = {
 			mobile_app.data_manager.refresh('order_detail', intent_data, true);
 		}
 	},
+
 	'univmobile_actv_edit_order': {
 		title: 'Edit Order',
 		back_intent_id: 'univmobile_intent_order_detail',
@@ -663,6 +665,7 @@ var mobile_app_activity_definition = {
 			mobile_app.data_manager.refresh('order_edit', intent_data, true);
 		}
 	},
+	
 	'univmobile_actv_cancel_order': {
 		title: 'Cancel Order',
 		confirm_text: 'Are you sure to cancel this order? This cannot be undone.',

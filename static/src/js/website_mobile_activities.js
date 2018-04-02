@@ -1,3 +1,5 @@
+var mobile_app_version = "1.0.0"; //ganti ini kalau ada update js atau xml
+
 var mobile_app_activity_definition = {
 
 //MAIN MENU ----------------------------------------------------------------------------------------------------------------
@@ -7,6 +9,8 @@ var mobile_app_activity_definition = {
 		back_intent_id: '',
 		qweb_template_id: 'univmobile_main_menu',
 		onload_callback: function(activity_data, intent_data) {
+			
+			$("footer div.container").append('<div class="text-center small text-muted">Version: ' + mobile_app_version + '</div>');
 		},
 	},
 
@@ -665,7 +669,7 @@ var mobile_app_activity_definition = {
 			mobile_app.data_manager.refresh('order_edit', intent_data, true);
 		}
 	},
-	
+
 	'univmobile_actv_cancel_order': {
 		title: 'Cancel Order',
 		confirm_text: 'Are you sure to cancel this order? This cannot be undone.',

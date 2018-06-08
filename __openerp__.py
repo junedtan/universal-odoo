@@ -69,6 +69,6 @@
 	'installable': True,
 	'auto_install': False,
 	'qweb' : [
-		"static/src/base.xml",
+		"static/src/xml/base.xml",
 	],
 }

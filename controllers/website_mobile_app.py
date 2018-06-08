@@ -792,10 +792,10 @@ class website_mobile_app(http.Controller):
 		}
 		return json.dumps(quota_detail)
 	
-	@http.route('/mobile_app/change_password/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_change_password(self, data, **kwargs):
+	@http.route('/mobile_app/change_password', type='http', auth="user", methods=['POST'], website=True)
+	def mobile_app_change_password(self, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		result = handler_obj.change_password(json.loads(data))
+		result = handler_obj.change_password(json.loads(request.params['data']))
 		if result:
 			return json.dumps({
 				'status': 'ok',

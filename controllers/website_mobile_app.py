@@ -337,12 +337,12 @@ class website_mobile_app(http.Controller):
 			'list_contract': result,
 		})
 	
-	@http.route('/mobile_app/create_edit_order/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_create_edit_order(self, data, **kwargs):
+	@http.route('/mobile_app/create_edit_order', type='http', auth="user", methods=['POST'], website=True)
+	def mobile_app_create_edit_order(self, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		loaded_data = json.loads(data)
+		data = json.loads(request.params['data'])
 		try:
-			result = handler_obj.create_edit_order(loaded_data)
+			result = handler_obj.create_edit_order(data)
 		except Exception as e:
 			response = {
 				'status': 'ok',
@@ -350,7 +350,7 @@ class website_mobile_app(http.Controller):
 				'success' : False,
 			}
 		else:
-			mode = loaded_data.get('mode_create_or_edit', '')
+			mode = data.get('mode_create_or_edit', '')
 			if isinstance(result, basestring):
 				response = {
 					'status': 'ok',

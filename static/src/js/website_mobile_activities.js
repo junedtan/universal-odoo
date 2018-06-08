@@ -465,6 +465,7 @@ var mobile_app_activity_definition = {
 					var form_object = $("#book_vehicle_form");
 					mobile_app.form.initialize("#book_vehicle_form", {
 						action: '/mobile_app/create_edit_order/',
+						type_action: 'POST',
 						validate_and_prepare: function(form_object) {
 							var valid = true;
 							var form_data = mobile_app.form.get_values(form_object);

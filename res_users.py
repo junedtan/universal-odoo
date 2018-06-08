@@ -134,3 +134,22 @@ class res_users(osv.osv):
 				isHROff = True
 				break
 		return isHROff
+	
+	def _is_mobile_user(self, cr, uid, id):
+		"""
+		Check whether user use mobile view on site as default
+		:param cr:
+		:param uid:
+		:param id: user_id
+		:return: true if the user_id
+		"""
+		groups = ['universal.group_universal_customer_pic',
+			'universal.group_universal_approver',
+			'universal.group_universal_booker',
+			'universal.group_universal_passenger']
+		result = False
+		for group in groups:
+			if self.has_group(cr, id, group):
+				result = True
+				break
+		return result

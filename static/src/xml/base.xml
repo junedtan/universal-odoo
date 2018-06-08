@@ -1,0 +1,11 @@
+<templates>
+	<t t-extend="UserMenu.about">
+		<t t-jquery="a.oe_activate_debug_mode" t-operation="replace"/>
+	</t>
+
+	<t t-extend="ViewManagerAction">
+		<t t-jquery="select.oe_debug_view" t-operation="replace">
+			<select t-if="widget.session.uid === 1 and widget.session.debug" class="oe_debug_view"/>
+		</t>
+	</t>
+</templates>

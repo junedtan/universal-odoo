@@ -22,6 +22,7 @@ var mobile_app_activity_definition = {
 		onload_callback: function(activity_data, intent_data) {
 			mobile_app.form.initialize("#chpwd_form", {
 				action: '/mobile_app/change_password/',
+				type_action: 'POST',
 				validate_and_prepare: function(form_object) {
 					var valid = true;
 					var form_data = mobile_app.form.get_values(form_object);
@@ -281,6 +282,7 @@ var mobile_app_activity_definition = {
 					var form_object = $("#request_quota_change_form");
 					mobile_app.form.initialize("#request_quota_change_form", {
 						action: '/mobile_app/request_quota_changes/',
+						type_action: 'POST',
 						validate_and_prepare: function(form_object) {
 							var valid = true;
 							var form_data = mobile_app.form.get_values(form_object);
@@ -342,6 +344,7 @@ var mobile_app_activity_definition = {
 				after_refresh: function(data) {
 					mobile_app.form.initialize("#request_quota_reject_form", {
 						action: '/mobile_app/reject_quota_changes/',
+						type_action: 'POST',
 						validate_and_prepare: function(form_object) {
 							var valid = true;
 							var form_data = mobile_app.form.get_values(form_object);
@@ -374,6 +377,7 @@ var mobile_app_activity_definition = {
 		title: 'Approve Quota Change Request',
 		confirm_text: 'Are you sure to approve this quota change request? Users of corresponding unit will be able to book more vehicles above default monthly limits.',
 		action: '/mobile_app/approve_quota_changes/',
+		type_action: 'POST',
 		action_payload: function(intent_data) {
 		//harus mereturn array of string. array ini nantinya akan di-join pakai /. 
 		//gunakan JSON.stringify untuk data yang berupa dictionary
@@ -465,6 +469,7 @@ var mobile_app_activity_definition = {
 					var form_object = $("#book_vehicle_form");
 					mobile_app.form.initialize("#book_vehicle_form", {
 						action: '/mobile_app/create_edit_order/',
+						type_action: 'POST',
 						validate_and_prepare: function(form_object) {
 							var valid = true;
 							var form_data = mobile_app.form.get_values(form_object);
@@ -543,6 +548,7 @@ var mobile_app_activity_definition = {
 				after_refresh: function(data) {
 					mobile_app.form.initialize("#change_start_planned_time_form", {
 						action: '/mobile_app/change_planned_start_time/',
+						type_action: 'POST',
 						validate_and_prepare: function(form_object) {
 							var valid = true;
 							var form_data = mobile_app.form.get_values(form_object);
@@ -592,8 +598,10 @@ var mobile_app_activity_definition = {
 				after_refresh: function(data) {
 					mobile_app.form.initialize("#book_vehicle_form", {
 						action: '/mobile_app/create_edit_order/',
+						type_action: 'POST',
 						validate_and_prepare: function(form_object) {
 							var valid = true;
+							var form_data = mobile_app.form.get_values(form_object);
 							var form_data = mobile_app.form.get_values(form_object);
 							valid = is_valid_form_data_order(form_data);
 							form_data['mode_create_or_edit'] = 'edit';
@@ -673,6 +681,7 @@ var mobile_app_activity_definition = {
 		title: 'Cancel Order',
 		confirm_text: 'Are you sure to cancel this order? This cannot be undone.',
 		action: '/mobile_app/cancel_order/',
+		type_action: 'POST',
 		action_payload: function(intent_data) {
 			return [intent_data.data_id.toString()];
 		},

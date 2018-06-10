@@ -324,11 +324,23 @@ class Website(Website):
 			return request.registry['ir.http'].reroute('/mobile_app')
 		return super(Website, self).index(**kwargs)
 	
-	@http.route(website=True, auth="public")
-	def web_login(self, *args, **kw):
+	@http.route()
+	def web_login(self, redirect=None, *args, **kw):
 		# Remove site redirection function on login page
 		if 'redirect' in kw:
 			del kw['redirect']
+		# Limits login form input by 64 char
+		values = request.params.copy()
+		if not redirect:
+			redirect = '/web?' + request.httprequest.query_string
+		values['redirect'] = redirect
+		if request.httprequest.method == 'POST':
+			id = request.params['login']
+			passwd = request.params['password']
+			if len(id) > 64 or len(passwd) > 64:
+				values['error'] = _("Maximal length of character for email and password is 64.")
+				if request.env.ref('web.login', False):
+					return request.render('web.login', values)
 		return super(Website, self).web_login(*args, **kw)
 
 # ==========================================================================================================================

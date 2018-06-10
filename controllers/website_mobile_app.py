@@ -74,6 +74,7 @@ class website_mobile_app(http.Controller):
 
 	@http.route('/mobile_app', type='http', auth="user", website=True)
 	def mobile_app_new(self, **kwargs):
+		print request.httprequest.user_agent
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
 		return handler_obj.render_main(request, {

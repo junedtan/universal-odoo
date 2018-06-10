@@ -337,12 +337,12 @@ class website_mobile_app(http.Controller):
 			'list_contract': result,
 		})
 	
-	@http.route('/mobile_app/create_edit_order/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_create_edit_order(self, data, **kwargs):
+	@http.route('/mobile_app/create_edit_order', type='http', auth="user", methods=['POST'], website=True)
+	def mobile_app_create_edit_order(self, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		loaded_data = json.loads(data)
+		data = json.loads(request.params['data'])
 		try:
-			result = handler_obj.create_edit_order(loaded_data)
+			result = handler_obj.create_edit_order(data)
 		except Exception as e:
 			response = {
 				'status': 'ok',
@@ -350,7 +350,7 @@ class website_mobile_app(http.Controller):
 				'success' : False,
 			}
 		else:
-			mode = loaded_data.get('mode_create_or_edit', '')
+			mode = data.get('mode_create_or_edit', '')
 			if isinstance(result, basestring):
 				response = {
 					'status': 'ok',
@@ -515,15 +515,15 @@ class website_mobile_app(http.Controller):
 				'success': False,
 			})
 	
-	@http.route('/mobile_app/change_planned_start_time/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_change_planned_start_time(self, data, **kwargs):
+	@http.route('/mobile_app/change_planned_start_time', type='http', auth="user", methods=['POST'], website=True)
+	def mobile_app_change_planned_start_time(self, **kwargs):
 	# 20180402: fungsi change planned start ditutup supaya tidak ambigu dengan fitur edit order
 		return json.dumps({
 			'status': 'ok',
 			'info': _('This feature has been disabled. Please use Edit Order instead.'),
 			'success': False,
 		})
-		order_data = json.loads(data)
+		order_data = json.loads(request.params['data'])
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		datetime_format = '%Y-%m-%dT%H:%M:%S'
 		if order_data['change_order_start_planned_new'].count(':') == 1:
@@ -560,10 +560,10 @@ class website_mobile_app(http.Controller):
 				'success': False,
 			})
 	
-	@http.route('/mobile_app/cancel_order/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_cancel_order(self, data, **kwargs):
+	@http.route('/mobile_app/cancel_order', type='http', auth="user", methods=['POST'], website=True)
+	def mobile_app_cancel_order(self, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		result = handler_obj.cancel_order(int(data))
+		result = handler_obj.cancel_order(int(request.params['data']))
 		if result:
 			return json.dumps({
 				'status': 'ok',
@@ -669,10 +669,10 @@ class website_mobile_app(http.Controller):
 			})
 		return json.dumps(quota_pending_history)
 	
-	@http.route('/mobile_app/approve_quota_changes/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_approve_quota_changes(self, data, **kwargs):
+	@http.route('/mobile_app/approve_quota_changes', type='http', auth="user", methods=['POST'], website=True)
+	def mobile_app_approve_quota_changes(self, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		result = handler_obj.approve_quota_change(int(data))
+		result = handler_obj.approve_quota_change(int(request.params['data']))
 		if result:
 			return json.dumps({
 				'status': 'ok',
@@ -686,10 +686,10 @@ class website_mobile_app(http.Controller):
 				'success': False,
 			})
 	
-	@http.route('/mobile_app/reject_quota_changes/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_reject_quota_changes(self, data, **kwargs):
+	@http.route('/mobile_app/reject_quota_changes', type='http', auth="user", methods=['POST'], website=True)
+	def mobile_app_reject_quota_changes(self, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		result = handler_obj.reject_quota_change(json.loads(data))
+		result = handler_obj.reject_quota_change(json.loads(request.params['data']))
 		if result:
 			return json.dumps({
 				'status': 'ok',
@@ -793,10 +793,10 @@ class website_mobile_app(http.Controller):
 		}
 		return json.dumps(quota_detail)
 	
-	@http.route('/mobile_app/change_password/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_change_password(self, data, **kwargs):
+	@http.route('/mobile_app/change_password', type='http', auth="user", methods=['POST'], website=True)
+	def mobile_app_change_password(self, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		result = handler_obj.change_password(json.loads(data))
+		result = handler_obj.change_password(json.loads(request.params['data']))
 		if result:
 			return json.dumps({
 				'status': 'ok',
@@ -810,11 +810,11 @@ class website_mobile_app(http.Controller):
 				'success' : False,
 			})
 	
-	@http.route('/mobile_app/request_quota_changes/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_request_quota_changes(self, data, **kwargs):
+	@http.route('/mobile_app/request_quota_changes', type='http', auth="user", methods=['POST'], website=True)
+	def mobile_app_request_quota_changes(self, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		try:
-			result = handler_obj.request_quota_change(json.loads(data))
+			result = handler_obj.request_quota_change(json.loads(request.params['data']))
 		except Exception, e:
 			response = {
 				'status': 'ok',

@@ -74,6 +74,7 @@ class website_mobile_app(http.Controller):
 
 	@http.route('/mobile_app', type='http', auth="user", website=True)
 	def mobile_app_new(self, **kwargs):
+		print request.httprequest.user_agent
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
 		return handler_obj.render_main(request, {
@@ -417,6 +418,7 @@ class website_mobile_app(http.Controller):
 			list_passenger = []
 			for passenger in order_data.passengers:
 				list_passenger.append({'name':passenger.name, 'phone' : passenger.phone_no})
+			request_date = datetime.strptime(order_data.request_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
 			start_planned_date = datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
 			finish_planned_date = datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
 			start_date = order_data.start_date and datetime.strptime(order_data.start_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7) or None
@@ -427,7 +429,7 @@ class website_mobile_app(http.Controller):
 				'state': order_data.state,
 				'pin': order_data.pin,
 				'state_name': dict(_ORDER_STATE).get(order_data.state, ''),
-				'request_date':  datetime.strptime(order_data.request_date,'%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y %H:%M'),
+				'request_date':  request_date.strftime('%d-%m-%Y %H:%M'),
 				'order_by_name': order_data.order_by.name,
 				'start_planned_date': start_planned_date.strftime('%d-%m-%Y %H:%M'),
 				'finish_planned_date': finish_planned_date.strftime('%d-%m-%Y %H:%M'),

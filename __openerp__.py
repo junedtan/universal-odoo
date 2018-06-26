@@ -44,6 +44,7 @@
 		'views/hr_termination.xml',
 		'views/hr_payroll.xml',
 		'views/res_partner.xml',
+		'views/res_users.xml',
 		'views/res_config.xml',
 		'views/fleet.xml',
 		'views/foms_contract.xml',

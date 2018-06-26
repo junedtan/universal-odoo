@@ -3,9 +3,9 @@ from openerp import http
 from openerp.tools.translate import _
 from openerp.http import request
 from openerp.addons.website.controllers.main import Website
+from openerp.addons.website.controllers.main import WebClient
 from datetime import datetime, date, timedelta
 
-from openerp.addons.website.models.website import slug
 
 import json
 
@@ -332,3 +332,13 @@ class Website(Website):
 		return super(Website, self).web_login(*args, **kw)
 
 # ==========================================================================================================================
+
+class WebClient(WebClient):
+	
+	# Disable route to /web/tests
+	def index(self, **kwargs):
+		pass
+	
+	# Disable route to /web/webclient/qweb
+	def qweb(self, mods=None, db=None):
+		pass

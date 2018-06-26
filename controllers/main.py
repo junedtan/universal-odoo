@@ -2,9 +2,10 @@ from openerp import SUPERUSER_ID
 from openerp import http
 from openerp.tools.translate import _
 from openerp.http import request
+from openerp.addons.website.controllers.main import Website
+from openerp.addons.website.controllers.main import WebClient
 from datetime import datetime, date, timedelta
 
-from openerp.addons.website.models.website import slug
 
 import json
 
@@ -312,5 +313,32 @@ class website_universal(http.Controller):
 			except:
 				response['error'] = _('Error confirming start/finish. Please try again in a moment. If the trouble persists, please use paper attendance for now.')
 			return json.dumps(response)
-			
-			
+
+
+class Website(Website):
+	@http.route('/', type='http', auth="public", website=True)
+	def index(self, **kwargs):
+		# If user use mobile app as default, reroute to /mobile_app, otherwise use default behaviour
+		user_obj = request.registry['res.users']
+		if user_obj._is_mobile_user(request.cr, SUPERUSER_ID, request.uid):
+			return request.registry['ir.http'].reroute('/mobile_app')
+		return super(Website, self).index(**kwargs)
+	
+	@http.route(website=True, auth="public")
+	def web_login(self, *args, **kw):
+		# Remove site redirection function on login page
+		if 'redirect' in kw:
+			del kw['redirect']
+		return super(Website, self).web_login(*args, **kw)
+
+# ==========================================================================================================================
+
+class WebClient(WebClient):
+	
+	# Disable route to /web/tests
+	def index(self, **kwargs):
+		pass
+	
+	# Disable route to /web/webclient/qweb
+	def qweb(self, mods=None, db=None):
+		pass

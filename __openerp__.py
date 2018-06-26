@@ -61,6 +61,7 @@
 		'cron/foms_contract.xml',
 		'cron/foms_order.xml',
 		'cron/hr_holidays.xml',
+		'static/src/webclient_templates.xml',
 	],
 	'demo': [
 	],

@@ -42,6 +42,20 @@ class res_users(osv.osv):
 	
 # OVERRIDES -------------------------------------------------------------------------------------------------------------
 	
+	def change_password(self, cr, uid, old_passwd, new_passwd, context=None):
+		"""Change current user password. Old password must be provided explicitly
+		to prevent hijacking an existing user session, or for cases where the cleartext
+		password is not used to authenticate requests.
+
+		:return: True
+		:raise: openerp.exceptions.AccessDenied when old password is wrong
+		:raise: except_osv when new password is not set or empty
+		"""
+		self.check(cr.dbname, uid, old_passwd)
+		if new_passwd:
+			return self.write(cr, SUPERUSER_ID, uid, {'password': new_passwd})
+		raise osv.except_osv(_('Warning!'), _("Setting empty passwords is not allowed for security reasons!"))
+	
 	def create(self, cr, uid, vals, context=None):
 		new_hr_id = super(res_users, self).create(cr, uid, vals, context=context)
 		

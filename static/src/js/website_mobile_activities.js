@@ -42,7 +42,9 @@ var mobile_app_activity_definition = {
 					}
 				},
 				after_success: function(response) {
-					logout();
+					if(response.success){
+						logout();
+					}
 				},
 			});
 		}

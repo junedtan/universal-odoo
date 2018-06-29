@@ -798,7 +798,7 @@ class website_mobile_app(http.Controller):
 	def mobile_app_change_password(self, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		result = handler_obj.change_password(json.loads(request.params['data']))
-		if result:
+		if not isinstance(result, basestring):
 			return json.dumps({
 				'status': 'ok',
 				'info': _('Change password is successful.'),
@@ -807,7 +807,7 @@ class website_mobile_app(http.Controller):
 		else:
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Old Password is not correct.'),
+				'info': _(result),
 				'success' : False,
 			})
 	
@@ -1036,6 +1036,8 @@ class website_mobile_app_handler(osv.osv):
 		result = False
 		try:
 			result = user_obj.change_password(cr, uid, old_password, new_password)
+		except Exception, e:
+			result = _('Old Password is not correct.') if len(e.message) > 0 else e.value
 		finally:
 			return result
 	

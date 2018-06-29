@@ -351,8 +351,12 @@ class foms_contract(osv.osv):
 			old_password = model_data.get('old_password')
 			new_password = model_data.get('new_password')
 		# change password usernya
-			user_obj.change_password(cr, user_id, old_password, new_password)
 			result = 'ok'
+			try:
+				user_obj.change_password(cr, user_id, old_password, new_password)
+			except Exception, e:
+				result = _('Old Password is not correct.') if len(e.message) > 0 else e.value
+			
 	# untuk ngambil detail user (diambil dari detail partner)
 		if command == 'fetch_user_details':
 			user_data = user_obj.browse(cr, uid, user_id)

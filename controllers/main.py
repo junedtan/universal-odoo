@@ -339,8 +339,14 @@ class Website(Website):
 			passwd = request.params['password']
 			if len(id) > 64 or len(passwd) > 64:
 				values['error'] = _("Maximal length of character for email and password is 64.")
-				if request.env.ref('web.login', False):
-					return request.render('web.login', values)
+			# IF DRIVER, CANNOT LOGIN
+			user_obj = request.registry['res.users']
+			uid = request.session.authenticate(request.session.db, request.params['login'], request.params['password'])
+			is_driver = user_obj.has_group(request.cr, uid, 'universal.group_universal_driver')
+			if is_driver:
+				values['error'] = _("You cannot login as driver")
+			if request.env.ref('web.login', False):
+				return request.render('web.login', values)
 		return super(Website, self).web_login(*args, **kw)
 
 # ==========================================================================================================================

@@ -365,3 +365,8 @@ access_foms_order_passenger_customer_pic,foms.order.passenger customer_pic,unive
 access_fleet_vehicle_model_customer_pic,fleet.vehicle.model customer_pic,fleet.model_fleet_vehicle_model,universal.group_universal_customer_pic,1,0,0,0
 access_ir_ui_menu_all,ir.ui.menu all,base.model_ir_ui_menu,,1,0,0,0
 access_resource_resource_all,resource.resource all,resource.model_resource_resource,,1,0,0,0
+access_mail_message_all,mail.message all,mail.model_mail_message,,1,0,1,0
+access_foms_contract_order_hours_all,foms.contract.order.hours,universal.model_foms_contract_order_hours,,1,0,0,0
+access_resource_calendar_all,resource.calendar all,resource.model_resource_calendar,,1,0,0,0
+access_resource_calendar_leaves_all,resource.calendar.leaves all,resource.model_resource_calendar_leaves,,1,0,0,0
+access_res_groups_all,res.groups all,base.model_res_groups,,1,0,0,0

@@ -995,12 +995,12 @@ class website_mobile_app_handler(osv.osv):
 			order_data['is_orderer_passenger'] = is_orderer_passenger
 			order_data['passengers'] = passengers
 		if mode == 'create':
-			return order_obj.create(cr, SUPERUSER_ID, order_data)
+			return order_obj.create(cr, uid, order_data)
 		else:
 			order_id = domain.get('order_id', '')
 			order_id = int(order_id.encode('ascii', 'ignore'))
 			order_passenger_obj.unlink(cr, uid, order_passenger_obj.search(cr, SUPERUSER_ID, [('header_id', '=', order_id)]))
-			return order_obj.write(cr, SUPERUSER_ID, [order_id], order_data)
+			return order_obj.write(cr, uid, [order_id], order_data)
 			
 	
 	def request_quota_change(self, cr, uid, domain, context={}):
@@ -1143,7 +1143,7 @@ class website_mobile_app_handler(osv.osv):
 	
 	def cancel_order(self, cr, uid, order_id, context={}):
 		order_obj = self.pool.get('foms.order')
-		return order_obj.write(cr, SUPERUSER_ID, [order_id], {
+		return order_obj.write(cr, uid, [order_id], {
 			'state': 'canceled',
 		}, context=context)
 	

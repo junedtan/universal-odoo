@@ -312,13 +312,14 @@ class foms_order(osv.osv):
 		# Escalation Privilege (Insecure Direct Object References)
 		if 'user_id' in context:
 			uid = context['user_id']
-		accessible_order_ids = self.search(cr, uid, [], offset=0, limit=None, order=None, context={
-			'by_user_id': True,
-			'user_id': uid
-		}, count=False)
-		for id in ids:
-			if id not in accessible_order_ids:
-				raise osv.except_osv(_('Order Error'),_('You cannot access this order!'))
+		if uid != SUPERUSER_ID:
+			accessible_order_ids = self.search(cr, uid, [], offset=0, limit=None, order=None, context={
+				'by_user_id': True,
+				'user_id': uid
+			}, count=False)
+			for id in ids:
+				if id not in accessible_order_ids:
+					raise osv.except_osv(_('Order Error'),_('You cannot access this order!'))
 		
 		context = context and context or {}
 		source = context.get('source', False)

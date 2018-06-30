@@ -342,11 +342,12 @@ class Website(Website):
 			# IF DRIVER, CANNOT LOGIN
 			cr = request.cr
 			cr.autocommit(True)
-			user_obj = request.registry['res.users']
 			uid = request.session.authenticate(request.session.db, request.params['login'], request.params['password'])
-			is_driver = user_obj.has_group(cr, uid, 'universal.group_universal_driver')
-			if is_driver:
-				values['error'] = _("You cannot login as driver")
+			if uid:
+				user_obj = request.registry['res.users']
+				is_driver = user_obj.has_group(cr, uid, 'universal.group_universal_driver')
+				if is_driver:
+					values['error'] = _("You cannot login as driver")
 			if request.env.ref('web.login', False):
 				return request.render('web.login', values)
 		return super(Website, self).web_login(*args, **kw)

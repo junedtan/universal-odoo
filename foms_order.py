@@ -308,10 +308,10 @@ class foms_order(osv.osv):
 		return new_id
 
 	def write(self, cr, uid, ids, vals, context={}):
-		user_obj = self.pool.get('res.users')
 		orders = self.browse(cr, uid, ids)
-		
 		# Escalation Privilege (Insecure Direct Object References)
+		if 'user_id' in context:
+			uid = context['user_id']
 		accessible_order_ids = self.search(cr, uid, [], offset=0, limit=None, order=None, context={
 			'by_user_id': True,
 			'user_id': uid

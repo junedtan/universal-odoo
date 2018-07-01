@@ -42,7 +42,9 @@ var mobile_app_activity_definition = {
 					}
 				},
 				after_success: function(response) {
-					logout();
+					if(response.success){
+						logout();
+					}
 				},
 			});
 		}
@@ -583,14 +585,12 @@ var mobile_app_activity_definition = {
 				container: "#chjs_mobile_modal_content",
 				detail_qweb: "univmobile_book_vehicle",
 				prepare_data: function(data) {
-					console.log(data);
 					mobile_app.cache['contract_datas'] = data['contract_datas'];
 					mobile_app.cache['route_to'] = data['route_to'];
 					mobile_app.cache['user'] = data['user'];
 					mobile_app.cache['order_data'] = data['order_data'];
 					mobile_app.cache['user']['user_group'] = data['user_group'];
 
-					console.log(mobile_app.cache['order_data']);
 					data['start_planned_date'] = mobile_app.cache['order_data'].start_planned_date_format_input;
 					data['finish_planned_date'] = mobile_app.cache['order_data'].finish_planned_date_format_input;
 					return data;
@@ -660,7 +660,6 @@ var mobile_app_activity_definition = {
 					$('#other_purpose').val(""+order_data.other_purpose).change();
 
 					var ckb_i_am_passenger = $('#ckb_i_am_passenger');
-					console.log(order_data.passengers);
 					$.each(order_data.passengers, function(index, passenger) {
 						if(!passenger.is_orderer) {
 							add_passenger_to_table(passenger.name, passenger.phone_no, passenger.id);

@@ -2,12 +2,54 @@ from openerp.osv import osv, fields
 from openerp.tools.translate import _
 from datetime import datetime, date
 from openerp import SUPERUSER_ID
+import json
 
 # ==========================================================================================================================
 
 class res_users(osv.osv):
 	
 	_inherit = 'res.users'
+	
+	def get_data_user_at_login(self, cr, uid, params, context=None):
+		params = json.loads(params)
+		username = params['username']
+		password = params['password']
+		db = params['db']
+		message = 'ok'
+		user_id = False
+		
+		try:
+			user_id = self._login(db, username, password)
+		except Exception, e:
+			message = e.message if len(e.message) > 0 else e.value
+		
+		result = []
+	# ambil group2nya
+		if (user_id):
+			cr.execute("SELECT * FROM res_groups_users_rel WHERE uid='%s'" % user_id)
+			dataset = cr.dictfetchall()
+			if len(dataset) == 0:
+				message =  _('User not found or has not been assigned to any group.')
+			
+			# bikin list of group id
+			group_ids = []
+			for row in dataset:
+				group_ids.append(row['gid'])
+			# ambil nama2 group itu, jadikan pasangan group_id > nama group
+			
+			group_obj = self.pool.get('res.groups')
+			for group in group_obj.browse(cr, SUPERUSER_ID, group_ids):
+				result.append({'id': group.id, 'name': group.name})
+		
+		response = []
+		response.append({'status': message})
+		
+		return json.dumps({
+			'status': 'ok',
+			'user_id': user_id,
+			'data': result,
+			'response': response,
+		})
 	
 	def _is_hr(self, cr, uid, ids, field_name, arg, context={}):
 		result = {}

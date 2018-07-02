@@ -344,6 +344,7 @@ access_resource_calendar_group_universal_passenger,resource.calendar group_unive
 access_foms_contract_shuttle_schedule_passenger,foms.contract.shuttle.schedule passenger,universal.model_foms_contract_shuttle_schedule,universal.group_universal_passenger,1,0,0,0
 access_foms_contract_alloc_unit_booker,foms.contract.alloc.unit booker,universal.model_foms_contract_alloc_unit,universal.group_universal_booker,1,0,0,0
 access_foms_contract_booker,foms.contract booker,universal.model_foms_contract,universal.group_universal_booker,1,0,0,0
+access_foms_contract_approver,foms.contract approver,universal.model_foms_contract,universal.group_universal_approver,1,0,0,0
 access_foms_contract_fleet_booker,foms.contract.fleet booker,universal.model_foms_contract_fleet,universal.group_universal_booker,1,0,0,0
 access_chjs_region_booker,chjs.region booker,chjs_region.model_chjs_region,universal.group_universal_booker,1,0,0,0
 access_foms_contract_shuttle_schedule_booker,foms.contract.shuttle.schedule booker,universal.model_foms_contract_shuttle_schedule,universal.group_universal_booker,1,0,0,0
@@ -360,6 +361,7 @@ access_foms_order_passenger,foms.order.passenger passenger,universal.model_foms_
 access_foms_contract_alloc_unit_passenger,foms.contract.alloc.unit passenger,universal.model_foms_contract_alloc_unit,universal.group_universal_passenger,1,0,0,0
 access_chjs_region_passenger,chjs.region passenger,chjs_region.model_chjs_region,universal.group_universal_passenger,1,0,0,0
 access_foms_order_booker,foms.order booker,universal.model_foms_order,universal.group_universal_booker,1,1,1,1
+access_foms_order_approver,foms.order approver,universal.model_foms_order,universal.group_universal_approver,1,1,1,1
 access_foms_order_passenger_booker,foms.order.passenger booker,universal.model_foms_order_passenger,universal.group_universal_booker,1,1,1,1
 access_foms_order_passenger_customer_pic,foms.order.passenger customer_pic,universal.model_foms_order_passenger,universal.group_universal_customer_pic,1,1,1,1
 access_fleet_vehicle_model_customer_pic,fleet.vehicle.model customer_pic,fleet.model_fleet_vehicle_model,universal.group_universal_customer_pic,1,0,0,0

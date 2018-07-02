@@ -40,6 +40,9 @@ class res_users(osv.osv):
 			group_obj = self.pool.get('res.groups')
 			for group in group_obj.browse(cr, SUPERUSER_ID, group_ids):
 				result.append({'id': group.id, 'name': group.name})
+				
+		else:
+			message = _('Username or password is incorrect.')
 		
 		response = []
 		response.append({'status': message})

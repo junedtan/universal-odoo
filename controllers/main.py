@@ -363,5 +363,5 @@ class WebClient(WebClient):
 		pass
 	
 	# Disable route to /web/webclient/qweb
-	def qweb(self, mods=None, db=None):
-		pass
+	#def qweb(self, mods=None, db=None):
+	#	pass

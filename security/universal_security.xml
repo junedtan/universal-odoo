@@ -71,12 +71,7 @@
 			<field name="name">WEBSERVICE-SYNC</field>
 			<field name="category_id" ref="universal.module_category_universal"/>
 		</record>
-	
-		<record id="group_universal_staff_marketing" model="res.groups">
-			<field name="name">STAFF MARKETING</field>
-			<field name="category_id" ref="universal.module_category_universal"/>
-		</record>
-	
+
 		<record id="group_universal_staff_opr_kend" model="res.groups">
 			<field name="name">STAFF OPR KEND</field>
 			<field name="category_id" ref="universal.module_category_universal"/>

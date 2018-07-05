@@ -23,6 +23,7 @@ access_foms_contract_spv_hrd_driver,foms.contract spv hrd driver,universal.model
 access_foms_contract_staff_adm_drv1,foms.contract staff adm drv1,universal.model_foms_contract,universal.group_universal_staff_adm_drv_1,1,0,0,0
 access_foms_contract_staff_adm_drv2,foms.contract staff adm drv2,universal.model_foms_contract,universal.group_universal_staff_adm_drv_2,1,0,0,0
 access_foms_contract_spv_admin_drv,foms.contract spv admin drv,universal.model_foms_contract,universal.group_universal_spv_admin_drv,1,0,0,0
+access_foms_contract_driver,foms.contract driver,universal.model_foms_contract,universal.group_universal_driver,1,0,0,0
 access_hr_employee_health_spv_admin_drv,hr.employee.health Spv Admin Drv,hr_employee_health.model_hr_employee_health,universal.group_universal_spv_admin_drv,1,0,0,0
 access_hr_employee_health_spv_hrd_staff,hr.employee.health Spv Hrd Staff,hr_employee_health.model_hr_employee_health,universal.group_universal_spv_hrd_staff,1,1,1,1
 access_hr_employee_health_staff_adm_drv_2,hr.employee.health Staff Adm Drv 2,hr_employee_health.model_hr_employee_health,universal.group_universal_staff_adm_drv_2,1,1,1,1

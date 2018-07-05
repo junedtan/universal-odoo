@@ -16,6 +16,7 @@ access_foms_contract_dispatcher,foms.contract dispatcher,universal.model_foms_co
 access_foms_contract_admin_fleet,foms.contract admin_fleet,universal.model_foms_contract,universal.group_universal_admin_fleet,1,0,0,0
 access_foms_contract_group_universal_passenger,foms.contract group_universal_passenger,universal.model_foms_contract,universal.group_universal_passenger,1,0,0,0
 access_foms_contract_booker,foms.contract booker,universal.model_foms_contract,universal.group_universal_booker,1,0,0,0
+access_foms_contract_driver,foms.contract driver,universal.model_foms_contract,universal.group_universal_driver,1,0,0,0
 access_foms_contract_approver,foms.contract approver,universal.model_foms_contract,universal.group_universal_approver,1,0,0,0
 access_foms_contract_customer_pic,foms.contract customer_pic,universal.model_foms_contract,universal.group_universal_customer_pic,1,0,0,0
 access_foms_contract_spv_hrd_staff,foms.contract spv hrd staff,universal.model_foms_contract,universal.group_universal_spv_hrd_staff,1,0,0,0

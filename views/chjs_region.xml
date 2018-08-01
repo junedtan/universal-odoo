@@ -11,6 +11,7 @@
 				<xpath expr="//field[@name='type']" position="after">
 					<field name="sequence" />
 					<field name="emergency_number"  />
+					<field name="active" />
 				</xpath>
 				<xpath expr="//group[@name='main_group']" position="after">
 					<notebook>

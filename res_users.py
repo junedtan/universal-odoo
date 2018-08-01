@@ -46,10 +46,13 @@ class res_users(osv.osv):
 		
 		response = []
 		response.append({'status': message})
+
+		result_sessions = self._get_session_default_seconds(cr, uid, [user_id],"")
 		
 		return json.dumps({
 			'status': 'ok',
 			'user_id': user_id,
+			'session_duration': result_sessions.get(user_id, 0),
 			'data': result,
 			'response': response,
 		})

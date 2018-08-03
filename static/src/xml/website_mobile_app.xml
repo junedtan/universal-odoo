@@ -740,7 +740,7 @@
 									</div>
 								</div>
 							</t>
-							<t t-if="order.user_group in ['booker','approver']">
+							<t t-if="order.user_group == 'booker' or order.user_group == 'approver'">
 								<t t-if="classification_value != 'pending'">
 									<t t-if="order.pin">
 										<div class="row no_padding mt16">
@@ -1248,7 +1248,7 @@
 						Requested at: <b style="pointer-events:none;"><t t-esc="order.request_date"/></b>
 						by <b style="pointer-events:none;"><t t-esc="order.order_by_name"/></b>
 						<table class="table" style="pointer-events:none;">
-							<t t-if="user_group in ['booker','approver']">
+							<t t-if="user_group == 'booker' or user_group == 'approver'">
 								<t t-if="classification_value != 'pending'">
 									<t t-if="order.pin">
 										<tr>

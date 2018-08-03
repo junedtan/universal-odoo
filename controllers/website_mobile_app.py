@@ -482,10 +482,10 @@ class website_mobile_app(http.Controller):
 				'list_order': result,
 			})
 	
-	@http.route('/mobile_app/approve_order/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_approve_order(self, data, **kwargs):
+	@http.route('/mobile_app/approve_order', type='http', auth="user", methods=['POST'], website=True)
+	def mobile_app_approve_order(self, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		result = handler_obj.approve_order(int(data))
+		result = handler_obj.approve_order(int(request.params['data']))
 		if result:
 			return json.dumps({
 				'status': 'ok',
@@ -499,10 +499,11 @@ class website_mobile_app(http.Controller):
 				'success': False,
 			})
 	
-	@http.route('/mobile_app/reject_order/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_reject_order(self, data, **kwargs):
+	@http.route('/mobile_app/reject_order', type='http', auth="user", methods=['POST'], website=True)
+	def mobile_app_reject_order(self, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		result = handler_obj.reject_order(int(data))
+		print "reject order"
+		result = handler_obj.reject_order(int(request.params['data']))
 		if result:
 			return json.dumps({
 				'status': 'ok',

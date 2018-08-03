@@ -50,7 +50,7 @@ div.row_hoverable:hover {
 
 div.row_hoverable {
 	background-color: #f5f5f5;
-    border-radius: 2px;
+	border-radius: 2px;
 }
 
 @media (max-width: 767px) {

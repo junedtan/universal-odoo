@@ -577,6 +577,34 @@ var mobile_app_activity_definition = {
 		}
 	},
 
+	'univmobile_actv_approve_order': {
+		title: 'Approve Order',
+		confirm_text: 'Are you sure to approve this order? This cannot be undone.',
+		action: '/mobile_app/approve_order/',
+		type_action: 'POST',
+		action_payload: function(intent_data) {
+			return [intent_data.data_id.toString()];
+		},
+		is_alert_message: true,
+		after_success: function(response) {
+			mobile_app.intent('univmobile_intent_order');
+		}
+	},
+
+	'univmobile_actv_reject_order': {
+		title: 'Reject Order',
+		confirm_text: 'Are you sure to reject this order? This cannot be undone.',
+		action: '/mobile_app/reject_order/',
+		type_action: 'POST',
+		action_payload: function(intent_data) {
+			return [intent_data.data_id.toString()];
+		},
+		is_alert_message: true,
+		after_success: function(response) {
+			mobile_app.intent('univmobile_intent_order');
+		}
+	},
+
 	'univmobile_actv_edit_order': {
 		title: 'Edit Order',
 		back_intent_id: 'univmobile_intent_order_detail',

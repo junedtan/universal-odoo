@@ -1143,10 +1143,14 @@ class website_mobile_app_handler(osv.osv):
 		return order_obj.browse(cr, SUPERUSER_ID, order_id);
 	
 	def cancel_order(self, cr, uid, order_id, context={}):
-		order_obj = self.pool.get('foms.order')
-		return order_obj.write(cr, uid, [order_id], {
-			'state': 'canceled',
-		}, context=context)
+		order_detail = {
+			'order_id': order_id,
+			'cancel_reason': None,
+			'cancel_reason_other': _('Cancel from mobile web'),
+			'cancel_by': uid,
+		}
+		cancel_memory_obj = self.pool.get('foms.order.cancel.memory')
+		return cancel_memory_obj.action_execute_cancel(cr, uid, [], order_detail)
 	
 	def get_shuttle_schedules(self, cr, uid, contract_id):
 		shuttle_schedule_obj = self.pool.get('foms.contract.shuttle.schedule')

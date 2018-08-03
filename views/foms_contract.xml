@@ -24,6 +24,7 @@
 							<field name="by_order_minimum_minutes" attrs="{'invisible': [('service_type','not in',['by_order'])], 'required': [('service_type','in',['by_order'])]}" />
 							<field name="min_start_minutes" attrs="{'invisible': [('service_type','not in',['by_order','full_day'])], 'required': [('service_type','in',['by_order','full_day'])]}" />
 							<field name="max_delay_minutes" attrs="{'invisible': [('service_type','not in',['by_order'])], 'required': [('service_type','in',['by_order'])]}" />
+							<field name="max_cancel_minutes" attrs="{'invisible': [('service_type','not in',['by_order'])], 'required': [('service_type','in',['by_order'])]}" />
 						</group>
 						<group groups="universal.group_universal_staff_marketing">
 							<field name="name" />

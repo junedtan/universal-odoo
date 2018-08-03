@@ -926,7 +926,7 @@ class website_mobile_app_handler(osv.osv):
 		contract_ids = contract_obj.search(cr, SUPERUSER_ID, [], context=param_context)
 		return contract_obj.browse(cr, SUPERUSER_ID, contract_ids)
 	
-	def  create_edit_order(self, cr, uid, domain, context={}):
+	def create_edit_order(self, cr, uid, domain, context={}):
 		order_obj = self.pool.get('foms.order')
 		order_passenger_obj = self.pool.get('foms.order.passenger')
 		user_obj = self.pool.get('res.users')
@@ -942,9 +942,9 @@ class website_mobile_app_handler(osv.osv):
 		other_purpose = domain.get('other_purpose', '')
 		
 		start_planned = domain.get('start_planned', '')
-		start_planned = datetime.strptime(start_planned, '%Y-%m-%dT%H:%M' if start_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
+		start_planned = datetime_to_server(start_planned, reverse=True, to_string=False, datetime_format='%Y-%m-%dT%H:%M' if start_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
 		finish_planned = domain.get('finish_planned', '')
-		finish_planned = datetime.strptime(finish_planned, '%Y-%m-%dT%H:%M' if finish_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
+		finish_planned = datetime_to_server(finish_planned, reverse=True, to_string=False, datetime_format='%Y-%m-%dT%H:%M' if finish_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
 		order_data = {
 			'customer_contract_id': contract_id,
 			'order_by': uid,

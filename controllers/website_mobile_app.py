@@ -214,6 +214,9 @@ class website_mobile_app(http.Controller):
 				'id': purpose.id,
 				'name': purpose.name,
 			})
+
+		start_planned_date = datetime_to_server(order_data.start_planned_date, to_string=False)
+		finish_planned_date = datetime_to_server(order_data.finish_planned_date, to_string=False)
 		
 		return json.dumps({
 			'user_group': data_book_vehicle['user_group'],
@@ -237,10 +240,10 @@ class website_mobile_app(http.Controller):
 				'dest_area_id': order_data.dest_area_id.id,
 				'dest_location': order_data.dest_location,
 				'passengers': passenger_arr,
-				'start_planned_date': order_data.start_planned_date,
-				'finish_planned_date': order_data.finish_planned_date,
-				'start_planned_date_format_input': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
-				'finish_planned_date_format_input': datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
+				'start_planned_date': start_planned_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
+				'finish_planned_date': finish_planned_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
+				'start_planned_date_format_input': start_planned_date.strftime('%Y-%m-%dT%H:%M'),
+				'finish_planned_date_format_input': finish_planned_date.strftime('%Y-%m-%dT%H:%M'),
 				'purpose_id' : order_data.purpose_id.id,
 				'other_purpose' : order_data.other_purpose,
 			},

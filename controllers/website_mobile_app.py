@@ -214,6 +214,9 @@ class website_mobile_app(http.Controller):
 				'id': purpose.id,
 				'name': purpose.name,
 			})
+
+		start_planned_date = datetime_to_server(order_data.start_planned_date, to_string=False)
+		finish_planned_date = datetime_to_server(order_data.finish_planned_date, to_string=False)
 		
 		return json.dumps({
 			'user_group': data_book_vehicle['user_group'],
@@ -237,10 +240,10 @@ class website_mobile_app(http.Controller):
 				'dest_area_id': order_data.dest_area_id.id,
 				'dest_location': order_data.dest_location,
 				'passengers': passenger_arr,
-				'start_planned_date': order_data.start_planned_date,
-				'finish_planned_date': order_data.finish_planned_date,
-				'start_planned_date_format_input': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
-				'finish_planned_date_format_input': datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
+				'start_planned_date': start_planned_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
+				'finish_planned_date': finish_planned_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
+				'start_planned_date_format_input': start_planned_date.strftime('%Y-%m-%dT%H:%M'),
+				'finish_planned_date_format_input': finish_planned_date.strftime('%Y-%m-%dT%H:%M'),
 				'purpose_id' : order_data.purpose_id.id,
 				'other_purpose' : order_data.other_purpose,
 			},
@@ -482,10 +485,10 @@ class website_mobile_app(http.Controller):
 				'list_order': result,
 			})
 	
-	@http.route('/mobile_app/approve_order/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_approve_order(self, data, **kwargs):
+	@http.route('/mobile_app/approve_order', type='http', auth="user", methods=['POST'], website=True)
+	def mobile_app_approve_order(self, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		result = handler_obj.approve_order(int(data))
+		result = handler_obj.approve_order(int(request.params['data']))
 		if result:
 			return json.dumps({
 				'status': 'ok',
@@ -499,10 +502,11 @@ class website_mobile_app(http.Controller):
 				'success': False,
 			})
 	
-	@http.route('/mobile_app/reject_order/<string:data>', type='http', auth="user", website=True)
-	def mobile_app_reject_order(self, data, **kwargs):
+	@http.route('/mobile_app/reject_order', type='http', auth="user", methods=['POST'], website=True)
+	def mobile_app_reject_order(self, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		result = handler_obj.reject_order(int(data))
+		print "reject order"
+		result = handler_obj.reject_order(int(request.params['data']))
 		if result:
 			return json.dumps({
 				'status': 'ok',
@@ -925,7 +929,7 @@ class website_mobile_app_handler(osv.osv):
 		contract_ids = contract_obj.search(cr, SUPERUSER_ID, [], context=param_context)
 		return contract_obj.browse(cr, SUPERUSER_ID, contract_ids)
 	
-	def  create_edit_order(self, cr, uid, domain, context={}):
+	def create_edit_order(self, cr, uid, domain, context={}):
 		order_obj = self.pool.get('foms.order')
 		order_passenger_obj = self.pool.get('foms.order.passenger')
 		user_obj = self.pool.get('res.users')
@@ -941,9 +945,9 @@ class website_mobile_app_handler(osv.osv):
 		other_purpose = domain.get('other_purpose', '')
 		
 		start_planned = domain.get('start_planned', '')
-		start_planned = datetime.strptime(start_planned, '%Y-%m-%dT%H:%M' if start_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
+		start_planned = datetime_to_server(start_planned, reverse=True, to_string=False, datetime_format='%Y-%m-%dT%H:%M' if start_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
 		finish_planned = domain.get('finish_planned', '')
-		finish_planned = datetime.strptime(finish_planned, '%Y-%m-%dT%H:%M' if finish_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
+		finish_planned = datetime_to_server(finish_planned, reverse=True, to_string=False, datetime_format='%Y-%m-%dT%H:%M' if finish_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
 		order_data = {
 			'customer_contract_id': contract_id,
 			'order_by': uid,
@@ -1142,10 +1146,14 @@ class website_mobile_app_handler(osv.osv):
 		return order_obj.browse(cr, SUPERUSER_ID, order_id);
 	
 	def cancel_order(self, cr, uid, order_id, context={}):
-		order_obj = self.pool.get('foms.order')
-		return order_obj.write(cr, uid, [order_id], {
-			'state': 'canceled',
-		}, context=context)
+		order_detail = {
+			'order_id': order_id,
+			'cancel_reason': None,
+			'cancel_reason_other': _('Cancel from mobile web'),
+			'cancel_by': uid,
+		}
+		cancel_memory_obj = self.pool.get('foms.order.cancel.memory')
+		return cancel_memory_obj.action_execute_cancel(cr, uid, [], order_detail)
 	
 	def get_shuttle_schedules(self, cr, uid, contract_id):
 		shuttle_schedule_obj = self.pool.get('foms.contract.shuttle.schedule')

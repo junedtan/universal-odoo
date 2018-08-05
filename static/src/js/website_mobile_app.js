@@ -632,6 +632,7 @@ $(document).ready(function () {
 				}));
 				addEventListOrder();
 			});
+			$("#website_mobile_app_tab_pending_order").click();
 			initOrderFilter();
 		});
 	});

@@ -1590,8 +1590,9 @@ class foms_order(osv.osv):
 		# apakah di kontrak ybs setting max_delay_minutes diisi? bila tidak ya sudah ngga usah cancel2an
 			if order.customer_contract_id.max_delay_minutes <= 0: continue
 		# kalau waktu sekarang sudah melewati batas delay, maka cancel si order
+			now = datetime.now - timedelta(hours=SERVER_TIMEZONE)
 			start = datetime.strptime(order.start_planned_date,'%Y-%m-%d %H:%M:%S')
-			if start + timedelta(minutes=order.customer_contract_id.max_delay_minutes) < datetime.now():
+			if start + timedelta(minutes=order.customer_contract_id.max_delay_minutes) < now:
 				self.write(cr, uid, [order.id], {
 					'state': 'canceled',
 					'cancel_date': datetime.now(),
@@ -2186,7 +2187,7 @@ class foms_order_cancel_memory(osv.osv_memory):
 			cancel_reason_other = context.get('cancel_reason_other')
 			cancel_by = context.get('cancel_by')
 		# kalau dari mobile app dan cancel reason nya kosong, maka itu berarti order dicancel karena delay exceeded
-			if not cancel_reason and not cancel_reason_other:
+			if not (cancel_reason or cancel_reason_other):
 				model_obj = self.pool.get('ir.model.data')
 				model, reason_id = model_obj.get_object_reference(cr, uid, 'universal', 'foms_cancel_reason_delay_exceeded')
 				cancel_reason = reason_id
@@ -2197,7 +2198,7 @@ class foms_order_cancel_memory(osv.osv_memory):
 			cancel_reason = form_data.cancel_reason.id
 			cancel_reason_other = form_data.cancel_reason_other
 			cancel_by = uid
-	# cancel lah is ordernya
+
 		order_obj = self.pool.get('foms.order')
 		order_data = order_obj.browse(cr, uid, order_id, context=context)
 	# state harus belum start
@@ -2206,6 +2207,16 @@ class foms_order_cancel_memory(osv.osv_memory):
 	# entah cancel reason atau cancel reason other harus diisi
 		if not cancel_reason and not cancel_reason_other:
 			raise osv.except_osv(_('Order Error'),_('Please choose Cancel Reason or type in Other Reason.'))
+	# kalau tipe kontrak adalah by_order dan sudah mencapai limit cancel before start
+	# maka ngga boleh cancel
+		if order_data.customer_contract_id.service_type == 'by_order' and order_data.customer_contract_id.max_cancel_minutes:
+			now = datetime.now() - timedelta(hours=SERVER_TIMEZONE)
+			start_planned_date = datetime.strptime(order_data.start_planned_date, DEFAULT_SERVER_DATETIME_FORMAT)
+			time_diff = start_planned_date - now
+			temp = divmod(time_diff.total_seconds(), 60)
+			if time_diff.total_seconds() < 0 or temp[0] < order_data.customer_contract_id.max_cancel_minutes:
+				raise osv.except_osv(_('Order Error'),_('This order is too close to its planned start date and thus cannot be canceled.'))
+	# go with the calcellation
 		return order_obj.write(cr, uid, [order_id], {
 			'state': 'canceled',
 			'cancel_reason': cancel_reason,

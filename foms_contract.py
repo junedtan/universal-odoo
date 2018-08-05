@@ -63,6 +63,8 @@ class foms_contract(osv.osv):
 			help='How long prior to start time, orders of this contract are allowed to be started. For example, Minimum Start Minutes of 30 minutes means that order booked for 16:00 can only be started 15:30 onward.'),
 		'max_delay_minutes': fields.float('Max. Delay (minutes)',
 			help='How long after planned start time, orders of this contract are automatically canceled. For example, Maximum Delay of 30 minutes means that order booked for 16:00 is automatically canceled at 16:30.'),
+		'max_cancel_minutes': fields.float('Max. Cancel (minutes)',
+			help='How long before an order is planned to be started, that it is allowed to be cancelled.'),
 		'order_hours': fields.one2many('foms.contract.order.hours', 'header_id', 'Order Hours'),
 	# FEES
 		'fee_calculation_type': fields.selection([

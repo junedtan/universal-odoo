@@ -107,9 +107,8 @@ reverse: kalau True, maka jam dikurangi, bila False maka ditambah
 to_string: kalau True, hasil konversi dibalikin menjadi string instead of direturn mentah2
 	sebagai datetime
 """
-def datetime_to_server(date_time, is_date=False, reverse=False, to_string=True):
+def datetime_to_server(date_time, is_date=False, reverse=False, to_string=True, datetime_format='%Y-%m-%d %H:%M:%S'):
 	from datetime import datetime, timedelta
-	datetime_format = '%Y-%m-%d %H:%M:%S'
 	datetime_display_format = '%d/%m/%Y %H:%M:%S'
 	if is_date:
 		date_time += ' 00:00:00'

@@ -63,6 +63,16 @@ var mobile_app_intent_definition = {
 		'target_activity_id': 'univmobile_actv_book_vehicle',
 		'target': 'main',
     },
+	'univmobile_intent_approve_order': {
+		'intent_type': 'confirm_and_action',
+		'target_activity_id': 'univmobile_actv_approve_order',
+		'target': 'confirm',
+	},
+	'univmobile_intent_reject_order': {
+		'intent_type': 'confirm_and_action',
+		'target_activity_id': 'univmobile_actv_reject_order',
+		'target': 'confirm',
+	},
 	'univmobile_intent_edit_order': {
 		'intent_type': 'page',
 		'target_activity_id': 'univmobile_actv_edit_order',

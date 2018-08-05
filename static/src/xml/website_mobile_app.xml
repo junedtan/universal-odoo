@@ -902,6 +902,14 @@
 							<td>State</td>
 							<td><t t-esc="detail.state_name"/></td>
 						</tr>
+						<tr>
+							<td>Start Speedometer</td>
+							<td><t t-esc="detail.start_speedometer"/></td>
+						</tr>
+						<tr>
+							<td>Finish Speedometer</td>
+							<td><t t-esc="detail.finish_speedometer"/></td>
+						</tr>
 					</table>				
 				</div>
 			</div>

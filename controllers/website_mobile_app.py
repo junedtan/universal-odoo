@@ -463,6 +463,8 @@ class website_mobile_app(http.Controller):
 				'start_planned_date_format_input': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
 				'purpose' : order_data.purpose_id and order_data.purpose_id.name or '-',
 				'other_purpose' : order_data.other_purpose and order_data.other_purpose or '-',
+				'start_speedometer': order_data.start_speedometer,
+				'finish_speedometer': order_data.finish_speedometer,
 			}
 			if type(loaded_data) is int:
 				jsonOrder['user_group'] = data_user_group['user_group']

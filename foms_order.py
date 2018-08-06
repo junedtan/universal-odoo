@@ -311,7 +311,8 @@ class foms_order(osv.osv):
 
 	def write(self, cr, uid, ids, vals, context={}):
 		orders = self.browse(cr, uid, ids)
-		# Escalation Privilege (Insecure Direct Object References)
+
+	# Escalation Privilege (Insecure Direct Object References)
 		if 'user_id' in context: uid = context['user_id']
 		if uid != SUPERUSER_ID:
 			accessible_order_ids = self.search(cr, uid, [], offset=0, limit=None, order=None, context={
@@ -325,11 +326,11 @@ class foms_order(osv.osv):
 		context = context and context or {}
 		source = context.get('source', False)
 
-	#apabila ada perubahan contract cek dahulu apakah contractnya masih active
+	# apabila ada perubahan contract cek dahulu apakah contractnya masih active
 		if vals.get('customer_contract_id', False):
 			self._cek_contract_is_active(cr,uid, [vals['customer_contract_id']], context)
 		
-	#cek dahulu apakah ada perubahan start_planned_date, kalau ada cek apakah kosong
+	# cek dahulu apakah ada perubahan start_planned_date, kalau ada cek apakah kosong
 		if 'start_planned_date' in vals:
 			if not vals.get('start_planned_date', False):
 				raise osv.except_osv(_('Order Error'),_('Please input start date.'))
@@ -720,6 +721,7 @@ class foms_order(osv.osv):
 			is_approver = user_obj.has_group(cr, user_id, 'universal.group_universal_approver')
 			is_driver = user_obj.has_group(cr, user_id, 'universal.group_universal_driver')
 			is_booker = user_obj.has_group(cr, user_id, 'universal.group_universal_booker')
+			is_dispatcher = user_obj.has_group(cr, user_id, 'universal.group_universal_dispatcher')
 			is_fullday_passenger = user_obj.has_group(cr, user_id, 'universal.group_universal_passenger')
 		# kalau pic, domainnya menjadi semua order dengan contract yang pic nya adalah partner terkait
 			if is_pic:
@@ -751,8 +753,11 @@ class foms_order(osv.osv):
 				domain = [
 					('alloc_unit_id','in',approver_alloc_units)
 				]
+		# kalau dispatcher, dia bisa akses semua order
 			if len(domain) > 0:
 				args = domain + args
+			elif is_dispatcher:
+				pass
 			else:
 				return []
 		return super(foms_order, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)

@@ -168,14 +168,14 @@
 									<field name="start_confirm_date" attrs="{'readonly': 1}"/>
 									<field name="start_confirm_by" options="{'no_create': 1}" attrs="{'readonly': 1}"/>
 									<field name="start_from" attrs="{'readonly': 1}"/>
-									<field name="start_speedometer" attrs="{'invisible': [('state','in',['new','rejected','confirmed','ready'])]}"/>
+									<field name="start_odometer" attrs="{'invisible': [('state','in',['new','rejected','confirmed','ready'])]}"/>
 								</group>
 								<group>
 									<field name="finish_date" attrs="{'readonly': 1}"/>
 									<field name="finish_confirm_date" attrs="{'readonly': 1}"/>
 									<field name="finish_confirm_by" options="{'no_create': 1}" attrs="{'readonly': 1}"/>
 									<field name="finish_from" attrs="{'readonly': 1}"/>
-									<field name="finish_speedometer" attrs="{'invisible': [('state','not in',['finished','finish_confirmed'])]}"/>
+									<field name="finish_odometer" attrs="{'invisible': [('state','not in',['finished','finish_confirmed'])]}"/>
 								</group>
 							</group>
 							<group>

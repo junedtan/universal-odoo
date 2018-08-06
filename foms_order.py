@@ -130,8 +130,8 @@ class foms_order(osv.osv):
 		), 'Create Source', readonly=True),
 		'purpose_id' : fields.many2one('foms.booking.purpose', 'Booking Purpose', ondelete='SET NULL'),
 		'other_purpose': fields.text('Other Purpose'),
-		'start_odometer': fields.float('Start Odometer'),
-		'finish_odometer': fields.float('Finish Odometer'),
+		'start_odometer': fields.float('Start Odometer', track_visibility="onchange"),
+		'finish_odometer': fields.float('Finish Odometer', track_visibility="onchange"),
 	}
 
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------
@@ -312,8 +312,7 @@ class foms_order(osv.osv):
 	def write(self, cr, uid, ids, vals, context={}):
 		orders = self.browse(cr, uid, ids)
 		# Escalation Privilege (Insecure Direct Object References)
-		if 'user_id' in context:
-			uid = context['user_id']
+		if 'user_id' in context: uid = context['user_id']
 		if uid != SUPERUSER_ID:
 			accessible_order_ids = self.search(cr, uid, [], offset=0, limit=None, order=None, context={
 				'by_user_id': True,
@@ -388,6 +387,15 @@ class foms_order(osv.osv):
 			vals.update({
 				'cancel_reason': reason_id,
 			})
+
+	# kalau ada perubahan odometer, cek finish harus > start
+	# kenapa ngga pake constraint? karena isi keduanya bisa 0
+		if vals.get('start_odometer', False) or vals.get('finish_odometer', False):
+			for data in orders:
+				start_odo = vals.get('start_odometer', data.start_odometer)
+				finish_odo = vals.get('finish_odometer', data.finish_odometer)
+				if finish_odo > 0 and finish_odo <= start_odo:
+					raise osv.except_osv(_('Order Error'),_('Finish odometer must be larger than start odometer (%s). Please check again your input.') % start_odo)
 
 	# eksekusi write nya dan ambil ulang data hasil update
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)

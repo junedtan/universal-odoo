@@ -130,8 +130,8 @@ class foms_order(osv.osv):
 		), 'Create Source', readonly=True),
 		'purpose_id' : fields.many2one('foms.booking.purpose', 'Booking Purpose', ondelete='SET NULL'),
 		'other_purpose': fields.text('Other Purpose'),
-		'start_speedometer': fields.float('Start Odometer'),
-		'finish_speedometer': fields.float('Finish Odometer'),
+		'start_odometer': fields.float('Start Odometer'),
+		'finish_odometer': fields.float('Finish Odometer'),
 	}
 
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------

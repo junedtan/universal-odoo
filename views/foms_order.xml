@@ -106,6 +106,8 @@
 							<field name="actual_vehicle_id" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['started','start_confirmed','finished','finish_confirmed'])]}" />
 							<field name="actual_driver_id" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['started','start_confirmed','finished','finish_confirmed'])]}" />
 							<field name="pin" attrs="{'invisible': [('service_type','!=','by_order')]}" readonly="1" />
+							<field name="start_odometer" attrs="{'invisible': [('state','in',['new','rejected','confirmed','ready'])]}"/>
+							<field name="finish_odometer" attrs="{'invisible': [('state','not in',['finished','finish_confirmed'])]}"/>
 							<field name="driver_mobile" invisible="True"/>
 						</group>
 					</group>

@@ -130,8 +130,8 @@ class foms_order(osv.osv):
 		), 'Create Source', readonly=True),
 		'purpose_id' : fields.many2one('foms.booking.purpose', 'Booking Purpose', ondelete='SET NULL'),
 		'other_purpose': fields.text('Other Purpose'),
-		'start_odometer': fields.float('Start Odometer'),
-		'finish_odometer': fields.float('Finish Odometer'),
+		'start_odometer': fields.float('Start Odometer', track_visibility="onchange"),
+		'finish_odometer': fields.float('Finish Odometer', track_visibility="onchange"),
 	}
 
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------
@@ -311,9 +311,9 @@ class foms_order(osv.osv):
 
 	def write(self, cr, uid, ids, vals, context={}):
 		orders = self.browse(cr, uid, ids)
-		# Escalation Privilege (Insecure Direct Object References)
-		if 'user_id' in context:
-			uid = context['user_id']
+
+	# Escalation Privilege (Insecure Direct Object References)
+		if 'user_id' in context: uid = context['user_id']
 		if uid != SUPERUSER_ID:
 			accessible_order_ids = self.search(cr, uid, [], offset=0, limit=None, order=None, context={
 				'by_user_id': True,
@@ -326,11 +326,11 @@ class foms_order(osv.osv):
 		context = context and context or {}
 		source = context.get('source', False)
 
-	#apabila ada perubahan contract cek dahulu apakah contractnya masih active
+	# apabila ada perubahan contract cek dahulu apakah contractnya masih active
 		if vals.get('customer_contract_id', False):
 			self._cek_contract_is_active(cr,uid, [vals['customer_contract_id']], context)
 		
-	#cek dahulu apakah ada perubahan start_planned_date, kalau ada cek apakah kosong
+	# cek dahulu apakah ada perubahan start_planned_date, kalau ada cek apakah kosong
 		if 'start_planned_date' in vals:
 			if not vals.get('start_planned_date', False):
 				raise osv.except_osv(_('Order Error'),_('Please input start date.'))
@@ -388,6 +388,15 @@ class foms_order(osv.osv):
 			vals.update({
 				'cancel_reason': reason_id,
 			})
+
+	# kalau ada perubahan odometer, cek finish harus > start
+	# kenapa ngga pake constraint? karena isi keduanya bisa 0
+		if vals.get('start_odometer', False) or vals.get('finish_odometer', False):
+			for data in orders:
+				start_odo = vals.get('start_odometer', data.start_odometer)
+				finish_odo = vals.get('finish_odometer', data.finish_odometer)
+				if finish_odo > 0 and finish_odo <= start_odo:
+					raise osv.except_osv(_('Order Error'),_('Finish odometer must be larger than start odometer (%s). Please check again your input.') % start_odo)
 
 	# eksekusi write nya dan ambil ulang data hasil update
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
@@ -712,6 +721,7 @@ class foms_order(osv.osv):
 			is_approver = user_obj.has_group(cr, user_id, 'universal.group_universal_approver')
 			is_driver = user_obj.has_group(cr, user_id, 'universal.group_universal_driver')
 			is_booker = user_obj.has_group(cr, user_id, 'universal.group_universal_booker')
+			is_dispatcher = user_obj.has_group(cr, user_id, 'universal.group_universal_dispatcher')
 			is_fullday_passenger = user_obj.has_group(cr, user_id, 'universal.group_universal_passenger')
 		# kalau pic, domainnya menjadi semua order dengan contract yang pic nya adalah partner terkait
 			if is_pic:
@@ -743,8 +753,11 @@ class foms_order(osv.osv):
 				domain = [
 					('alloc_unit_id','in',approver_alloc_units)
 				]
+		# kalau dispatcher, dia bisa akses semua order
 			if len(domain) > 0:
 				args = domain + args
+			elif is_dispatcher:
+				pass
 			else:
 				return []
 		return super(foms_order, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)

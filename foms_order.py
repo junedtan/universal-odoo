@@ -1,3 +1,4 @@
+from openerp import tools
 from openerp.osv import fields, osv
 from openerp.tools.translate import _
 from datetime import datetime, date, timedelta
@@ -1982,8 +1983,75 @@ class foms_order(osv.osv):
 				print user_id
 				print webservice_context
 				sync_obj.post_outgoing(cr, user_id, 'foms.order', command, order_data.id, data_columns=data_columns, data_context=webservice_context)
-				
-	# ==========================================================================================================================
+		if any(target in ['booker','approver'] for target in targets) and not context.get('no_email_notification', False):
+			self.send_email_notification(cr, uid, target_user_ids, command, order_data, webservice_context, data_columns, context)
+
+	def send_email_notification(self, cr, uid, target_user_ids, command, order_data, webservice_context={}, data_columns=[], context={}):		
+			notification = webservice_context.get('notification', None)
+			message = ""
+			subject = ""
+			if notification == 'order_approve':
+				message = _('New booking order %s by %s. You need to approve or reject it to continue.') % (order_data.name, order_data.order_by.name)
+				subject = "New order notification"
+			elif notification == 'order_over_quota_warning':
+				message = _('Order %s by %s causes overquota warning for allocation unit %s. This order may still continue without any quota modification.') % (order_data.name, order_data.order_by.name,order_data.alloc_unit_id.name)
+				subject = "Order overquota alert"
+			elif notification == 'order_over_quota_approval':
+				message = _('Order %s by %s has exceeded quota limit for allocation unit %s. You may have to request additional quota for this order to continue.') % (order_data.name, order_data.order_by.name,order_data.alloc_unit_id.name)
+				subject = "Order overquota alert"
+			elif notification == 'order_waiting_approve':
+				message = _('Your order has been placed with number %s. Please wait for order approval.') % (order_data.name)
+				subject = "New order notification"
+			elif notification == 'order_other_approved':
+				message = _('Order %s has been approved/rejected by another approver. Please refresh your app.') % (order_data.name)
+				subject = "Order approval notification"
+			elif notification == 'order_ready_booker':
+				message = _('Your order %s has been approved. Please stand by on planned start hour at your requested location. Our driver will come for you.') % (order_data.name)
+				subject = "Order approval notification"
+			elif notification == 'order_ready_approver':
+				message = _('Your approval for order %s has been successfully saved, and the booker has also been notified.') % (order_data.name)
+				subject = "Order approval notification"
+			elif notification == 'order_reject':
+				message = _('Your booking order %s has been rejected by %s. Please notify him/her if this should not be the case, and book a new order if needed.') % (order_data.name,order_data.confirm_by.name)
+				subject = "Order rejection notification"
+			elif notification == 'order_fleet_not_ready':
+				message = _('Order %s has been approved but all vehicles are unavailable at planned start time. We will manually assign a vehicle for this order. Please wait for further confirmation.') % (order_data.name)
+				subject = "Order approval alert"
+			elif notification == 'order_canceled':
+				message = _('Order %s has been canceled due to reason %s.') % (order_data.name,order_data.cancel_reason and order_data.cancel_reason.name or order_data.cancel_reason_other)
+				subject = "Order cancellation alert"
+			if message == "":
+				if command == 'create':
+					message = _('A new order %s has been placed by %s. Please review in your app.') % (order_data.name, order_data.order_by.name)
+					subject = "New order notification"
+				elif command == 'update':
+					message = _('There is an update on order %s. Please review in your app.') % (order_data.name)
+					subject = "Order update notification"
+			if message != "":
+				mail_obj = self.pool.get('mail.mail')
+				mail_ids = []
+				for user in self.pool.get('res.users').browse(cr, uid, target_user_ids):
+				# check if user has valid email
+					email = user.email and user.email or user.login
+					if not tools.single_email_re.match(email): continue
+					mail_data = {
+						'auto_delete': True,
+						'email_to': email,
+						'body_html': message,
+						'notification': False,
+						'subject': subject,
+						'author_id': SUPERUSER_ID,
+						'email_from': 'PT Universal Car Rental <noreply@ptuniversal.com>',
+						'reply_to': 'PT Universal Car Rental <noreply@ptuniversal.com>',
+						'type': 'email',
+					}
+					new_mail_id = mail_obj.create(cr, SUPERUSER_ID, mail_data)
+					mail_ids.append(new_mail_id)
+			# directly send email tanpa nunggu cron
+				if len(mail_ids) > 0:
+					mail_obj.send(cr, SUPERUSER_ID, mail_ids)
+
+# ==========================================================================================================================
 
 class foms_order_area(osv.osv):
 

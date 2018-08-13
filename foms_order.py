@@ -1987,10 +1987,9 @@ class foms_order(osv.osv):
 			self.send_email_notification(cr, uid, target_user_ids, command, order_data, webservice_context, data_columns, context)
 
 	def send_email_notification(self, cr, uid, target_user_ids, command, order_data, webservice_context={}, data_columns=[], context={}):		
-			notifications = webservice_context.get('notification', None)
+			notifications = webservice_context.get('notification', [])
 			mail_obj = self.pool.get('mail.mail')
 			mail_ids = []
-			print "di email notification: %s" % notifications
 			for notification in notifications:
 				message = ""
 				subject = ""
@@ -2016,7 +2015,7 @@ class foms_order(osv.osv):
 					message = _('Your approval for order %s has been successfully saved, and the booker has also been notified.') % (order_data.name)
 					subject = "Order approval notification"
 				elif notification == 'order_reject':
-					message = _('Your booking order %s has been rejected by %s. Please notify him/her if this should not be the case, and book a new order if needed.') % (order_data.name,order_data.confirm_by.name)
+					message = _('Your booking order %s has been rejected by. Please notify approver if this should not be the case, and book a new order if needed.') % (order_data.name)
 					subject = "Order rejection notification"
 				elif notification == 'order_fleet_not_ready':
 					message = _('Order %s has been approved but all vehicles are unavailable at planned start time. We will manually assign a vehicle for this order. Please wait for further confirmation.') % (order_data.name)
@@ -2056,9 +2055,9 @@ class foms_order(osv.osv):
 						}
 						new_mail_id = mail_obj.create(cr, SUPERUSER_ID, mail_data)
 						mail_ids.append(new_mail_id)
-			# directly send email tanpa nunggu cron
-				if len(mail_ids) > 0:
-					mail_obj.send(cr, SUPERUSER_ID, mail_ids)
+		# directly send email tanpa nunggu cron
+			if len(mail_ids) > 0:
+				mail_obj.send(cr, SUPERUSER_ID, mail_ids)
 
 # ==========================================================================================================================
 

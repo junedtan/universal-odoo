@@ -2032,8 +2032,13 @@ class foms_order(osv.osv):
 				mail_ids = []
 				for user in self.pool.get('res.users').browse(cr, uid, target_user_ids):
 				# check if user has valid email
-					email = user.email and user.email or user.login
-					if not tools.single_email_re.match(email): continue
+					has_email = False
+					email = user.email
+					if tools.single_email_re.match(email): has_email = True
+					if not has_email:
+						email = user.login
+						if tools.single_email_re.match(email): has_email = True
+					if not has_email: continue
 					mail_data = {
 						'auto_delete': True,
 						'email_to': email,

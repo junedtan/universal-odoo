@@ -910,6 +910,24 @@
 							<td>Finish Odometer</td>
 							<td><t t-esc="detail.finish_odometer"/></td>
 						</tr>
+						<t t-if="detail.driver_phone_list != False">
+							<tr>
+								<td>Driver's Phone</td>
+								<t t-set="counter" t-value="0" />
+								<t t-foreach="detail.driver_phone_list" t-as="phone">
+									<t t-if="counter == 0">
+										<td><t t-esc="phone"/></td>
+									</t>
+									<t t-if="counter > 0">
+										<tr>
+											<td></td>
+											<td><t t-esc="phone"/></td>
+										</tr>
+									</t>
+									<t t-set="counter" t-value="counter + 1" />
+								</t>
+							</tr>
+						</t>
 					</table>				
 				</div>
 			</div>

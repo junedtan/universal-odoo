@@ -426,6 +426,7 @@ class website_mobile_app(http.Controller):
 			finish_planned_date = datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
 			start_date = order_data.start_date and datetime.strptime(order_data.start_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7) or None
 			finish_date = order_data.finish_date and datetime.strptime(order_data.finish_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7) or None
+			driver_phone_list = order_data.driver_mobile.split("\n")
 			jsonOrder = {
 				'id': order_data.id,
 				'name': order_data.name,
@@ -465,6 +466,7 @@ class website_mobile_app(http.Controller):
 				'other_purpose' : order_data.other_purpose and order_data.other_purpose or '-',
 				'start_odometer': order_data.start_odometer,
 				'finish_odometer': order_data.finish_odometer,
+				'driver_phone_list': driver_phone_list,
 			}
 			if type(loaded_data) is int:
 				jsonOrder['user_group'] = data_user_group['user_group']

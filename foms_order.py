@@ -2033,6 +2033,12 @@ class foms_order(osv.osv):
 						subject = "Order update notification"
 				"""
 				if message != "":
+					message = ("""
+						%s<br/>
+						<br/>
+						To access the system, please click this link: <a href="https://apps.ptuniversal.com">https://apps.ptuniversal.com</a>.<br/>
+						Or, if you have installed our Android app, please ignore this message and tap notification displayed on your device.
+					""" % message)
 					for user in self.pool.get('res.users').browse(cr, uid, target_user_ids):
 					# check if user has valid email
 						has_email = False

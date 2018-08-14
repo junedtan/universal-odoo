@@ -511,13 +511,18 @@
 					<div class="row no_padding">
 						<div class="form-group col-md-6 col-xs-12">
 							<label for="unit_id" class="col-form-label">Unit</label>
-							<select id="unit_id" class="form-control">
-								<t t-if="detail.contract_datas.length != 0">
-									<t t-foreach="detail.contract_datas[0].units" t-as="unit">
-										<option t-attf-value="{{unit.id}}"><t t-esc="unit.name"/></option>
+							<t t-if="detail.order_data == False">
+								<select id="unit_id" class="form-control">
+									<t t-if="detail.contract_datas.length != 0">
+										<t t-foreach="detail.contract_datas[0].units" t-as="unit">
+											<option t-attf-value="{{unit.id}}"><t t-esc="unit.name"/></option>
+										</t>
 									</t>
-								</t>
-							</select>
+								</select>
+							</t>
+							<t t-if="detail.order_data">
+								<input type="text" class="form-control" readonly="readonly" t-att-value="detail.order_data.au_name" />
+							</t>
 						</div>
 						<div class="form-group col-md-6 col-xs-12">
 							<label for="type_id" class="col-form-label">Type</label>
@@ -916,7 +921,7 @@
 			<hr/>
 			<div class="div_detail_order_button card_padding">
 				<t t-if="detail.user_group != 'pic'">
-					<t t-if="detail.classification_value == 'pending'">
+					<t t-if="detail.state == 'new'">
 						<!--
 						<button type="button" intent="univmobile_intent_change_start_planned_time" t-att-data-data_id="detail.id"
 								class="btn btn-success btn_change_planned_start_time mt5">Change Time</button>
@@ -953,7 +958,10 @@
 		</form>
 	</t>
 
-	<!-- ==================================================================================== -->
+
+
+
+<!-- ==================================================================================== -->
 <!-- ==================================================================================== -->
 <!-- ==================================================================================== -->
 <!-- Dari titik ini ke bawah adalah qweb template untuk versi lama -->

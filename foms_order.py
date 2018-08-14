@@ -49,7 +49,7 @@ class foms_order(osv.osv):
 				if row.assigned_driver_id.phone: phones.append(row.assigned_driver_id.phone)
 				if row.assigned_driver_id.mobile_phone2: phones.append(row.assigned_driver_id.mobile_phone2)
 				if row.assigned_driver_id.mobile_phone3: phones.append(row.assigned_driver_id.mobile_phone3)
-			result[row.id] = ",".join(phones)
+			result[row.id] = "\n".join(phones)
 		return result
 
 	def _customer_name(self, cr, uid, ids, field_name, arg, context):
@@ -105,7 +105,7 @@ class foms_order(osv.osv):
 		'assigned_driver_id': fields.many2one('hr.employee', 'Assigned Driver', ondelete='restrict'),
 		'actual_vehicle_id': fields.many2one('fleet.vehicle', 'Actual Vehicle', ondelete='restrict'),
 		'actual_driver_id': fields.many2one('hr.employee', 'Actual Driver', ondelete='restrict'),
-		'driver_mobile': fields.function(_driver_mobile, type="char", method=True, string="Driver Phone"),
+		'driver_mobile': fields.function(_driver_mobile, type="text", method=True, string="Driver Phone"),
 		'pin': fields.char('PIN'),
 		'start_planned_date': fields.datetime('Start Planned Date'),
 		'finish_planned_date': fields.datetime('Finish Planned Date'),

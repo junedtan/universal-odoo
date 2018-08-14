@@ -1,3 +1,4 @@
+from openerp import tools
 from openerp.osv import fields, osv
 from openerp.tools.translate import _
 from datetime import datetime, date, timedelta
@@ -130,8 +131,8 @@ class foms_order(osv.osv):
 		), 'Create Source', readonly=True),
 		'purpose_id' : fields.many2one('foms.booking.purpose', 'Booking Purpose', ondelete='SET NULL'),
 		'other_purpose': fields.text('Other Purpose'),
-		'start_odometer': fields.float('Start Odometer'),
-		'finish_odometer': fields.float('Finish Odometer'),
+		'start_odometer': fields.float('Start Odometer', track_visibility="onchange"),
+		'finish_odometer': fields.float('Finish Odometer', track_visibility="onchange"),
 	}
 
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------
@@ -311,9 +312,9 @@ class foms_order(osv.osv):
 
 	def write(self, cr, uid, ids, vals, context={}):
 		orders = self.browse(cr, uid, ids)
-		# Escalation Privilege (Insecure Direct Object References)
-		if 'user_id' in context:
-			uid = context['user_id']
+
+	# Escalation Privilege (Insecure Direct Object References)
+		if 'user_id' in context: uid = context['user_id']
 		if uid != SUPERUSER_ID:
 			accessible_order_ids = self.search(cr, uid, [], offset=0, limit=None, order=None, context={
 				'by_user_id': True,
@@ -326,11 +327,11 @@ class foms_order(osv.osv):
 		context = context and context or {}
 		source = context.get('source', False)
 
-	#apabila ada perubahan contract cek dahulu apakah contractnya masih active
+	# apabila ada perubahan contract cek dahulu apakah contractnya masih active
 		if vals.get('customer_contract_id', False):
 			self._cek_contract_is_active(cr,uid, [vals['customer_contract_id']], context)
 		
-	#cek dahulu apakah ada perubahan start_planned_date, kalau ada cek apakah kosong
+	# cek dahulu apakah ada perubahan start_planned_date, kalau ada cek apakah kosong
 		if 'start_planned_date' in vals:
 			if not vals.get('start_planned_date', False):
 				raise osv.except_osv(_('Order Error'),_('Please input start date.'))
@@ -388,6 +389,15 @@ class foms_order(osv.osv):
 			vals.update({
 				'cancel_reason': reason_id,
 			})
+
+	# kalau ada perubahan odometer, cek finish harus > start
+	# kenapa ngga pake constraint? karena isi keduanya bisa 0
+		if vals.get('start_odometer', False) or vals.get('finish_odometer', False):
+			for data in orders:
+				start_odo = vals.get('start_odometer', data.start_odometer)
+				finish_odo = vals.get('finish_odometer', data.finish_odometer)
+				if finish_odo > 0 and finish_odo <= start_odo:
+					raise osv.except_osv(_('Order Error'),_('Finish odometer must be larger than start odometer (%s). Please check again your input.') % start_odo)
 
 	# eksekusi write nya dan ambil ulang data hasil update
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
@@ -712,6 +722,7 @@ class foms_order(osv.osv):
 			is_approver = user_obj.has_group(cr, user_id, 'universal.group_universal_approver')
 			is_driver = user_obj.has_group(cr, user_id, 'universal.group_universal_driver')
 			is_booker = user_obj.has_group(cr, user_id, 'universal.group_universal_booker')
+			is_dispatcher = user_obj.has_group(cr, user_id, 'universal.group_universal_dispatcher')
 			is_fullday_passenger = user_obj.has_group(cr, user_id, 'universal.group_universal_passenger')
 		# kalau pic, domainnya menjadi semua order dengan contract yang pic nya adalah partner terkait
 			if is_pic:
@@ -743,8 +754,11 @@ class foms_order(osv.osv):
 				domain = [
 					('alloc_unit_id','in',approver_alloc_units)
 				]
+		# kalau dispatcher, dia bisa akses semua order
 			if len(domain) > 0:
 				args = domain + args
+			elif is_dispatcher:
+				pass
 			else:
 				return []
 		return super(foms_order, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
@@ -1969,8 +1983,89 @@ class foms_order(osv.osv):
 				print user_id
 				print webservice_context
 				sync_obj.post_outgoing(cr, user_id, 'foms.order', command, order_data.id, data_columns=data_columns, data_context=webservice_context)
-				
-	# ==========================================================================================================================
+		if any(target in ['booker','approver'] for target in targets) and not context.get('no_email_notification', False):
+			self.send_email_notification(cr, uid, target_user_ids, command, order_data, webservice_context, data_columns, context)
+
+	def send_email_notification(self, cr, uid, target_user_ids, command, order_data, webservice_context={}, data_columns=[], context={}):		
+			notifications = webservice_context.get('notification', [])
+			mail_obj = self.pool.get('mail.mail')
+			mail_ids = []
+			for notification in notifications:
+				message = ""
+				subject = ""
+				if notification == 'order_approve':
+					message = _('New booking order %s by %s. You need to approve or reject it to continue.') % (order_data.name, order_data.order_by.name)
+					subject = "New order notification"
+				elif notification == 'order_over_quota_warning':
+					message = _('Order %s by %s causes overquota warning for allocation unit %s. This order may still continue without any quota modification.') % (order_data.name, order_data.order_by.name,order_data.alloc_unit_id.name)
+					subject = "Order overquota alert"
+				elif notification == 'order_over_quota_approval':
+					message = _('Order %s by %s has exceeded quota limit for allocation unit %s. You may have to request additional quota for this order to continue.') % (order_data.name, order_data.order_by.name,order_data.alloc_unit_id.name)
+					subject = "Order overquota alert"
+				elif notification == 'order_waiting_approve':
+					message = _('Your order has been placed with number %s. Please wait for order approval.') % (order_data.name)
+					subject = "New order notification"
+				elif notification == 'order_other_approved':
+					message = _('Order %s has been approved/rejected by another approver. Please refresh your app.') % (order_data.name)
+					subject = "Order approval notification"
+				elif notification == 'order_ready_booker':
+					message = _('Your order %s has been approved. Please stand by on planned start hour at your requested location. Our driver will come for you.') % (order_data.name)
+					subject = "Order approval notification"
+				elif notification == 'order_ready_approver':
+					message = _('Your approval for order %s has been successfully saved, and the booker has also been notified.') % (order_data.name)
+					subject = "Order approval notification"
+				elif notification == 'order_reject':
+					message = _('Your booking order %s has been rejected by. Please notify approver if this should not be the case, and book a new order if needed.') % (order_data.name)
+					subject = "Order rejection notification"
+				elif notification == 'order_fleet_not_ready':
+					message = _('Order %s has been approved but all vehicles are unavailable at planned start time. We will manually assign a vehicle for this order. Please wait for further confirmation.') % (order_data.name)
+					subject = "Order approval alert"
+				elif notification == 'order_canceled':
+					message = _('Order %s has been canceled due to reason %s.') % (order_data.name,order_data.cancel_reason and order_data.cancel_reason.name or order_data.cancel_reason_other)
+					subject = "Order cancellation alert"
+				"""
+				if message == "":
+					if command == 'create':
+						message = _('A new order %s has been placed by %s. Please review in your app.') % (order_data.name, order_data.order_by.name)
+						subject = "New order notification"
+					elif command == 'update':
+						message = _('There is an update on order %s. Please review in your app.') % (order_data.name)
+						subject = "Order update notification"
+				"""
+				if message != "":
+					message = ("""
+						%s<br/>
+						<br/>
+						To access the system, please click this link: <a href="https://apps.ptuniversal.com">https://apps.ptuniversal.com</a>.<br/>
+						Or, if you have installed our Android app, please ignore this message and tap notification displayed on your device.
+					""" % message)
+					for user in self.pool.get('res.users').browse(cr, uid, target_user_ids):
+					# check if user has valid email
+						has_email = False
+						email = user.email
+						if tools.single_email_re.match(email): has_email = True
+						if not has_email:
+							email = user.login
+							if tools.single_email_re.match(email): has_email = True
+						if not has_email: continue
+						mail_data = {
+							'auto_delete': True,
+							'email_to': email,
+							'body_html': message,
+							'notification': False,
+							'subject': subject,
+							'author_id': SUPERUSER_ID,
+							'email_from': 'PT Universal Car Rental <noreply@ptuniversal.com>',
+							'reply_to': 'PT Universal Car Rental <noreply@ptuniversal.com>',
+							'type': 'email',
+						}
+						new_mail_id = mail_obj.create(cr, SUPERUSER_ID, mail_data)
+						mail_ids.append(new_mail_id)
+		# directly send email tanpa nunggu cron
+			if len(mail_ids) > 0:
+				mail_obj.send(cr, SUPERUSER_ID, mail_ids)
+
+# ==========================================================================================================================
 
 class foms_order_area(osv.osv):
 

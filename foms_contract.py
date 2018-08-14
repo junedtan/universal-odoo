@@ -1143,6 +1143,8 @@ class foms_contract_alloc_unit(osv.osv):
 # CONSTRAINTS --------------------------------------------------------------------------------------------------------------
 		
 	def _constraint_booker_approver(self, cr, uid, ids, context=None):
+	# 20180815 dicoba ditutup dulu untuk meriksa apakah ngefek ke kecepatan ngesave
+		return True
 		for data in self.browse(cr, uid, ids, context):
 			if data.header_id.service_type == 'by_order':
 				if len(data.booker_ids) == 0:
@@ -1152,10 +1154,6 @@ class foms_contract_alloc_unit(osv.osv):
 	_constraints = [
 		(_constraint_booker_approver, _('For By-Order service type, every usage unit must have at least one approver and one booker.'), ['approver_ids','booker_ids'])
 	]
-	
-	_sql_constraints = [
-		('unique_contract_alloc_unit', 'UNIQUE(header_id,name)', _('Please input unique contract usage unit.')),
-	]	
 	
 # ==========================================================================================================================
 

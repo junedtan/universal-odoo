@@ -6,15 +6,12 @@ from openerp.http import request
 from datetime import datetime, date, timedelta
 from dateutil.relativedelta import relativedelta
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
-from openerp.addons.universal import datetime_to_server
+from openerp.addons.universal import datetime_to_server, now_to_server
 
 from openerp.addons.website.models.website import slug
 
 import json
 import locale
-
-import pytz
-from datetime import datetime, date
 
 _CONTRACT_STATE = [
 	('proposed','Proposed'),
@@ -421,23 +418,39 @@ class website_mobile_app(http.Controller):
 			list_passenger = []
 			for passenger in order_data.passengers:
 				list_passenger.append({'name':passenger.name, 'phone' : passenger.phone_no})
-			request_date = datetime.strptime(order_data.request_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
-			start_planned_date = datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
-			finish_planned_date = datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
-			start_date = order_data.start_date and datetime.strptime(order_data.start_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7) or None
-			finish_date = order_data.finish_date and datetime.strptime(order_data.finish_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7) or None
+
+			request_date = datetime_to_server(order_data.request_date, datetime_display_format='%d-%m-%Y %H:%M')
+			start_planned_date = datetime_to_server(order_data.start_planned_date, datetime_display_format='%d-%m-%Y %H:%M')
+			finish_planned_date = datetime_to_server(order_data.finish_planned_date, datetime_display_format='%d-%m-%Y %H:%M')
+			start_date = datetime_to_server(order_data.start_date, datetime_display_format='%d-%m-%Y %H:%M', empty_value='-')
+			finish_date = datetime_to_server(order_data.finish_date, datetime_display_format='%d-%m-%Y %H:%M', empty_value='-')
+			start_planned_date_format_input = datetime_to_server(order_data.start_planned_date, datetime_display_format='%Y-%m-%dT%H:%M')
+			#20180814 ditutup untuk implementasi datetime_to_server
+			#request_date = datetime.strptime(order_data.request_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
+			#start_planned_date = datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
+			#finish_planned_date = datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
+			#start_date = order_data.start_date and datetime.strptime(order_data.start_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7) or None
+			#finish_date = order_data.finish_date and datetime.strptime(order_data.finish_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7) or None
+
 			jsonOrder = {
+				'request_date': request_date,
+				'start_planned_date': start_planned_date,
+				'finish_planned_date': finish_planned_date,
+				'start_date': start_date,
+				'finish_date': finish_date,
+				'start_planned_date_format_input': start_planned_date_format_input,
+				#'request_date':  request_date.strftime('%d-%m-%Y %H:%M'),
+				#'start_planned_date': start_planned_date.strftime('%d-%m-%Y %H:%M'),
+				#'finish_planned_date': finish_planned_date.strftime('%d-%m-%Y %H:%M'),
+				#'start_date': start_date and start_date.strftime('%d-%m-%Y %H:%M') or '-',
+				#'finish_date': finish_date and finish_date.strftime('%d-%m-%Y %H:%M') or '-',
+				#'start_planned_date_format_input': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
 				'id': order_data.id,
 				'name': order_data.name,
 				'state': order_data.state,
 				'pin': order_data.pin,
 				'state_name': dict(_ORDER_STATE).get(order_data.state, ''),
-				'request_date':  request_date.strftime('%d-%m-%Y %H:%M'),
 				'order_by_name': order_data.order_by.name,
-				'start_planned_date': start_planned_date.strftime('%d-%m-%Y %H:%M'),
-				'finish_planned_date': finish_planned_date.strftime('%d-%m-%Y %H:%M'),
-				'start_date': start_date and start_date.strftime('%d-%m-%Y %H:%M') or '-',
-				'finish_date': finish_date and finish_date.strftime('%d-%m-%Y %H:%M') or '-',
 				'assigned_vehicle_name': order_data.assigned_vehicle_id.name,
 				'assigned_driver_name': order_data.assigned_driver_id.name,
 				'origin_location': order_data.origin_location,
@@ -460,11 +473,11 @@ class website_mobile_app(http.Controller):
 				'type': order_data.order_type_by_order,
 				'type_name': dict(_ORDER_TYPE).get(order_data.order_type_by_order, ''),
 				'classification_value': classification,
-				'start_planned_date_format_input': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
 				'purpose' : order_data.purpose_id and order_data.purpose_id.name or '-',
 				'other_purpose' : order_data.other_purpose and order_data.other_purpose or '-',
 				'start_odometer': order_data.start_odometer,
 				'finish_odometer': order_data.finish_odometer,
+				'driver_phone_list': driver_phone_list,
 			}
 			if type(loaded_data) is int:
 				jsonOrder['user_group'] = data_user_group['user_group']
@@ -664,7 +677,7 @@ class website_mobile_app(http.Controller):
 				'request_by': quota_change.request_by and quota_change.request_by.name or quota_change.create_uid.name,
 				'request_type': dict(_REQUEST_LONGEVITY).get(quota_change.request_longevity, ''),
 				'confirm_by': quota_change.confirm_by and quota_change.confirm_by.name or None,
-				'confirm_date': quota_change.confirm_date and datetime_to_server(quota_change.confirm_date) or None,
+				'confirm_date': datetime_to_server(quota_change.confirm_date),
 				'reject_reason': quota_change.reject_reason,
 				'yellow_limit_old': quota_change.old_yellow_limit,
 				'yellow_limit_new': quota_change.new_yellow_limit,
@@ -956,7 +969,7 @@ class website_mobile_app_handler(osv.osv):
 			'fleet_type_id': fleet_type_id,
 			'start_planned_date': start_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
 			'finish_planned_date': finish_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
-			'request_date': datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT),
+			'request_date': datetime_to_server(datetime.now(), reverse=True, datetime_display_format=DEFAULT_SERVER_DATETIME_FORMAT),
 			'purpose_id' : purpose_id,
 			'other_purpose' : other_purpose,
 		}

@@ -688,14 +688,9 @@ var mobile_app_activity_definition = {
 					$('#other_purpose').val(""+order_data.other_purpose).change();
 
 					var ckb_i_am_passenger = $('#ckb_i_am_passenger');
+                    $('#i_am_passenger').prop('checked', true);
 					$.each(order_data.passengers, function(index, passenger) {
-						if(!passenger.is_orderer) {
-							add_passenger_to_table(passenger.name, passenger.phone_no, passenger.id);
-						} else {
-							$('#i_am_passenger').click();
-							$('#i_am_passenger').click();
-							$('#i_am_passenger').prop('checked', true);
-						}
+                        add_passenger_to_table(passenger.name, passenger.phone_no, passenger.id, passenger.is_orderer);
 					});
 				}
 			});
@@ -836,7 +831,7 @@ function get_row_string_passenger(name, phone, id, exist_id, removable) {
 					'</button></td>';
 	} else {
 		row += '<td><input type="text" class="tbl_name form-control" value="' + name + '" readonly/></td>' +
-				'<td><input type="text" class="tbl_phone form-control" value="' + phone + '" readonly/></td>' +
+				'<td><input type="text" class="tbl_phone form-control" value="' + phone + '"/></td>' +
 				'<td></td>';
 	}
 	row += '</tr>';
@@ -923,9 +918,14 @@ function is_valid_form_data_order(form_data){
 	return valid;
 };
 
-function add_passenger_to_table(name, phone, exist_id) {
+function add_passenger_to_table(name, phone, exist_id, isOrderer) {
 	var table_passengers = $("#passengers");
-	table_passengers.append(get_row_string_passenger(name, phone, '', exist_id, true));
+	var id = '';
+	if (isOrderer){
+        mobile_app.cache['my_id'] = "passenger_me";
+        id = mobile_app.cache['my_id']
+	}
+	table_passengers.append(get_row_string_passenger(name, phone, id, exist_id, !isOrderer));
 	$(".btn_remove_passenger").click(function(){
 		onclick_create_order_remove_passenger(this);
 	});

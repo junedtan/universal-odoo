@@ -2,6 +2,9 @@ from openerp.osv import osv, fields
 from openerp.tools.translate import _
 from datetime import datetime, date, timedelta
 
+from . import SERVER_TIMEZONE
+from . import datetime_to_server
+
 # ==========================================================================================================================
 
 class foms_contract(osv.osv):
@@ -373,7 +376,7 @@ class foms_contract(osv.osv):
 	# untuk command ambil list homebase
 		if command == 'homebase':
 			homebase_obj = self.pool.get('chjs.region')
-			homebase_ids = homebase_obj.search(cr, uid, [])
+			homebase_ids = homebase_obj.search(cr, uid, [('type','=','city')])
 			result = []
 			for homebase in homebase_obj.browse(cr, uid, homebase_ids):
 				result.append({
@@ -1068,11 +1071,23 @@ class foms_contract_alloc_unit(osv.osv):
 	}		
 	
 # CONSTRAINTS --------------------------------------------------------------------------------------------------------------
+		
+	def _constraint_booker_approver(self, cr, uid, ids, context=None):
+		for data in self.browse(cr, uid, ids, context):
+			if data.header_id.service_type == 'by_order':
+				if len(data.booker_ids) == 0:
+					return False
+		return True
 	
+	_constraints = [
+		(_constraint_booker_approver, _('For By-Order service type, every usage unit must have at least one approver and one booker.'), ['approver_ids','booker_ids'])
+	]
+
 	_sql_constraints = [
 		('unique_contract_alloc_unit', 'UNIQUE(header_id,name)', _('Please input unique contract usage unit.')),
 		('check_limit', 'CHECK(red_limit >= yellow_limit)', _('Red Limit must be greater than or equal to Yellow Limit.')),
 	]	
+	
 
 # OVERRIDES ----------------------------------------------------------------------------------------------------------------
 
@@ -1139,21 +1154,6 @@ class foms_contract_alloc_unit(osv.osv):
 		'yellow_limit': 0,
 		'red_limit': 0,
 	}	
-	
-# CONSTRAINTS --------------------------------------------------------------------------------------------------------------
-		
-	def _constraint_booker_approver(self, cr, uid, ids, context=None):
-	# 20180815 dicoba ditutup dulu untuk meriksa apakah ngefek ke kecepatan ngesave
-		return True
-		for data in self.browse(cr, uid, ids, context):
-			if data.header_id.service_type == 'by_order':
-				if len(data.booker_ids) == 0:
-					return False
-		return True
-	
-	_constraints = [
-		(_constraint_booker_approver, _('For By-Order service type, every usage unit must have at least one approver and one booker.'), ['approver_ids','booker_ids'])
-	]
 	
 # ==========================================================================================================================
 

@@ -107,12 +107,21 @@ reverse: kalau True, maka jam dikurangi, bila False maka ditambah
 to_string: kalau True, hasil konversi dibalikin menjadi string instead of direturn mentah2
 	sebagai datetime
 """
-def datetime_to_server(date_time, is_date=False, reverse=False, to_string=True, datetime_format='%Y-%m-%d %H:%M:%S'):
+def datetime_to_server(date_time, is_date=False, reverse=False, to_string=True, 
+datetime_format='%Y-%m-%d %H:%M:%S', datetime_display_format='%d-%m-%Y %H:%M:%S',
+empty_value=None):
+	if not date_time: 
+		if to_string:
+			return empty_value is None and '' or str(empty_value)
+		else:
+			return empty_value
 	from datetime import datetime, timedelta
-	datetime_display_format = '%d/%m/%Y %H:%M:%S'
-	if is_date:
-		date_time += ' 00:00:00'
-	date_time_convert = datetime.strptime(date_time,datetime_format)
+	if isinstance(date_time, datetime):
+		date_time_convert = date_time
+	else:
+		if is_date:
+			date_time += ' 00:00:00'
+		date_time_convert = datetime.strptime(date_time,datetime_format)
 	if reverse:
 		date_time_convert = date_time_convert - timedelta(hours=SERVER_TIMEZONE)
 	else:
@@ -121,6 +130,11 @@ def datetime_to_server(date_time, is_date=False, reverse=False, to_string=True, 
 		return date_time_convert.strftime(datetime_display_format)
 	else:
 		return date_time_convert
+
+def now_to_server(reverse=False, to_string=True, datetime_display_format='%d-%m-%Y %H:%M:%S'):
+	from datetime import datetime, timedelta
+	date_time = datetime.now()
+	return datetime_to_server(date_time, reverse=reverse, to_string=to_string, datetime_display_format=datetime_display_format)
 
 
 import chjs_region

@@ -764,6 +764,7 @@ class foms_order(osv.osv):
 		return super(foms_order, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
 
 	def webservice_handle(self, cr, uid, user_id, command, data_id, model_data, context={}):
+		user_obj = self.pool.get('res.users')
 		if context == None: context = {}
 		result = super(foms_order, self).webservice_handle(cr, uid, user_id, command, data_id, model_data, context=context)
 	# ambil master cancel reason
@@ -779,14 +780,18 @@ class foms_order(osv.osv):
 	# eksekusi cancel order
 		elif command == 'cancel_order':
 			context = {}
-			model_data.update({
-				'order_id': data_id,
-				'cancel_by': user_id,
-			})
-			context.update(model_data)
-			cancel_memory_obj = self.pool.get('foms.order.cancel.memory')
-			result = cancel_memory_obj.action_execute_cancel(cr, uid, [], context)
-			if result == True: result = 'ok'
+			driver_ids = user_obj.get_user_ids_by_group(cr, SUPERUSER_ID, 'universal', 'group_universal_driver')
+			if user_id in driver_ids:
+				result = _("Driver cannot cancel the order.")
+			else:
+				model_data.update({
+					'order_id': data_id,
+					'cancel_by': user_id,
+				})
+				context.update(model_data)
+				cancel_memory_obj = self.pool.get('foms.order.cancel.memory')
+				result = cancel_memory_obj.action_execute_cancel(cr, uid, [], context)
+				if result == True: result = 'ok'
 	# list order area
 		elif command == 'order_areas':
 			area_obj = self.pool.get('foms.order.area')

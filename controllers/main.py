@@ -324,6 +324,7 @@ class Website(Website):
 			return request.registry['ir.http'].reroute('/mobile_app')
 		return super(Website, self).index(**kwargs)
 	
+	"""
 	@http.route()
 	def web_login(self, redirect=None, *args, **kw):
 		# Remove site redirection function on login page
@@ -353,7 +354,8 @@ class Website(Website):
 					if request.env.ref('web.login', False):
 						return request.render('web.login', values)
 		return super(Website, self).web_login(*args, **kw)
-
+	"""
+	
 # ==========================================================================================================================
 
 class WebClient(WebClient):

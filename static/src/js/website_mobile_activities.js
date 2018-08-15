@@ -633,7 +633,6 @@ var mobile_app_activity_definition = {
 							var form_data = mobile_app.form.get_values(form_object);
 							valid = is_valid_form_data_order(form_data);
 							form_data['mode_create_or_edit'] = 'edit';
-							console.log(form_data);
 							return {
 								valid: valid,
 								form_data: form_data,
@@ -676,6 +675,7 @@ var mobile_app_activity_definition = {
 					$('#contract_id').val(""+order_data.customer_contract_id).change();
 					$('#fleet_type_id').val(""+order_data.fleet_type_id).change();
 					$('#unit_id').val(""+order_data.alloc_unit_id).change();
+					$('#unit_name').val(order_data.alloc_unit_name);
 					$('#type_id').val(""+order_data.order_type_by_order).change();
 					$('#book_vehicle_route_from').val(""+order_data.origin_district_id).change();
 					$('#from_area_id').val(""+order_data.origin_area_id).change();

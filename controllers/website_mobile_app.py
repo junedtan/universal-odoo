@@ -228,6 +228,7 @@ class website_mobile_app(http.Controller):
 				'customer_contract_id': order_data.customer_contract_id.id,
 				'fleet_type_id': order_data.fleet_type_id.id,
 				'alloc_unit_id': order_data.alloc_unit_id.id,
+				'alloc_unit_name': order_data.alloc_unit_id.name,
 				'order_type_by_order': order_data.order_type_by_order,
 				'origin_district_id': order_data.origin_area_id.district_id.id,
 				'origin_area_id': order_data.origin_area_id.id,
@@ -1006,6 +1007,7 @@ class website_mobile_app_handler(osv.osv):
 				return "there is no passenger, please add 1 passenger at least"
 			
 			order_data['alloc_unit_id'] = unit_id
+			order_data['alloc_unit_name'] = unit_id
 			order_data['order_type_by_order'] = type_id
 			
 			order_data['origin_area_id'] = from_area_id

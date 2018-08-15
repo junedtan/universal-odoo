@@ -521,6 +521,7 @@
 								</select>
 							</t>
 							<t t-if="detail.order_data">
+								<input type="hidden" id="unit_id" />
 								<input type="text" class="form-control" readonly="readonly" disabled="disabled" id="unit_name" />
 							</t>
 						</div>

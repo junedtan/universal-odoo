@@ -586,20 +586,28 @@ class website_mobile_app(http.Controller):
 	
 	@http.route('/mobile_app/cancel_order', type='http', auth="user", methods=['POST'], website=True)
 	def mobile_app_cancel_order(self, **kwargs):
-		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		result = handler_obj.cancel_order(int(request.params['data']))
-		if result:
+		try:
+			handler_obj = http.request.env['universal.website.mobile_app.handler']
+			result = handler_obj.cancel_order(int(request.params['data']))
+			if result:
+				return json.dumps({
+					'status': 'ok',
+					'info': _('Order Canceled'),
+					'success': True,
+				})
+			else:
+				return json.dumps({
+					'status': 'ok',
+					'info': _('Canceling Order Failed'),
+					'success': False,
+				})
+		except Exception as e:
 			return json.dumps({
 				'status': 'ok',
-				'info': _('Order Canceled'),
-				'success': True,
-			})
-		else:
-			return json.dumps({
-				'status': 'ok',
-				'info': _('Canceling Order Failed'),
+				'info': e.value,
 				'success': False,
 			})
+
 		
 	@http.route('/mobile_app/fetch_contract_shuttles', type='http', auth="user", website=True)
 	def mobile_app_fetch_contract_shuttles(self, **kwargs):

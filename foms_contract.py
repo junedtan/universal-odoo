@@ -376,7 +376,7 @@ class foms_contract(osv.osv):
 	# untuk command ambil list homebase
 		if command == 'homebase':
 			homebase_obj = self.pool.get('chjs.region')
-			homebase_ids = homebase_obj.search(cr, uid, [('type','=','city')])
+			homebase_ids = homebase_obj.search(cr, uid, [])
 			result = []
 			for homebase in homebase_obj.browse(cr, uid, homebase_ids):
 				result.append({

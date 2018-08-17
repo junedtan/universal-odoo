@@ -981,11 +981,14 @@ class website_mobile_app_handler(osv.osv):
 			'fleet_type_id': fleet_type_id,
 			'start_planned_date': start_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
 			'finish_planned_date': finish_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
-			'request_date': datetime_to_server(datetime.now(), reverse=True, datetime_display_format=DEFAULT_SERVER_DATETIME_FORMAT),
 			'purpose_id' : purpose_id,
 			'other_purpose' : other_purpose,
 		}
-		
+		if mode == 'create':
+			order_data.update({
+				'request_date': datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT),
+				})
+
 		if not is_fullday_passenger:
 			unit_id = domain.get('unit_id', 0)
 			unit_id = int(unit_id.encode('ascii', 'ignore'))

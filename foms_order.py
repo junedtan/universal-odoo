@@ -486,6 +486,11 @@ class foms_order(osv.osv):
 									break
 						# jika order di dalam hari kerja, maka autoplot
 							if autoplot:
+							# 20180817: autoplot dimatiin dulu karena isu ganjil genap di jakarta
+								partner_ids = []
+								self._message_dispacther(cr, uid, order_data.id,
+									_('Manual vehicle assignment for order %s is needed due to local government rules.') % order_data.name )
+								"""
 							# cari vehicle dan driver yang available di jam itu
 								vehicle_id, driver_id = self.search_first_available_fleet(cr, uid, order_data.customer_contract_id.id, order_data.id, order_data.fleet_type_id.id, order_data.start_planned_date)
 							# kalo ada, langsung jadi ready
@@ -507,6 +512,7 @@ class foms_order(osv.osv):
 									self._message_dispacther(cr, uid, order_data.id,
 										_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order_data.name )
 									return result
+								"""
 						# jika order di luar hari kerja, jangan autoplot, kirim notif ke dispatcher untuk mengingatkan agar manual assign
 							else:
 								partner_ids = []
@@ -606,8 +612,8 @@ class foms_order(osv.osv):
 		# kalau ada perubahan tanggal mulai
 			if vals.get('start_planned_date', False):
 			# message_post supaya kesimpen perubahannya
-				original = (datetime.strptime(original_start_date[order_data.id],'%Y-%m-%d %H:%M:%S')).strftime('%d/%m/%Y %H:%M:%S')
-				new = (datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S')).strftime('%d/%m/%Y %H:%M:%S')
+				original = datetime_to_server(original_start_date[order_data.id], reverse=False)
+				new = datetime_to_server(order_data.start_planned_date, reverse=False)
 				if context.get('from_webservice') == True:
 					message_body = _("Planned start date is changed from %s to %s as requested by client.") % (original,new)
 				else:

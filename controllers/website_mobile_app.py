@@ -988,7 +988,6 @@ class website_mobile_app_handler(osv.osv):
 			order_data.update({
 				'request_date': datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT),
 				})
-		
 		if not is_fullday_passenger:
 			unit_id = domain.get('unit_id', 0)
 			unit_id = int(unit_id.encode('ascii', 'ignore'))

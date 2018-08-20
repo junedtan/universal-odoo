@@ -486,6 +486,11 @@ class foms_order(osv.osv):
 									break
 						# jika order di dalam hari kerja, maka autoplot
 							if autoplot:
+							# 20180817: autoplot dimatiin dulu karena isu ganjil genap di jakarta
+								partner_ids = []
+								self._message_dispacther(cr, uid, order_data.id,
+									_('Manual vehicle assignment for order %s is needed due to local government rules.') % order_data.name )
+								"""
 							# cari vehicle dan driver yang available di jam itu
 								vehicle_id, driver_id = self.search_first_available_fleet(cr, uid, order_data.customer_contract_id.id, order_data.id, order_data.fleet_type_id.id, order_data.start_planned_date)
 							# kalo ada, langsung jadi ready
@@ -507,6 +512,7 @@ class foms_order(osv.osv):
 									self._message_dispacther(cr, uid, order_data.id,
 										_('Cannot allocate vehicle and driver for order %s. Please allocate them manually.') % order_data.name )
 									return result
+								"""
 						# jika order di luar hari kerja, jangan autoplot, kirim notif ke dispatcher untuk mengingatkan agar manual assign
 							else:
 								partner_ids = []
@@ -606,8 +612,8 @@ class foms_order(osv.osv):
 		# kalau ada perubahan tanggal mulai
 			if vals.get('start_planned_date', False):
 			# message_post supaya kesimpen perubahannya
-				original = (datetime.strptime(original_start_date[order_data.id],'%Y-%m-%d %H:%M:%S')).strftime('%d/%m/%Y %H:%M:%S')
-				new = (datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S')).strftime('%d/%m/%Y %H:%M:%S')
+				original = datetime_to_server(original_start_date[order_data.id], reverse=False)
+				new = datetime_to_server(order_data.start_planned_date, reverse=False)
 				if context.get('from_webservice') == True:
 					message_body = _("Planned start date is changed from %s to %s as requested by client.") % (original,new)
 				else:
@@ -764,6 +770,7 @@ class foms_order(osv.osv):
 		return super(foms_order, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
 
 	def webservice_handle(self, cr, uid, user_id, command, data_id, model_data, context={}):
+		user_obj = self.pool.get('res.users')
 		if context == None: context = {}
 		result = super(foms_order, self).webservice_handle(cr, uid, user_id, command, data_id, model_data, context=context)
 	# ambil master cancel reason
@@ -783,14 +790,18 @@ class foms_order(osv.osv):
 	# eksekusi cancel order
 		elif command == 'cancel_order':
 			context = {}
-			model_data.update({
-				'order_id': data_id,
-				'cancel_by': user_id,
-			})
-			context.update(model_data)
-			cancel_memory_obj = self.pool.get('foms.order.cancel.memory')
-			result = cancel_memory_obj.action_execute_cancel(cr, uid, [], context)
-			if result == True: result = 'ok'
+			driver_ids = user_obj.get_user_ids_by_group(cr, SUPERUSER_ID, 'universal', 'group_universal_driver')
+			if user_id in driver_ids:
+				result = _("Driver cannot cancel the order.")
+			else:
+				model_data.update({
+					'order_id': data_id,
+					'cancel_by': user_id,
+				})
+				context.update(model_data)
+				cancel_memory_obj = self.pool.get('foms.order.cancel.memory')
+				result = cancel_memory_obj.action_execute_cancel(cr, uid, [], context)
+				if result == True: result = 'ok'
 	# list order area
 		elif command == 'order_areas':
 			area_obj = self.pool.get('foms.order.area')
@@ -1026,14 +1037,16 @@ class foms_order(osv.osv):
 			request_date = request_date.encode('ascii', 'ignore')
 		if type(request_date) is string or type(request_date) is str:
 			request_date = datetime.strptime(request_date, "%Y-%m-%d %H:%M:%S")
-		#request_date_check = datetime_to_server(request_date, to_string=False)
-		order_day = request_date.weekday()
-		order_time = request_date.time()
+		request_date_check = datetime_to_server(request_date, to_string=False, reverse=True)
+		order_day = request_date_check.weekday()
+		order_time = request_date_check.time()
 		order_time = order_time.hour + (order_time.minute/60.0)
 		for order_hours in contract_data.order_hours:
-			if order_day == int(order_hours.dayofweek) and (order_time >= order_hours.time_from - SERVER_TIMEZONE and order_time <= order_hours.time_to - SERVER_TIMEZONE):
+			if order_day == int(order_hours.dayofweek) and (order_time >= order_hours.time_from and order_time <= order_hours.time_to):
 				book_in_hours = True
 				break
+	# 20180820 pengecekan book in hour dimatiin dulu karena masalah timezone
+		book_in_hours = True
 		if not book_in_hours:
 			raise osv.except_osv(_('Order Error'),_('You are booking outside of order hours. Please contact your PIC or Administrator for allowable order hours.'))
 		if not contract_data.working_time_id:

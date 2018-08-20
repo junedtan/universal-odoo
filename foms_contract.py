@@ -554,7 +554,21 @@ class foms_contract(osv.osv):
 			},
 			'target': 'new',
 		}
-	
+
+	def action_open_alloc_unit(self, cr, uid, ids, context=None):
+		contract = self.browse(cr, uid, ids[0], context=context)
+		return {
+			'name': _('Contract Allocation Units'),
+			'view_mode': 'tree,form',
+			'view_type': 'form',
+			'res_model': 'foms.contract.alloc.unit',
+			'type': 'ir.actions.act_window',
+			'context': {
+				'search_default_header_id': contract.id,
+				'default_header_id': contract.id,
+			},
+		}
+
 	def action_schedule_shuttle(self, cr, uid, ids, context={}):
 		if isinstance(ids, int): ids = [ids]
 		contract_id = ids[0]
@@ -1073,11 +1087,11 @@ class foms_contract_alloc_unit(osv.osv):
 		'header_id': fields.many2one('foms.contract', 'Contract', ondelete='cascade'),
 		'name': fields.char('Unit Name', required=True),
 		'approver_ids': fields.many2many('res.users', 'foms_alloc_unit_approvers', 'alloc_unit_id', 
-			'user_id', string='Approvers'),
+			'user_id', string='Approvers', copy=True),
 		'booker_ids': fields.many2many('res.users', 'foms_alloc_unit_bookers', 'alloc_unit_id', 
-			'booker_id', string='Bookers'),
-		'yellow_limit': fields.float('Yellow Limit'),
-		'red_limit': fields.float('Red Limit'),
+			'booker_id', string='Bookers', copy=True),
+		'yellow_limit': fields.float('Yellow Limit', copy=False),
+		'red_limit': fields.float('Red Limit', copy=False),
 	}		
 	
 # CONSTRAINTS --------------------------------------------------------------------------------------------------------------
@@ -1158,6 +1172,11 @@ class foms_contract_alloc_unit(osv.osv):
 				return []
 		return super(foms_contract_alloc_unit, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
 
+	def copy(self, cr, uid, id, default=None, context=None):
+		current = self.browse(cr, uid, id, context)
+		default['name'] = "%s (copy)" % current.name
+		return super(foms_contract_alloc_unit, self).copy(cr, uid, id, default=default, context=context)
+	
 # DEFAULTS ----------------------------------------------------------------------------------------------------------------------
 	
 	_defaults = {

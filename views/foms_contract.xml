@@ -9,7 +9,6 @@
 			<field name="arch" type="xml">
 				<form version="7.0" string="Customer Contract">
 					<header>
-						<button string="Plan/Modify Fleet" name="action_plan_fleet" type="object" states="confirmed,planned,active" class="oe_button oe_highlight" groups="universal.group_universal_staff_opr_kend,universal.group_universal_staff_opr_driv,universal.group_universal_dispatcher" />
 						<button string="Schedule Shuttle" name="action_schedule_shuttle" type="object" states="confirmed,planned,active" class="oe_button oe_highlight" groups="universal.group_universal_staff_opr_kend,universal.group_universal_dispatcher" />
 						<button string="Confirm" name="action_confirm" type="object" states="proposed" class="oe_button oe_highlight" confirm="This action singnifies that both parties (customer and PT Universal) have agreed on all terms written in the contract, including and especially Fee Calculation Scheme and Fleet Types and number of fleet required. Are you sure to continue? PS: you can still edit all data before system automatically starts the contract at its start date." groups="universal.group_universal_staff_marketing" />
 						<field name="state" widget="statusbar" readonly="1" />
@@ -46,12 +45,15 @@
 									</field>
 								</group>
 								<group string="Vehicle and Driver Allocation">
+									<!--
 									<field name="car_drivers" readonly="1" nolabel="1">
 										<tree version="7.0" editable="bottom">
 											<field name="fleet_vehicle_id" />
 											<field name="driver_id" />
 										</tree>
 									</field>
+									-->
+									<button string="Plan/Modify Fleet" name="action_plan_fleet" type="object" states="confirmed,planned,active" groups="universal.group_universal_staff_opr_kend,universal.group_universal_staff_opr_driv,universal.group_universal_dispatcher" />
 								</group>
 							</group>
 						</page>
@@ -140,6 +142,7 @@
 						<page string="Units &amp; Usage Control" attrs="{'invisible': [('service_type','not in',['by_order'])]}" groups="universal.group_universal_staff_marketing,universal.group_universal_dispatcher">
 							<group>
 								<group string="Units">
+									<!--
 									<field name="allocation_units" nolabel="1">
 										<tree version="7.0" editable="bottom">
 											<field name="name" />
@@ -149,6 +152,8 @@
 											<field name="red_limit" />
 										</tree>
 									</field>
+									-->
+									<button type="object" name="action_open_alloc_unit" string="Manage Allocation Units" groups="universal.group_universal_dispatcher" />
 								</group>
 								<group>
 									<group colspan="4" string="Usage Control">

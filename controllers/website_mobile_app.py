@@ -488,10 +488,10 @@ class website_mobile_app(http.Controller):
 				
 				return json.dumps(jsonOrder)
 			result[classification].append(jsonOrder);
-		result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
-		result['ready']   = sorted(result['ready'],   key=lambda order: order['request_date'], reverse=True)
-		result['running'] = sorted(result['running'], key=lambda order: order['request_date'], reverse=True)
-		result['history'] = sorted(result['history'], key=lambda order: order['request_date'], reverse=True)
+		#result['pending'] = sorted(result['pending'], key=lambda order: order['request_date'], reverse=True)
+		#result['ready']   = sorted(result['ready'],   key=lambda order: order['request_date'], reverse=True)
+		#result['running'] = sorted(result['running'], key=lambda order: order['request_date'], reverse=True)
+		#result['history'] = sorted(result['history'], key=lambda order: order['request_date'], reverse=True)
 		
 		if loaded_data.get('classification', False):
 			return json.dumps({
@@ -916,7 +916,7 @@ class website_mobile_app_handler(osv.osv):
 				else:
 					filter_domain.append(('state', 'in', ['rejected', 'finish_confirmed', 'canceled']))
 			
-		order_ids = order_obj.search(cr, SUPERUSER_ID, filter_domain, order="start_planned_date ASC", context=param_context)
+		order_ids = order_obj.search(cr, SUPERUSER_ID, filter_domain, order="request_date DESC", context=param_context)
 		return order_obj.browse(cr, SUPERUSER_ID, order_ids)
 	
 	def search_quota(self, cr, uid, param_context):
@@ -988,7 +988,6 @@ class website_mobile_app_handler(osv.osv):
 			order_data.update({
 				'request_date': datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT),
 				})
-
 		if not is_fullday_passenger:
 			unit_id = domain.get('unit_id', 0)
 			unit_id = int(unit_id.encode('ascii', 'ignore'))

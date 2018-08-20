@@ -1045,8 +1045,6 @@ class foms_order(osv.osv):
 			if order_day == int(order_hours.dayofweek) and (order_time >= order_hours.time_from and order_time <= order_hours.time_to):
 				book_in_hours = True
 				break
-	# 20180820 pengecekan book in hour dimatiin dulu karena masalah timezone
-		book_in_hours = True
 		if not book_in_hours:
 			raise osv.except_osv(_('Order Error'),_('You are booking outside of order hours. Please contact your PIC or Administrator for allowable order hours.'))
 		if not contract_data.working_time_id:

@@ -223,24 +223,28 @@ class foms_contract(osv.osv):
 	def write(self, cr, uid, ids, vals, context={}):
 		result = super(foms_contract, self).write(cr, uid, ids, vals, context=context)
 	# kirim dirty outgoing ke semua pihak terkait
+	# optimasi: hanya post_outgoing field2 yang diupdate. kecuali allocation_units 
+	# dan car_drivers
+		fields = vals.keys()
+		fields = [item for item in fields if item not in ['allocation_units','car_drivers']]
 		for contract in self.browse(cr, uid, ids, context=context):
 			if contract.state in ['proposed','confirmed']: continue
 		# sync post outgoing ke user-user yang terkait (PIC, driver, PJ Alloc unit) , memberitahukan ada contract baru
 			if contract.service_type == 'full_day':
-				self.webservice_post(cr, uid, ['pic'], 'update', contract, webservice_context={
+				self.webservice_post(cr, uid, ['pic'], 'update', contract, data_columns=fields, webservice_context={
 					'notification': ['contract_new'],
 				}, context=context)
-				self.webservice_post(cr, uid, ['fullday_passenger','driver'], 'update', contract, context=context)
+				self.webservice_post(cr, uid, ['fullday_passenger','driver'], 'update', contract, data_columns=fields, context=context)
 			elif contract.service_type == 'by_order':
-				self.webservice_post(cr, uid, ['pic','approver'], 'update', contract, webservice_context={
+				self.webservice_post(cr, uid, ['pic','approver'], 'update', contract, data_columns=fields, webservice_context={
 					'notification': ['contract_new'],
 				}, context=context)
-				self.webservice_post(cr, uid, ['booker','driver'], 'update', contract, context=context)
+				self.webservice_post(cr, uid, ['booker','driver'], 'update', contract, data_columns=fields, context=context)
 			elif contract.service_type == 'shuttle':
-				self.webservice_post(cr, uid, ['pic'], 'update', contract, webservice_context={
+				self.webservice_post(cr, uid, ['pic'], 'update', contract, data_columns=fields, webservice_context={
 					'notification': ['contract_new'],
 				}, context=context)
-				self.webservice_post(cr, uid, ['driver'], 'update', contract, context=context)
+				self.webservice_post(cr, uid, ['driver'], 'update', contract, data_columns=fields, context=context)
 		return result
 	
 	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
@@ -325,28 +329,34 @@ class foms_contract(osv.osv):
 	def webservice_post(self, cr, uid, targets, command, contract_data, webservice_context={}, data_columns=[], context=None):
 		sync_obj = self.pool.get('chjs.webservice.sync.bridge')
 		user_obj = self.pool.get('res.users')
+		user_ids = []
 		if 'pic' in targets:
 			pic_user_ids = user_obj.search(cr, uid, [('partner_id','=',contract_data.customer_contact_id.id)])
 			if len(pic_user_ids) > 0:
-				sync_obj.post_outgoing(cr, pic_user_ids[0], 'foms.contract', command, contract_data.id, data_context=webservice_context)
+				user_ids.append(pic_user_ids[0])
 		if 'driver' in targets:
 			for car_driver in contract_data.car_drivers:
 				if not car_driver.driver_id: continue
-				sync_obj.post_outgoing(cr, car_driver.driver_id.user_id.id, 'foms.contract', command, contract_data.id, data_context=webservice_context)
+				user_ids.append(car_driver.driver_id.user_id.id)
 		if 'fullday_passenger' in targets:
 			for car_driver in contract_data.car_drivers:
 				if not car_driver.fullday_user_id: continue
-				sync_obj.post_outgoing(cr, car_driver.fullday_user_id.id, 'foms.contract', command, contract_data.id, data_context=webservice_context)
+				user_ids.append(car_driver.fullday_user_id.id)
 		if 'booker' in targets:
 			for alloc_unit in contract_data.allocation_units:
 				cr.execute("SELECT * FROM foms_alloc_unit_bookers WHERE alloc_unit_id = %s" % alloc_unit.id)
-				for row in cr.dictfetchall():
-					sync_obj.post_outgoing(cr, row['booker_id'], 'foms.contract', command, contract_data.id, data_context=webservice_context)
+				for row in cr.dictfetchall(): user_ids.append(row['booker_id'])
 		if 'approver' in targets:
 			for alloc_unit in contract_data.allocation_units:
 				cr.execute("SELECT * FROM foms_alloc_unit_approvers WHERE alloc_unit_id = %s" % alloc_unit.id)
-				for row in cr.dictfetchall():
-					sync_obj.post_outgoing(cr, row['user_id'], 'foms.contract', command, contract_data.id, data_context=webservice_context)
+				for row in cr.dictfetchall(): user_ids.append(row['user_id'])
+		if len(user_ids) > 0:
+			user_ids = list(set(user_ids))
+			for user_id in user_ids:
+				sync_obj.post_outgoing(cr, user_id, 'foms.contract', command, contract_data.id, 
+					data_columns=data_columns,
+					data_context=webservice_context)
+
 
 	def webservice_handle(self, cr, uid, user_id, command, data_id, model_data, context={}):
 		result = super(foms_contract, self).webservice_handle(cr, uid, user_id, command, data_id, model_data, context=context)

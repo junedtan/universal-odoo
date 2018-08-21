@@ -1032,9 +1032,9 @@ class foms_order(osv.osv):
 			request_date = request_date.encode('ascii', 'ignore')
 		if type(request_date) is string or type(request_date) is str:
 			request_date = datetime.strptime(request_date, "%Y-%m-%d %H:%M:%S")
-		request_date_check = datetime_to_server(request_date, to_string=False, reverse=True)
-		order_day = request_date_check.weekday()
-		order_time = request_date_check.time()
+		request_date = request_date + timedelta(hours=SERVER_TIMEZONE)
+		order_day = request_date.weekday()
+		order_time = request_date.time()
 		order_time = order_time.hour + (order_time.minute/60.0)
 		for order_hours in contract_data.order_hours:
 			if order_day == int(order_hours.dayofweek) and (order_time >= order_hours.time_from and order_time <= order_hours.time_to):

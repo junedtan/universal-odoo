@@ -225,8 +225,9 @@ class foms_contract(osv.osv):
 	# kirim dirty outgoing ke semua pihak terkait
 	# optimasi: hanya post_outgoing field2 yang diupdate. kecuali allocation_units 
 	# dan car_drivers
-		fields = vals.keys()
-		fields = [item for item in fields if item not in ['allocation_units','car_drivers']]
+		#fields = vals.keys()
+		#fields = [item for item in fields if item not in ['allocation_units','car_drivers']]
+		fields = []
 		for contract in self.browse(cr, uid, ids, context=context):
 			if contract.state in ['proposed','confirmed']: continue
 		# sync post outgoing ke user-user yang terkait (PIC, driver, PJ Alloc unit) , memberitahukan ada contract baru

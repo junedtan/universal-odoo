@@ -344,7 +344,10 @@ class foms_order(osv.osv):
 			# cek start date harus minimal n jam dari sekarang
 				self._cek_min_hour_for_type_by_order(cr, uid, start_date, data.customer_contract_id.by_order_minimum_minutes, context)
 				original_start_date.update({data.id: data.start_planned_date})
-				if start_date > datetime.strptime(data.finish_planned_date,'%Y-%m-%d %H:%M:%S'):
+				finish_date = vals.get('finish_planned_date', False)
+				if not finish_date: finish_date = data.finish_planned_date
+				finish_date = datetime.strptime(finish_date,'%Y-%m-%d %H:%M:%S')
+				if start_date > finish_date:
 					raise osv.except_osv(_('Order Error'),_('Start date cannot be greater than end date.'))
 		
 	# cek apakah bentrok waktu sama order lain
@@ -1616,12 +1619,7 @@ class foms_order(osv.osv):
 			if order.customer_contract_id.max_delay_minutes <= 0: continue
 		# kalau waktu sekarang sudah melewati batas delay, maka cancel si order
 			now = datetime.now()
-			print "============================"
-			print order.name
-			print "now: %s" % now
 			start = datetime.strptime(order.start_planned_date,'%Y-%m-%d %H:%M:%S')
-			print "start: %s" % start
-			print "start + delay: %s" % (start + timedelta(minutes=order.customer_contract_id.max_delay_minutes))
 			if start + timedelta(minutes=order.customer_contract_id.max_delay_minutes) < now:
 				self.write(cr, uid, [order.id], {
 					'state': 'canceled',

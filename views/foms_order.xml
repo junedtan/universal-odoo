@@ -211,7 +211,7 @@
 			<field name="name">foms.order.tree</field>	
 			<field name="model">foms.order</field>
 			<field name="arch" type="xml">
-				<tree version="7.0" string="Customer Orders">
+				<tree version="7.0" string="Customer Orders" colors="blue:state=='confirmed'">
 					<field name="name" />
 					<field name="customer_name" />
 					<field name="order_by" />
@@ -226,7 +226,7 @@
 					<field name="cancel_reason" invisible="context.get('hide_cancel', False)" />
 					<field name="cancel_reason_other" invisible="context.get('hide_cancel', False)" />
 					<field name="cancel_by" invisible="context.get('hide_cancel', False)" />
-					<field name="state" invisible="not context.get('all', False)" />
+					<field name="state" />
 				</tree>
 			</field>
 		</record>		

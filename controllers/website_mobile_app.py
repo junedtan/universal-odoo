@@ -426,12 +426,6 @@ class website_mobile_app(http.Controller):
 			start_date = datetime_to_server(order_data.start_date, datetime_display_format='%d-%m-%Y %H:%M', empty_value='-')
 			finish_date = datetime_to_server(order_data.finish_date, datetime_display_format='%d-%m-%Y %H:%M', empty_value='-')
 			start_planned_date_format_input = datetime_to_server(order_data.start_planned_date, datetime_display_format='%Y-%m-%dT%H:%M')
-			#20180814 ditutup untuk implementasi datetime_to_server
-			#request_date = datetime.strptime(order_data.request_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
-			#start_planned_date = datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
-			#finish_planned_date = datetime.strptime(order_data.finish_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7)
-			#start_date = order_data.start_date and datetime.strptime(order_data.start_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7) or None
-			#finish_date = order_data.finish_date and datetime.strptime(order_data.finish_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=7) or None
 			driver_phone_list = order_data.driver_mobile.split("\n")
 			jsonOrder = {
 				'request_date': request_date,
@@ -440,15 +434,6 @@ class website_mobile_app(http.Controller):
 				'start_date': start_date,
 				'finish_date': finish_date,
 				'start_planned_date_format_input': start_planned_date_format_input,
-
-
-
-				#'request_date':  request_date.strftime('%d-%m-%Y %H:%M'),
-				#'start_planned_date': start_planned_date.strftime('%d-%m-%Y %H:%M'),
-				#'finish_planned_date': finish_planned_date.strftime('%d-%m-%Y %H:%M'),
-				#'start_date': start_date and start_date.strftime('%d-%m-%Y %H:%M') or '-',
-				#'finish_date': finish_date and finish_date.strftime('%d-%m-%Y %H:%M') or '-',
-				#'start_planned_date_format_input': datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M'),
 				'id': order_data.id,
 				'name': order_data.name,
 				'state': order_data.state,
@@ -1046,12 +1031,12 @@ class website_mobile_app_handler(osv.osv):
 		new_yellow_limit = domain.get('new_yellow_limit', '')
 		new_red_limit = domain.get('new_red_limit', '')
 		request_longevity = domain.get('request_longevity', '')
-		request_by = domain.get('request_by', SUPERUSER_ID)
+		request_by = domain.get('request_by', uid)
 		
 		now = datetime.now()
 		period = "%02d/%04d" % (now.month ,now.year)
 		
-		return change_log.create(cr, SUPERUSER_ID, {
+		return change_log.create(cr, uid, {
 			'customer_contract_id': contract_id,
 			'allocation_unit_id': au_id,
 			'new_yellow_limit': new_yellow_limit,
@@ -1138,7 +1123,7 @@ class website_mobile_app_handler(osv.osv):
 	
 	def approve_quota_change(self, cr, uid, change_log_id, context={}):
 		quota_obj = self.pool.get('foms.contract.quota.change.log')
-		return quota_obj.write(cr, SUPERUSER_ID, [change_log_id], {
+		return quota_obj.write(cr, uid, [change_log_id], {
 			'state': 'approved',
 			'confirm_by': uid,
 			'confirm_date': datetime.now(),
@@ -1148,7 +1133,7 @@ class website_mobile_app_handler(osv.osv):
 		quota_obj = self.pool.get('foms.contract.quota.change.log')
 		change_log_id = int(domain.get('change_log_id', '').encode('ascii', 'ignore'))
 		reject_reason = domain.get('reject_reason', '').encode('ascii', 'ignore')
-		return quota_obj.write(cr, SUPERUSER_ID, [change_log_id], {
+		return quota_obj.write(cr, uid, [change_log_id], {
 			'state': 'rejected',
 			'reject_reason': reject_reason,
 			'confirm_by': uid,
@@ -1157,17 +1142,17 @@ class website_mobile_app_handler(osv.osv):
 	
 	def approve_order(self, cr, uid, order_id, context={}):
 		order_obj = self.pool.get('foms.order')
-		return order_obj.action_confirm(cr, SUPERUSER_ID, [order_id], context=context)
+		return order_obj.action_confirm(cr, uid, [order_id], context=context)
 	
 	def reject_order(self, cr, uid, order_id, context={}):
 		order_obj = self.pool.get('foms.order')
-		return order_obj.write(cr, SUPERUSER_ID, [order_id], {
+		return order_obj.write(cr, uid, [order_id], {
 			'state': 'rejected',
 		}, context=context)
 	
 	def change_planned_start_time(self, cr, uid, order_id, new_start_planned_date, context={}):
 		order_obj = self.pool.get('foms.order')
-		return order_obj.write(cr, SUPERUSER_ID, [order_id], {
+		return order_obj.write(cr, uid, [order_id], {
 			'start_planned_date': new_start_planned_date,
 		}, context=context)
 	

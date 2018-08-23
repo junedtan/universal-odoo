@@ -49,6 +49,8 @@ class hr_expense_expense(osv.osv):
 		'source': fields.selection(_EXPENSE_INPUT_SOURCE,'Source', readonly=True),
 		'proof_of_payment': fields.binary('Proof of Payment'),
 		'has_proof_of_payment': fields.function(_has_proof_of_payment, type="boolean", method=True, string="Has Proof of Payment"),
+		'line_ids': fields.one2many('hr.expense.line', 'expense_id', 'Expense Lines', copy=True,
+			readonly=True, states={'draft':[('readonly',False)],'confirm':[('readonly',False)]} ),
 	}
 	
 

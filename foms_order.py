@@ -402,6 +402,25 @@ class foms_order(osv.osv):
 				if finish_odo > 0 and finish_odo <= start_odo:
 					raise osv.except_osv(_('Order Error'),_('Finish odometer must be larger than start odometer (%s). Please check again your input.') % start_odo)
 
+	# kalau ada perubahan driver (baik assigned maupun actual) maka kasih perintah 
+	# delete ke mobile app driver lama
+		new_assigned_driver = vals.get('assigned_driver_id', False)
+		new_actual_driver = vals.get('actual_driver_id', False)
+		if new_assigned_driver or new_actual_driver:
+			for data in orders:
+				target_user_ids = []
+			# pengisian new_assigned_driver bukan buat ngisi baru tapi ngeganti
+				if new_assigned_driver and data.assigned_driver_id:
+					target_user_ids.append(data.assigned_driver_id.user_id.id)
+			# pengisian new_actual_driver bukan buat ngisi baru tapi ngeganti
+				if new_actual_driver and data.actual_driver_id:
+					target_user_ids.append(data.actual_driver_id.user_id.id)
+			# kirim
+				target_user_ids = list(set(target_user_ids))
+				new_context = context.copy()
+				new_context.update({'target_user_id': target_user_ids})
+				self.webservice_post(cr, uid, [], 'delete', order_data, context=new_context)
+
 	# eksekusi write nya dan ambil ulang data hasil update
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
 		orders = self.browse(cr, uid, ids, context=context)
@@ -553,9 +572,9 @@ class foms_order(osv.osv):
 						# liat di hari tersebut ada clockin tidak?
 							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, order_data.actual_driver_id.id, datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S'))
 							if clock_in:
-								self._write_attendance(cr, uid, clock_in.id, order_data.start_planned_date, order_data.customer_contract_id.id, order_data.id)
+								self._write_attendance(cr, SUPERUSER_ID, clock_in.id, order_data.start_planned_date, order_data.customer_contract_id.id, order_data.id)
 							else:
-								self._create_attendance(cr, uid, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
+								self._create_attendance(cr, SUPERUSER_ID, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
 									'sign_in', order_data.start_planned_date, order_data.id)
 				# Kalau state berubah jadi finish confirmed, cek apakah dia order terakhir finish_confirm_date di hari tersebut bukan
 					if vals['state'] in ['finish_confirmed']:
@@ -572,12 +591,12 @@ class foms_order(osv.osv):
 								date_start = datetime.strptime(clock_out.order_id.start_planned_date, DEFAULT_SERVER_DATETIME_FORMAT)
 								date_finish = datetime.strptime(clock_out.order_id.finish_confirm_date, DEFAULT_SERVER_DATETIME_FORMAT)
 								if date_start.date() != date_finish.date():
-									self._create_attendance(cr, uid, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
+									self._create_attendance(cr, SUPERUSER_ID, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
 										'sign_out', order_data.finish_confirm_date, order_data.id)
 								else:
-									self._write_attendance(cr, uid, clock_out.id, order_data.finish_confirm_date, order_data.customer_contract_id.id, order_data.id)
+									self._write_attendance(cr, SUPERUSER_ID, clock_out.id, order_data.finish_confirm_date, order_data.customer_contract_id.id, order_data.id)
 							else:
-								self._create_attendance(cr, uid, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
+								self._create_attendance(cr, SUPERUSER_ID, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
 									'sign_out', order_data.finish_confirm_date, order_data.id)
 				# kalau dibatalin
 				elif vals['state'] == 'canceled':
@@ -1968,6 +1987,7 @@ class foms_order(osv.osv):
 		sync_obj = self.pool.get('chjs.webservice.sync.bridge')
 		user_obj = self.pool.get('res.users')
 	# user spesifik
+		if not targets: targets = []
 		target_user_ids = context.get('target_user_id', [])
 		if target_user_ids:
 			if isinstance(target_user_ids, (int, long)): target_user_ids = [target_user_ids]

@@ -1049,8 +1049,9 @@ class foms_order(osv.osv):
 			raise osv.except_osv(_('Order Error'),_('Working time for this order\'s contract is not set. Please contact PT. Universal.'))
 		book_in_holiday = False
 		for holiday in contract_data.working_time_id.leave_ids:
-			if request_date >= datetime.strptime(holiday.date_from, "%Y-%m-%d %H:%M:%S") \
-					and request_date <= datetime.strptime(holiday.date_to, "%Y-%m-%d %H:%M:%S"):
+			holiday_start = datetime.strptime(holiday.date_from, "%Y-%m-%d %H:%M:%S") + timedelta(hours=SERVER_TIMEZONE)
+			holiday_end = datetime.strptime(holiday.date_to, "%Y-%m-%d %H:%M:%S") + timedelta(hours=SERVER_TIMEZONE)
+			if request_date >= holiday_start and request_date <= holiday_end:
 				book_in_holiday = True
 				break
 		if book_in_holiday:

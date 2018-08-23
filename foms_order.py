@@ -417,9 +417,10 @@ class foms_order(osv.osv):
 					target_user_ids.append(data.actual_driver_id.user_id.id)
 			# kirim
 				target_user_ids = list(set(target_user_ids))
-				new_context = context.copy()
-				new_context.update({'target_user_id': target_user_ids})
-				self.webservice_post(cr, uid, [], 'delete', order_data, context=new_context)
+				if len(target_user_ids) > 0:
+					new_context = context.copy()
+					new_context.update({'target_user_id': target_user_ids})
+					self.webservice_post(cr, uid, [], 'delete', data, context=new_context)
 
 	# eksekusi write nya dan ambil ulang data hasil update
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)

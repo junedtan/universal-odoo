@@ -703,25 +703,27 @@
 		</t>
 		<t t-if="row.length != 0">
 			<div t-foreach="row" t-as="order">
-				<div class="row row_hoverable" intent="univmobile_intent_order_detail" t-att-data-data_id="order.id">
+				<div class="row row_hoverable">
 					<div class="col-md-12 card_padding list-row">
-						<div class="list_title" style="pointer-events:none;">
-							<b><t t-esc="order.name"/></b> -
-							<t t-if="order.state == 'new' || order.state == 'confirmed' || order.state ==  'ready' ||
-							order.state == 'started' || order.state == 'start_confirmed' || order.state == 'resumed' ||
-							 order.state == 'finished' || order.state == 'finish_confirmed'">
-								<span class="green_text"><t t-esc="order.state_name"/></span>
-							</t>
-							<t t-if="order.state == 'rejected' || order.state == 'canceled'">
-								<span class="red_text"><t t-esc="order.state_name"/></span>
-							</t>
-							<t t-if="order.state == 'paused'">
-								<span class="orange_text"><t t-esc="order.state_name"/></span>
-							</t>
-						</div>
-						<div class="small">
-							Requested at: <b style="pointer-events:none;"><t t-esc="order.request_date"/></b>
-							by <b style="pointer-events:none;"><t t-esc="order.order_by_name"/></b>
+						<div intent="univmobile_intent_order_detail" t-att-data-data_id="order.id">
+							<div class="list_title" style="pointer-events:none;">
+								<b><t t-esc="order.name"/></b> -
+								<t t-if="order.state == 'new' || order.state == 'confirmed' || order.state ==  'ready' ||
+								order.state == 'started' || order.state == 'start_confirmed' || order.state == 'resumed' ||
+								 order.state == 'finished' || order.state == 'finish_confirmed'">
+									<span class="green_text"><t t-esc="order.state_name"/></span>
+								</t>
+								<t t-if="order.state == 'rejected' || order.state == 'canceled'">
+									<span class="red_text"><t t-esc="order.state_name"/></span>
+								</t>
+								<t t-if="order.state == 'paused'">
+									<span class="orange_text"><t t-esc="order.state_name"/></span>
+								</t>
+							</div>
+							<div class="small">
+								Requested at: <b style="pointer-events:none;"><t t-esc="order.request_date"/></b>
+								by <b style="pointer-events:none;"><t t-esc="order.order_by_name"/></b>
+							</div>
 						</div>
 						<div class="small mt8">
 							<div class="row no_padding mt8">
@@ -742,7 +744,21 @@
 							</div>
 							<t t-if="order.assigned_vehicle_name">
 								<div class="row no_padding mt8">
-									<div class="col-xs-12">Vehicle used is <t t-esc="order.assigned_vehicle_name"/> with <t t-esc="order.assigned_driver_name"/> as driver.
+									<div class="col-xs-12">
+										Vehicle used is <t t-esc="order.assigned_vehicle_name"/> 
+										with <t t-esc="order.assigned_driver_name"/> 
+										<t t-if="order.driver_phone_list != False">
+											(
+											<t t-set="counter" t-value="0" />
+											<span t-foreach="order.driver_phone_list" t-as="phone">
+												<t t-if="counter > 0">,</t>
+												<a t-att-href="'tel:'+phone"><t t-esc="phone" /></a>
+												<t t-set="counter" t-value="counter+1" />
+											</span>											
+											)
+										</t>
+										as driver.
+
 									</div>
 								</div>
 							</t>
@@ -919,19 +935,11 @@
 						<t t-if="detail.driver_phone_list != False">
 							<tr>
 								<td>Driver's Phone</td>
-								<t t-set="counter" t-value="0" />
-								<t t-foreach="detail.driver_phone_list" t-as="phone">
-									<t t-if="counter == 0">
-										<td><t t-esc="phone"/></td>
-									</t>
-									<t t-if="counter > 0">
-										<tr>
-											<td></td>
-											<td><t t-esc="phone"/></td>
-										</tr>
-									</t>
-									<t t-set="counter" t-value="counter + 1" />
-								</t>
+								<td>
+									<div t-foreach="detail.driver_phone_list" t-as="phone">
+										<t t-esc="phone"/>
+									</div>
+								</td>
 							</tr>
 						</t>
 					</table>				

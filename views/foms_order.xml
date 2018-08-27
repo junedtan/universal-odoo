@@ -153,26 +153,26 @@
 								</tree>
 							</field>
 						</page>
-						<page string="Execution">
+						<page string="Execution" groups="universal.group_universal_dispatcher">
 							<group>
 								<group>
-									<field name="confirm_date" attrs="{'readonly': 1}"/>
-									<field name="confirm_by" options="{'no_create': 1}" attrs="{'readonly': 1}"/>
+									<field name="confirm_date" />
+									<field name="confirm_by" options="{'no_create': 1}" />
 								</group>
 							</group>
 							<group>
 								<group>
-									<field name="start_date" attrs="{'readonly': 1}"/>
-									<field name="start_confirm_date" attrs="{'readonly': 1}"/>
-									<field name="start_confirm_by" options="{'no_create': 1}" attrs="{'readonly': 1}"/>
-									<field name="start_from" attrs="{'readonly': 1}"/>
+									<field name="start_date" />
+									<field name="start_confirm_date" />
+									<field name="start_confirm_by" options="{'no_create': 1}" />
+									<field name="start_from" readonly="1" />
 									<field name="start_odometer" attrs="{'invisible': [('state','in',['new','rejected','confirmed','ready'])]}"/>
 								</group>
 								<group>
-									<field name="finish_date" attrs="{'readonly': 1}"/>
-									<field name="finish_confirm_date" attrs="{'readonly': 1}"/>
-									<field name="finish_confirm_by" options="{'no_create': 1}" attrs="{'readonly': 1}"/>
-									<field name="finish_from" attrs="{'readonly': 1}"/>
+									<field name="finish_date" />
+									<field name="finish_confirm_date" />
+									<field name="finish_confirm_by" options="{'no_create': 1}" />
+									<field name="finish_from" readonly="1" />
 									<field name="finish_odometer" attrs="{'invisible': [('state','not in',['finished','finish_confirmed'])]}"/>
 								</group>
 							</group>
@@ -180,8 +180,8 @@
 								<group>
 									<field name="pause_count" attrs="{'readonly': 1}"/>
 									<field name="pause_minutes" widget="float_time" attrs="{'readonly': 1}"/>
-									<field name="is_lk_pp" attrs="{'readonly': 1}"/>
-									<field name="is_lk_inap" attrs="{'readonly': 1}"/>
+									<field name="is_lk_pp" />
+									<field name="is_lk_inap" />
 								</group>
 							</group>
 						</page>

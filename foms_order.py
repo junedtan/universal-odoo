@@ -78,8 +78,8 @@ class foms_order(osv.osv):
 		'request_date': fields.datetime('Request Date', required=True),
 		'state': fields.selection(_ORDER_STATE, 'State', required=True, track_visibility="onchange"),
 		'order_by': fields.many2one('res.users', 'Order By', ondelete='restrict'),
-		'confirm_date': fields.datetime('Confirm Date'),
-		'confirm_by': fields.many2one('res.users', 'Confirm By', ondelete='restrict'),
+		'confirm_date': fields.datetime('Confirm Date', track_visibility="onchange"),
+		'confirm_by': fields.many2one('res.users', 'Confirm By', ondelete='restrict', track_visibility="onchange"),
 		'cancel_reason': fields.many2one('foms.order.cancel.reason', 'Cancel Reason'),
 		'cancel_reason_other': fields.text('Other Cancel Reason'),
 		'cancel_date': fields.datetime('Cancel Date'),
@@ -107,24 +107,24 @@ class foms_order(osv.osv):
 		'actual_driver_id': fields.many2one('hr.employee', 'Actual Driver', ondelete='restrict'),
 		'driver_mobile': fields.function(_driver_mobile, type="text", method=True, string="Driver Phone"),
 		'pin': fields.char('PIN'),
-		'start_planned_date': fields.datetime('Start Planned Date'),
-		'finish_planned_date': fields.datetime('Finish Planned Date'),
-		'start_date': fields.datetime('Start Date'),
-		'start_confirm_date': fields.datetime('Start Confirm Date'),
-		'start_confirm_by': fields.many2one('res.users', 'Start Confirm By', ondelete='set null'),
+		'start_planned_date': fields.datetime('Start Planned Date', track_visibility="onchange"),
+		'finish_planned_date': fields.datetime('Finish Planned Date', track_visibility="onchange"),
+		'start_date': fields.datetime('Start Date', track_visibility="onchange"),
+		'start_confirm_date': fields.datetime('Start Confirm Date', track_visibility="onchange"),
+		'start_confirm_by': fields.many2one('res.users', 'Start Confirm By', ondelete='set null', track_visibility="onchange"),
 		'start_from': fields.selection([
 			('mobile','Mobile App'),
 			('central','Central Dispatch'),], 'Start From'),
-		'finish_date': fields.datetime('Finish Date'),
-		'finish_confirm_date': fields.datetime('Finish Confirm Date'),
-		'finish_confirm_by': fields.many2one('res.users', 'Finish Confirm By', ondelete='set null'),
+		'finish_date': fields.datetime('Finish Date', track_visibility="onchange"),
+		'finish_confirm_date': fields.datetime('Finish Confirm Date', track_visibility="onchange"),
+		'finish_confirm_by': fields.many2one('res.users', 'Finish Confirm By', ondelete='set null', track_visibility="onchange"),
 		'finish_from': fields.selection([
 			('mobile','Mobile App'),
 			('central','Central Dispatch'),], 'Finish From'),
 		'pause_count': fields.integer('Pause Count'),
 		'pause_minutes': fields.float('Pause Minutes'),
-		'is_lk_pp': fields.boolean('Luar Kota PP?'),
-		'is_lk_inap': fields.boolean('Luar Kota Menginap?'),
+		'is_lk_pp': fields.boolean('Luar Kota PP?', track_visibility="onchange"),
+		'is_lk_inap': fields.boolean('Luar Kota Menginap?', track_visibility="onchange"),
 		'create_source': fields.selection((
 			('app', 'Mobile App'),
 			('central', 'Central'),
@@ -402,6 +402,14 @@ class foms_order(osv.osv):
 				if finish_odo > 0 and finish_odo <= start_odo:
 					raise osv.except_osv(_('Order Error'),_('Finish odometer must be larger than start odometer (%s). Please check again your input.') % start_odo)
 
+	# kalau ada perubahan field2 start di tab Execution dan asalnya dari backend
+	# maka ganti start_from menjadi Central
+		if context.get('edit_mode', False) == 'backend' and any(key in vals.keys() for key in ['start_date','start_confirm_date','start_confirm_by']):
+			vals.update({'start_from': 'central'})
+	# same, untuk field2 finish
+		if context.get('edit_mode', False) == 'backend' and any(key in vals.keys() for key in ['finish_date','finish_confirm_date','finish_confirm_by']):
+			vals.update({'finish_from': 'central'})
+
 	# kalau ada perubahan driver (baik assigned maupun actual) maka kasih perintah 
 	# delete ke mobile app driver lama
 		new_assigned_driver = vals.get('assigned_driver_id', False)
@@ -410,16 +418,16 @@ class foms_order(osv.osv):
 			for data in orders:
 				target_user_ids = []
 			# pengisian new_assigned_driver bukan buat ngisi baru tapi ngeganti
-				if new_assigned_driver and data.assigned_driver_id:
+				if new_assigned_driver and data.assigned_driver_id and new_assigned_driver != data.assigned_driver_id.id:
 					target_user_ids.append(data.assigned_driver_id.user_id.id)
 			# pengisian new_actual_driver bukan buat ngisi baru tapi ngeganti
-				if new_actual_driver and data.actual_driver_id:
+				if new_actual_driver and data.actual_driver_id and new_actual_driver != data.actual_driver_id.id:
 					target_user_ids.append(data.actual_driver_id.user_id.id)
 			# kirim
 				target_user_ids = list(set(target_user_ids))
 				new_context = context.copy()
 				new_context.update({'target_user_id': target_user_ids})
-				self.webservice_post(cr, uid, [], 'delete', order_data, context=new_context)
+				self.webservice_post(cr, uid, [], 'delete', data, context=new_context)
 
 	# eksekusi write nya dan ambil ulang data hasil update
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)

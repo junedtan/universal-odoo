@@ -422,3 +422,4 @@ access_foms_contract_order_hours_all,foms.contract.order.hours,universal.model_f
 access_resource_calendar_all,resource.calendar all,resource.model_resource_calendar,,1,0,0,0
 access_resource_calendar_leaves_all,resource.calendar.leaves all,resource.model_resource_calendar_leaves,,1,0,0,0
 access_res_groups_all,res.groups all,base.model_res_groups,,1,0,0,0
+access_foms_booking_purpose_all,foms.booking.purpose all,universal.model_foms_booking_purpose,,1,0,0,0

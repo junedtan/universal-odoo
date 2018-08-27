@@ -464,7 +464,7 @@
 			<field name="priority">200</field>
 			<field name="arch" type="xml">
 				<tree version="7.0" string="Driver Phone" editable="bottom" create="false" delete="false">
-					<field name="name" />
+					<field name="name" readonly="1" />
 					<field name="phone" />
 					<field name="mobile_phone2" />
 					<field name="mobile_phone3" />

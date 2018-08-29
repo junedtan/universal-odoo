@@ -41,8 +41,6 @@ class universal_timeline(osv.osv):
 				('start_planned_date', '<', (tomorrow_date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
 				('finish_planned_date', '>=', (date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
 			]
-			if customer_name != '':
-				domain.append(('customer_name', 'ilike', customer_name))
 			planned_order_ids = order_obj.search(cr, uid, domain, order='start_planned_date ASC')
 		
 			domain = [

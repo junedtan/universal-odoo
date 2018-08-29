@@ -430,6 +430,20 @@ class foms_order(osv.osv):
 					new_context.update({'target_user_id': target_user_ids})
 					self.webservice_post(cr, uid, [], 'delete', data, context=new_context)
 
+	# khusus start manual (via popup di backend), state otomatis jadi start confirmed
+		if context.get('manual_start', None) and context.get('edit_mode', None) == 'backend': 
+			vals.update({
+				'state': 'start_confirmed',
+				'start_confirm_by': uid,
+				})
+
+	# khusus finish manual (via popup di backend), state otomatis jadi finish confirmed
+		if context.get('manual_finish', None) and context.get('edit_mode', None) == 'backend': 
+			vals.update({
+				'state': 'finish_confirmed',
+				'finish_confirm_by': uid,
+				})
+
 	# eksekusi write nya dan ambil ulang data hasil update
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
 		orders = self.browse(cr, uid, ids, context=context)
@@ -695,57 +709,15 @@ class foms_order(osv.osv):
 					webservice_context={
 						'notification': notif,
 					}, context=context)
+			if context.get('manual_post_message', None):
+				self.message_post(cr, uid, order_data.id, body=context['manual_post_message'])
 
-	# kalau ada perubahan tanggal mulai
-		"""
-		if vals.get('start_planned_date'):
-			for order_data in orders:
-			# message_post supaya kesimpen perubahannya
-				original = (datetime.strptime(original_start_date[order_data.id],'%Y-%m-%d %H:%M:%S')).strftime('%d/%m/%Y %H:%M:%S')
-				new = (datetime.strptime(order_data.start_planned_date,'%Y-%m-%d %H:%M:%S')).strftime('%d/%m/%Y %H:%M:%S')
-				if context.get('from_webservice') == True:
-					message_body = _("Planned start date is changed from %s to %s as requested by client.") % (original,new)
-				else:
-					message_body = _("Planned start date is changed from %s to %s.") % (original,new)
-				self.message_post(cr, uid, order_data.id, body=message_body)
-			# kalau ngubah tanggal planned, post ke pic, passenger, dan driver
-				self.webservice_post(cr, uid, ['pic','fullday_passenger','driver','booker','approver'], 'update', order_data, \
-					data_columns=['start_planned_date'],
-					webservice_context={
-						'notification': ['order_change_date'],
-					}, context=context)
-			
-	# kalau ada perubahan pin, broadcast ke pihak ybs
-	# asumsi: untuk by_order PIN tidak bisa diganti
-		if vals.get('pin', False):
-			for order_data in orders:
-				self.webservice_post(cr, uid, ['pic','fullday_passenger','driver'], 'update', order_data, data_columns=['pin'], context=context)
-
-	# kalau ngubah start_date atau finish_date maka post ke mobile app pic, approver, booker
-		if vals.get('start_date') or vals.get('finish_date'):
-			for order_data in orders:
-				if user_obj.has_group(cr, context.get('user_id', uid), 'universal.group_universal_driver'):
-					self.webservice_post(cr, uid, ['pic','approver','booker','fullday_passenger','driver'], 'update', order_data, \
-						data_columns=['start_date','finish_date'], context=context)
-
-	# kalau ada perubahan assigned_vehicle_id dan assigned_driver_id
-		if vals.get('assigned_vehicle_id', False) and vals.get('assigned_driver_id', False):
-			for order_data in orders:
-			# untuk by_order yang masih new, directly ubah state menjadi ready
-				if order_data.service_type in ['by_order','shuttle'] and order_data.state in ['new','confirmed']:
-					self.write(cr, uid, [order_data.id], {
-						'state': 'ready',
-						'pin': self._generate_random_pin(),
-					}, context=context)
-
-	# kalau ada perubahan di over_quota_status, kasih tau ke pic dan approver
-		if vals.get('over_quota_status', False):
-			for order_data in orders:
-				if order_data.service_type == 'by_order':
-					self.webservice_post(cr, uid, ['pic','approver'], 'update', order_data, \
-						data_columns=['over_quota_status','alloc_unit_usage'], context=context)
-		"""
-		return result
+		#print context
+		#raise osv.except_osv('test','hahahahaha')
+		if context.get('edit_from_popup', False):
+			return {'type': 'ir.actions.act_window_close'}
+		else:
+			return result
 
 	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
 		context = context and context or {}
@@ -1232,15 +1204,45 @@ class foms_order(osv.osv):
 					else:
 						self._write_attendance(cr, uid, last_clock_out.id, date_clock_out, last_order.customer_contract_id.id, last_order.id)
 
+	def action_start(self, cr, uid, ids, context={}):
+		model, view_id = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'universal', 'foms_order_start_form')
+		new_context = context.copy()
+		new_context.update({
+			'manual_start': True,
+			'manual_post_message': _('This order is manually started.'),
+			'edit_from_popup': True,
+			})
+		return {
+			'name': _('Start Order'),
+			'view_mode': 'form',
+			'view_type': 'form',
+			'view_id': view_id,
+			'res_model': 'foms.order',
+			'type': 'ir.actions.act_window',
+			'target': 'new',
+			'res_id': ids[0],
+			'context': new_context,
+		}
+
 	def action_finish(self, cr, uid, ids, context=None):
-		order = self.browse(cr, uid, ids[0])
-		return self.write(cr, uid, ids, {
-			'state': 'finish_confirmed',
-			'finish_date': order.finish_planned_date,
-			'finish_confirm_date': order.finish_planned_date,
-			'finish_confirm_by': uid,
-			'finish_from': 'central',
-		})
+		model, view_id = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'universal', 'foms_order_finish_form')
+		new_context = context.copy()
+		new_context.update({
+			'manual_finish': True,
+			'manual_post_message': _('This order is manually finished.'),
+			'edit_from_popup': True,
+			})
+		return {
+			'name': _('Finish Order'),
+			'view_mode': 'form',
+			'view_type': 'form',
+			'view_id': view_id,
+			'res_model': 'foms.order',
+			'type': 'ir.actions.act_window',
+			'target': 'new',
+			'res_id': ids[0],
+			'context': new_context,
+		}
 	
 	# def cron_compute_driver_attendances(self, cr, uid, context=None):
 	# 	employee_obj = self.pool.get('hr.employee')

@@ -79,8 +79,9 @@
 				<form version="7.0" string="Customer Order" >
 					<header>
 						<button name="action_cancel" string="Cancel Order" type="object" states="new,confirmed,ready" groups="universal.group_universal_dispatcher" /> 
-						<button name="action_confirm" string="Confirm" type="object" states="new" confirm="Are you sure to confirm this order?" groups="universal.group_universal_dispatcher" />
-						<button name="action_finish" string="Finish Order" type="object" states="started,start_confirmed,paused,resumed,finished" confirm="Are you sure to finish this order?" groups="universal.group_universal_dispatcher" />
+						<button name="action_confirm" string="Confirm Order" type="object" states="new" confirm="Are you sure to confirm this order?" groups="universal.group_universal_dispatcher" />
+						<button name="action_start" string="Start Order" type="object" states="ready,started" groups="universal.group_universal_dispatcher" class="oe_highlight" />
+						<button name="action_finish" string="Finish Order" type="object" states="started,start_confirmed,paused,resumed,finished" class="oe_highlight" groups="universal.group_universal_dispatcher" />
 						<field name="state" widget="statusbar" readonly="1"/>
 					</header>
 					<group>
@@ -156,32 +157,32 @@
 						<page string="Execution" groups="universal.group_universal_dispatcher">
 							<group>
 								<group>
-									<field name="confirm_date" />
-									<field name="confirm_by" options="{'no_create': 1}" />
+									<field name="confirm_date" readonly="1" />
+									<field name="confirm_by" readonly="1" options="{'no_create': 1}" />
 								</group>
 							</group>
 							<group>
 								<group>
-									<field name="start_date" />
-									<field name="start_confirm_date" />
-									<field name="start_confirm_by" options="{'no_create': 1}" />
+									<field name="start_date" readonly="1" />
+									<field name="start_confirm_date" readonly="1" />
+									<field name="start_confirm_by" readonly="1" options="{'no_create': 1}" />
 									<field name="start_from" readonly="1" />
 									<field name="start_odometer" attrs="{'invisible': [('state','in',['new','rejected','confirmed','ready'])]}"/>
 								</group>
 								<group>
-									<field name="finish_date" />
-									<field name="finish_confirm_date" />
-									<field name="finish_confirm_by" options="{'no_create': 1}" />
+									<field name="finish_date" readonly="1" />
+									<field name="finish_confirm_date" readonly="1" />
+									<field name="finish_confirm_by" readonly="1" options="{'no_create': 1}" />
 									<field name="finish_from" readonly="1" />
 									<field name="finish_odometer" attrs="{'invisible': [('state','not in',['finished','finish_confirmed'])]}"/>
 								</group>
 							</group>
 							<group>
 								<group>
-									<field name="pause_count" attrs="{'readonly': 1}"/>
-									<field name="pause_minutes" widget="float_time" attrs="{'readonly': 1}"/>
-									<field name="is_lk_pp" />
-									<field name="is_lk_inap" />
+									<field name="pause_count" readonly="1" />
+									<field name="pause_minutes" widget="float_time" readonly="1" />
+									<field name="is_lk_pp" readonly="1" />
+									<field name="is_lk_inap" readonly="1" />
 								</group>
 							</group>
 						</page>
@@ -207,6 +208,58 @@
 			</field>
 		</record>
 		
+		<record model="ir.ui.view" id="foms_order_start_form">
+			<field name="name">foms.order.start.form</field>	
+			<field name="model">foms.order</field>
+			<field name="priority">32</field>
+			<field name="context">{'source':'form'}</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Customer Order" >
+					<p>WARNING: Please be very careful filling in this form, for once saved the data you input CANNOT be edited.<br/></p>
+					<group>
+						<field name="start_date" required="1" />
+						<field name="start_confirm_date" required="1" />
+						<field name="start_odometer" required="1" />
+					</group>
+					<footer>
+						<button string="Save" name="write" type="object" class="oe_highlight" />
+						or
+						<button string="Cancel" special="cancel" />
+					</footer>
+				</form>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="foms_order_finish_form">
+			<field name="name">foms.order.finish.form</field>	
+			<field name="model">foms.order</field>
+			<field name="priority">36</field>
+			<field name="context">{'source':'form'}</field>
+			<field name="arch" type="xml">
+				<form version="7.0" string="Customer Order" >
+					<p>WARNING: Please be very careful filling in this form, for once saved the data you input CANNOT be edited.<br/></p>
+					<group>
+						<group>
+							<field name="finish_date" required="1" />
+							<field name="finish_confirm_date" required="1" />
+							<field name="finish_odometer" required="1" />
+						</group>
+						<group>
+							<field name="pause_count" />
+							<field name="pause_minutes" />
+							<field name="is_lk_pp" />
+							<field name="is_lk_inap" />
+						</group>
+					</group>
+					<footer>
+						<button string="Save" name="write" type="object" class="oe_highlight" />
+						or
+						<button string="Cancel" special="cancel" />
+					</footer>
+				</form>
+			</field>
+		</record>
+
 		<record model="ir.ui.view" id="foms_order_tree">
 			<field name="name">foms.order.tree</field>	
 			<field name="model">foms.order</field>

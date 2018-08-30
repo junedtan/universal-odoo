@@ -179,8 +179,10 @@ class foms_order(osv.osv):
 			if not vals.get('start_planned_date', False):
 				raise osv.except_osv(_('Order Error'),_('Please input start date.'))
 		# cek start date harus minimal n jam dari sekarang
-			start_date = datetime.strptime(vals['start_planned_date'],'%Y-%m-%d %H:%M:%S')
-			self._cek_min_hour_for_type_by_order(cr, uid, start_date, contract_data.by_order_minimum_minutes, context)
+		# hanya kalau dibuat bukan dari backend
+			if not context.get('edit_mode', False) == 'backend':
+				start_date = datetime.strptime(vals['start_planned_date'],'%Y-%m-%d %H:%M:%S')
+				self._cek_min_hour_for_type_by_order(cr, uid, start_date, contract_data.by_order_minimum_minutes, context)
 
 		# kalau usage control diaktifkan, isi over_quota_status
 			if contract_data.usage_control_level != 'no_control':

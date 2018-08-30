@@ -264,7 +264,7 @@
 			<field name="name">foms.order.tree</field>	
 			<field name="model">foms.order</field>
 			<field name="arch" type="xml">
-				<tree version="7.0" string="Customer Orders" colors="blue:state=='confirmed';red:state=='rejected'" default_order="start_planned_date DESC">
+				<tree version="7.0" string="Customer Orders" colors="blue:state=='confirmed';red:state=='rejected';#FF9900:state=='started'" default_order="start_planned_date DESC">
 					<field name="name" />
 					<field name="customer_name" />
 					<field name="order_by" />

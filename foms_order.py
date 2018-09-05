@@ -1859,12 +1859,33 @@ class foms_order(osv.osv):
 		driver_ids = []
 		for fleet in contract_data.car_drivers:
 			fleet_ids.append(fleet.fleet_vehicle_id.id)
-			driver_ids.append(fleet.driver_id.id)
+			#driver_ids.append(fleet.driver_id.id)
+	# 20180905 request supaya driver bisa diisi driver mana aja yang punya login
+		model_obj = self.pool.get('ir.model.data')
+		model, driver_job_id = model_obj.get_object_reference(cr, SUPERUSER_ID, 'universal', 'hr_job_driver')
+		employee_driver_ids = self.pool.get('hr.employee').search(cr, uid, [
+			('job_id','=',driver_job_id),
+			('user_id','!=',None),
+			])
+	# plus driver jangan sedang menjalankan kontrak customer manapun
+	# kecuali yang ini
+		contract_fleet_obj = self.pool.get('foms.contract.fleet')
+		active_contract_fleet_ids = contract_fleet_obj.search(cr, SUPERUSER_ID, [
+			('header_id.state','=','active'),
+			('header_id.id','!=',customer_contract_id),
+			])
+		active_contract_driver_ids = []
+		for row in contract_fleet_obj.browse(cr, SUPERUSER_ID, active_contract_fleet_ids):
+			active_contract_driver_ids.append(row.driver_id.id)
+		driver_ids = []
+		for employee_id in employee_driver_ids:
+			if employee_id not in active_contract_driver_ids: driver_ids.append(employee_id)
 	# bila fullday maka harus dipilih Order by (yaitu penumpang fullday), jangan default=uid
 		value = {}
 		value['service_type'] = contract_data.service_type
 		if contract_data.service_type == 'full_day':
 			value['order_by'] = ''
+	# done. return
 		return {
 			'value': value,
 			'domain': {

@@ -362,7 +362,7 @@ access_account_move_dispatcher,account.move dispatcher,account.model_account_mov
 access_foms_contract_fleet_dispatcher,foms.contract.fleet dispatcher,universal.model_foms_contract_fleet,universal.group_universal_dispatcher,1,1,1,1
 access_res_currency_dispatcher,res.currency dispatcher,base.model_res_currency,universal.group_universal_dispatcher,1,0,0,0
 access_foms_contract_shuttle_schedule_dispatcher,foms.contract.shuttle.schedule dispatcher,universal.model_foms_contract_shuttle_schedule,universal.group_universal_dispatcher,1,1,1,1
-access_hr_employee_dispatcher,hr.employee dispatcher,hr.model_hr_employee,universal.group_universal_dispatcher,1,0,0,0
+access_hr_employee_dispatcher,hr.employee dispatcher,hr.model_hr_employee,universal.group_universal_dispatcher,1,1,0,0
 access_foms_contract_vehicle_balance_usage_dispatcher,foms.contract.vehicle.balance.usage dispatcher,universal.model_foms_contract_vehicle_balance_usage,universal.group_universal_dispatcher,1,1,1,1
 access_res_company_dispatcher,res.company dispatcher,base.model_res_company,universal.group_universal_dispatcher,1,0,0,0
 access_fleet_vehicle_model_dispatcher,fleet.vehicle.model dispatcher,fleet.model_fleet_vehicle_model,universal.group_universal_dispatcher,1,0,0,0

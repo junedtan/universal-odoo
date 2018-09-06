@@ -721,6 +721,23 @@ class foms_order(osv.osv):
 		else:
 			return result
 
+	def name_get(self, cr, uid, ids, context={}):
+		if isinstance(ids, (list, tuple)) and not len(ids): return []
+		if isinstance(ids, (long, int)): ids = [ids]
+		res = []
+		for record in self.browse(cr, uid, ids):
+			if context.get('name_with_driver', False):
+				driver_id = record.actual_driver_id
+				if not driver_id: driver_id = record.assigned_driver_id
+				if driver_id:
+					name = "%s (%s)" % (record.name, driver_id.name)
+				else:
+					name = record.name
+			else:
+				name = record.name
+			res.append((record.id, name))
+		return res
+	
 	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):
 		context = context and context or {}
 		user_obj = self.pool.get('res.users')

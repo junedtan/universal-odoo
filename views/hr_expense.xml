@@ -15,7 +15,7 @@
 				</xpath>
 				<xpath expr="//field[@name='name']" position="after">
 					<field name="contract_id" />
-					<field name="order_id" />
+					<field name="order_id" context="{'hide_cancel': True, 'hide_actual_time': True, 'hide_assigned': True, 'name_with_driver': True}" />
 					<field name="source" />
 				</xpath>
 				<xpath expr="//page[@string='Accounting']" position="before">

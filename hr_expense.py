@@ -73,9 +73,17 @@ class hr_expense_expense(osv.osv):
 			if len(employee_ids) == 0:
 				raise osv.except_osv(_('Expense Error'),_('There is no driver with requested user id.'))
 			vals.update({'employee_id': employee_ids[0]})
+	# otomatis isi name setiap line idem nama produknya
+		if vals.get('line_ids', False):
+			for line in vals['line_ids']:
+				item = line[2]
+				if not item['name']:
+					product = self.pool.get('product.product').browse(cr, uid, item['product_id'], context=context)
+					item['name'] = product.name
 		expense_id = super(hr_expense_expense, self).create(cr, uid, vals, context=context)
 	# otomatis submit to manager
-		self.expense_confirm(cr, uid, [expense_id], context=context)
+		new_expense = self.browse(cr, uid, expense_id)
+		new_expense.signal_workflow('confirm')
 		return expense_id
 	
 	def search(self, cr, uid, args, offset=0, limit=None, order=None, context=None, count=False):

@@ -15,7 +15,7 @@
 				</xpath>
 				<xpath expr="//field[@name='name']" position="after">
 					<field name="contract_id" />
-					<field name="order_id" context="{'hide_cancel': True, 'hide_actual_time': True, 'hide_assigned': True, 'name_with_driver': True}" />
+					<field name="order_id" context="{'hide_cancel': True, 'hide_actual_time': True, 'hide_assigned': True, 'name_with_driver': True}" options="{'no_create': 1}" />
 					<field name="source" />
 				</xpath>
 				<xpath expr="//page[@string='Accounting']" position="before">
@@ -32,6 +32,9 @@
 			<field name="inherit_id" ref="hr_expense.view_expenses_tree" />
 			<field name="priority" eval="100" />
 			<field name="arch" type="xml">
+				<xpath expr="//tree" position="attributes">
+					<attribute name="colors">blue:state == 'draft';#FF9900:state == 'confirm';black:state in ('accepted','done');gray:state == 'cancelled'</attribute>
+				</xpath>
 				<xpath expr="//field[@name='state']" position="after">
 					<field name="source" />
 					<field name="contract_id" string="Contract" />

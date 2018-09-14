@@ -370,22 +370,25 @@ class foms_order(osv.osv):
 				if assigned_vehicle and (not source or source == 'form'):
 					self._cek_vehicle_clash(cr, uid, assigned_vehicle, start_planned_date, finish_planned_date, data.id, context)
 		
-	# kalau order diconfirm dari mobile app, cek dulu apakah sudah diconfirm sebelumnya
+	# kalau order diconfirm, cek dulu apakah sudah diconfirm sebelumnya
 	# ini untuk mengantisipasi kalau satu alloc unit ada beberapa approver dan pada balapan meng-approve
-		if vals.get('state', False) == 'confirmed' and context.get('from_webservice') == True:
+		if vals.get('state', False) == 'confirmed':
 			for data in orders:
-				if data.state == 'confirmed':
-					context.update({
-						'target_user_id': context.get('user_id', uid),
-					})
-					self.webservice_post(cr, uid, ['approver'], 'update', data, \
-						data_columns=['state'],
-						webservice_context={
-							'notification': ['order_other_approved'],
-						}, context=context)
-					return True
+				if data.state != 'new':
+					if context.get('from_webservice') == True:
+						context.update({
+							'target_user_id': context.get('user_id', uid),
+						})
+						self.webservice_post(cr, uid, ['approver'], 'update', data, \
+							data_columns=['state'],
+							webservice_context={
+								'notification': ['order_other_approved'],
+							}, context=context)
+						return True
+					else:
+						raise osv.except_osv(_('Order Error'), _('This order has already been confirmed or even started/finished. Please refresh your app to update order list and status.'))
 
-	# kalau order dicancel karena delay excceded, maka isi alasannya sbg delay exceeded
+	# kalau order dicancel karena delay exceeded, maka isi alasannya sbg delay exceeded
 		if vals.get('state', False) == 'canceled' and context.get('delay_exceeded') == True:
 		# ambil id untuk alasan pembatalan "Delay time exceeded"
 			model_obj = self.pool.get('ir.model.data')

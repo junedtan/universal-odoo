@@ -127,6 +127,7 @@ class foms_order(osv.osv):
 		'is_lk_inap': fields.boolean('Luar Kota Menginap?', track_visibility="onchange"),
 		'create_source': fields.selection((
 			('app', 'Mobile App'),
+			('web', 'Web App'),
 			('central', 'Central'),
 		), 'Create Source', readonly=True),
 		'purpose_id' : fields.many2one('foms.booking.purpose', 'Booking Purpose', ondelete='SET NULL'),

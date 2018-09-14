@@ -972,6 +972,7 @@ class website_mobile_app_handler(osv.osv):
 		if mode == 'create':
 			order_data.update({
 				'request_date': datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT),
+				'create_source': 'web',
 				})
 		if not is_fullday_passenger:
 			unit_id = domain.get('unit_id', 0)

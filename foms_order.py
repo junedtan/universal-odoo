@@ -139,7 +139,7 @@ class foms_order(osv.osv):
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------
 
 	_defaults = {
-		'request_date': lambda *a: datetime.today().strftime('%Y-%m-%d %H:%M:%S'),
+		'request_date': lambda *a: datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
 		'order_by': lambda self, cr, uid, ctx: uid,
 		'state': 'new',
 		'pause_count': 0,

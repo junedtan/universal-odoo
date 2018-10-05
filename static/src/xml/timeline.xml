@@ -6,13 +6,11 @@
 		<div class="wrapper_universal_timeline_by_date">
 			<div class="row no-margin padding6 div_filter">
 				<form class="form-inline">
-  					<div class="form-group">
-						<label for="filter_date">Date</label>
-						<input class="datepicker" id="filter_date" size="8" type="text" readonly=""/>
+					<div class="form-group">
+						<input class="datepicker form-control" id="filter_date" size="12" type="text" placeholder="Date" />
 					</div>
-  					<div class="form-group">
-						<label for="filter_customer">Customer Company</label>
-						<input list="filter_customer_list" id="filter_customer">
+					<div class="form-group">
+						<input list="filter_customer_list" id="filter_customer" class="form-control" placeholder="Customer">
 							<datalist id="filter_customer_list" >
 								<t t-foreach="customers" t-as="customer">
 									<option t-att-id="customer.id" t-attf-value="{{customer.name}}"/>
@@ -20,16 +18,15 @@
 							</datalist>
 						</input>
 					</div>
-  					<div class="form-group">
-						<label for="filter_service_type">Service Type</label>
-						<select id="filter_service_type">
-							<option value=""></option>
+ 					<div class="form-group">
+						<select id="filter_service_type" class="form-control">
+							<option value="">[Select Type]</option>
 							<option value="full_day">Full-day Service</option>
 							<option value="by_order">By Order</option>
 							<option value="shuttle">Shuttle</option>
 						</select>
 					</div>
-					<div type="button" id="button_filter" class="btn btn-primary ml16">Show Data</div>
+					<div type="button" id="button_filter" class="btn btn-primary">Load/Reload</div>
 				</form>
 			</div>
 			<hr class="no-margin"/>
@@ -39,8 +36,8 @@
 	</t>
 
 	<t t-name="universal_timeline_by_date_table">
-		<div class="wrapper_universal_timelie_by_date_table">
-			<table class="table table-condensed table-striped">
+		<div class="wrapper_universal_timeline_by_date_table">
+			<table class="table table-condensed">
 				<tr>
 					<th>Driver</th>
 					<th>License Plate</th>
@@ -53,7 +50,8 @@
 				</tr>
 				<t t-foreach="drivers" t-as="driver">
 					<tr>
-						<td><t t-esc='driver.driver_name'/></td>
+						<td t-if="driver.has_order" class="driver-busy"><t t-esc='driver.driver_name'/></td>
+						<td t-if="driver.has_order == false" class="driver-available"><t t-esc='driver.driver_name'/></td>
 						<td>
 							<t t-set="first" t-value="'True'"/>
 							<t t-foreach="driver.license_plates" t-as="license_plate">
@@ -151,7 +149,7 @@
 	</t>
 
 	<t t-name="universal_timeline_by_driver_table">
-		<div class="wrapper_universal_timelie_by_driver_table">
+		<div class="wrapper_universal_timeline_by_driver_table">
 			<table class="table table-condensed table-striped table-fixed">
 				<thead>
 					<tr>

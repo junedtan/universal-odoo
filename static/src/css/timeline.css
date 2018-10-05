@@ -3,35 +3,53 @@
 }
 
 .div_filter {
-    width: 100%;
-    margin-top: 0px;
-    padding-top: 10px;
-    padding-left: 10px;
-    padding-bottom: 10px;
-    position:fixed;
-    height: 55px;
-    background: white;
+	width: 100%;
+	margin-top: 0px;
+	padding-top: 10px;
+	padding-left: 10px;
+	padding-bottom: 10px;
+	position:fixed;
+	height: 54px;
+	z-index: 100;
+	background: #e0e0e0;
 }
 
-.progress {
+.oe_universal_timeline_by_date {
+	background: #fdfdfd;
+}
+
+.wrapper_universal_timeline_by_date_table .progress {
 	margin-bottom:0px;
 	height: 28px;
 }
 
-.table th {
-   text-align: center;
+.wrapper_universal_timeline_by_date_table .progress, 
+.wrapper_universal_timeline_by_date_table .progress-bar {
+	background: transparent;
+	border-radius: 0;
+	box-shadow: none;
+	-webkit-box-shadow: none;
+}
+
+.wrapper_universal_timeline_by_date_table th {
+  text-align: center;
+  background: #F0F0F0;
+}
+
+.wrapper_universal_timeline_by_date_table tr:hover {
+  background: #F0F0F0;
 }
 
 .vertical-line {
-    border-left:1px solid LightGray;
-    height:100%;
-    margin-top: -5px;
-    margin-left: -5px;
-    position: fixed;
+	border-left:1px solid LightGray;
+	height:100%;
+	margin-top: -5px;
+	margin-left: -5px;
+	position: fixed;
 }
 
 #div_main {
-    margin-top: 55px;
+	margin-top: 54px;
 }
 
 .ml16 {
@@ -46,21 +64,29 @@
 	margin: 6px;
 }
 
+.driver-available {
+	color: #b5b5bf;
+}
+
+.driver-busy {
+	color: #55a7b2;
+}
+
 .bg-planned {
-	background-color: yellow;
+	background-color: #EEAA7B !important;
 }
 
 .bg-none {
-	background-color: transparent;
+	background-color: transparent !important;
 }
 
 .bg-actual {
-	background-color: red;
+	background-color: #66B9BF !important;
 }
 
 .bg-now {
-	background-color: cyan;
-    opacity: 0.3;
+	background-color: #DDDDDD !important;
+	opacity: 0.3;
 }
 
 #btn_filter {

@@ -701,20 +701,21 @@ class foms_order(osv.osv):
 				if order_data.service_type == 'by_order':
 					broadcast_data_columns += ['over_quota_status','alloc_unit_usage']
 
-		# finally, broadcast perubahan
-			targets = []
-			if order_data.service_type == 'full_day':
-				targets = ['pic','fullday_passenger','driver']
-			elif order_data.service_type == 'by_order':
-				targets = ['pic','booker','approver','driver']
-			for target in targets:
-				notif = broadcast_notifications[target]
-				if broadcast_notifications['all']: notif += broadcast_notifications['all']
-				self.webservice_post(cr, uid, [target], 'update', order_data, \
-					data_columns=broadcast_data_columns,
-					webservice_context={
-						'notification': notif,
-					}, context=context)
+		# finally, broadcast perubahan. khusus selain manual edit (execution)
+			if not context.get('manual_edit', False):
+				targets = []
+				if order_data.service_type == 'full_day':
+					targets = ['pic','fullday_passenger','driver']
+				elif order_data.service_type == 'by_order':
+					targets = ['pic','booker','approver','driver']
+				for target in targets:
+					notif = broadcast_notifications[target]
+					if broadcast_notifications['all']: notif += broadcast_notifications['all']
+					self.webservice_post(cr, uid, [target], 'update', order_data, \
+						data_columns=broadcast_data_columns,
+						webservice_context={
+							'notification': notif,
+						}, context=context)
 			if context.get('manual_post_message', None):
 				self.message_post(cr, uid, order_data.id, body=context['manual_post_message'])
 
@@ -1257,6 +1258,26 @@ class foms_order(osv.osv):
 			})
 		return {
 			'name': _('Finish Order'),
+			'view_mode': 'form',
+			'view_type': 'form',
+			'view_id': view_id,
+			'res_model': 'foms.order',
+			'type': 'ir.actions.act_window',
+			'target': 'new',
+			'res_id': ids[0],
+			'context': new_context,
+		}
+	
+	def action_edit_execution(self, cr, uid, ids, context=None):
+		model, view_id = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'universal', 'foms_order_edit_execution_form')
+		new_context = context.copy()
+		new_context.update({
+			'manual_edit': True,
+			'manual_post_message': _('Execution of this order is manually edited.'),
+			'edit_from_popup': True,
+			})
+		return {
+			'name': _('Edit Order Execution'),
 			'view_mode': 'form',
 			'view_type': 'form',
 			'view_id': view_id,

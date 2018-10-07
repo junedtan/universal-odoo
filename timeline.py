@@ -82,6 +82,7 @@ class universal_timeline(osv.osv):
 			daily_actual_orders = []
 			finish_before = 0
 			license_plate = ""
+			vehicle_type = ""
 			for actual_order in actual_orders:
 			# hanya untuk yang actual drivernya adalah driver ini
 				if actual_order.actual_driver_id.user_id.id != driver_data.id: continue
@@ -89,8 +90,10 @@ class universal_timeline(osv.osv):
 			# actual order terakhir, supaya dapet yang terbaru
 				if actual_order.assigned_vehicle_id:
 					license_plate = actual_order.assigned_vehicle_id.license_plate
+					vehicle_type = actual_order.assigned_vehicle_id.model_id.modelname
 				elif actual_order.actual_vehicle_id:
 					license_plate = actual_order.actual_vehicle_id.license_plate
+					vehicle_type = actual_order.actual_vehicle_id.model_id.modelname
 			# isi start dan finish untuk order ini
 				start = datetime.strptime(actual_order.start_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=SERVER_TIMEZONE)
 				if actual_order.finish_date:
@@ -128,9 +131,14 @@ class universal_timeline(osv.osv):
 			# ya ga usah ditimpa lagi)
 				if not license_plate and planned_order.assigned_vehicle_id:
 					license_plate = planned_order.assigned_vehicle_id.license_plate
-			# tentuin waktu mulai dan selesai
+					vehicle_type = planned_order.assigned_vehicle_id.model_id.modelname
+			# tentuin waktu mulai dan selesai. waktu selesai untuk order yang sudah selesai
+			# ngikut ke actual finish
 				start = datetime.strptime(planned_order.start_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=SERVER_TIMEZONE)
-				finish = datetime.strptime(planned_order.finish_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=SERVER_TIMEZONE)
+				if planned_order.state in ['finished','finish_confirmed']:
+					finish = datetime.strptime(planned_order.finish_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=SERVER_TIMEZONE)
+				else:
+					finish = datetime.strptime(planned_order.finish_planned_date,'%Y-%m-%d %H:%M:%S') + timedelta(hours=SERVER_TIMEZONE)
 				start_minute = 0
 				finish_minute = 24 * 60
 				if start > date:
@@ -158,23 +166,34 @@ class universal_timeline(osv.osv):
 				for fleet in contract_fleets:
 					if fleet.driver_id.user_id.id == driver_data.id:
 						license_plate = fleet.fleet_vehicle_id.license_plate
+						vehicle_type = fleet.fleet_vehicle_id.model_id.modelname
 						break
+		# tentukan sorting nomor plat. kondisikan supaya nomor plat menjadi B BOL 1025
+		# dari B 1025 BOL
+			temp = license_plate.split(" ")
+			try:
+				sort = "%s %s %s" % (temp[0],temp[2],temp[1])
+			except KeyError:
+				sort = license_plate
 		# gabungkan semuanya!
 			result.append({
 				'driver_id': driver_data.id,
 				'driver_name': driver_data.name,
 				'license_plates': [license_plate],
+				'vehicle_type': vehicle_type,
+				'sort': sort,
 				'planned_orders': daily_planned_orders,
 				'actual_orders': daily_actual_orders,
 				'has_order': len(daily_planned_orders) > 0 or len(daily_actual_orders) > 0,
 				'now_time': now_time,
 			})
 	# urutkan result berdasarkan nama supir
-		result = sorted(result, key=lambda k: k['driver_name'])
+		result = sorted(result, key=lambda k: k['sort'])
 	# akhirnya...
 		hours = []
 		for hour in range(0, 24):
-			hours.append(str(hour).zfill(2) + ':00')
+			#hours.append(str(hour).zfill(2) + ':00')
+			hours.append(str(hour).zfill(2))
 		return {
 			'status': 'ok',
 			'drivers': result,

@@ -173,7 +173,7 @@ class universal_timeline(osv.osv):
 			temp = license_plate.split(" ")
 			try:
 				sort = "%s %s %s" % (temp[0],temp[2],temp[1])
-			except KeyError:
+			except IndexError:
 				sort = license_plate
 		# gabungkan semuanya!
 			result.append({

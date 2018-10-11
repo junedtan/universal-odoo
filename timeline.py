@@ -39,7 +39,7 @@ class universal_timeline(osv.osv):
 		domain = [
 			('customer_contract_id.customer_id.name', 'ilike', customer_name),
 			('customer_contract_id.service_type', 'ilike', service_type),
-			('state', 'not in', ['canceled', 'rejected']),
+			('state', 'not in', ['canceled', 'rejected','new','confirmed']),
 			('start_date', '<', (tomorrow_date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
 			'|',('finish_date', '>=', (date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")), ('finish_date', '=', False),
 		]
@@ -50,7 +50,7 @@ class universal_timeline(osv.osv):
 		domain = [
 			('customer_contract_id.customer_id.name', 'ilike', customer_name),
 			('customer_contract_id.service_type', 'ilike', service_type),
-			('state', 'not in', ['canceled', 'rejected']),
+			('state', 'not in', ['canceled', 'rejected','new','confirmed']),
 			('start_planned_date', '<', (tomorrow_date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
 			('finish_planned_date', '>=', (date - timedelta(hours=SERVER_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")),
 		]

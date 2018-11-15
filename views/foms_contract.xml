@@ -293,6 +293,7 @@
 						<group>
 							<field name="header_id" readonly="1" />
 							<field name="name" />
+							<field name="active" />
 							<field name="approver_ids" widget="many2many_tags" />
 							<field name="booker_ids" widget="many2many_tags" />
 						</group>
@@ -310,11 +311,12 @@
 			<field name="name">foms.contract.alloc.unit.tree</field>	
 			<field name="model">foms.contract.alloc.unit</field>
 			<field name="arch" type="xml">
-				<tree version="7.0" string="Contract Allocation Units">
+				<tree version="7.0" string="Contract Allocation Units" colors="#CCCCCC:active==False">
 					<field name="header_id" />
 					<field name="name" />
 					<field name="approver_ids" />
 					<field name="booker_ids" />
+					<field name="active" />
 				</tree>
 			</field>
 		</record>

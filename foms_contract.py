@@ -567,6 +567,7 @@ class foms_contract(osv.osv):
 			'context': {
 				'search_default_header_id': contract.id,
 				'default_header_id': contract.id,
+				'active_test': False,
 			},
 		}
 
@@ -1093,6 +1094,7 @@ class foms_contract_alloc_unit(osv.osv):
 			'booker_id', string='Bookers', copy=True),
 		'yellow_limit': fields.float('Yellow Limit', copy=False),
 		'red_limit': fields.float('Red Limit', copy=False),
+		'active': fields.boolean('Active?'),
 	}		
 	
 # CONSTRAINTS --------------------------------------------------------------------------------------------------------------
@@ -1183,6 +1185,7 @@ class foms_contract_alloc_unit(osv.osv):
 	_defaults = {
 		'yellow_limit': 0,
 		'red_limit': 0,
+		'active': True,
 	}	
 	
 # ==========================================================================================================================

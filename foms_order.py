@@ -13,6 +13,7 @@ except ImportError:
 	import queue as Q
 
 import random, string
+from openerp import api
 
 _ORDER_STATE = [
 	('new','New'),
@@ -57,6 +58,19 @@ class foms_order(osv.osv):
 		for row in self.browse(cr, uid, ids, context):
 			result[row.id] = row.customer_contract_id.customer_id.name
 		return result
+
+	@api.one
+	@api.depends('customer_contract_id', 'customer_contract_id.name',
+				 'customer_contract_id.is_expense_record',
+				 'customer_contract_id.usage_allocation_maintained_by',
+				 'customer_contract_id.min_start_minutes', 'customer_contract_id.service_type')
+	def _compute_field_contract(self):
+		self.contract_id = self.customer_contract_id.id
+		self.contract_name = self.customer_contract_id.name
+		self.contract_is_expense_record = self.customer_contract_id.is_expense_record
+		self.contract_usage_allocation_maintained_by = self.customer_contract_id.usage_allocation_maintained_by
+		self.contract_min_start_minutes = self.customer_contract_id.min_start_minutes
+		self.contract_service_type = self.customer_contract_id.service_type
 
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
@@ -134,6 +148,23 @@ class foms_order(osv.osv):
 		'other_purpose': fields.text('Other Purpose'),
 		'start_odometer': fields.float('Start Odometer', track_visibility="onchange"),
 		'finish_odometer': fields.float('Finish Odometer', track_visibility="onchange"),
+
+		# Field Contract, its needed on the mobile when the driver has been change to another
+		# driver who doesn't have contract
+		'contract_id': fields.integer(compute='_compute_field_contract', string='Contract Id', store=False),
+		'contract_name': fields.char(compute='_compute_field_contract', string='Contract Empire No.', store=False),
+		'contract_is_expense_record': fields.boolean(compute='_compute_field_contract',
+												  string='Include Expense Report', store=False),
+		'contract_usage_allocation_maintained_by': fields.selection([
+			('customer','Customer'),
+			('universal','Universal')], compute='_compute_field_contract',
+			string='Limits Maintained By', store=False),
+		'contract_min_start_minutes': fields.float(compute='_compute_field_contract',
+												   string='Min. Start (minutes)', store=False),
+		'contract_service_type': fields.selection([
+			('full_day','Full-day Service'),
+			('by_order','By Order'),
+			('shuttle','Shuttle')], 'Service Type', compute='_compute_field_contract', store=False),
 	}
 
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------
@@ -1067,8 +1098,8 @@ class foms_order(osv.osv):
 			if order_day == int(order_hours.dayofweek) and (order_time >= order_hours.time_from and order_time <= order_hours.time_to):
 				book_in_hours = True
 				break
-		if not book_in_hours:
-			raise osv.except_osv(_('Order Error'),_('You are booking outside of order hours. Please contact your PIC or Administrator for allowable order hours.'))
+		# if not book_in_hours:
+		# 	raise osv.except_osv(_('Order Error'),_('You are booking outside of order hours. Please contact your PIC or Administrator for allowable order hours.'))
 		if not contract_data.working_time_id:
 			raise osv.except_osv(_('Order Error'),_('Working time for this order\'s contract is not set. Please contact PT. Universal.'))
 		book_in_holiday = False
@@ -1084,8 +1115,8 @@ class foms_order(osv.osv):
 	def _cek_min_hour_for_type_by_order(self, cr, uid, start_date, order_minimum_minutes , context=None):
 		now = datetime.now()
 		delta = float((start_date - now).days * 86400 + (start_date - now).seconds) / 60
-		if delta < order_minimum_minutes:
-			raise osv.except_osv(_('Order Error'),_('Start date is too close to current time, or is in the past. There must be at least %s minutes between now and start date.' % order_minimum_minutes))
+		# if delta < order_minimum_minutes:
+		# 	raise osv.except_osv(_('Order Error'),_('Start date is too close to current time, or is in the past. There must be at least %s minutes between now and start date.' % order_minimum_minutes))
 	
 # untuk assigned_vehicle_id yang diminta, tentukan apakah bentrok dengan order yang lagi jalan
 # ini untuk kasus di mana ada perubahan/setting ulang/pengisian assigned vehicle id di sebuah 

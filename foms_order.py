@@ -1098,8 +1098,8 @@ class foms_order(osv.osv):
 			if order_day == int(order_hours.dayofweek) and (order_time >= order_hours.time_from and order_time <= order_hours.time_to):
 				book_in_hours = True
 				break
-		# if not book_in_hours:
-		# 	raise osv.except_osv(_('Order Error'),_('You are booking outside of order hours. Please contact your PIC or Administrator for allowable order hours.'))
+		if not book_in_hours:
+			raise osv.except_osv(_('Order Error'),_('You are booking outside of order hours. Please contact your PIC or Administrator for allowable order hours.'))
 		if not contract_data.working_time_id:
 			raise osv.except_osv(_('Order Error'),_('Working time for this order\'s contract is not set. Please contact PT. Universal.'))
 		book_in_holiday = False
@@ -1115,8 +1115,8 @@ class foms_order(osv.osv):
 	def _cek_min_hour_for_type_by_order(self, cr, uid, start_date, order_minimum_minutes , context=None):
 		now = datetime.now()
 		delta = float((start_date - now).days * 86400 + (start_date - now).seconds) / 60
-		# if delta < order_minimum_minutes:
-		# 	raise osv.except_osv(_('Order Error'),_('Start date is too close to current time, or is in the past. There must be at least %s minutes between now and start date.' % order_minimum_minutes))
+		if delta < order_minimum_minutes:
+			raise osv.except_osv(_('Order Error'),_('Start date is too close to current time, or is in the past. There must be at least %s minutes between now and start date.' % order_minimum_minutes))
 	
 # untuk assigned_vehicle_id yang diminta, tentukan apakah bentrok dengan order yang lagi jalan
 # ini untuk kasus di mana ada perubahan/setting ulang/pengisian assigned vehicle id di sebuah 

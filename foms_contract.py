@@ -354,7 +354,7 @@ class foms_contract(osv.osv):
 		if len(user_ids) > 0:
 			user_ids = list(set(user_ids))
 			for user_id in user_ids:
-				sync_obj.post_outgoing(cr, user_id, 'foms.contract', command, contract_data, 
+				sync_obj.post_outgoing(cr, user_id, 'foms.contract', command, contract_data.id,
 					data_columns=data_columns,
 					data_context=webservice_context)
 

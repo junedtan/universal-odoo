@@ -138,42 +138,26 @@ class website_mobile_app(http.Controller):
 				'name': order_type[1],
 			})
 		# Route Area To
-		route_city_arr = []
-		regions = handler_obj.search_region({})
-		for region in regions:
-			districts = handler_obj.search_order_district({
-				'homebase_id': region.id
-			})
-			route_district_arr = []
-			for district in districts:
-				areas = handler_obj.search_order_area({
-					'homebase_id': region.id,
-					'district_id': district.id
-				})
-				route_area_arr = []
-				for area in areas:
-					route_area_arr.append({
-						'id': area.id,
-						'name': area.name,
-					})
-				route_district_arr.append({
-					'id': district.id,
-					'name': district.name,
-					'areas': route_area_arr,
-				})
-			route_city_arr.append({
-				'id': region.id,
-				'name': region.name,
-				'districts': route_district_arr,
-			})
+		# 20190421: route_city_arr diisi sementara dengan yang sudah diambil dari mobile_app_fetch_contracts.
+		# dengan adanya destination_homebase_ids seharusnya pilihan kota tujuan diambil per kontrak, 
+		# namun karena perubahan logic ini mengharuskan modif coding baik web_app maupun apk dan per 
+		# tanggal ini tidak ada alasan cukup utk memaksa user2 upgrade apk maka untuk sementara kota tujuan
+		# bersifat global (data['route_to']).
+		# jadi sekarang route_city_arr diisi idem dengan yang ada di kontrak pertama hasil pengambilan,
+		# dengan asumsi pada saat yang sama seorang user hanya bisa bergabung ke satu kontrak.
+		# bila di masa depan ada user (misal booker atau approver) yang bisa diassign ke > 1 kontrak 
+		# maka logic di web_app maupun apk harus dimodif.
+			if len(data_fetch_contract['list_contract']) > 0:
+				route_city_arr = data_fetch_contract['list_contract'][0]['destinations']
+			else:
+				route_city_arr = []
 		# Booking Purpose
-		purpose_arr = []
-		purposes = handler_obj.search_purpose({})
-		for purpose in purposes:
-			purpose_arr.append({
-				'id': purpose.id,
-				'name': purpose.name,
-			})
+		# 20190421: kasus booking purpose mirip dengan route_to di atas: klien minta supaya booking purpose
+		# booking purpose bisa diatur per kontrak 
+			if len(data_fetch_contract['list_contract']) > 0:
+				purpose_arr = data_fetch_contract['list_contract'][0]['booking_purposes']
+			else:
+				purpose_arr = []
 		
 		return json.dumps({
 			'user_group': data_user_group['user_group'],
@@ -275,7 +259,7 @@ class website_mobile_app(http.Controller):
 						'id': allocation_unit.id,
 						'name': allocation_unit.name,
 					})
-			# Order District and Area From
+			# Origin Districts and Areas
 			districts = handler_obj.search_order_district({
 				'homebase_id': contract_data.homebase_id.id
 			})
@@ -296,6 +280,45 @@ class website_mobile_app(http.Controller):
 					'name': district.name,
 					'areas': route_from_arr,
 				})
+			# Destination Homebases, Districts, and Areas
+			if contract_data.destination_homebase_ids:
+				regions = contract_data.destination_homebase_ids
+			else:
+				regions = contract_data.homebase_id.id
+			dest_homebase_arr = []
+			for region in regions:
+				districts = handler_obj.search_order_district({
+					'homebase_id': region.id
+				})
+				route_district_arr = []
+				for district in districts:
+					areas = handler_obj.search_order_area({
+						'homebase_id': region.id,
+						'district_id': district.id
+					})
+					route_area_arr = []
+					for area in areas:
+						route_area_arr.append({
+							'id': area.id,
+							'name': area.name,
+						})
+					route_district_arr.append({
+						'id': district.id,
+						'name': district.name,
+						'areas': route_area_arr,
+					})
+				dest_homebase_arr.append({
+					'id': region.id,
+					'name': region.name,
+					'districts': route_district_arr,
+				})
+			# booking purpose
+			booking_purposes = []
+			for purpose in contract_data.by_order_booking_purposes:
+				booking_purposes.append({
+					'id': purpose.id,
+					'name': purpose.name,
+					})
 			# Shuttle
 			shuttle_arr = []
 			for shuttle_schedule in contract_data.shuttle_schedules:
@@ -320,6 +343,8 @@ class website_mobile_app(http.Controller):
 				'units': unit_arr,
 				'shuttle_schedules': shuttle_arr,
 				'districts': district_from_arr,
+				'destinations': dest_homebase_arr,
+				'booking_purposes': booking_purposes,
 				# 'route_from': route_from_arr,
 				'state': contract_data.state,
 				'state_name': dict(_CONTRACT_STATE).get(contract_data.state, ''),

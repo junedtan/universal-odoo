@@ -1919,10 +1919,18 @@ class foms_order(osv.osv):
 			fleet_type_ids.append(fleet.fleet_type_id.id)
 	# filter pilihan order origin district
 		region_obj = self.pool.get('chjs.region')
-		district_ids = region_obj.search(cr, uid, [('parent_id','=',contract_data.homebase_id.id)])
-	# filter pilihan order origin area
-		area_obj = self.pool.get('foms.order.area')
-		area_ids = area_obj.search(cr, uid, [('homebase_id','=',contract_data.homebase_id.id)])
+		origin_district_ids = region_obj.search(cr, uid, [('parent_id','=',contract_data.homebase_id.id)])
+	# filter pilihan order destination district
+	# kalau destination_homebase_ids tidak ada maka dianggap idem homebase_id
+		print contract_data.destination_homebase_ids
+		if not contract_data.destination_homebase_ids:
+			dest_district_ids = origin_district_ids
+		else:
+			print "masuk else"
+			dest_district_ids = []
+			for hb in contract_data.destination_homebase_ids:
+				print region_obj.search(cr, uid, [('parent_id','=',hb.id)])
+				dest_district_ids += region_obj.search(cr, uid, [('parent_id','=',hb.id)])
 	# filter pilihan allocation unit
 		allocation_unit_ids = []
 		for alloc in contract_data.allocation_units:
@@ -1963,8 +1971,8 @@ class foms_order(osv.osv):
 			'value': value,
 			'domain': {
 				'fleet_type_id': [('id','in',fleet_type_ids)],
-				'origin_district_id': [('id','in',district_ids)],
-				'origin_area_id': [('id','in',area_ids)],
+				'origin_district_id': [('id','in',origin_district_ids)],
+				'dest_district_id': [('id','in',dest_district_ids)],
 				'alloc_unit_id': [('id','in',allocation_unit_ids)],
 				'assigned_vehicle_id': [('id','in',fleet_ids)],
 				'actual_vehicle_id': [('id','in',fleet_ids)],
@@ -2663,5 +2671,6 @@ class foms_booking_purpose(osv.osv):
 	# COLUMNS ------------------------------------------------------------------------------------------------------------------
 	
 	_columns = {
-		'name': fields.char('Purpose', size=64, required=True)
+		'name': fields.char('Purpose', size=64, required=True),
+		'contract_id': fields.many2one('foms.contract', 'Contract', required=True, ondelete="cascade"),
 	}

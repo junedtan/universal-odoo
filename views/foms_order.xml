@@ -103,7 +103,10 @@
 						</group>
 						<group>
 							<field name="request_date" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
-							<field name="purpose_id" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
+							<field name="purpose_id" 
+								attrs="{'readonly': [('state','not in', ['new', 'rejected', 'confirmed', 'ready'])]}" 
+								options="{'no_create': 1}"
+								domain="[('contract_id','=',customer_contract_id)]" />
 							<field name="other_purpose" placeholder="Purposes not mentioned above" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
 							<field name="actual_vehicle_id" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['started','start_confirmed','finished','finish_confirmed'])]}" />
 							<field name="actual_driver_id" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['started','start_confirmed','finished','finish_confirmed'])]}" />
@@ -118,16 +121,18 @@
 									<field name="start_planned_date" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" />
 									<field name="finish_planned_date" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
 									<field name="origin_location" attrs="{'invisible': [('service_type','!=','by_order')], 'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" />
-									<field name="origin_district_id" options="{'no_create': 1}"
+									<field name="origin_district_id" options="{'no_create': 1}" 
 											on_change="onchange_origin_district_id(customer_contract_id,origin_district_id)"
 											attrs="{'invisible': [('service_type','!=','by_order')], 'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" />
 									<field name="origin_area_id" options="{'no_create': 1}"
+											domain="[('district_id','=',origin_district_id)]"
 											attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')], 'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" />
 									<field name="dest_location" attrs="{'invisible': [('service_type','!=','by_order')], 'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" />
 									<field name="dest_district_id" options="{'no_create': 1}"
 											on_change="onchange_dest_district_id(dest_district_id)"
 											attrs="{'invisible': [('service_type','!=','by_order')], 'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" />
 									<field name="dest_area_id" options="{'no_create': 1}"
+											domain="[('district_id','=',dest_district_id)]"
 											attrs="{'invisible': [('service_type','!=','by_order')], 'required': [('service_type','=','by_order')], 'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" />
 									<field name="route_id" attrs="{'invisible': [('service_type','!=','shuttle')]}" />
 								</group>
@@ -442,6 +447,7 @@
 				<form version="7.0" string="Customer Order" >
 					<group>
 						<field name="name"/>
+						<field name="contract_id" />
 					</group>
 				</form>
 			</field>

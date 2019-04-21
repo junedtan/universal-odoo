@@ -270,11 +270,13 @@
 				<form version="7.0" string="Customer Order" >
 					<group>
 						<group string="Order Start">
+							<field name="start_planned_date" required="1" />
 							<field name="start_date" required="1" />
 							<field name="start_confirm_date" required="1" />
 							<field name="start_odometer" required="1" />
 						</group>
 						<group string="Order Finish">
+							<field name="finish_planned_date" required="1" />
 							<field name="finish_date" required="1" />
 							<field name="finish_confirm_date" required="1" />
 							<field name="finish_odometer" required="1" />

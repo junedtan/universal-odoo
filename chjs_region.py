@@ -9,7 +9,6 @@ class chjs_region(osv.osv):
 	_columns = {
 		'sequence': fields.integer('Sequence'),
 		'emergency_number': fields.char('Emergency Number'),
-		'active': fields.boolean('Active'),
 	}
 
 	_defaults = {

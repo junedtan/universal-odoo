@@ -65,6 +65,7 @@
 								<group>
 									<group string="Driver Setting" colspan="4">
 										<field name="homebase_id" />
+										<field name="destination_homebase_ids" widget="many2many_tags" />
 										<field name="working_time_id" />
 										<field name="overtime_id" />
 										<field name="fee_calculation_type" />
@@ -173,6 +174,13 @@
 									</group>
 								</group>
 							</group>
+						</page>
+						<page string="Booking Purposes" attrs="{'invisible': [('service_type','not in',['by_order'])]}">
+							<field name="by_order_booking_purposes">
+								<tree editable="bottom">
+									<field name="name" />
+								</tree>
+							</field>
 						</page>
 						<page string="Other Info" groups="universal.group_universal_staff_marketing,universal.group_universal_dispatcher">
 							<group>

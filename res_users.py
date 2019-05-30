@@ -56,7 +56,35 @@ class res_users(osv.osv):
 			'data': result,
 			'response': response,
 		})
-	
+
+	def get_current_contract(self, cr, uid, context={}):
+		is_approver = user_obj.has_group(cr, uid, 'universal.group_universal_approver')
+		is_driver = user_obj.has_group(cr, uid, 'universal.group_universal_driver')
+		is_booker = user_obj.has_group(cr, uid, 'universal.group_universal_booker')
+		contract_ids = self.pool['foms.contract'].search(cr, SUPERUSER_ID, [('state','in',['active'])], order="start_date")
+		if len(contract_ids) == 0: return None
+		current_contract = None
+		for contract in self.pool['foms.contract'].browse(cr, SUPERUSER_ID, contract_ids):
+			if current_contract != None: break
+			if is_approver:
+				for unit in contract.allocation_units:
+					for approver in unit.approver_ids:
+						if approver.user_id.id == uid:
+							current_contract = contract
+							break
+			elif is_booker:
+				for unit in contract.allocation_units:
+					for booker in unit.booker_ids:
+						if booker.user_id.id == uid:
+							current_contract = contract
+							break
+			elif is_driver:
+				for car_driver in contract.car_drivers:
+					if car_driver.driver_id.user_id.id == uid:
+						current_contract = contract
+						break
+		return current_contract
+
 	def _is_hr(self, cr, uid, ids, field_name, arg, context={}):
 		result = {}
 		try:

@@ -447,7 +447,6 @@
 				<form version="7.0" string="Customer Order" >
 					<group>
 						<field name="name"/>
-						<field name="contract_id" />
 					</group>
 				</form>
 			</field>

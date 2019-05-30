@@ -64,7 +64,7 @@ class foms_contract(osv.osv):
 		'last_shuttle_autogenerate_date': fields.date('Last Shuttle Autogenerate Date', copy=False),
 		'by_order_minimum_minutes': fields.float('Max. Order Time (minutes)',
 			help='This is the limit where By Order bookings are still allowed. For example, Maximum Order Time of 2 hours means for 18:30 booker may still book at 16:30 but not 17:00 or 16:31.'),
-		'by_order_booking_purposes': fields.one2many('foms.booking.purpose', 'contract_id', 'Booking Purposes'),
+		'by_order_booking_purposes': fields.many2many('foms.booking.purpose', 'foms_contract_booking_reason', 'contract_id', 'reason_id', 'Booking Purposes'),
 		'min_start_minutes': fields.float('Min. Start (minutes)',
 			help='How long prior to start time, orders of this contract are allowed to be started. For example, Minimum Start Minutes of 30 minutes means that order booked for 16:00 can only be started 15:30 onward.'),
 		'max_delay_minutes': fields.float('Max. Delay (minutes)',
@@ -389,8 +389,22 @@ class foms_contract(osv.osv):
 			}]
 	# untuk command ambil list homebase
 		if command == 'homebase':
+		# tentukan domain berdasarkan siapa yang login
+		# untuk booker, approver, dan driver, lock pilihan booking purpose 
+		# khusus untuk kontrak di bawah mana dia berada
+		# per mei 2019 diasumsikan satu user cuman satu kontrak pada satu waktu
+		# jadi diambillah kontrak terbaru saja
+			current_user_contract = self.pool.get('res.users').get_current_contract(cr, user_id)
+			if current_user_contract:
+				homebase_ids = [current_user_contract.homebase_id.id]
+				for dest_homebase in current_user_contract.destination_homebase_ids:
+					homebase_ids.append(dest_homebase.homebase_id.id)
+				domain = [('id','in',homebase_ids)]
+			else:
+				domain = [('id','=',-1)] # supaya ngga keluar apa2
+
 			homebase_obj = self.pool.get('chjs.region')
-			homebase_ids = homebase_obj.search(cr, uid, [])
+			homebase_ids = homebase_obj.search(cr, uid, domain)
 			result = []
 			for homebase in homebase_obj.browse(cr, uid, homebase_ids):
 				result.append({

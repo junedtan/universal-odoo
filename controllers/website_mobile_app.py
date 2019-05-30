@@ -284,7 +284,7 @@ class website_mobile_app(http.Controller):
 			if contract_data.destination_homebase_ids:
 				regions = contract_data.destination_homebase_ids
 			else:
-				regions = contract_data.homebase_id.id
+				regions = [contract_data.homebase_id]
 			dest_homebase_arr = []
 			for region in regions:
 				districts = handler_obj.search_order_district({

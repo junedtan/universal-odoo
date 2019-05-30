@@ -176,11 +176,7 @@
 							</group>
 						</page>
 						<page string="Booking Purposes" attrs="{'invisible': [('service_type','not in',['by_order'])]}">
-							<field name="by_order_booking_purposes">
-								<tree editable="bottom">
-									<field name="name" />
-								</tree>
-							</field>
+							<field name="by_order_booking_purposes" />
 						</page>
 						<page string="Other Info" groups="universal.group_universal_staff_marketing,universal.group_universal_dispatcher">
 							<group>

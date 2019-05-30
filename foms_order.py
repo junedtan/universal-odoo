@@ -869,8 +869,21 @@ class foms_order(osv.osv):
 				})
 	# list booking purpose
 		elif command == 'booking_purpose':
+		# tentukan domain berdasarkan siapa yang login
+		# untuk booker, approver, dan driver, lock pilihan booking purpose 
+		# khusus untuk kontrak di bawah mana dia berada
+		# per mei 2019 diasumsikan satu user cuman satu kontrak pada satu waktu
+		# jadi diambillah kontrak terbaru saja
+			current_user_contract = self.pool.get('res.users').get_current_contract(cr, user_id)
+			if current_user_contract:
+				purpose_ids = []
+				for purpose in current_user_contract.by_order_booking_purposes:
+					purpose_ids.append(purpose.reason_id.id)
+				domain = [('id','in',purpose_ids)]
+			else:
+				domain = [('id','=',-1)] # supaya ngga keluar apa2
 			purpose_obj = self.pool.get('foms.booking.purpose')
-			purpose_ids = purpose_obj.search(cr, uid, [])
+			purpose_ids = purpose_obj.search(cr, uid, domain)
 			result = []
 			for purpose in purpose_obj.browse(cr, uid, purpose_ids):
 				result.append({
@@ -2672,5 +2685,4 @@ class foms_booking_purpose(osv.osv):
 	
 	_columns = {
 		'name': fields.char('Purpose', size=64, required=True),
-		'contract_id': fields.many2one('foms.contract', 'Contract', required=True, ondelete="cascade"),
 	}

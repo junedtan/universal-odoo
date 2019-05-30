@@ -58,9 +58,9 @@ class res_users(osv.osv):
 		})
 
 	def get_current_contract(self, cr, uid, context={}):
-		is_approver = user_obj.has_group(cr, uid, 'universal.group_universal_approver')
-		is_driver = user_obj.has_group(cr, uid, 'universal.group_universal_driver')
-		is_booker = user_obj.has_group(cr, uid, 'universal.group_universal_booker')
+		is_approver = self.has_group(cr, uid, 'universal.group_universal_approver')
+		is_driver = self.has_group(cr, uid, 'universal.group_universal_driver')
+		is_booker = self.has_group(cr, uid, 'universal.group_universal_booker')
 		contract_ids = self.pool['foms.contract'].search(cr, SUPERUSER_ID, [('state','in',['active'])], order="start_date")
 		if len(contract_ids) == 0: return None
 		current_contract = None
@@ -69,13 +69,13 @@ class res_users(osv.osv):
 			if is_approver:
 				for unit in contract.allocation_units:
 					for approver in unit.approver_ids:
-						if approver.user_id.id == uid:
+						if approver.id == uid:
 							current_contract = contract
 							break
 			elif is_booker:
 				for unit in contract.allocation_units:
 					for booker in unit.booker_ids:
-						if booker.user_id.id == uid:
+						if booker.id == uid:
 							current_contract = contract
 							break
 			elif is_driver:

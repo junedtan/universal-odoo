@@ -398,7 +398,7 @@ class foms_contract(osv.osv):
 			if current_user_contract:
 				homebase_ids = [current_user_contract.homebase_id.id]
 				for dest_homebase in current_user_contract.destination_homebase_ids:
-					homebase_ids.append(dest_homebase.homebase_id.id)
+					homebase_ids.append(dest_homebase.id)
 				domain = [('id','in',homebase_ids)]
 			else:
 				domain = [('id','=',-1)] # supaya ngga keluar apa2

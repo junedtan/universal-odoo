@@ -878,7 +878,7 @@ class foms_order(osv.osv):
 			if current_user_contract:
 				purpose_ids = []
 				for purpose in current_user_contract.by_order_booking_purposes:
-					purpose_ids.append(purpose.reason_id.id)
+					purpose_ids.append(purpose.id)
 				domain = [('id','in',purpose_ids)]
 			else:
 				domain = [('id','=',-1)] # supaya ngga keluar apa2

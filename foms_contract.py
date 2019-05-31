@@ -397,11 +397,14 @@ class foms_contract(osv.osv):
 			current_user_contract = self.pool.get('res.users').get_current_contract(cr, user_id)
 			if current_user_contract:
 				homebase_ids = [current_user_contract.homebase_id.id]
+				for child in current_user_contract.homebase_id.child_ids:
+					homebase_ids.append(child.id)
 				for dest_homebase in current_user_contract.destination_homebase_ids:
 					homebase_ids.append(dest_homebase.id)
 				# ambil juga district nya
 					for child in dest_homebase.child_ids:
 						homebase_ids.append(child.id)
+				homebase_ids = list(set(homebase_ids))
 				domain = [('id','in',homebase_ids)]
 			else:
 				domain = [('id','=',-1)] # supaya ngga keluar apa2

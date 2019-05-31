@@ -243,6 +243,7 @@ class website_mobile_app(http.Controller):
 		})
 		result = [];
 		for contract_data in contract_datas:
+			if contract_data.state not in ['active']: continue
 			# Fleet
 			fleet_type_arr = []
 			for fleet_data in contract_data.car_drivers:

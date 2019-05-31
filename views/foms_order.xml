@@ -89,8 +89,12 @@
 						<group>
 							<field name="id" invisible="1" />
 							<field name="name" readonly="1" />
-							<field name="customer_contract_id" options="{'no_create': 1, 'force_onchange': 1}" on_change="onchange_customer_contract_id(customer_contract_id)"
-									attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
+							<field name="customer_contract_id" options="{
+								'no_create': 1, 
+								'force_onchange': 1}" on_change="onchange_customer_contract_id(customer_contract_id)"
+								attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}" 
+								domain="[('state','in',['active'])]"
+								/>
 							<field name="service_type"
 									attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"
 									on_change="onchange_service_type(customer_contract_id, fleet_type_id, service_type, start_planned_date)"/>
@@ -105,8 +109,7 @@
 							<field name="request_date" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
 							<field name="purpose_id" 
 								attrs="{'readonly': [('state','not in', ['new', 'rejected', 'confirmed', 'ready'])]}" 
-								options="{'no_create': 1}"
-								domain="[('contract_id','=',customer_contract_id)]" />
+								options="{'no_create': 1}" domain="[('id','=',-1)]" />
 							<field name="other_purpose" placeholder="Purposes not mentioned above" attrs="{'readonly': [('state','not in',['new','rejected','confirmed','ready'])]}"/>
 							<field name="actual_vehicle_id" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['started','start_confirmed','finished','finish_confirmed'])]}" />
 							<field name="actual_driver_id" options="{'no_create': 1}" attrs="{'readonly': [('state','not in',['started','start_confirmed','finished','finish_confirmed'])]}" />

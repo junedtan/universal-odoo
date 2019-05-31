@@ -1944,6 +1944,10 @@ class foms_order(osv.osv):
 			for hb in contract_data.destination_homebase_ids:
 				print region_obj.search(cr, uid, [('parent_id','=',hb.id)])
 				dest_district_ids += region_obj.search(cr, uid, [('parent_id','=',hb.id)])
+	# filter pilihan booking purpose
+		purpose_ids = []
+		for purpose in contract_data.by_order_booking_purposes:
+			purpose_ids.append(purpose.id)
 	# filter pilihan allocation unit
 		allocation_unit_ids = []
 		for alloc in contract_data.allocation_units:
@@ -1986,6 +1990,7 @@ class foms_order(osv.osv):
 				'fleet_type_id': [('id','in',fleet_type_ids)],
 				'origin_district_id': [('id','in',origin_district_ids)],
 				'dest_district_id': [('id','in',dest_district_ids)],
+				'purpose_id': [('id','in',purpose_ids)],
 				'alloc_unit_id': [('id','in',allocation_unit_ids)],
 				'assigned_vehicle_id': [('id','in',fleet_ids)],
 				'actual_vehicle_id': [('id','in',fleet_ids)],

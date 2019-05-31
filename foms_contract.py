@@ -399,6 +399,9 @@ class foms_contract(osv.osv):
 				homebase_ids = [current_user_contract.homebase_id.id]
 				for dest_homebase in current_user_contract.destination_homebase_ids:
 					homebase_ids.append(dest_homebase.id)
+				# ambil juga district nya
+					for child in dest_homebase.child_ids:
+						homebase_ids.append(child.id)
 				domain = [('id','in',homebase_ids)]
 			else:
 				domain = [('id','=',-1)] # supaya ngga keluar apa2

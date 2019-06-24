@@ -750,8 +750,6 @@ class foms_order(osv.osv):
 			if context.get('manual_post_message', None):
 				self.message_post(cr, uid, order_data.id, body=context['manual_post_message'])
 
-		#print context
-		#raise osv.except_osv('test','hahahahaha')
 		if context.get('edit_from_popup', False):
 			return {'type': 'ir.actions.act_window_close'}
 		else:
@@ -874,6 +872,7 @@ class foms_order(osv.osv):
 		# khusus untuk kontrak di bawah mana dia berada
 		# per mei 2019 diasumsikan satu user cuman satu kontrak pada satu waktu
 		# jadi diambillah kontrak terbaru saja
+			print "user id: %s" % user_id
 			current_user_contract = self.pool.get('res.users').get_current_contract(cr, user_id)
 			if current_user_contract:
 				purpose_ids = []
@@ -1935,14 +1934,11 @@ class foms_order(osv.osv):
 		origin_district_ids = region_obj.search(cr, uid, [('parent_id','=',contract_data.homebase_id.id)])
 	# filter pilihan order destination district
 	# kalau destination_homebase_ids tidak ada maka dianggap idem homebase_id
-		print contract_data.destination_homebase_ids
 		if not contract_data.destination_homebase_ids:
 			dest_district_ids = origin_district_ids
 		else:
-			print "masuk else"
 			dest_district_ids = []
 			for hb in contract_data.destination_homebase_ids:
-				print region_obj.search(cr, uid, [('parent_id','=',hb.id)])
 				dest_district_ids += region_obj.search(cr, uid, [('parent_id','=',hb.id)])
 	# filter pilihan booking purpose
 		purpose_ids = []

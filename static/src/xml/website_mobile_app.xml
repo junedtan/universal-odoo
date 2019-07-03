@@ -649,11 +649,11 @@
 				<div class="row no_padding">
 					<div class="form-group col-md-6">
 						<label for="start_planned">Planned Start Time</label>
-						<input id="start_planned" class="form-control" type="datetime-local" t-attf-value="{{detail.start_planned_date}}"/>
+						<input id="start_planned" class="form-control" type="text" t-attf-value="{{detail.start_planned_date}}"/>
 					</div>
 					<div class="form-group col-md-6">
 						<label for="finish_planned">Planned Finish Time</label>
-						<input id="finish_planned" class="form-control" type="datetime-local" t-attf-value="{{detail.finish_planned_date}}"/>
+						<input id="finish_planned" class="form-control" type="text" t-attf-value="{{detail.finish_planned_date}}"/>
 					</div>
 				</div>
 			</div>
@@ -949,10 +949,6 @@
 			<div class="div_detail_order_button card_padding">
 				<t t-if="detail.user_group != 'pic'">
 					<t t-if="detail.state == 'new'">
-						<!--
-						<button type="button" intent="univmobile_intent_change_start_planned_time" t-att-data-data_id="detail.id"
-								class="btn btn-success btn_change_planned_start_time mt5">Change Time</button>
-						-->
 						<button type="button" intent="univmobile_intent_edit_order" t-att-data-data_id="detail.id" class="btn btn-success btn_edit_order">Edit Order</button>
 					</t>
 					<t t-if="detail.classification_value == 'pending' || detail.classification_value == 'ready'">

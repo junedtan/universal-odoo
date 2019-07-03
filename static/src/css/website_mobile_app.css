@@ -308,3 +308,14 @@ div.scrollmenu div:first-child {
 	font-size: 150%;
 	color: #559CD9;
 }
+
+.ui-widget.ui-datepicker {
+	font-family: inherit;
+	font-size: inherit;
+	padding: 0.75em 0.75em 0 !important;
+}
+
+.ui-widget.ui-datepicker .ui-widget-button {
+	font-family: inherit;
+	font-size: inherit;
+}

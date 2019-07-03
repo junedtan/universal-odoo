@@ -15,6 +15,10 @@ except ImportError:
 import random, string
 from openerp import api
 
+import logging
+_logger = logging.getLogger(__name__)
+
+
 _ORDER_STATE = [
 	('new','New'),
 	('rejected','Rejected'),
@@ -1128,6 +1132,7 @@ class foms_order(osv.osv):
 		now = datetime.now()
 		delta = float((start_date - now).days * 86400 + (start_date - now).seconds) / 60
 		if delta < order_minimum_minutes:
+			_logger.error("Error checking minimum order hours. Now: %s, Start Date: %s, delta: %s, setting: %s" % (now, start_date, delta, order_minimum_minutes))
 			raise osv.except_osv(_('Order Error'),_('Start date is too close to current time, or is in the past. There must be at least %s minutes between now and start date.' % order_minimum_minutes))
 	
 # untuk assigned_vehicle_id yang diminta, tentukan apakah bentrok dengan order yang lagi jalan

@@ -463,7 +463,7 @@ var mobile_app_activity_definition = {
 					mobile_app.cache['user']['user_group'] = data['user_group'];
 
 					data['start_planned_date'] = new Date().addHours(1).toDatetimeString();
-                    data['finish_planned_date'] = new Date().addHours(2).toDatetimeString();
+					data['finish_planned_date'] = new Date().addHours(2).toDatetimeString();
 
 					return data;
 				},
@@ -514,6 +514,12 @@ var mobile_app_activity_definition = {
 								onclick_book_vehicle_btn_add_passenger();
 							},
 						},
+					});
+					$('#start_planned').datetimepicker({
+						dateFormat: 'yy-mm-dd'
+					});
+					$('#finish_planned').datetimepicker({
+						dateFormat: 'yy-mm-dd'
 					});
 					$('#i_am_passenger').click();
 					$('#i_am_passenger').click();
@@ -687,10 +693,16 @@ var mobile_app_activity_definition = {
 					$('#purpose_id').val(""+order_data.purpose_id).change();
 					$('#other_purpose').val(""+order_data.other_purpose).change();
 
+					$('#start_planned').datetimepicker({
+						dateFormat: 'yy-mm-dd'
+					});
+					$('#finish_planned').datetimepicker({
+						dateFormat: 'yy-mm-dd'
+					});
 					var ckb_i_am_passenger = $('#ckb_i_am_passenger');
-                    $('#i_am_passenger').prop('checked', true);
+					$('#i_am_passenger').prop('checked', true);
 					$.each(order_data.passengers, function(index, passenger) {
-                        add_passenger_to_table(passenger.name, passenger.phone_no, passenger.id, passenger.is_orderer);
+						add_passenger_to_table(passenger.name, passenger.phone_no, passenger.id, passenger.is_orderer);
 					});
 				}
 			});

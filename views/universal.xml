@@ -3,8 +3,13 @@
 		
 		<template id="assets_frontend" inherit_id="website.assets_frontend" name="Universal">
 			<xpath expr="." position="inside">
+				<link rel='stylesheet' href="/web/static/lib/jquery.ui/css/smoothness/jquery-ui-1.9.1.custom.css"/>
+				<script type="text/javascript" src="/web/static/lib/jquery.ui/js/jquery-ui-1.9.1.custom.js"></script>
+				<script type="text/javascript" src="/web/static/lib/jquery.ui.timepicker/js/jquery-ui-timepicker-addon.js"></script>
+
 				<link rel='stylesheet' href='/universal/static/src/css/universal.css'/>
 				<script type="text/javascript" src="/universal/static/src/js/website_universal.js"></script>
+				
 				<link rel='stylesheet' href='/universal/static/src/css/website_mobile_app.css'/>
 				<script type="text/javascript" src="/universal/static/src/js/website_mobile_activities.js"></script>
 				<script type="text/javascript" src="/universal/static/src/js/website_mobile_intents.js"></script>

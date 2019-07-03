@@ -224,8 +224,8 @@ class website_mobile_app(http.Controller):
 				'passengers': passenger_arr,
 				'start_planned_date': start_planned_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
 				'finish_planned_date': finish_planned_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
-				'start_planned_date_format_input': start_planned_date.strftime('%Y-%m-%dT%H:%M'),
-				'finish_planned_date_format_input': finish_planned_date.strftime('%Y-%m-%dT%H:%M'),
+				'start_planned_date_format_input': start_planned_date.strftime('%Y-%m-%d %H:%M'),
+				'finish_planned_date_format_input': finish_planned_date.strftime('%Y-%m-%d %H:%M'),
 				'purpose_id' : order_data.purpose_id.id,
 				'other_purpose' : order_data.other_purpose,
 			},
@@ -981,11 +981,10 @@ class website_mobile_app_handler(osv.osv):
 		purpose_id = domain.get('purpose_id', 0)
 		purpose_id = int(purpose_id.encode('ascii', 'ignore'))
 		other_purpose = domain.get('other_purpose', '')
-		
 		start_planned = domain.get('start_planned', '')
-		start_planned = datetime_to_server(start_planned, reverse=True, to_string=False, datetime_format='%Y-%m-%dT%H:%M' if start_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
+		start_planned = datetime_to_server(start_planned, reverse=True, to_string=False, datetime_format='%Y-%m-%d %H:%M' if start_planned.count(':') == 1 else '%Y-%m-%d %H:%M:%S')
 		finish_planned = domain.get('finish_planned', '')
-		finish_planned = datetime_to_server(finish_planned, reverse=True, to_string=False, datetime_format='%Y-%m-%dT%H:%M' if finish_planned.count(':') == 1 else '%Y-%m-%dT%H:%M:%S')
+		finish_planned = datetime_to_server(finish_planned, reverse=True, to_string=False, datetime_format='%Y-%m-%d %H:%M' if finish_planned.count(':') == 1 else '%Y-%m-%d %H:%M:%S')
 		order_data = {
 			'customer_contract_id': contract_id,
 			'order_by': uid,

@@ -37,10 +37,10 @@ Date.prototype.toDatetimeString = function() {
     var currentdate = this;
     return pad(currentdate.getFullYear(),4) + "-"
 		+ pad((currentdate.getMonth()+1),2)  + "-"
-		+ pad(currentdate.getDate(),2) + "T"
+		+ pad(currentdate.getDate(),2) + " "
 		+ pad(currentdate.getHours(),2) + ":"
-		+ pad(currentdate.getMinutes(),2) + ":"
-		+ pad(currentdate.getSeconds(),2);
+		+ pad(currentdate.getMinutes(),2);// + ":"
+		//+ pad(currentdate.getSeconds(),2);
 };
 
 Date.prototype.addHours = function(h) {

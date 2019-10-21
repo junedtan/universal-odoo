@@ -89,6 +89,7 @@
 						<group>
 							<field name="id" invisible="1" />
 							<field name="name" readonly="1" />
+							<field name="copy_from" class="oe_edit_only" attrs="{'invisible': [('id','!=',False)]}" on_change="onchange_copy_from(copy_from)" options="{'no_create': 1, 'no_open': 1}" />
 							<field name="customer_contract_id" options="{
 								'no_create': 1, 
 								'force_onchange': 1}" on_change="onchange_customer_contract_id(customer_contract_id)"

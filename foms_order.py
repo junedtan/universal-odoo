@@ -165,6 +165,8 @@ class foms_order(osv.osv):
 			('full_day','Full-day Service'),
 			('by_order','By Order'),
 			('shuttle','Shuttle')], 'Service Type', compute='_compute_field_contract', store=False),
+
+		'copy_from': fields.many2one('foms.order', 'Copy From'),
 	}
 
 # DEFAULTS -----------------------------------------------------------------------------------------------------------------
@@ -827,6 +829,10 @@ class foms_order(osv.osv):
 				return []
 		return super(foms_order, self).search(cr, uid, args, offset=offset, limit=limit, order=order, context=context, count=count)
 
+	def copy(self, cr, uid, id, default=None, context={}):
+	# jangan kasih user ngopi order!
+		raise osv.except_osv(_('Order Error'), _('You are not allowed to duplicate an order. Please user Create function.'))
+
 	def webservice_handle(self, cr, uid, user_id, command, data_id, model_data, context={}):
 		if context == None: context = {}
 		result = super(foms_order, self).webservice_handle(cr, uid, user_id, command, data_id, model_data, context=context)
@@ -1227,6 +1233,7 @@ class foms_order(osv.osv):
 		}
 		
 # CRON ---------------------------------------------------------------------------------------------------------------------
+
 	def cron_driver_attendances(self, cr, uid, context=None):
 		employee_obj = self.pool.get('hr.employee')
 		fleet_obj = self.pool.get('foms.contract.fleet')
@@ -1935,14 +1942,11 @@ class foms_order(osv.osv):
 		origin_district_ids = region_obj.search(cr, uid, [('parent_id','=',contract_data.homebase_id.id)])
 	# filter pilihan order destination district
 	# kalau destination_homebase_ids tidak ada maka dianggap idem homebase_id
-		print contract_data.destination_homebase_ids
 		if not contract_data.destination_homebase_ids:
 			dest_district_ids = origin_district_ids
 		else:
-			print "masuk else"
 			dest_district_ids = []
 			for hb in contract_data.destination_homebase_ids:
-				print region_obj.search(cr, uid, [('parent_id','=',hb.id)])
 				dest_district_ids += region_obj.search(cr, uid, [('parent_id','=',hb.id)])
 	# filter pilihan booking purpose
 		purpose_ids = []
@@ -2055,6 +2059,38 @@ class foms_order(osv.osv):
 				'pin': fleet_data.fullday_user_id.pin,
 			}}
 	
+	def onchange_copy_from(self, cr, uid, ids, copy_from):
+		if not copy_from: return {}
+		source_order = self.pool.get('foms.order').browse(cr, uid, copy_from)
+		passengers = []
+		for passenger in source_order.passengers:
+			passengers.append([0,False,{
+				'name': passenger.name,
+				'phone_no': passenger.phone_no,
+				'is_orderer': passenger.is_orderer,
+				}])
+		values = {
+			'customer_contract_id': source_order.customer_contract_id.id,
+			'service_type': source_order.service_type,
+			'order_type_by_order': source_order.order_type_by_order,
+			'fleet_type_id': source_order.fleet_type_id.id,
+			'purpose_id': source_order.purpose_id.id,
+			'other_purpose': source_order.other_purpose,
+			'origin_location': source_order.origin_location,
+			'origin_district_id': source_order.origin_district_id.id,
+			'origin_area_id': source_order.origin_area_id.id,
+			'dest_location': source_order.dest_location,
+			'dest_district_id': source_order.dest_district_id.id,
+			'dest_area_id': source_order.dest_area_id.id,
+			'alloc_unit_id': source_order.alloc_unit_id.id,
+			'alloc_unit_usage': source_order.alloc_unit_usage,
+			'passenger_count': source_order.passenger_count,
+			'passengers': passengers,
+		}
+		return {
+			'value': values, 
+		}
+
 	def this_order_not_in_working_time(self, cr, uid, customer_contract_id, start_planned_date):
 		contract_obj = self.pool('foms.contract')
 		customer_contracts = contract_obj.browse(cr, uid, customer_contract_id)

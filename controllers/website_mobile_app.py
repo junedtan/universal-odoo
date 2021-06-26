@@ -355,7 +355,7 @@ class website_mobile_app(http.Controller):
 				'min_start_minutes': contract_data.min_start_minutes,
 				'max_delay_minutes': contract_data.max_delay_minutes,
 				'by_order_minimum_minutes' : contract_data.by_order_minimum_minutes,
-			});
+			})
 		result = sorted(result, key=lambda contract: contract['name'])
 		# User
 		response_user_group = self.mobile_app_get_user_group()
@@ -422,7 +422,7 @@ class website_mobile_app(http.Controller):
 			'ready'  : [],
 			'running': [],
 			'history': [],
-		};
+		}
 		for order_data in order_datas:
 			if order_data.state in ['new', 'confirmed']:
 				classification = 'pending'

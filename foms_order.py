@@ -1134,7 +1134,7 @@ class foms_order(osv.osv):
 			raise osv.except_osv(_('Order Error'),_('You are booking outside of order hours. Please contact your PIC or Administrator for allowable order hours.'))
 		if not contract_data.working_time_id:
 			raise osv.except_osv(_('Order Error'),_('Working time for this order\'s contract is not set. Please contact PT. Universal.'))
-		book_in_holiday = self._cek_is_holiday(request_date, contract_data)
+		book_in_holiday = self._cek_is_holiday(cr, uid, request_date, contract_data)
 		if book_in_holiday:
 			raise osv.except_osv(_('Order Error'),_('You are booking in holiday. We are sorry we cannot serve you on holidays.'))
 

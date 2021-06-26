@@ -979,7 +979,8 @@ class website_mobile_app_handler(osv.osv):
 		fleet_type_id = domain.get('fleet_type_id', 0)
 		fleet_type_id = int(fleet_type_id.encode('ascii', 'ignore'))
 		purpose_id = domain.get('purpose_id', 0)
-		purpose_id = int(purpose_id.encode('ascii', 'ignore'))
+		if purpose_id:
+			purpose_id = int(purpose_id.encode('ascii', 'ignore'))
 		other_purpose = domain.get('other_purpose', '')
 		start_planned = domain.get('start_planned', '')
 		start_planned = datetime_to_server(start_planned, reverse=True, to_string=False, datetime_format='%Y-%m-%d %H:%M' if start_planned.count(':') == 1 else '%Y-%m-%d %H:%M:%S')

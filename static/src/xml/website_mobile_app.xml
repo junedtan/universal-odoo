@@ -537,19 +537,19 @@
 				</t>
 
 				<div class="row no_padding">
+					<t t-if="detail.booking_purpose.length != 0">
+						<div class="form-group col-md-6 col-xs-12">
+							<label for="purpose_id" class="col-form-label">Purpose</label>
+							<select id="purpose_id" class="form-control">
+									<t t-foreach="detail.booking_purpose" t-as="purpose">
+										<option t-attf-value="{{purpose.id}}"><t t-esc="purpose.name"/></option>
+									</t>
+							</select>
+						</div>
+					</t>
 					<div class="form-group col-md-6 col-xs-12">
-						<label for="purpose_id" class="col-form-label">Purpose</label>
-						<select id="purpose_id" class="form-control">
-							<t t-if="detail.booking_purpose.length != 0">
-								<t t-foreach="detail.booking_purpose" t-as="purpose">
-									<option t-attf-value="{{purpose.id}}"><t t-esc="purpose.name"/></option>
-								</t>
-							</t>
-						</select>
-					</div>
-					<div class="form-group col-md-6 col-xs-12">
-						<label class="col-form-label" for="other_purpose">Other Purpose</label>
-						<input id="other_purpose" class="form-control mb16" type="text" placeholder="Other purpose not mentioned above" />
+						<label class="col-form-label" for="other_purpose">Notes</label>
+						<input id="other_purpose" class="form-control mb16" type="text" placeholder="" />
 					</div>
 				</div>
 			</div>

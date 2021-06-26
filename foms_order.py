@@ -149,7 +149,7 @@ class foms_order(osv.osv):
 			('central', 'Central'),
 		), 'Create Source', readonly=True),
 		'purpose_id' : fields.many2one('foms.booking.purpose', 'Booking Purpose', ondelete='SET NULL'),
-		'other_purpose': fields.text('Other Purpose'),
+		'other_purpose': fields.text('Other Purpose/Notes'),
 		'start_odometer': fields.float('Start Odometer', track_visibility="onchange"),
 		'finish_odometer': fields.float('Finish Odometer', track_visibility="onchange"),
 
@@ -1106,6 +1106,16 @@ class foms_order(osv.osv):
 			if contract_id.state in ['prolonged', 'terminated', 'finished']:
 				raise osv.except_osv(_('Order Error'),_('Contract has already been inactive. You cannot place order under this contract anymore. Please choose another contract or contact your PIC.'))
 
+	def _cek_is_holiday (self, cr, uid, request_date, contract_data):
+		book_in_holiday = False
+		for holiday in contract_data.working_time_id.leave_ids:
+			holiday_start = datetime.strptime(holiday.date_from, "%Y-%m-%d %H:%M:%S") + timedelta(hours=SERVER_TIMEZONE)
+			holiday_end = datetime.strptime(holiday.date_to, "%Y-%m-%d %H:%M:%S") + timedelta(hours=SERVER_TIMEZONE)
+			if request_date >= holiday_start and request_date <= holiday_end:
+				book_in_holiday = True
+				break
+		return book_in_holiday
+
 	def _cek_request_date(self, cr, uid, request_date, contract_data):
 		book_in_hours = False
 		if type(request_date) is unicode:
@@ -1124,13 +1134,7 @@ class foms_order(osv.osv):
 			raise osv.except_osv(_('Order Error'),_('You are booking outside of order hours. Please contact your PIC or Administrator for allowable order hours.'))
 		if not contract_data.working_time_id:
 			raise osv.except_osv(_('Order Error'),_('Working time for this order\'s contract is not set. Please contact PT. Universal.'))
-		book_in_holiday = False
-		for holiday in contract_data.working_time_id.leave_ids:
-			holiday_start = datetime.strptime(holiday.date_from, "%Y-%m-%d %H:%M:%S") + timedelta(hours=SERVER_TIMEZONE)
-			holiday_end = datetime.strptime(holiday.date_to, "%Y-%m-%d %H:%M:%S") + timedelta(hours=SERVER_TIMEZONE)
-			if request_date >= holiday_start and request_date <= holiday_end:
-				book_in_holiday = True
-				break
+		book_in_holiday = self._cek_is_holiday(request_date, contract_data)
 		if book_in_holiday:
 			raise osv.except_osv(_('Order Error'),_('You are booking in holiday. We are sorry we cannot serve you on holidays.'))
 

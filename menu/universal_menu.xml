@@ -157,7 +157,7 @@
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>
 			<field name="domain">[('service_type','=','full_day')]</field>
-			<field name="context">{'all': 1, 'hide_cancel': 1, 'hide_actual': 1, 'hide_actual_time': 1, 'source': 'form'}</field>
+			<field name="context">{'all': 1, 'hide_cancel': 1, 'hide_actual': 1, 'hide_actual_time': 1, 'source': 'form', 'edit_mode': 'backend'}</field>
 		</record>
 
 		<record id="universal_action_foms_pending_order" model="ir.actions.act_window">

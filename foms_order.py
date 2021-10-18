@@ -2003,7 +2003,7 @@ class foms_order(osv.osv):
 	# (pengecekan hanya dilakukan pas create)
 	# hasilnya, order by kosong dan order tsb ga muncul di web app
 	# penyebabnya gara2 bahkan di mode readonly pun onchange ini tetap dipanggil!
-		# value['service_type'] = contract_data.service_type
+		value['service_type'] = contract_data.service_type
 		# if contract_data.service_type == 'full_day':
 		# 	value['order_by'] = ''
 	# done. return

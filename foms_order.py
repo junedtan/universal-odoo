@@ -91,7 +91,7 @@ class foms_order(osv.osv):
 		'fleet_type_id': fields.many2one('fleet.vehicle.model', 'Vehicle Type', ondelete='restrict'),
 		'request_date': fields.datetime('Request Date', required=True),
 		'state': fields.selection(_ORDER_STATE, 'State', required=True, track_visibility="onchange"),
-		'order_by': fields.many2one('res.users', 'Order By', ondelete='restrict'),
+		'order_by': fields.many2one('res.users', 'Order By', ondelete='restrict', track_visibility='onchange'),
 		'confirm_date': fields.datetime('Confirm Date', track_visibility="onchange"),
 		'confirm_by': fields.many2one('res.users', 'Confirm By', ondelete='restrict', track_visibility="onchange"),
 		'cancel_reason': fields.many2one('foms.order.cancel.reason', 'Cancel Reason'),
@@ -482,6 +482,10 @@ class foms_order(osv.osv):
 				'state': 'finish_confirmed',
 				'finish_confirm_by': uid,
 				})
+
+	# kalau ada perubahan order by, pastikan diisi
+		if 'order_by' in vals and not vals['order_by']:
+			raise osv.except_osv(_('Order Error'),_('Please input order by.'))
 
 	# eksekusi write nya dan ambil ulang data hasil update
 		result = super(foms_order, self).write(cr, uid, ids, vals, context=context)
@@ -1988,9 +1992,16 @@ class foms_order(osv.osv):
 			if employee_id not in active_contract_driver_ids: driver_ids.append(employee_id)
 	# bila fullday maka harus dipilih Order by (yaitu penumpang fullday), jangan default=uid
 		value = {}
-		value['service_type'] = contract_data.service_type
-		if contract_data.service_type == 'full_day':
-			value['order_by'] = ''
+	# 20201018 dicomment karena kasus sbb:
+	# order fullday sudah dicreate dan order by sudah terisi
+	# order tsb diklik dari list, lalu di form isi field Order By muncul sebentar lalu hilang
+	# kemudian diedit sudah dalam keadaan kosong, pas disave tidak ada pengecekan kosong
+	# (pengecekan hanya dilakukan pas create)
+	# hasilnya, order by kosong dan order tsb ga muncul di web app
+	# penyebabnya gara2 bahkan di mode readonly pun onchange ini tetap dipanggil!
+		# value['service_type'] = contract_data.service_type
+		# if contract_data.service_type == 'full_day':
+		# 	value['order_by'] = ''
 	# done. return
 		return {
 			'value': value,
@@ -2687,7 +2698,7 @@ class foms_order_replace_driver(osv.osv):
 		for replace_driver in self.browse(cr, uid, replace_driver_ids):
 		# Ambil order yang statenya berikut ini
 			args = [ 
-				('header_id.state', 'not in', ['terimnated', 'finished']),
+				('header_id.state', 'not in', ['terminated', 'finished']),
 				('header_id.start_date', '<=', replace_driver.replacement_date),
 				('header_id.end_date', '>=', replace_driver.replacement_date),
 				('driver_id','=',replace_driver.replaced_driver_id.id),

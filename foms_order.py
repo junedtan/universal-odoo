@@ -241,7 +241,7 @@ class foms_order(osv.osv):
 			if isinstance(order_date, (str,unicode)):
 				order_date = datetime.strptime(order_date, '%Y-%m-%d %H:%M:%S')
 			prefix = "%s%s" % (order_date.strftime('%d%m%Y'), contract_data.customer_id.partner_code.upper())
-			order_ids = self.search(cr, uid, [('name','=like',prefix+'%')], order='request_date DESC, name DESC')
+			order_ids = self.search(cr, uid, [('name','=like',prefix+'%')], order='request_date DESC, id DESC')
 			if len(order_ids) == 0:
 				last_number = 1
 			else:
@@ -654,11 +654,14 @@ class foms_order(osv.osv):
 							clock_in, clock_out = self._get_clock_in_clock_out_driver_at_date(cr, uid, order_data.actual_driver_id.id, datetime.strptime(order_data.finish_confirm_date,'%Y-%m-%d %H:%M:%S'))
 							if clock_out:
 							# kalau order nanggung, create. Kl order biasa, write
-								date_start = datetime.strptime(clock_out.order_id.start_planned_date, DEFAULT_SERVER_DATETIME_FORMAT)
-								date_finish = datetime.strptime(clock_out.order_id.finish_confirm_date, DEFAULT_SERVER_DATETIME_FORMAT)
-								if date_start.date() != date_finish.date():
-									self._create_attendance(cr, SUPERUSER_ID, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
-										'sign_out', order_data.finish_confirm_date, order_data.id)
+								if clock_out.order_id:
+									date_start = datetime.strptime(clock_out.order_id.start_planned_date, DEFAULT_SERVER_DATETIME_FORMAT)
+									date_finish = datetime.strptime(clock_out.order_id.finish_confirm_date, DEFAULT_SERVER_DATETIME_FORMAT)
+									if date_start.date() != date_finish.date():
+										self._create_attendance(cr, SUPERUSER_ID, order_data.actual_driver_id.id, order_data.customer_contract_id.id,
+											'sign_out', order_data.finish_confirm_date, order_data.id)
+									else:
+										self._write_attendance(cr, SUPERUSER_ID, clock_out.id, order_data.finish_confirm_date, order_data.customer_contract_id.id, order_data.id)
 								else:
 									self._write_attendance(cr, SUPERUSER_ID, clock_out.id, order_data.finish_confirm_date, order_data.customer_contract_id.id, order_data.id)
 							else:
@@ -1992,6 +1995,7 @@ class foms_order(osv.osv):
 			if employee_id not in active_contract_driver_ids: driver_ids.append(employee_id)
 	# bila fullday maka harus dipilih Order by (yaitu penumpang fullday), jangan default=uid
 		value = {}
+		value['service_type'] = contract_data.service_type
 	# 20201018 dicomment karena kasus sbb:
 	# order fullday sudah dicreate dan order by sudah terisi
 	# order tsb diklik dari list, lalu di form isi field Order By muncul sebentar lalu hilang
@@ -1999,7 +2003,6 @@ class foms_order(osv.osv):
 	# (pengecekan hanya dilakukan pas create)
 	# hasilnya, order by kosong dan order tsb ga muncul di web app
 	# penyebabnya gara2 bahkan di mode readonly pun onchange ini tetap dipanggil!
-		# value['service_type'] = contract_data.service_type
 		# if contract_data.service_type == 'full_day':
 		# 	value['order_by'] = ''
 	# done. return

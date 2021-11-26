@@ -2567,6 +2567,7 @@ class foms_order_replace_vehicle(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
+		'contract_id': fields.many2one('foms.contract', 'Contract', required=True),
 		'replaced_vehicle_id': fields.many2one('fleet.vehicle', 'Vehicle to be Replaced', required=True),
 		'replacement_vehicle_id': fields.many2one('fleet.vehicle', 'Replacement Vehicle', required=True),
 		'replacement_date': fields.datetime('Effective Since', required=True),
@@ -2576,11 +2577,12 @@ class foms_order_replace_vehicle(osv.osv):
 # CONSTRAINT ---------------------------------------------------------------------------------------------------------------
 	
 	def _constraint_vehicle_same_type(self, cr, uid, ids, context=None):
+	# circa nov 2021: tidak usah cek tipe kendaraan
 	# Cek apakah vehiclenya yang direplace setipe
-		for replace_vehicles in self.browse(cr, uid, ids, context):
-			for replace_vehicle in replace_vehicles:
-				if replace_vehicle.replaced_vehicle_id.model_id.id != replace_vehicle.replacement_vehicle_id.model_id.id:
-					return False
+		# for replace_vehicles in self.browse(cr, uid, ids, context):
+		# 	for replace_vehicle in replace_vehicles:
+		# 		if replace_vehicle.replaced_vehicle_id.model_id.id != replace_vehicle.replacement_vehicle_id.model_id.id:
+		# 			return False
 		return True
 	
 	def _constraint_replacement_vehicle_use_in_other_contract(self, cr, uid, ids, context=None):
@@ -2612,6 +2614,23 @@ class foms_order_replace_vehicle(osv.osv):
 	
 # METHODS -----------------------------------------------------------------------------------------------------------------
 	
+	def onchange_customer_contract_id(self, cr, uid, ids, contract_id, context=None):
+		result = {}
+		if not contract_id: return {
+			'domain': {
+				'replaced_vehicle_id': [('id','=',-1)]
+			}
+		}
+		vehicle_ids = []
+		contract = self.pool.get('foms.contract').browse(cr, uid, contract_id, context=context)
+		for line in contract.car_drivers:
+			vehicle_ids.append(line.fleet_vehicle_id.id)
+		if vehicle_ids:
+			result['domain'] = {
+				'replaced_vehicle_id': [('id','in',vehicle_ids)]
+			}
+		return result
+
 	def _replace_on_orders(self, cr, uid, replace_vehicle_ids):
 		order_obj = self.pool.get('foms.order')
 		for replace_vehicle in self.browse(cr, uid, replace_vehicle_ids):
@@ -2653,6 +2672,7 @@ class foms_order_replace_driver(osv.osv):
 # COLUMNS ------------------------------------------------------------------------------------------------------------------
 
 	_columns = {
+		'contract_id': fields.many2one('foms.contract', 'Contract', required=True),
 		'replaced_driver_id': fields.many2one('hr.employee', 'Driver to be Replaced', required=True),
 		'replacement_driver_id': fields.many2one('hr.employee', 'Replacement Driver', required=True),
 		'replacement_date': fields.datetime('Effective Since', required=True),
@@ -2687,6 +2707,23 @@ class foms_order_replace_driver(osv.osv):
 	
 # METHODS -----------------------------------------------------------------------------------------------------------------
 	
+	def onchange_customer_contract_id(self, cr, uid, ids, contract_id, context=None):
+		result = {}
+		if not contract_id: return {
+			'domain': {
+				'replaced_driver_id': [('id','=',-1)]
+			}
+		}
+		driver_ids = []
+		contract = self.pool.get('foms.contract').browse(cr, uid, contract_id, context=context)
+		for line in contract.car_drivers:
+			driver_ids.append(line.driver_id.id)
+		if driver_ids:
+			result['domain'] = {
+				'replaced_driver_id': [('id','in',driver_ids)]
+			}
+		return result
+
 	def _replace_on_orders(self, cr, uid, replace_driver_ids):
 		order_obj = self.pool.get('foms.order')
 		for replace_driver in self.browse(cr, uid, replace_driver_ids):

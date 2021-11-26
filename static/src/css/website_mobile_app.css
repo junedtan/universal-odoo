@@ -319,3 +319,7 @@ div.scrollmenu div:first-child {
 	font-family: inherit;
 	font-size: inherit;
 }
+
+.openerp .oe_dropdown_menu > li {
+	padding: 12px;
+}

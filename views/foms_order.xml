@@ -370,6 +370,7 @@
 			<field name="model">foms.order.replace.vehicle</field>
 			<field name="arch" type="xml">
 				<tree version="7.0" string="Order Replace Vehicle" edit="false" delete="false">
+					<field name="contract_id"/>
 					<field name="replacement_date" />
 					<field name="replaced_vehicle_id" />
 					<field name="replacement_vehicle_id" />
@@ -383,6 +384,7 @@
 			<field name="arch" type="xml">
 				<form version="7.0" string="Order Replace Vehicle" edit="false" delete="false">
 					<group>
+						<field name="contract_id" on_change="onchange_customer_contract_id(contract_id)" />
 						<field name="replaced_vehicle_id" options="{'no_create': 1}" />
 						<field name="replacement_vehicle_id" options="{'no_create': 1}" />
 						<field name="replacement_date"/>
@@ -403,6 +405,7 @@
 			<field name="model">foms.order.replace.driver</field>
 			<field name="arch" type="xml">
 				<tree version="7.0" string="Order Replace Driver" edit="false" delete="false">
+					<field name="contract_id"/>
 					<field name="replacement_date" />
 					<field name="replaced_driver_id" />
 					<field name="replacement_driver_id" />
@@ -416,6 +419,7 @@
 			<field name="arch" type="xml">
 				<form version="7.0" string="Order Replace Driver" edit="false" delete="false">
 					<group>
+						<field name="contract_id" on_change="onchange_customer_contract_id(contract_id)" />
 						<field name="replaced_driver_id" options="{'no_create': 1}" domain="[('job_id', '=', %(hr_job_driver)d)]"/>
 						<field name="replacement_driver_id" options="{'no_create': 1}" domain="[('job_id', '=', %(hr_job_driver)d)]"/>
 						<field name="replacement_date" />

@@ -827,11 +827,13 @@ class foms_contract_fleet_planning_memory(osv.osv_memory):
 		contract_id = form_data.contract_id.id
 		contract_obj = self.pool.get('foms.contract')
 		contract_data = contract_obj.browse(cr, uid, contract_id)
-		new_fleet_data = []
+		new_fleet_data = [[5,0,0]]
 	# hapus yang sudah ada
+		"""
 		if contract_data.car_drivers:
 			for fleet in contract_data.car_drivers:
 				new_fleet_data.append([2,fleet.id])
+		"""
 	# masukkan yang baru
 		vehicle_ids = []
 		for fleet in form_data.planning_line:

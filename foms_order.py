@@ -1823,18 +1823,19 @@ class foms_order(osv.osv):
 				counter_date = first_order_date
 				while day <= max_orders:
 					for fleet in contract.car_drivers:
-						context.update({'source': 'cron'})
-						new_id = self.create(cr, uid, {
-							'customer_contract_id': contract.id,
-							'service_type': contract.service_type,
-							'request_date': counter_date,
-							'order_by': fleet.fullday_user_id.id,
-							'assigned_vehicle_id': fleet.fleet_vehicle_id.id,
-							'assigned_driver_id': fleet.driver_id.id,
-							'pin': fleet.fullday_user_id.pin,
-							'start_planned_date': counter_date + timedelta(hours=working_days[counter_date.weekday()]['start']) - timedelta(hours=SERVER_TIMEZONE),
-							'finish_planned_date': counter_date + timedelta(hours=working_days[counter_date.weekday()]['end']) - timedelta(hours=SERVER_TIMEZONE),
-						}, context=context)
+						if fleet.fullday_user_id.id: # 20220103: kontrak fullday skg bisa ga punya fullday user, karena sistem baru
+							context.update({'source': 'cron'})
+							new_id = self.create(cr, uid, {
+								'customer_contract_id': contract.id,
+								'service_type': contract.service_type,
+								'request_date': counter_date,
+								'order_by': fleet.fullday_user_id.id,
+								'assigned_vehicle_id': fleet.fleet_vehicle_id.id,
+								'assigned_driver_id': fleet.driver_id.id,
+								'pin': fleet.fullday_user_id.pin,
+								'start_planned_date': counter_date + timedelta(hours=working_days[counter_date.weekday()]['start']) - timedelta(hours=SERVER_TIMEZONE),
+								'finish_planned_date': counter_date + timedelta(hours=working_days[counter_date.weekday()]['end']) - timedelta(hours=SERVER_TIMEZONE),
+							}, context=context)
 					last_fullday = counter_date
 					counter_date = counter_date + timedelta(hours=24)
 					counter_date = self._next_workday(counter_date, working_day_keys, holidays)

@@ -164,7 +164,7 @@
 								</tree>
 							</field>
 						</page>
-						<page string="Execution" groups="universal.group_universal_dispatcher">
+						<page string="Execution">
 							<group>
 								<group>
 									<field name="confirm_date" readonly="1" />

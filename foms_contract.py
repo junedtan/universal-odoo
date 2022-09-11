@@ -526,7 +526,8 @@ class foms_contract(osv.osv):
 			user_ids = user_obj.search(cr, uid, [('partner_id','=',contract.customer_contact_id.id)])
 			has_user = False
 			if len(user_ids) > 0:
-				if user_obj.has_group(cr, user_ids[0], 'universal.group_universal_customer_pic'):
+				if user_obj.has_group(cr, user_ids[0], 'universal.group_universal_customer_pic') or \
+					user_obj.has_group(cr, user_ids[0], 'universal_fullday.group_universal_fd_customer_pic'):
 					has_user = True
 			if not has_user:
 				raise osv.except_osv(_('Contract Error'),_('Customer PIC has not been given user login, or the user login does not belong to Customer PIC group.'))

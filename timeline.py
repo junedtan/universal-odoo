@@ -71,7 +71,8 @@ class universal_timeline(osv.osv):
 		])
 		contract_fleets = contract_fleet_obj.browse(cr, uid, fleet_ids)
 		for fleet in contract_fleets:
-			drivers_ids.append(fleet.driver_id.user_id.id)
+			if fleet.driver_id:
+				drivers_ids.append(fleet.driver_id.user_id.id)
 	# di titik ini list userid para driver sudah lengkap. unikkan list driver supaya
 	# ngga dobel ngambil pas browse di bawah
 		drivers_ids = list(set(drivers_ids))
@@ -126,7 +127,7 @@ class universal_timeline(osv.osv):
 			for planned_order in planned_orders:
 			# hanya untuk yang assigned drivernya adalah driver ini
 				if planned_order.assigned_driver_id.user_id.id != driver_data.id: continue
-				print "masuk: %s" % planned_order.name
+				# print "masuk: %s" % planned_order.name
 			# isi license plate. hanya kalau kosong saja (kalau udah keisi di actual di atas
 			# ya ga usah ditimpa lagi)
 				if not license_plate and planned_order.assigned_vehicle_id:

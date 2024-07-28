@@ -422,6 +422,25 @@ class foms_order(osv.osv):
 					else:
 						raise osv.except_osv(_('Order Error'), _('This order has already been confirmed or even started/finished. Please refresh your app to update order list and status.'))
 
+	# kalau order dicancel, cek berikut ini
+	# khusus user non-dispacther
+		if vals.get('state', False) == 'canceled':
+			is_dispatcher = self.pool.get('res.users').has_group(cr, uid, 'universal.group_universal_dispatcher')
+			if not is_dispatcher:
+				for order_data in orders:
+				# state harus belum start
+					if order_data.state not in ['new','rejected','confirmed','ready']:
+						raise osv.except_osv(_('Order Error'),_('Order has already ongoing or finished, so it cannot be canceled.'))
+				# kalau tipe kontrak adalah by_order dan sudah mencapai limit cancel before start
+				# maka ngga boleh cancel
+					if order_data.customer_contract_id.service_type == 'by_order' and order_data.customer_contract_id.max_cancel_minutes:
+						now = datetime.now()
+						start_planned_date = datetime.strptime(order_data.start_planned_date, DEFAULT_SERVER_DATETIME_FORMAT)
+						time_diff = start_planned_date - now
+						temp = divmod(time_diff.total_seconds(), 60)
+						if time_diff.total_seconds() < 0 or temp[0] < order_data.customer_contract_id.max_cancel_minutes:
+							raise osv.except_osv(_('Order Error'),_('This order is too close to its planned start date and thus cannot be canceled.'))
+
 	# kalau order dicancel karena delay exceeded, maka isi alasannya sbg delay exceeded
 		if vals.get('state', False) == 'canceled' and context.get('delay_exceeded') == True:
 		# ambil id untuk alasan pembatalan "Delay time exceeded"
@@ -2514,6 +2533,8 @@ class foms_order_cancel_memory(osv.osv_memory):
 		if not cancel_reason and not cancel_reason_other:
 			raise osv.except_osv(_('Order Error'),_('Please choose Cancel Reason or type in Other Reason.'))
 	# khusus user non-dispacther, cek berikut ini
+	# 20240728: dipindah ke write supaya pengecekan ini lebih general purpose
+		"""
 		is_dispatcher = self.pool.get('res.users').has_group(cr, uid, 'universal.group_universal_dispatcher')
 		if not is_dispatcher:
 		# state harus belum start
@@ -2528,6 +2549,7 @@ class foms_order_cancel_memory(osv.osv_memory):
 				temp = divmod(time_diff.total_seconds(), 60)
 				if time_diff.total_seconds() < 0 or temp[0] < order_data.customer_contract_id.max_cancel_minutes:
 					raise osv.except_osv(_('Order Error'),_('This order is too close to its planned start date and thus cannot be canceled.'))
+		"""
 	# go with the calcellation
 		return order_obj.write(cr, uid, [order_id], {
 			'state': 'canceled',

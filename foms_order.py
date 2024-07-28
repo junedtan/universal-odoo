@@ -430,6 +430,7 @@ class foms_order(osv.osv):
 	# khusus user non-dispacther
 		if vals.get('state', False) == 'canceled':
 			is_dispatcher = self.pool.get('res.users').has_group(cr, uid, 'universal.group_universal_dispatcher')
+			is_dispatcher = False # 20240728 dispatcher juga harus kena pengecekan di bawah
 			if not is_dispatcher:
 				for order_data in orders:
 				# state harus belum start
@@ -2403,13 +2404,11 @@ class foms_order_area_set_delay_memory(osv.osv_memory):
 		area_delay_obj = self.pool.get('foms.order.area.delay')
 		for line in form_data.delay_lines:
 			if line.delay_id:
-				print "masuk write"
 				area_delay_obj.write(cr, uid, [line.delay_id.id], {
 					'area_to_id': line.area_to_id.id,
 					'delay': line.delay,
 					})
 			else:
-				print "masuk create"
 				area_delay_obj.create(cr, uid, {
 					'area_from_id': form_data.area_from_id.id,
 					'area_to_id': line.area_to_id.id,

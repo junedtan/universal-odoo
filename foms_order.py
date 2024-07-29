@@ -422,9 +422,10 @@ class foms_order(osv.osv):
 					else:
 						raise osv.except_osv(_('Order Error'), _('This order has already been confirmed or even started/finished. Please refresh your app to update order list and status.'))
 
-	# kalau order dicancel, cek berikut ini
+	# kalau order dicancel, cek berikut max bisa cancel sebelum mulai
 	# khusus user non-dispacther
-		if vals.get('state', False) == 'canceled':
+	# dan kalau dicancel karena delay exceeded, lewatkan pengecekan ini (alias pasti kecancel), lsg ke if berikutnya
+		if vals.get('state', False) == 'canceled' and context.get('delay_exceeded', False) == False:
 			is_dispatcher = self.pool.get('res.users').has_group(cr, uid, 'universal.group_universal_dispatcher')
 			is_dispatcher = False # 20240728 dispatcher juga harus kena pengecekan di bawah
 			if not is_dispatcher:

@@ -589,7 +589,7 @@ class foms_contract(osv.osv):
 			'res_model': 'foms.contract.alloc.unit',
 			'type': 'ir.actions.act_window',
 			'context': {
-				'search_default_header_id': contract.id,
+				'search_default_header_id': contract.name,
 				'default_header_id': contract.id,
 				'active_test': False,
 			},

@@ -71,7 +71,6 @@ class website_mobile_app(http.Controller):
 
 	@http.route('/mobile_app', type='http', auth="user", website=True)
 	def mobile_app_new(self, **kwargs):
-		print request.httprequest.user_agent
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))
 		return handler_obj.render_main(request, {
@@ -535,7 +534,7 @@ class website_mobile_app(http.Controller):
 	@http.route('/mobile_app/reject_order', type='http', auth="user", methods=['POST'], website=True)
 	def mobile_app_reject_order(self, **kwargs):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
-		print "reject order"
+		print("reject order")
 		result = handler_obj.reject_order(int(request.params['data']))
 		if result:
 			return json.dumps({
@@ -571,7 +570,7 @@ class website_mobile_app(http.Controller):
 				'info': _('Start planned time has been changed.'),
 				'success': True,
 			})
-		except Exception,e :
+		except Exception as e :
 			return json.dumps({
 				'status': 'ok',
 				'info': e.value,
@@ -858,7 +857,7 @@ class website_mobile_app(http.Controller):
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		try:
 			result = handler_obj.request_quota_change(json.loads(request.params['data']))
-		except Exception, e:
+		except Exception as e:
 			response = {
 				'status': 'ok',
 				'info': str(e.value),
@@ -987,7 +986,6 @@ class website_mobile_app_handler(osv.osv):
 		finish_planned = datetime_to_server(finish_planned, reverse=True, to_string=False, datetime_format='%Y-%m-%d %H:%M' if finish_planned.count(':') == 1 else '%Y-%m-%d %H:%M:%S')
 		order_data = {
 			'customer_contract_id': contract_id,
-			'order_by': uid,
 			'fleet_type_id': fleet_type_id,
 			'start_planned_date': start_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
 			'finish_planned_date': finish_planned.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
@@ -996,6 +994,7 @@ class website_mobile_app_handler(osv.osv):
 		}
 		if mode == 'create':
 			order_data.update({
+				'order_by': uid,
 				'request_date': datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT),
 				'create_source': 'web',
 				})
@@ -1081,7 +1080,7 @@ class website_mobile_app_handler(osv.osv):
 		result = False
 		try:
 			result = user_obj.change_password(cr, uid, old_password, new_password)
-		except Exception, e:
+		except Exception as e:
 			result = _('Old Password is not correct.') if len(e.message) > 0 else e.value
 		finally:
 			return result

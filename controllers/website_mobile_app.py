@@ -240,17 +240,20 @@ class website_mobile_app(http.Controller):
 			'by_user_id': True,
 			'user_id': uid,
 		})
-		result = [];
+		result = []
 		for contract_data in contract_datas:
 			if contract_data.state not in ['active']: continue
 			# Fleet
 			fleet_type_arr = []
+			fleet_type_ids = []
 			for fleet_data in contract_data.car_drivers:
 				if contract_data.service_type != 'full_day' or fleet_data.fullday_user_id.id == uid:
-					fleet_type_arr.append({
-						'id': fleet_data.fleet_type_id.id,
-						'name': fleet_data.fleet_type_id.name,
-					})
+					if fleet_data.fleet_type_id.id not in fleet_type_ids:
+						fleet_type_arr.append({
+							'id': fleet_data.fleet_type_id.id,
+							'name': fleet_data.fleet_type_id.name,
+						})
+						fleet_type_ids.append(fleet_data.fleet_type_id.id)
 			# Unit
 			unit_arr = []
 			for allocation_unit in contract_data.allocation_units:

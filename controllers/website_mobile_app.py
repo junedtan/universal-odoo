@@ -240,7 +240,7 @@ class website_mobile_app(http.Controller):
 			'by_user_id': True,
 			'user_id': uid,
 		})
-		result = [];
+		result = []
 		for contract_data in contract_datas:
 			if contract_data.state not in ['active']: continue
 			# Fleet

@@ -373,7 +373,7 @@ class foms_contract(osv.osv):
 			result = 'ok'
 			try:
 				user_obj.change_password(cr, user_id, old_password, new_password)
-			except Exception, e:
+			except Exception as e:
 				result = _('Old Password is not correct.') if len(e.message) > 0 else e.value
 			
 	# untuk ngambil detail user (diambil dari detail partner)

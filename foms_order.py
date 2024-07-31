@@ -1830,7 +1830,7 @@ class foms_order(osv.osv):
 				first_order_date = self._next_workday(first_order_date, working_day_keys, holidays)
 			# kalo last generatenya masih kejauhan (lebih dari 7 hari) maka ngga usah generate dulu, bisi kebanyakan
 				if last_fullday_autogenerate and first_order_date > next7days:
-					print "No generate order for contract %s -------------------------------------" % contract.name
+					print("No generate order for contract %s -------------------------------------" % contract.name)
 					continue
 			# mulai bikin order satu2
 				day = 1
@@ -1860,7 +1860,7 @@ class foms_order(osv.osv):
 
 	def cron_autogenerate_shuttle(self, cr, uid, context={}):
 
-		print "mulai cron shuttle"
+		print("mulai cron shuttle")
 
 		contract_obj = self.pool.get('foms.contract')
 	# bikin order shuttle untuk n hari ke depan secara berkala
@@ -1891,7 +1891,7 @@ class foms_order(osv.osv):
 				first_order_date = self._next_workday(first_order_date, working_day_keys, holidays)
 			# kalo last generatenya masih kejauhan (lebih dari 7 hari) maka ngga usah generate dulu, bisi kebanyakan
 				if last_shuttle_autogenerate and first_order_date > next7days:
-					print "No generate shuttle order for contract %s -------------------------------------" % contract.name
+					print("No generate shuttle order for contract %s -------------------------------------" % contract.name)
 					continue
 			# harus bikin buat hari apa aja?
 				schedule_days = {}
@@ -2206,11 +2206,11 @@ class foms_order(osv.osv):
 					target_user_ids += [order_data.order_by.id]
 		if len(target_user_ids) > 0:
 			for user_id in target_user_ids:
-				print "======================================================================================"
-				print command
-				print order_data.id
-				print user_id
-				print webservice_context
+				print("======================================================================================")
+				print(command)
+				print(order_data.id)
+				print(user_id)
+				print(webservice_context)
 				sync_obj.post_outgoing(cr, user_id, 'foms.order', command, order_data.id, data_columns=data_columns, data_context=webservice_context)
 		if any(target in ['booker','approver'] for target in targets) and not context.get('no_email_notification', False):
 			self.send_email_notification(cr, uid, target_user_ids, command, order_data, webservice_context, data_columns, context)

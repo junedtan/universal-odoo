@@ -431,8 +431,7 @@ class foms_order(osv.osv):
 	# dan kalau dicancel karena delay exceeded, lewatkan pengecekan ini (alias pasti kecancel), lsg ke if berikutnya
 		if vals.get('state', False) == 'canceled' and context.get('delay_exceeded', False) == False:
 			is_dispatcher = self.pool.get('res.users').has_group(cr, uid, 'universal.group_universal_dispatcher')
-			is_dispatcher = False # 20240728 dispatcher juga harus kena pengecekan di bawah
-			if not is_dispatcher:
+			if not (is_dispatcher and uid != SUPERUSER_ID):
 				for order_data in orders:
 				# state harus belum start
 					if order_data.state not in ['new','rejected','confirmed','ready']:
@@ -910,7 +909,7 @@ class foms_order(osv.osv):
 		# khusus untuk kontrak di bawah mana dia berada
 		# per mei 2019 diasumsikan satu user cuman satu kontrak pada satu waktu
 		# jadi diambillah kontrak terbaru saja
-			print "user id: %s" % user_id
+			print("user id: %s" % user_id)
 			current_user_contract = self.pool.get('res.users').get_current_contract(cr, user_id)
 			if current_user_contract:
 				purpose_ids = []

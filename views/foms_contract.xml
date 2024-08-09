@@ -17,6 +17,7 @@
 						<group groups="universal.group_universal_staff_marketing">
 							<field name="customer_id" on_change="onchange_customer(customer_id)" />
 							<field name="customer_contact_id" />
+							<field name="customer_contact_detail_id" />
 							<field name="service_type" />
 							<field name="is_order_replacement_vehicle" />
 							<field name="is_expense_record" />

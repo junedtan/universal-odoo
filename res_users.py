@@ -20,7 +20,7 @@ class res_users(osv.osv):
 		
 		try:
 			user_id = self._login(db, username, password)
-		except Exception, e:
+		except Exception as e:
 			message = e.message if len(e.message) > 0 else e.value
 		
 		result = []
@@ -219,10 +219,12 @@ class res_users(osv.osv):
 		:param id: user_id
 		:return: true if the user_id
 		"""
-		groups = ['universal.group_universal_customer_pic',
+		groups = [
+			'universal.group_universal_customer_pic',
 			'universal.group_universal_approver',
 			'universal.group_universal_booker',
-			'universal.group_universal_passenger']
+			'universal.group_universal_passenger'
+		]
 		result = False
 		for group in groups:
 			if self.has_group(cr, id, group):

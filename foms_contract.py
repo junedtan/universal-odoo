@@ -11,7 +11,7 @@ class foms_contract(osv.osv):
 
 	_name = "foms.contract"
 	_inherit = ['mail.thread','chjs.base.webservice']
-	_description = 'Forms Contract'
+	_description = 'FOMS Contract'
 	
 # FUNCTION FIELD METHODS ---------------------------------------------------------------------------------------------------
 
@@ -36,7 +36,7 @@ class foms_contract(osv.osv):
 			'homebase_id', string='Destinations', domain=[('type','=','city')]),
 		'customer_id' : fields.many2one('res.partner', 'Customer', required=True, domain=[('customer','=',True),('is_company','=',True)], ondelete='restrict'),
 		'customer_contact_id' : fields.many2one('res.partner', 'Customer PIC', required=True, domain=[('customer','=',True),('is_company','=',False)], ondelete='restrict'),
-		'customer_contact_detail_id' : fields.many2one('res.partner', 'Customer PIC Detail', required=True, domain=[('customer','=',True),('is_company','=',False)], ondelete='restrict'),
+		'customer_contact_detail_id' : fields.many2one('res.partner', 'Customer PIC Detail', domain=[('customer','=',True),('is_company','=',False)], ondelete='restrict'),
 		'is_order_replacement_vehicle': fields.boolean('Can Have Replacement?'),
 		'start_date': fields.date('Start Date', required=True, copy=False),
 		'end_date': fields.date('End Date', required=True, copy=False),

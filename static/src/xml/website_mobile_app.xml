@@ -764,7 +764,7 @@
 								<div class="row no_padding mt8">
 									<div class="col-xs-12">
 										<b>Vehicle/driver:</b> <t t-esc="order.assigned_vehicle_name"/> 
-										with <t t-esc="order.assigned_driver_name"/> 
+										<b>with</b> <t t-esc="order.assigned_driver_name"/> 
 										<t t-if="order.driver_phone_list != False">
 											(
 											<t t-set="counter" t-value="0" />
@@ -786,13 +786,6 @@
 										</div>
 									</t>
 								</t>
-							</t>
-							<t t-if="order.cancel_reason or order.cancel_reason_other">
-								<div class="row no_padding mt8">
-									<div class="col-xs-12">
-										<b>Cancel reason:</b> <t t-esc="order.cancel_reason_other and order.cancel_reason_other or order.cancel_reason.name" />
-									</div>
-								</div>
 							</t>
 						</div>
 
@@ -885,21 +878,21 @@
 							</tr>
 						</t>
 						<t t-if="detail.service_type != 'full_day'">
-							<!--<t t-if="detail.list_passenger.length != 0">-->
-								<!--<tr>-->
-									<!--<td colspan="2" class = "header_detail_order">Passenger</td>-->
-								<!--</tr>-->
-								<!--<t t-foreach="detail.list_passenger" t-as="passenger">-->
-									<!--<tr>-->
-										<!--<td>-->
-											<!--<t t-esc="passenger.name"/>-->
-										<!--</td>-->
-										<!--<td>-->
-											<!--<t t-if="passenger.phone"> <t t-esc="passenger.phone"/></t>-->
-										<!--</td>-->
-									<!--</tr>-->
-								<!--</t>-->
-							<!--</t>-->
+							<t t-if="detail.list_passenger.length != 0">
+								<tr>
+									<td colspan="2" class = "header_detail_order">Passenger(s)</td>
+								</tr>
+								<t t-foreach="detail.list_passenger" t-as="passenger">
+									<tr>
+										<td>
+											<t t-esc="passenger.name"/>
+										</td>
+										<td>
+											<t t-if="passenger.phone"> <t t-esc="passenger.phone"/></t>
+										</td>
+									</tr>
+								</t>
+							</t>
 						</t>
 						<tr>
 							<td colspan="2" class = "header_detail_order">Time</td>
@@ -947,6 +940,14 @@
 							<td>State</td>
 							<td><t t-esc="detail.state_name"/></td>
 						</tr>
+						<t t-if="detail.cancel_reason_other != False or detail.cancel_reason != False">
+							<tr>
+								<td>Cancel Reason</td>
+								<td>
+									<t t-esc="detail.cancel_reason_other" /> <t t-esc="detail.cancel_reason.name" />
+								</td>
+							</tr>
+						</t>
 						<tr>
 							<td>Start Odometer</td>
 							<td><t t-esc="detail.start_odometer"/></td>

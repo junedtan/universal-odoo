@@ -944,7 +944,7 @@
 							<tr>
 								<td>Cancel Reason</td>
 								<td>
-									<t t-esc="detail.cancel_reason_other" /> <t t-esc="detail.cancel_reason.name" />
+									<t t-esc="detail.cancel_reason_other" /> <t t-esc="detail.cancel_reason" />
 								</td>
 							</tr>
 						<!-- </t> -->

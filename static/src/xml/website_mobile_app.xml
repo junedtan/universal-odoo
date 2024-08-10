@@ -940,14 +940,14 @@
 							<td>State</td>
 							<td><t t-esc="detail.state_name"/></td>
 						</tr>
-						<!-- <t t-if="detail.cancel_reason_other != False or detail.cancel_reason != False"> -->
+						<t t-if="detail.cancel_reason">
 							<tr>
 								<td>Cancel Reason</td>
 								<td>
-									<t t-esc="detail.cancel_reason_other" /> <t t-esc="detail.cancel_reason" />
+									<t t-esc="detail.cancel_reason" />
 								</td>
 							</tr>
-						<!-- </t> -->
+						</t>
 						<tr>
 							<td>Start Odometer</td>
 							<td><t t-esc="detail.start_odometer"/></td>

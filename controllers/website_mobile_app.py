@@ -495,6 +495,7 @@ class website_mobile_app(http.Controller):
 				'start_odometer': order_data.start_odometer,
 				'finish_odometer': order_data.finish_odometer,
 				'driver_phone_list': driver_phone_list,
+				'cancel_reason': order_data.cancel_reason and order_data.cancel_reason.name or order_data.cancel_reason_other
 			}
 			if type(loaded_data) is int:
 				jsonOrder['user_group'] = data_user_group['user_group']
@@ -642,7 +643,7 @@ class website_mobile_app(http.Controller):
 		for contract_data in contract_datas:
 			contract_shuttle_days = {
 				'0': [], '1': [], '2': [], '3': [], '4': [], '5': [], '6': [],
-			};
+			}
 			for shuttle_schedule in contract_data['shuttle_schedules']:
 				if shuttle_schedule['dayofweek'] == 'A':
 					for day_number in contract_shuttle_days:
@@ -660,7 +661,7 @@ class website_mobile_app(http.Controller):
 		shuttle_schedules = handler_obj.get_shuttle_schedules(parameters['id'])
 		contract_shuttle_days = {
 			'0': [], '1': [], '2': [], '3': [], '4': [], '5': [], '6': [],
-		};
+		}
 		for shuttle_schedule in shuttle_schedules:
 			driver_name = ''
 			for fleet_data in shuttle_schedule.header_id.car_drivers:

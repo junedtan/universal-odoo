@@ -897,17 +897,18 @@
 						<tr>
 							<td>Actual</td>
 							<t t-if="detail.start_date != '-' or detail.finish_date != '-'">
-								<t t-if="detail.start_date">
-									<t t-esc="detail.start_date"/>
-									<t t-if="detail.finish_date != '-'">
-										&amp;nbsp;<b>to</b>&amp;nbsp;<t t-esc="detail.finish_date"/>
+								<td>
+									<t t-if="detail.start_date">
+										<t t-esc="detail.start_date"/>
+										<t t-if="detail.finish_date != '-'">
+											&amp;nbsp;<b>to</b>&amp;nbsp;<t t-esc="detail.finish_date"/>
+										</t>
 									</t>
-								</t>
+								</td>
 							</t>
 							<t t-if="detail.start_date == '-' and detail.finish_date == '-'">
-								(not started)
+								<td>(not started)</td>
 							</t>
-							<td><t t-esc="detail.start_date"/> - <t t-esc="detail.finish_date"/></td>
 						</tr>
 						<tr>
 							<td colspan="2" class = "header_detail_order">Information</td>

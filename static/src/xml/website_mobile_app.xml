@@ -834,12 +834,11 @@
 				</div>
 			</div>
 			<div class="row no_margin">
+				<div class="col-md-12" style="font-size: 125%">
+					<b><t t-esc="detail.state_name"/></b><t t-if="detail.cancel_reason"> (<t t-esc="detail.cancel_reason" />)</t>
+				</div>
 				<div class="col-md-12">
 					<table class="table table_condensed small">
-						<tr>
-							<td>State</td>
-							<td><b><t t-esc="detail.state_name"/></b><t t-if="detail.cancel_reason"> (<t t-esc="detail.cancel_reason" />)</t></td>
-						</tr>
 						<tr>
 							<td>Requested</td>
 							<td><t t-esc="detail.request_date"/> by <t t-esc="detail.order_by_name"/></td>
@@ -892,7 +891,7 @@
 											<t t-esc="passenger.name"/>
 										</td>
 										<td>
-											<t t-if="passenger.phone"> <t t-esc="passenger.phone"/></t>
+											<t t-if="passenger.phone"> <a t-att-href="'tel:'+passenger.phone"><t t-esc="passenger.phone" /></a></t>
 										</td>
 									</tr>
 								</t>

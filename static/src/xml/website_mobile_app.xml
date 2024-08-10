@@ -734,6 +734,17 @@
 									<t t-if="order.dest_location">
 										<b>to</b> <t t-esc="order.dest_location"/><t t-if="order.origin_dest_name"> (<t t-esc="order.dest_area_name"/>)</t>
 									</t>
+									<br/>
+									<b>Planned Time: </b>
+									<t t-if="not order.start_planned_date">
+										(not planned)
+									</t>
+									<t t-if="order.start_planned_date">
+										<t t-esc="order.start_planned_date"/>
+										<t t-if="order.finish_planned_date">
+											&amp;nbsp;-&amp;nbsp;<t t-esc="order.finish_planned_date"/>
+										</t>
+									</t>
 								</div>
 							</div>
 							<t t-if="order.assigned_vehicle_name">

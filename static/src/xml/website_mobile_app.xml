@@ -736,13 +736,24 @@
 									</t>
 									<br/>
 									<b>Planned Time: </b>
-									<t t-if="not order.start_planned_date">
+									<t t-if="order.start_planned_date == False">
 										(not planned)
 									</t>
 									<t t-if="order.start_planned_date">
 										<t t-esc="order.start_planned_date"/>
 										<t t-if="order.finish_planned_date">
 											&amp;nbsp;-&amp;nbsp;<t t-esc="order.finish_planned_date"/>
+										</t>
+									</t>
+									<br/>
+									<b>Actual Time: </b>
+									<t t-if="order.start_date == False">
+										(not started)
+									</t>
+									<t t-if="order.start_date">
+										<t t-esc="order.start_date"/>
+										<t t-if="order.finish_date">
+											&amp;nbsp;-&amp;nbsp;<t t-esc="order.finish_date"/>
 										</t>
 									</t>
 								</div>

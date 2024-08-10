@@ -831,11 +831,10 @@
 			<div class="row no_margin">
 				<div class="col-md-12 card_padding">
 					<h2 class="no_margin"><t t-esc="detail.name"/></h2>
-					<span style="font-size:125%">
+					<div class="mt8" style="font-size:125%">
 						<b><t t-esc="detail.state_name"/></b><t t-if="detail.cancel_reason"> (<t t-esc="detail.cancel_reason" />)</t>
 						<br/>
-						<br/>
-					</span>
+					</div>
 				</div>
 			</div>
 			<div class="row no_margin">

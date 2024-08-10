@@ -456,7 +456,7 @@ class website_mobile_app(http.Controller):
 			start_planned_date_format_input = datetime_to_server(order_data.start_planned_date, datetime_display_format='%Y-%m-%dT%H:%M')
 			driver_phone_list = order_data.driver_mobile.split("\n")
 			state_color_class = ''
-			if order_data.state in ['new','confirmed','ready','started','start_confirmed','resumed','finished''finish_confirmed']:
+			if order_data.state in ['new','confirmed','ready','started','start_confirmed','resumed','finished','finish_confirmed']:
 				state_color_class = 'green_text'
 			elif order_data.state in ['rejected','canceled']:
 				state_color_class = 'red_text'

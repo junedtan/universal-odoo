@@ -707,18 +707,7 @@
 					<div class="col-md-12 card_padding list-row">
 						<div intent="univmobile_intent_order_detail" t-att-data-data_id="order.id">
 							<div class="list_title" style="pointer-events:none;">
-								<b><t t-esc="order.name"/></b> -
-								<t t-if="order.state == 'new' || order.state == 'confirmed' || order.state ==  'ready' ||
-								order.state == 'started' || order.state == 'start_confirmed' || order.state == 'resumed' ||
-								 order.state == 'finished' || order.state == 'finish_confirmed'">
-									<span class="green_text"><t t-esc="order.state_name"/></span>
-								</t>
-								<t t-if="order.state == 'rejected' || order.state == 'canceled'">
-									<span class="red_text"><t t-esc="order.state_name"/></span>
-								</t>
-								<t t-if="order.state == 'paused'">
-									<span class="orange_text"><t t-esc="order.state_name"/></span>
-								</t>
+								<b><t t-esc="order.name"/></b> - <span t-att-class="order.state_color_class"><t t-esc="order.state_name"/></span>
 							</div>
 							<div class="small">
 								<b>Requested:</b> <span style="pointer-events:none;"><t t-esc="order.request_date"/></span>

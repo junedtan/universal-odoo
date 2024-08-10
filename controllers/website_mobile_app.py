@@ -455,6 +455,13 @@ class website_mobile_app(http.Controller):
 			finish_date = datetime_to_server(order_data.finish_date, datetime_display_format='%d-%m-%Y %H:%M', empty_value='-')
 			start_planned_date_format_input = datetime_to_server(order_data.start_planned_date, datetime_display_format='%Y-%m-%dT%H:%M')
 			driver_phone_list = order_data.driver_mobile.split("\n")
+			state_color_class = ''
+			if order_data.state in ['new','confirmed','ready','started','start_confirmed','resumed','finished''finish_confirmed']:
+				state_color_class = 'green_text'
+			elif order_data.state in ['rejected','canceled']:
+				state_color_class = 'red_text'
+			elif order_data.state in ['paused']:
+				state_color_class = 'orange_text'
 			jsonOrder = {
 				'request_date': request_date,
 				'start_planned_date': start_planned_date,
@@ -465,6 +472,7 @@ class website_mobile_app(http.Controller):
 				'id': order_data.id,
 				'name': order_data.name,
 				'state': order_data.state,
+				'state_color_class': state_color_class,
 				'pin': order_data.pin,
 				'state_name': dict(_ORDER_STATE).get(order_data.state, ''),
 				'order_by_name': order_data.order_by.name,

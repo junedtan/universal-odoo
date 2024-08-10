@@ -742,7 +742,7 @@
 									<t t-if="order.start_planned_date">
 										<t t-esc="order.start_planned_date"/>
 										<t t-if="order.finish_planned_date">
-											&amp;nbsp;-&amp;nbsp;<t t-esc="order.finish_planned_date"/>
+											&amp;nbsp;<b>to</b>&amp;nbsp;<t t-esc="order.finish_planned_date"/>
 										</t>
 									</t>
 									<t t-if="order.start_date != False or order.finish_date != False">
@@ -754,7 +754,7 @@
 										<t t-if="order.start_date">
 											<t t-esc="order.start_date"/>
 											<t t-if="order.finish_date">
-												&amp;nbsp;-&amp;nbsp;<t t-esc="order.finish_date"/>
+												&amp;nbsp;<b>to</b>&amp;nbsp;<t t-esc="order.finish_date"/>
 											</t>
 										</t>
 									</t>

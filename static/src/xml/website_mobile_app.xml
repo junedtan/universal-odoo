@@ -837,6 +837,10 @@
 				<div class="col-md-12">
 					<table class="table table_condensed small">
 						<tr>
+							<td>State</td>
+							<td><b><t t-esc="detail.state_name"/></b><t t-if="detail.cancel_reason"> (<t t-esc="detail.cancel_reason" />)</t></td>
+						</tr>
+						<tr>
 							<td>Requested</td>
 							<td><t t-esc="detail.request_date"/> by <t t-esc="detail.order_by_name"/></td>
 						</tr>
@@ -934,18 +938,6 @@
 							<tr>
 								<td>Type</td>
 								<td><t t-esc="detail.type_name"/></td>
-							</tr>
-						</t>
-						<tr>
-							<td>State</td>
-							<td><t t-esc="detail.state_name"/></td>
-						</tr>
-						<t t-if="detail.cancel_reason">
-							<tr>
-								<td>Cancel Reason</td>
-								<td>
-									<t t-esc="detail.cancel_reason" />
-								</td>
 							</tr>
 						</t>
 						<tr>

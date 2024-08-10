@@ -891,27 +891,30 @@
 							<td colspan="2" class = "header_detail_order">Time</td>
 						</tr>
 						<tr>
-							<td>Planned Start</td>
-							<td><t t-esc="detail.start_planned_date"/></td>
+							<td>Planned</td>
+							<td><t t-esc="detail.start_planned_date"/> - <t t-esc="detail.finish_planned_date"/></td>
 						</tr>
 						<tr>
-							<td>Planned Finish</td>
-							<td><t t-esc="detail.finish_planned_date"/></td>
-						</tr>
-						<tr>
-							<td>Actual Start</td>
-							<td><t t-esc="detail.start_date"/></td>
-						</tr>
-						<tr>
-							<td>Actual Finish</td>
-							<td><t t-esc="detail.finish_date"/></td>
+							<td>Actual</td>
+							<t t-if="detail.start_date != '-' or detail.finish_date != '-'">
+								<t t-if="detail.start_date">
+									<t t-esc="detail.start_date"/>
+									<t t-if="detail.finish_date != '-'">
+										&amp;nbsp;<b>to</b>&amp;nbsp;<t t-esc="detail.finish_date"/>
+									</t>
+								</t>
+							</t>
+							<t t-if="not (detail.start_date != '-' or detail.finish_date != '-')">
+								(not started)
+							</t>
+							<td><t t-esc="detail.start_date"/> - <t t-esc="detail.finish_date"/></td>
 						</tr>
 						<tr>
 							<td colspan="2" class = "header_detail_order">Information</td>
 						</tr>
 						<tr>
 							<td>Contract</td>
-							<td><t t-esc="detail.contract_name"/></td>
+							<td><t t-esc="detail.contract_name"/> (<t t-esc="detail.service_type_name"/>)</td>
 						</tr>
 						<t t-if="detail.service_type == 'by_order'">
 							<tr>
@@ -919,10 +922,6 @@
 								<td><t t-esc="detail.au_name"/></td>
 							</tr>
 						</t>
-						<tr>
-							<td>Service Type</td>
-							<td><t t-esc="detail.service_type_name"/></td>
-						</tr>
 						<t t-if="detail.type">
 							<tr>
 								<td>Type</td>
@@ -930,19 +929,15 @@
 							</tr>
 						</t>
 						<tr>
-							<td>Start Odometer</td>
-							<td><t t-esc="detail.start_odometer"/></td>
-						</tr>
-						<tr>
-							<td>Finish Odometer</td>
-							<td><t t-esc="detail.finish_odometer"/></td>
+							<td>Odometer</td>
+							<td><t t-esc="detail.start_odometer"/> - <t t-esc="detail.finish_odometer"/></td>
 						</tr>
 						<t t-if="detail.driver_phone_list != False">
 							<tr>
 								<td>Driver's Phone</td>
 								<td>
 									<div t-foreach="detail.driver_phone_list" t-as="phone">
-										<t t-esc="phone"/>
+										<a t-att-href="'tel:'+phone"><t t-esc="phone" /></a><br/>
 									</div>
 								</td>
 							</tr>

@@ -721,31 +721,47 @@
 								</t>
 							</div>
 							<div class="small">
-								Requested at: <b style="pointer-events:none;"><t t-esc="order.request_date"/></b>
-								by <b style="pointer-events:none;"><t t-esc="order.order_by_name"/></b>
+								<b>Requested:</b> <span style="pointer-events:none;"><t t-esc="order.request_date"/></span>
+								<b>by</b> <span style="pointer-events:none;"><t t-esc="order.order_by_name"/></span>
 							</div>
 						</div>
 						<div class="small mt8">
 							<div class="row no_padding mt8">
 								<div class="col-xs-12">
 									<t t-if="order.origin_location">
-										Origin location is <t t-esc="order.origin_location"/> (<t t-esc="order.origin_area_name"/>) with start time of <t t-esc="order.start_date"/>.
+										<b>Location:</b> from <t t-esc="order.origin_location"/><t t-if="order.origin_area_name"> (<t t-esc="order.origin_area_name"/>)</t>
 									</t>
-									<t t-if="order.origin_location == false">
-										Start time is <t t-esc="order.start_date"/>.
-									</t> 
 									<t t-if="order.dest_location">
-										Destination location is <t t-esc="order.dest_location"/> (<t t-esc="order.dest_area_name"/>) with finish time of <t t-esc="order.finish_date"/>.
+										<b>to</b> <t t-esc="order.dest_location"/><t t-if="order.origin_dest_name"> (<t t-esc="order.dest_area_name"/>)</t>
 									</t>
-									<t t-if="order.dest_location == false">
-										Finish time is <t t-esc="order.finish_date"/>.
+									<br>
+									<b>Planned Time: </b>
+									<t t-if="not order.start_planned_date">
+										(not planned)
+									</t>
+									<t t-if="order.start_planned_date">
+										<t t-esc="order.start_planned_date"/>
+										<t t-if="order.finish_planned_date">
+											&amp;nbsp;-&amp;nbsp;<t t-esc="order.finish_planned_date"/>
+										</t>
+									</t>
+									<br>
+									<b>Actual Time: </b>
+									<t t-if="not order.start_date">
+										(not started)
+									</t>
+									<t t-if="order.start_date">
+										<t t-esc="order.start_date"/>
+										<t t-if="order.finish_date">
+											&amp;nbsp;-&amp;nbsp;<t t-esc="order.finish_date"/>
+										</t>
 									</t>
 								</div>
 							</div>
 							<t t-if="order.assigned_vehicle_name">
 								<div class="row no_padding mt8">
 									<div class="col-xs-12">
-										Vehicle used is <t t-esc="order.assigned_vehicle_name"/> 
+										<b>Vehicle/driver:</b> <t t-esc="order.assigned_vehicle_name"/> 
 										with <t t-esc="order.assigned_driver_name"/> 
 										<t t-if="order.driver_phone_list != False">
 											(
@@ -757,8 +773,6 @@
 											</span>											
 											)
 										</t>
-										as driver.
-
 									</div>
 								</div>
 							</t>

@@ -904,7 +904,7 @@
 									</t>
 								</t>
 							</t>
-							<t t-if="not (detail.start_date != '-' or detail.finish_date != '-')">
+							<t t-if="detail.start_date == '-' and detail.finish_date == '-'">
 								(not started)
 							</t>
 							<td><t t-esc="detail.start_date"/> - <t t-esc="detail.finish_date"/></td>

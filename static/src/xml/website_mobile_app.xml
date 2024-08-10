@@ -901,7 +901,7 @@
 									<t t-if="detail.start_date">
 										<t t-esc="detail.start_date"/>
 										<t t-if="detail.finish_date != '-'">
-											&amp;nbsp;<b>to</b>&amp;nbsp;<t t-esc="detail.finish_date"/>
+											&amp;nbsp;-&amp;nbsp;<t t-esc="detail.finish_date"/>
 										</t>
 									</t>
 								</td>

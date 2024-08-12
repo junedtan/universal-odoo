@@ -950,7 +950,7 @@
 			<div class="div_detail_order_button card_padding">
 				<t t-if="detail.user_group != 'pic'">
 					<t t-if="detail.state == 'new'">
-						<button type="button" intent="univmobile_intent_edit_order" t-att-data-data_id="detail.id" class="btn btn-success btn_edit_order">Edit</button>
+						<button type="button" intent="univmobile_intent_edit_order" t-att-data-data_id="detail.id" class="btn btn-success btn_edit_order" style="float: right">Edit</button>
 					</t>
 					<t t-if="detail.classification_value == 'pending'">
 						<button type="button" intent="univmobile_intent_approve_order" t-att-data-data_id="detail.id"

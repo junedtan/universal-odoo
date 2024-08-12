@@ -958,9 +958,11 @@
 						<button type="button" intent="univmobile_intent_reject_order" t-att-data-data_id="detail.id"
 								class="btn btn-danger btn_reject_order">Reject</button>
 					</t>
-					<t t-if="detail.classification_value == 'pending' || detail.classification_value == 'ready'">
-						<button type="button" intent="univmobile_intent_cancel_order" t-att-data-data_id="detail.id"
-								class="btn btn-danger btn_cancel_order">Cancel</button>
+					<t t-if="detail.user_group != 'approver'">
+						<t t-if="detail.classification_value == 'pending' || detail.classification_value == 'ready'">
+							<button type="button" intent="univmobile_intent_cancel_order" t-att-data-data_id="detail.id"
+									class="btn btn-danger btn_cancel_order">Cancel</button>
+						</t>
 					</t>
 					<div id="change_planned_start_time"/>
 					<div id="list_order_edit_order"/>

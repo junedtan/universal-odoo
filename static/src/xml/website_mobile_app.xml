@@ -952,11 +952,13 @@
 					<t t-if="detail.state == 'new'">
 						<button type="button" intent="univmobile_intent_edit_order" t-att-data-data_id="detail.id" class="btn btn-primary btn_edit_order" style="float: right">Edit</button>
 					</t>
-					<t t-if="detail.classification_value == 'pending'">
-						<button type="button" intent="univmobile_intent_approve_order" t-att-data-data_id="detail.id"
-								class="btn btn-success btn_approve_order">Approve</button>
-						<button type="button" intent="univmobile_intent_reject_order" t-att-data-data_id="detail.id"
-								class="btn btn-danger btn_reject_order">Reject</button>
+					<t t-if="detail.user_group == 'approver'">
+						<t t-if="detail.classification_value == 'pending'">
+							<button type="button" intent="univmobile_intent_approve_order" t-att-data-data_id="detail.id"
+									class="btn btn-success btn_approve_order">Approve</button>
+							<button type="button" intent="univmobile_intent_reject_order" t-att-data-data_id="detail.id"
+									class="btn btn-danger btn_reject_order">Reject</button>
+						</t>
 					</t>
 					<t t-if="detail.user_group != 'approver'">
 						<t t-if="detail.classification_value == 'pending' || detail.classification_value == 'ready'">

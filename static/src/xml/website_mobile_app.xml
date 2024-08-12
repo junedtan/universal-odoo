@@ -950,11 +950,17 @@
 			<div class="div_detail_order_button card_padding">
 				<t t-if="detail.user_group != 'pic'">
 					<t t-if="detail.state == 'new'">
-						<button type="button" intent="univmobile_intent_edit_order" t-att-data-data_id="detail.id" class="btn btn-success btn_edit_order">Edit Order</button>
+						<button type="button" intent="univmobile_intent_edit_order" t-att-data-data_id="detail.id" class="btn btn-success btn_edit_order">Edit</button>
+					</t>
+					<t t-if="detail.classification_value == 'pending'">
+						<button type="button" intent="univmobile_intent_approve_order" t-att-data-data_id="detail.id"
+								class="btn btn-secondary btn_approve_order">Approve</button>
+						<button type="button" intent="univmobile_intent_reject_order" t-att-data-data_id="detail.id"
+								class="btn btn-danger btn_reject_order">Reject</button>
 					</t>
 					<t t-if="detail.classification_value == 'pending' || detail.classification_value == 'ready'">
 						<button type="button" intent="univmobile_intent_cancel_order" t-att-data-data_id="detail.id"
-								class="btn btn-danger btn_cancel_order">Cancel Order</button>
+								class="btn btn-danger btn_cancel_order">Cancel</button>
 					</t>
 					<div id="change_planned_start_time"/>
 					<div id="list_order_edit_order"/>

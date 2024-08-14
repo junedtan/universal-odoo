@@ -624,6 +624,11 @@ class website_mobile_app(http.Controller):
 		try:
 			handler_obj = http.request.env['universal.website.mobile_app.handler']
 			data = json.loads(request.params['data'])
+			return json.dumps({
+				'status': 'ok',
+				'success': False,
+				'info': "%s" % data
+			})
 			result = handler_obj.cancel_order(data)
 			if result:
 				return json.dumps({

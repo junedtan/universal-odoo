@@ -172,7 +172,11 @@ class website_mobile_app(http.Controller):
 		loaded_data = json.loads(data)
 		cancel_reasons = [{'id': 1, 'name': 'Test Alasan'}]
 		return json.dumps({
-			'cancel_reason': cancel_reasons
+			'cancel_reason': cancel_reasons,
+			'loaded_data': loaded_data,
+			'order_data': {
+				'id': 5
+			}
 		})
 	
 	@http.route('/mobile_app/get_required_edit_order/<string:data>', type='http', auth="user", website=True)

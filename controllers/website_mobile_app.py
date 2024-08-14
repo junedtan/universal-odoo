@@ -72,7 +72,7 @@ class website_mobile_app(http.Controller):
 	@http.route('/mobile_app', type='http', auth="user", website=True)
 	def mobile_app_new(self, **kwargs):
 		user_obj = request.registry['res.users']
-		if user_obj._is_mobile_user(request.cr, SUPERUSER_ID, request.uid):
+		if not user_obj._is_mobile_user(request.cr, SUPERUSER_ID, request.uid):
 			return request.registry['ir.http'].reroute('/web')
 		handler_obj = http.request.env['universal.website.mobile_app.handler']
 		env = request.env(context=dict(request.env.context, show_address=True, no_tag_br=True))

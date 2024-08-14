@@ -78,9 +78,14 @@ var mobile_app_intent_definition = {
 		'target_activity_id': 'univmobile_actv_edit_order',
 		'target': 'modal',
 	},
+	// 'univmobile_intent_cancel_order': {
+	// 	'intent_type': 'confirm_and_action',
+	// 	'target_activity_id': 'univmobile_actv_cancel_order',
+	// 	'target': 'confirm',
+	// },
 	'univmobile_intent_cancel_order': {
-		'intent_type': 'confirm_and_action',
-		'target_activity_id': 'univmobile_actv_cancel_order',
-		'target': 'confirm',
+		'intent_type': 'page',
+		'target_activity_id': 'univmobile_actv_cancel_order2',
+		'target': 'modal',
 	},
 }

@@ -167,6 +167,14 @@ class website_mobile_app(http.Controller):
 			'route_to': route_city_arr,
 		})
 	
+	@http.route('/mobile_app/get_required_cancel_vehicle/<string:data>', type='http', auth="user", website=True)
+	def mobile_app_get_required_cancel_vehicle(self, data, **kwargs):
+		loaded_data = json.loads(data)
+		cancel_reasons = [{'id': 1, 'name': 'Test Alasan'}]
+		return json.dumps({
+			'cancel_reason': cancel_reasons
+		})
+	
 	@http.route('/mobile_app/get_required_edit_order/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_get_required_edit_order(self, data, **kwargs):
 		loaded_data = json.loads(data)
@@ -610,7 +618,8 @@ class website_mobile_app(http.Controller):
 	def mobile_app_cancel_order(self, **kwargs):
 		try:
 			handler_obj = http.request.env['universal.website.mobile_app.handler']
-			result = handler_obj.cancel_order(int(request.params['data']))
+			data = json.loads(request.params['data'])
+			result = handler_obj.cancel_order(data)
 			if result:
 				return json.dumps({
 					'status': 'ok',
@@ -1197,11 +1206,17 @@ class website_mobile_app_handler(osv.osv):
 		order_obj = self.pool.get('foms.order')
 		return order_obj.browse(cr, SUPERUSER_ID, order_id);
 	
-	def cancel_order(self, cr, uid, order_id, context={}):
+	def cancel_order(self, cr, uid, data, context={}):
+		if data['cancel_reason'] == 'other_reason':
+			cancel_reason_id = None
+			cancel_reason_other = data['cancel_reason_other']
+		else:
+			cancel_reason_id = int(data['cancel_reason'])
+			cancel_reason_other = ''
 		order_detail = {
-			'order_id': order_id,
-			'cancel_reason': None,
-			'cancel_reason_other': _('Cancel from mobile web'),
+			'order_id': data['order_id'],
+			'cancel_reason': cancel_reason_id,
+			'cancel_reason_other': cancel_reason_other,
 			'cancel_by': uid,
 		}
 		cancel_memory_obj = self.pool.get('foms.order.cancel.memory')

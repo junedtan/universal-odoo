@@ -639,7 +639,6 @@ var mobile_app_activity_definition = {
 						validate_and_prepare: function(form_object) {
 							var valid = true;
 							var form_data = mobile_app.form.get_values(form_object);
-							var form_data = mobile_app.form.get_values(form_object);
 							valid = is_valid_form_data_order(form_data);
 							form_data['mode_create_or_edit'] = 'edit';
 							return {
@@ -714,6 +713,7 @@ var mobile_app_activity_definition = {
 		}
 	},
 
+	// ini yg cancel order langsung prompt, tanpa cancel reason
 	'univmobile_actv_cancel_order': {
 		title: 'Cancel Order',
 		confirm_text: 'Are you sure to cancel this order? This cannot be undone.',
@@ -727,6 +727,62 @@ var mobile_app_activity_definition = {
 			mobile_app.intent('univmobile_intent_order_detail', {
 				data_id: mobile_app.cache['selected_order_id'],
 			});
+		}
+	},
+
+	// ini yg cancel order pakai cancel reason
+	'univmobile_actv_cancel_order2': {
+		title: 'Cancel Order',
+		back_intent_id: 'univmobile_intent_order_detail',
+		onload_callback: function(activity_data, intent_data) {
+			var cancel_order_view = mobile_app.detail_view({
+				container: "#chjs_mobile_modal_content",
+				detail_qweb: "univmobile_cancel_vehicle",
+				// prepare_data: function(data) {
+				// 	mobile_app.cache['contract_datas'] = data['contract_datas'];
+				// 	mobile_app.cache['route_to'] = data['route_to'];
+				// 	mobile_app.cache['user'] = data['user'];
+				// 	mobile_app.cache['order_data'] = data['order_data'];
+				// 	mobile_app.cache['user']['user_group'] = data['user_group'];
+
+				// 	data['start_planned_date'] = mobile_app.cache['order_data'].start_planned_date_format_input;
+				// 	data['finish_planned_date'] = mobile_app.cache['order_data'].finish_planned_date_format_input;
+				// 	return data;
+				// },
+				after_refresh: function(data) {
+					mobile_app.form.initialize("#cancel_vehicle_form", {
+						action: '/mobile_app/cancel_order/',
+						type_action: 'POST',
+						validate_and_prepare: function(form_object) {
+							var valid = true;
+							var form_data = mobile_app.form.get_values(form_object);
+							valid = is_valid_form_data_cancel_order(form_data);
+							form_data['cancel_reason_other'] = $.trim(form_data['cancel_reason_other']);
+							return {
+								valid: valid,
+								form_data: form_data,
+							}
+						},
+						after_success: function(response) {
+							if (response.success){
+								mobile_app.close_modal();
+								mobile_app.intent('univmobile_intent_order_detail', {
+									data_id: mobile_app.cache['selected_order_id'],
+								});
+							}
+						},
+						events: {
+							"change #cancel_reason": function(event) {
+								var cancel_reason = $(this).val();
+								onchange_cancel_vehicle_cancel_reason(cancel_reason);
+							},
+						},
+					});
+					$("#cancel_reason_other").parents('.row').hide(); // by default hide cancel reason
+				}
+			});
+			mobile_app.data_manager.attach_view('cancel_vehicle', 'cancel_vehicle', cancel_order_view);
+			mobile_app.data_manager.refresh('cancel_vehicle', intent_data, true);
 		}
 	},
 
@@ -806,6 +862,15 @@ function onchange_book_vehicle_to_district(district_id){
 			});
 		}
 	});
+};
+
+function onchange_cancel_vehicle_cancel_reason(cancel_reason) {
+	if (cancel_reason == 'other_reason') {
+		$("#cancel_reason_other").parents('.row').show();
+	} else {
+		$("#cancel_reason_other").parents('.row').hide();
+	}
+	$("#cancel_reason_other").val('');
 };
 
 function onclick_create_order_i_am_passenger(exist_id) {;
@@ -932,6 +997,20 @@ function is_valid_form_data_order(form_data){
 	}
 	return valid;
 };
+
+function is_valid_form_data_cancel_order(form_data) {
+	var valid = true;
+	if (!form_data['cancel_reason']) {
+		alert('Please input cancel reason!');
+		valid = false;
+	}
+	var other_reason = $.trim(form_data['cancel_reason_other']);
+	if (form_data['cancel_reason'] == 'other_reason' && !other_reason) {
+		alert('Please input other cancel reason!');
+		valid = false;
+	}
+	return valid;
+}
 
 function add_passenger_to_table(name, phone, exist_id, isOrderer) {
 	var table_passengers = $("#passengers");

@@ -90,5 +90,11 @@ var mobile_app_data_sources = {
 		type: 'ajax',
 		url: '/mobile_app/get_required_book_vehicle',
 		views: {},
-    },
+	},
+	'cancel_vehicle': {
+		id: 'cancel_vehicle',
+		type: 'ajax',
+		url: '/mobile_app/get_required_cancel_vehicle',
+		views: {},
+	},
 }

@@ -624,11 +624,6 @@ class website_mobile_app(http.Controller):
 		try:
 			handler_obj = http.request.env['universal.website.mobile_app.handler']
 			data = json.loads(request.params['data'])
-			return json.dumps({
-				'status': 'ok',
-				'success': False,
-				'info': "%s" % data
-			})
 			result = handler_obj.cancel_order(data)
 			if result:
 				return json.dumps({
@@ -1236,7 +1231,7 @@ class website_mobile_app_handler(osv.osv):
 			cancel_reason_id = int(data['cancel_reason'])
 			cancel_reason_other = ''
 		order_detail = {
-			'order_id': data['order_id'],
+			'order_id': int(data['order_id']),
 			'cancel_reason': cancel_reason_id,
 			'cancel_reason_other': cancel_reason_other,
 			'cancel_by': uid,

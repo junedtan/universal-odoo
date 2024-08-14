@@ -170,12 +170,13 @@ class website_mobile_app(http.Controller):
 	@http.route('/mobile_app/get_required_cancel_vehicle/<string:data>', type='http', auth="user", website=True)
 	def mobile_app_get_required_cancel_vehicle(self, data, **kwargs):
 		loaded_data = json.loads(data)
-		cancel_reasons = [{'id': 1, 'name': 'Test Alasan'}]
+		handler_obj = http.request.env['universal.website.mobile_app.handler']
+		order_data = handler_obj.get_order(loaded_data)
+		cancel_reasons = handler_obj.get_cancel_reasons()
 		return json.dumps({
 			'cancel_reason': cancel_reasons,
-			'loaded_data': loaded_data,
 			'order_data': {
-				'id': 5
+				'id': order_data.id
 			}
 		})
 	
@@ -916,9 +917,21 @@ class website_mobile_app_handler(osv.osv):
 		user_obj = self.pool.get('res.users')
 		user = user_obj.browse(cr, SUPERUSER_ID, uid)
 		return user.partner_id
+
+	def get_cancel_reasons(self, cr, uid):
+		cancel_reason_ids = self.pool.get('foms.order.cancel.reason').search(cr, uid, [])
+		model, delay_reason_id = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'universal', 'foms_cancel_reason_delay_exceeded')
+		result = []
+		for reason in self.pool.get('foms.order.cancel.reason').browse(cr, uid, cancel_reason_ids):
+			if reason.id == delay_reason_id: continue # exclude "delay time exceeded" dari list alasan
+			result.append({
+				'id': reason.id,
+				'name': reason.name,
+			})
+		return result
 	
 	def search_order(self, cr, uid, domain, param_context):
-		order_obj = self.pool.get('foms.order');
+		order_obj = self.pool.get('foms.order')
 		filter_domain = [('start_planned_date', '>=', (datetime.now() - relativedelta(months=+2)).strftime(DEFAULT_SERVER_DATETIME_FORMAT))]
 	
 		if type(domain) is int:

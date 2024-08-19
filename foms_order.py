@@ -814,6 +814,7 @@ class foms_order(osv.osv):
 			domain = []
 			user_id = context.get('user_id', uid)
 			is_pic = user_obj.has_group(cr, user_id, 'universal.group_universal_customer_pic')
+			is_pic_detail = user_obj.has_group(cr, user_id, 'universal.group_universal_customer_pic_detail')
 			is_approver = user_obj.has_group(cr, user_id, 'universal.group_universal_approver')
 			is_driver = user_obj.has_group(cr, user_id, 'universal.group_universal_driver')
 			is_booker = user_obj.has_group(cr, user_id, 'universal.group_universal_booker')
@@ -824,6 +825,12 @@ class foms_order(osv.osv):
 				user_data = user_obj.browse(cr, uid, user_id)
 				if user_data.partner_id:
 					contract_ids = contract_obj.search(cr, uid, [('customer_contact_id','=',user_data.partner_id.id)])
+					domain.append(('customer_contract_id','in',contract_ids))
+		# kalau pic detail, domainnya menjadi semua order dengan contract yang pic nya adalah partner terkait
+			if is_pic_detail:
+				user_data = user_obj.browse(cr, uid, user_id)
+				if user_data.partner_id:
+					contract_ids = contract_obj.search(cr, uid, [('customer_contact_detail_id','=',user_data.partner_id.id)])
 					domain.append(('customer_contract_id','in',contract_ids))
 		# kalau driver, domainnya menjadi semua order yang di-assign ke dia, atau actual nya dia
 			if is_driver:

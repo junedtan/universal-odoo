@@ -2264,7 +2264,19 @@ class foms_order(osv.osv):
 					message = _('Order %s has been approved/rejected by another approver. Please refresh your app.') % (order_data.name)
 					subject = "Order approval notification"
 				elif notification == 'order_ready_booker':
-					message = _('Your order %s has been approved. Please stand by on planned start hour at your requested location. Our driver will come for you.') % (order_data.name)
+					passenger_names = []
+					for passenger in order_data.passengers:
+						passenger_names.append(passenger.name)
+					passenger_names = ", ".join(passenger_names)
+					message = _('%s %s with driver %s %s is assigned for order %s with passenger(s) %s. Please stand by on planned start hour at your requested location. Our driver will come for you. Please use PIN %s to start and finish the order.') % (
+						order_data.fleet_type_id.name,
+						order_data.assigned_vehicle_id.license_plate,
+						order_data.assigned_driver_id.name,
+						order_data.driver_mobile and "HP no %s" % order_data.driver_mobile or '',
+						order_data.name,
+						passenger_names,
+						order_data.pin
+					)
 					subject = "Order approval notification"
 				elif notification == 'order_ready_approver':
 					message = _('Your approval for order %s has been successfully saved, and the booker has also been notified.') % (order_data.name)
